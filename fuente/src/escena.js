@@ -782,14 +782,11 @@ export class Escena {
     return t0;
   }
 
-  /** Resolución adaptable: baja si los cuadros tardan, sube si sobra tiempo. */
-  ajustarResolucion(msPorCuadro) {
-    const r = this.renderer, max = this.dprMax(), min = 0.6;
-    let d = r.getPixelRatio();
-    if (msPorCuadro > 24 && d > min) d = Math.max(min, d - 0.15);
-    else if (msPorCuadro < 12 && d < max) d = Math.min(max, d + 0.1);
-    else return;
-    r.setPixelRatio(d); this.sucio = true;
+  /** Fija la relación de píxeles (resolución) entre 0,6 y el máximo de este equipo. */
+  fijarResolucion(d) {
+    const v = Math.max(0.6, Math.min(this.dprMax(), d));
+    if (Math.abs(v - this.renderer.getPixelRatio()) < 0.001) return;
+    this.renderer.setPixelRatio(v); this.sucio = true;
   }
 }
 

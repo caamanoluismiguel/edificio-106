@@ -137,9 +137,49 @@
   .lentes button[aria-pressed="true"] { color: #1d1405; background: var(--sol); }
   .lentes button[data-lente="lluvia"][aria-pressed="true"] { background: var(--lluvia); color: #04121c; }
   .lentes button[data-lente="sombras"][aria-pressed="true"] { background: var(--cal); color: #0b1216; }
-  #leyenda { width: min(17rem, calc(100vw - 2 * var(--gutter))); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 14px; padding: 11px 12px;
-    backdrop-filter: blur(14px); display: grid; gap: 7px; animation: sube .3s var(--ease); }
-  #ley-t { margin: 0; font: 600 13px/1.2 var(--texto); }
+  #leyenda { width: min(19.5rem, calc(100vw - 2 * var(--gutter))); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 14px; padding: 12px 13px;
+    backdrop-filter: blur(14px); display: grid; gap: 8px; animation: sube .3s var(--ease); max-height: calc(100vh - var(--dock-h) - 340px); min-height: 120px; overflow: auto; overscroll-behavior: contain; }
+  html:has(#leyenda:not([hidden])) .pista { display: none; }
+  .ley-cab { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+  #ley-t { margin: 0; font: 700 14.5px/1.25 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
+  #ley-cerrar { border: 0; background: none; color: var(--cal-2); font: 400 20px/1 var(--texto); cursor: pointer; padding: 0 2px; }
+  #ley-cerrar:hover { color: var(--cal); }
+  #ley-que { margin: 0; font-size: 13px; line-height: 1.42; color: var(--cal); text-wrap: pretty; }
+  #ley-leer { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
+  #ley-mas { border-top: 1px solid var(--linea); padding-top: 7px; }
+  #ley-mas summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); }
+  #ley-mas p { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
+  #ley-mas p b { color: var(--cal); font-weight: 600; }
+  #ley-mas .tec { font-size: 11px; color: var(--cal-3); }
+  .lentes .info { width: 30px; padding: 8px 0; font-family: var(--datos); color: var(--sol); }
+  .lentes .info[aria-expanded="true"] { background: var(--sol-tenue); }
+  /* datos tocables del dock */
+  [data-explica] { cursor: pointer; border-radius: 10px; outline-offset: 3px; transition: background .15s; }
+  .dock-lect [data-explica] { padding: 4px 6px; margin: -4px -6px; }
+  [data-explica]:hover { background: rgba(239,233,222,.06); }
+  [data-explica][aria-pressed="true"] { background: var(--sol-tenue); }
+  .dock-lect [data-explica] .k::after { content: '?'; display: inline-grid; place-items: center; width: 13px; height: 13px; margin-left: 5px; border: 1px solid var(--cal-3); border-radius: 50%;
+    font-size: 8.5px; line-height: 1; color: var(--cal-2); vertical-align: 1px; }
+  #rotulo-cerrar { justify-self: start; pointer-events: auto; padding: 7px 13px; font-size: 13px; }
+  /* recorrido guiado */
+  #recorrido { position: fixed; z-index: 8; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); width: min(27rem, calc(100vw - 2 * var(--gutter)));
+    box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--sol); border-radius: 18px; padding: 16px 18px; backdrop-filter: blur(16px); display: grid; gap: 9px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .3s cubic-bezier(.2, 0, 0, 1); }
+  html.en-recorrido #rotulo, html.en-recorrido #panel-fachada { display: none; }
+  .rec-cab { display: flex; justify-content: space-between; align-items: center; }
+  #rec-n { font: 500 10.5px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
+  #rec-salir { padding: 6px 12px; font-size: 12.5px; }
+  #rec-t { margin: 0; font: 760 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+  #rec-txt { margin: 0; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
+  .rec-dis { margin: 0; font-size: 13px; line-height: 1.45; color: var(--cal-2); } .rec-dis b { color: var(--sol); font-weight: 600; }
+  .rec-pie { display: flex; gap: 8px; align-items: center; margin-top: 2px; }
+  #rec-puntos { display: flex; gap: 5px; margin-right: auto; } #rec-puntos i { width: 6px; height: 6px; border-radius: 50%; background: var(--linea-2); }
+  #rec-puntos i.ya { background: var(--cal-3); } #rec-puntos i.hoy { background: var(--sol); width: 16px; border-radius: 3px; }
+  #recorrido .primario, #oferta-recorrido .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  #rec-prev:disabled { opacity: .35; cursor: default; }
+  #oferta-recorrido { position: fixed; z-index: 8; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 72px); width: min(24rem, calc(100vw - 2 * var(--gutter) - 130px)); box-sizing: border-box;
+    background: var(--panel-2); border: 1px solid var(--sol); border-radius: 16px; padding: 14px 16px; backdrop-filter: blur(14px); display: grid; gap: 10px; animation: sube .4s var(--ease); }
+  #oferta-recorrido p { margin: 0; font-size: 14.5px; line-height: 1.4; } #oferta-recorrido div { display: flex; gap: 8px; flex-wrap: wrap; }
   #ley-rampa { height: 8px; border-radius: 4px; }
   #ley-escala { display: flex; justify-content: space-between; font: 500 10.5px/1 var(--datos); color: var(--cal-2); margin-top: -2px; }
   #ley-fachadas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
@@ -217,7 +257,7 @@
   #reproducir::before { content: ""; width: 0; height: 0; border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; margin-left: 3px; }
   #reproducir[aria-pressed="true"]::before { width: 12px; height: 15px; border: 0; border-left: 4px solid currentColor; border-right: 4px solid currentColor; box-sizing: border-box; margin: 0; }
   #abrir-capas { height: 48px; }
-  @media (max-width: 1240px) { #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora lect botones" "centro centro centro"; } }
+  @media (max-width: 1500px) { #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora lect botones" "centro centro centro"; } }
 
   /* ---------- para qué sirve ---------- */
   .boton.destacado { border-color: var(--sol); color: var(--sol); }
@@ -349,12 +389,20 @@
     #leyenda { padding: 9px 10px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
     #ir-a { background: var(--solido); }
+    #abrir-recorrido { display: none; }
+    #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 46vh; overflow: auto; }
+    #rec-t { font-size: 18px; } #rec-txt { font-size: 13.5px; } .rec-dis { font-size: 12px; }
+    #leyenda { max-height: 38vh; min-height: 0; }
+    #oferta-recorrido { width: auto; right: 8px; left: 8px; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
+    .dock-lect [data-explica] .k::after { display: none; }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
   }
   @media (max-width: 480px) { #estado { display: none; } #abrir-sirve { padding: 9px 11px; font-size: 12.5px; } .acciones { gap: 6px; } .marca b { font-size: 17px; } }
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
+  @media (max-width: 1400px) and (min-width: 761px) { .marca small { display: none; } }
+  @media (max-width: 1100px) and (min-width: 761px) { #abrir-recorrido { padding: 10px 12px; } #sonido .t { display: none; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 
@@ -370,6 +418,7 @@
   <div class="acciones">
     <span id="motor" title="Motor de dibujo en este navegador"></span>
     <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
+    <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado</button>
     <button class="boton destacado" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
     <button class="boton" id="info" type="button" aria-haspopup="dialog" aria-label="Qué es y fuentes"><span aria-hidden="true">?</span><span class="t">Qué es · fuentes</span></button>
   </div>
@@ -399,6 +448,20 @@
 <div id="rotulo" class="tras-intro" aria-live="polite">
   <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
   <p id="rotulo-texto"></p>
+  <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
+</div>
+
+<aside id="recorrido" hidden aria-labelledby="rec-t" aria-live="polite">
+  <div class="rec-cab"><span id="rec-n" class="num"></span><button type="button" id="rec-salir" class="boton">Salir</button></div>
+  <h2 id="rec-t"></h2>
+  <p id="rec-txt"></p>
+  <p class="rec-dis"><b>Para el diseño:</b> <span id="rec-dis"></span></p>
+  <div class="rec-pie"><div id="rec-puntos" aria-hidden="true"></div><button type="button" id="rec-prev" class="boton">Anterior</button><button type="button" id="rec-sig" class="boton primario">Siguiente</button></div>
+</aside>
+
+<div id="oferta-recorrido" hidden role="dialog" aria-label="Recorrido guiado">
+  <p><b>¿Primera vez aquí?</b> Un recorrido de 2 minutos te muestra qué se puede ver y aprender.</p>
+  <div><button type="button" id="oferta-si" class="boton primario">Empezar el recorrido</button><button type="button" id="oferta-no" class="boton">Ahora no</button></div>
 </div>
 
 <aside id="hud" class="tras-intro" aria-label="Orientación">
@@ -431,14 +494,24 @@
     <button type="button" data-lente="sol" aria-pressed="false" title="Sol directo sobre cada fachada, en W/m²">Sol</button>
     <button type="button" data-lente="lluvia" aria-pressed="false" title="Lluvia con viento sobre cada fachada">Lluvia</button>
     <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra de cada hora del día sobre el terreno">Sombras</button>
+    <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
   </div>
   <div id="leyenda" hidden aria-live="polite">
-    <p id="ley-t"></p>
+    <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
+    <p id="ley-que"></p>
     <div id="ley-rampa"></div>
     <div id="ley-escala"></div>
     <ul id="ley-fachadas"></ul>
     <div id="ley-modos" class="segmento" hidden><button type="button" data-agua="hora">Esta hora</button><button type="button" data-agua="anio">Año típico</button></div>
+    <p id="ley-leer"></p>
     <p id="ley-nota"></p>
+    <details id="ley-mas" open>
+      <summary>Pruébalo, para qué sirve y límites</summary>
+      <p><b>Pruébalo:</b> <span id="ley-prueba"></span></p>
+      <p><b>Para el diseño:</b> <span id="ley-porque"></span></p>
+      <p><b>Ojo:</b> <span id="ley-ojo"></span></p>
+      <p class="tec"><b>Cómo se calcula:</b> <span id="ley-tec"></span></p>
+    </details>
   </div>
   <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
 </aside>
@@ -453,7 +526,7 @@
 
 <section id="dock" class="tras-intro" aria-label="Máquina del tiempo">
   <div class="dock-hora">
-    <span id="l-hora" class="num">--:--</span>
+    <span id="l-hora" class="num" data-explica="hora" role="button" tabindex="0" aria-pressed="false" title="Qué significa">--:--</span>
     <button id="elegir" type="button" aria-expanded="false" aria-controls="ir-a" title="Elegir una fecha y hora exactas"><span id="l-fecha"></span><span class="lapiz" aria-hidden="true">▾</span></button>
     <button id="ahora" type="button" aria-pressed="true">Ahora</button>
   </div>
@@ -482,6 +555,7 @@
       </svg>
       <div class="etiquetas" id="anio-etiquetas"></div>
       <input id="dia-anio" type="range" min="0" max="364" step="1" aria-label="Día del año">
+      <p class="dia-ley">▮ temporada de lluvias · ┃ solsticios · ● días sin sombra</p>
     </div>
     <div class="regla" id="regla-decadas" hidden>
       <svg id="decadas" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
@@ -498,9 +572,9 @@
     </div>
   </div>
   <div class="dock-lect">
-    <div><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
-    <div><span class="k">Sombra de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
-    <div><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
+    <div data-explica="sol" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
+    <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
+    <div data-explica="clima" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
     <p id="l-fuente"></p>
   </div>
   <div class="dock-botones">
@@ -515,6 +589,7 @@
     <h2 id="sirve-t">Para qué sirve</h2>
     <button class="boton" id="cerrar-sirve" type="button" aria-label="Cerrar">Cerrar</button>
   </div>
+  <p><button class="boton" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
   <p class="sirve-intro">La página cruza la geometría solar (NOAA) con 25 años de datos horarios ERA5 sobre el modelo del edificio. Estos seis hallazgos sirven para discutir orientación, aleros y lluvia, y cada uno trae un momento para verlo en la escena. No tratan ventilación, radiación difusa ni confort interior.</p>
   <div class="hallazgos">
     <article class="hallazgo" data-fecha="2026-04-12" data-hora="12:19" data-vista="aerea" data-fachada="" data-capa="calor">
@@ -546,7 +621,7 @@
       <button class="ver" type="button"><span>Verlo en la escena</span><small>01/07/2023 14:30 · esquina: la hora más lluviosa de ERA5 en la serie (19 mm entre las 14:00 y las 15:00); mira las cortinas de agua desde los tres aleros.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2006-11-23" data-hora="12:30" data-vista="" data-fachada="no" data-capa="">
-      <h3>Lluvia batiente: la NO recibe unas seis veces más que el testero NE</h3>
+      <h3>Lluvia batiente: la NO recibe más de cinco veces lo que el testero NE</h3>
       <p>Índice ISO 15927-3 en campo abierto: NO unos 450 L/m² al año (de ~300 a ~650 según el año), SO ~350, SE ~280 y NE ~80. En ERA5 el viento durante la lluvia es flojo (mediana de 7 km/h); el modelo no capta las ráfagas de los aguaceros.</p>
       <p class="uso"><b>Para el diseño:</b> Indica dónde reforzar alero, goterones, juntas y acabados: primero NO y SO; el testero NE pide menos.</p>
       <p class="limite"><b>Límite:</b> Es lluvia que cruza un plano vertical en campo abierto: ordena fachadas, no mide el agua que recibe el muro.</p>
@@ -580,6 +655,7 @@
     <h3>Capas</h3>
     <div class="interruptores">
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
+      <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez (para presentar)</b><small>Deja la resolución al máximo aunque el movimiento sea menos fluido. Sin marcar, la página la baja si el equipo va justo y la sube cuando va fluido. <span id="res-actual"></span></small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa.</small></label>
     </div>
   </div>
@@ -598,11 +674,13 @@
   <button class="boton" id="cerrar-acerca" type="button">Cerrar</button>
   <h2 id="acerca-t">Edificio 106 · Isthmus</h2>
   <p>Un modelo 3D paramétrico del Edificio 106, con su norte real, el sol calculado (NOAA) y el tiempo de cada hora. Entre 2001 y 2025 el tiempo sale del reanálisis ERA5; para estos días, del pronóstico de modelo de Open-Meteo. Sirve para leer y discutir cómo trabajan la orientación, los aleros y la lluvia en este edificio.</p>
+  <p><button class="boton" id="acerca-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
   <h3>Cómo leerlo</h3>
   <ul>
     <li><b>Ahora:</b> el sol de este minuto y el pronóstico de modelo de Open-Meteo, que se renueva cada 15 min. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
     <li><b>Máquina del tiempo:</b> Día · Año · 25 años, o una fecha y hora exactas (toca la fecha bajo la hora grande). Entre 2001 y 2025, si ERA5 da lluvia en esa hora, llueve en la escena.</li>
     <li><b>Orientación:</b> arrastra para girar el edificio. La brújula marca el norte real y el sol; en el suelo están la rosa N·E·S·O y el arco del sol del día.</li>
+    <li><b>Qué significa cada dato:</b> toca la hora, «Sol», «Sombra de 1 m» o «Clima» en la barra de abajo, o las pestañas Día · Año · 25 años, y aparece la explicación con los valores de ese momento.</li>
     <li><b>Ir a…:</b> una fecha y hora exactas, o los días que más se consultan: sin sombra, solsticios, la hora y el día más lluviosos, el día con más sol, la fachada que más se moja y un día típico de cada mes.</li>
     <li><b>Ver:</b> «Foto» es la escena; «Sol» pinta la irradiancia directa sobre cada fachada (W/m²); «Lluvia», el índice de lluvia con viento de ISO 15927-3; «Sombras», la sombra de cada hora del día sobre el terreno. «Capas» → «Aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
     <li id="cenit-txt"></li>
