@@ -54,6 +54,7 @@ Object.assign(U, {
   pal0: uniform(new THREE.Color(0.05, 0.07, 0.1)),   // paleta de la lente de fachadas (lluvia o viento)
   pal1: uniform(new THREE.Color(0.08, 0.42, 0.9)),
   pal2: uniform(new THREE.Color(0.6, 0.9, 1.0)),
+  aguaT: uniform(0),                     // valor del techo en la lente de fachadas (solo el año típico del sol lo usa)
 });
 // sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol»
 const sombraSol = property('float', 'sombraSol');
@@ -421,7 +422,7 @@ export class Escena {
       const w = (nx, nz) => pow(max(dot(n, vec3(nx, 0, nz)), 0), 3.0);
       const dirs = Object.values(FACHADAS).map(fc => { const v = vectorSol(0, fc.rumbo); return [v.x, v.z]; });
       const a = U.aguaF;
-      const wet = w(...dirs[0]).mul(a.x).add(w(...dirs[1]).mul(a.y)).add(w(...dirs[2]).mul(a.z)).add(w(...dirs[3]).mul(a.w));
+      const wet = w(...dirs[0]).mul(a.x).add(w(...dirs[1]).mul(a.y)).add(w(...dirs[2]).mul(a.z)).add(w(...dirs[3]).mul(a.w)).add(pow(max(n.y, 0), 3.0).mul(U.aguaT));
       const rampA = mix(mix(vec3(U.pal0), vec3(U.pal1), smoothstep(0.0, 0.5, wet)), vec3(U.pal2), smoothstep(0.5, 1.0, wet));
       const eA = rampA.mul(U.agua).mul(0.8);
       const prevE = m.emissiveNode;

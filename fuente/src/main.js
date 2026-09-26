@@ -165,7 +165,7 @@ async function arrancar() {
   });
   const pIntro = puntosIntro(BASE).catch((e) => { console.warn(e); return null; });
   clima.cargarResumen(BASE + 'datos/clima_resumen.json').then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
-  fetch(BASE + 'datos/consultas.json').then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); }).catch((e) => anotar('aviso', 'consultas: ' + e));
+  fetch(BASE + 'datos/consultas.json').then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
   setInterval(() => { if (S.modo === 'ahora') clima.cargarVivo(); }, 10 * 60e3);
 
@@ -257,7 +257,7 @@ function terminarIntro() {
   document.documentElement.classList.add('listo');
   controls.enabled = true;
   irAAhora(false);
-  if (!visto && !location.hash) setTimeout(() => { if (S.paso == null) $('#oferta-recorrido').hidden = false; }, 900);
+  if (!visto && !location.hash) setTimeout(() => { if (S.paso == null && $('#sirve').hidden && $('#ir-a').hidden) { $('#oferta-recorrido').hidden = false; setTimeout(() => { $('#oferta-recorrido').hidden = true; }, 30000); } }, 900);
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) irAFachada(h);
   irAMomentoHash();
@@ -337,12 +337,12 @@ function volarA(v, dur = 1.6, clave = null, avisar = true) {
   controls.enabled = false;
 }
 function marcarVista(clave) {
-  document.querySelectorAll('[data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === clave)); b.style.setProperty('--p', b.dataset.vista === clave ? 0 : 1); });
+  document.querySelectorAll('.vistas [data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === clave)); b.style.setProperty('--p', b.dataset.vista === clave ? 0 : 1); });
 }
 function pasoCamara(dt) {
   const a = cam.anim; if (!a) return false;
   a.k = Math.min(1, a.k + dt / a.dur); const e = eio(a.k);
-  if (a.clave) document.querySelector(`[data-vista="${a.clave}"]`)?.style.setProperty('--p', e.toFixed(3));
+  if (a.clave) document.querySelector(`.vistas [data-vista="${a.clave}"]`)?.style.setProperty('--p', e.toFixed(3));
   escena.camera.position.lerpVectors(a.p0, a.p1, e);
   // arco suave: sube un poco a mitad de camino para no atravesar el edificio
   escena.camera.position.y += Math.sin(Math.PI * e) * Math.min(30, a.p0.distanceTo(a.p1) * 0.18);
@@ -423,8 +423,9 @@ function paso(now) {
   U.mojado.value += ((lluviaSuave > 0.08 ? 1 : 0) - U.mojado.value) * (salto ? 1 : Math.min(1, dt * (lluviaSuave > 0.08 ? 0.35 : 0.05)));
   if (c?.viento != null && c?.dir != null) { const w = vectorSol(0, (c.dir + 180) % 360); const k = 0.4 + c.viento / 12; U.viento.value.set(w.x * k, w.z * k); }
   if (escena.actualizar(dt)) sonido.trueno();
-  U.calor.value += ((S.lente === 'sol' ? 1 : 0) - U.calor.value) * Math.min(1, dt * 4);
-  U.agua.value += ((S.lente === 'lluvia' || S.lente === 'viento' ? 1 : 0) - U.agua.value) * Math.min(1, dt * 4);
+  const solAnio = S.lente === 'sol' && S.solModo === 'anio';
+  U.calor.value += ((S.lente === 'sol' && !solAnio ? 1 : 0) - U.calor.value) * Math.min(1, dt * 4);
+  U.agua.value += ((S.lente === 'lluvia' || S.lente === 'viento' || solAnio ? 1 : 0) - U.agua.value) * Math.min(1, dt * 4);
   U.total.value += ((S.solModo === 'total' && S.hayDifusa ? 1 : 0) - U.total.value) * Math.min(1, dt * 4);
   escena.uViento.value += ((S.lente === 'viento' && !S.viaje ? 1 : 0) - escena.uViento.value) * Math.min(1, dt * 4);
   U.sombras.value += ((S.lente === 'sombras' && !S.viaje ? 1 : 0) - U.sombras.value) * Math.min(1, dt * 4);
@@ -539,10 +540,18 @@ function actualizarCalor(p, c) {
 // ---------------- Lluvia con viento en fachadas (índice de ISO 15927-3 en campo abierto) ----------------
 // I = (2/9) · v · r^(8/9) · cos(D − θ), en L/m² por hora: v en m/s (10 m), r en mm/h, D = de dónde viene el viento.
 function lluviaBatiente(r, vKmh, dir, rumbo) { const c = Math.cos((dir - rumbo) * Math.PI / 180); return c > 0 && r > 0 ? 2 / 9 * (vKmh / 3.6) * Math.pow(r, 8 / 9) * c : 0; }
-const PAL = { lluvia: [[0.05, 0.07, 0.1], [0.08, 0.42, 0.9], [0.6, 0.9, 1.0]], viento: [[0.03, 0.08, 0.07], [0.1, 0.62, 0.48], [0.78, 1.0, 0.86]] };
+const PAL = { lluvia: [[0.05, 0.07, 0.1], [0.08, 0.42, 0.9], [0.6, 0.9, 1.0]], viento: [[0.03, 0.08, 0.07], [0.1, 0.62, 0.48], [0.78, 1.0, 0.86]],
+  sol: [[0.01, 0.03, 0.22], [0.85, 0.12, 0.02], [1.0, 0.85, 0.15]] };
 function actualizarAgua(c) {
-  const ks = Object.keys(FACHADAS), pal = PAL[S.lente === 'viento' ? 'viento' : 'lluvia'];
+  const ks = Object.keys(FACHADAS), pal = PAL[S.lente === 'viento' ? 'viento' : S.lente === 'sol' ? 'sol' : 'lluvia'];
   U.pal0.value.setRGB(...pal[0]); U.pal1.value.setRGB(...pal[1]); U.pal2.value.setRGB(...pal[2]);
+  if (S.lente === 'sol') {                                       // año típico: total anual por orientación, escala fija de 0 a 1.800 kWh/m² (el techo llega arriba)
+    const R = consultas?.radiacion;
+    U.aguaF.value.set(...ks.map((k) => R ? Math.min(1, R.fachadas[k.slice(8)].total / 1800) : 0));
+    U.aguaT.value = R ? Math.min(1, R.techo.total / 1800) : 0;
+    return;
+  }
+  U.aguaT.value = 0;
   if (S.lente === 'viento') {
     if (S.vientoModo !== 'hora' && consultas?.viento) {
       const V = consultas.viento[S.vientoModo]; S.vientoF = ks.map((k) => V.frente[k.slice(8)]);
@@ -837,6 +846,8 @@ function prepararUI() {
   const abrirRec = () => { $('#oferta-recorrido').hidden = true; abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
   ['#abrir-recorrido', '#sirve-recorrido', '#acerca-recorrido', '#oferta-si'].forEach((x) => $(x)?.addEventListener('click', abrirRec));
   $('#oferta-no').addEventListener('click', () => { $('#oferta-recorrido').hidden = true; });
+  $('#oferta-sirve').addEventListener('click', () => { $('#oferta-recorrido').hidden = true; abrirSirve(true); $('#sirve').scrollTop = 0; });
+  $('#acerca-sirve').addEventListener('click', () => { $('#acerca').close?.(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
   $('#rec-salir').addEventListener('click', () => recorrido(null));
@@ -851,7 +862,7 @@ function prepararUI() {
   });
   $('#reproducir').addEventListener('click', reproducir);
   // para qué sirve: hallazgos con un momento para verlos en la escena
-  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); };
+  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) $('#oferta-recorrido').hidden = true; };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
@@ -864,6 +875,7 @@ function prepararUI() {
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
+    if (abrir) $('#oferta-recorrido').hidden = true;
     if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
       $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
@@ -902,7 +914,7 @@ function prepararUI() {
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
-  document.querySelectorAll('[data-vista]').forEach((b) => b.addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
+  document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
   $('#brujula').addEventListener('click', () => volarA(VISTAS.planta, 1.6, 'planta'));
   document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada); }));
   $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
@@ -955,7 +967,7 @@ const LENTES = {
     que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
     leer: '«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo, en W/m².',
     prueba: 'Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.',
-    porque: 'Muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos tres cuartos de lo que recibe la sureste (677 contra 907 kWh/m² en una pared sin alero).',
+    porque: 'Muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos tres cuartos de lo que recibe la sureste{RAD_NO_SE}.',
     ojo: 'La difusa se calcula como si el cielo brillara parejo y no descuenta el pedazo de cielo que tapan el alero o los vecinos: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.',
     tec: 'Directa: radiación directa normal (DNI) de ERA5 × coseno del ángulo entre el sol y la superficie × sombra, con el mismo mapa de sombras de la escena. Difusa: difusa horizontal de ERA5 × (1 + cos de la inclinación) / 2 (cielo isotrópico). Reflejada: global horizontal × 0,2 × (1 − cos de la inclinación) / 2.' },
   lluvia: { t: 'Lluvia: qué fachada se moja cuando llueve con viento', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['nada', '', 'mucha'],
@@ -979,9 +991,22 @@ const LENTES = {
     ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos.',
     tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior. Es exacto para el volumen; los detalles pequeños quedan dentro del contorno.' },
 };
-const MODOS = { sol: [['directa', 'Solo sol directo'], ['total', 'Total']], lluvia: [['hora', 'Esta hora'], ['anio', 'Año típico']],
+const MODOS = { sol: [['directa', 'Solo directo'], ['total', 'Total'], ['anio', 'Año típico']], lluvia: [['hora', 'Esta hora'], ['anio', 'Año típico']],
   viento: [['hora', 'Esta hora'], ['seca', 'Seca'], ['lluvias', 'Lluvias'], ['anio', 'Año']] };
 const MODO_DE = { sol: 'solModo', lluvia: 'aguaModo', viento: 'vientoModo' };
+const miles = (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+/** Cifras de radiación anual por fachada (consultas.json → radiacion) en los textos que las citan. */
+function textoRad(t) {
+  const R = consultas?.radiacion?.fachadas;
+  return t.replace('{RAD_NO_SE}', R ? ` (${miles(R.no.total)} contra ${miles(R.se.total)} kWh/m² al año en una pared sin alero)` : '');
+}
+function pintarRadiacion() {
+  const R = consultas?.radiacion; if (!R) return;
+  document.querySelectorAll('[data-rad]').forEach((el) => { const [a, b] = el.dataset.rad.split('.'), v = a === 'techo' ? R.techo[b] : R.fachadas[a]?.[b]; if (v != null) el.textContent = miles(v); });
+  const f = Object.values(R.fachadas).map((x) => x.directa / x.total);
+  document.querySelectorAll('[data-rad-pct]').forEach((el) => { el.textContent = `${Math.round(Math.min(...f) * 100)}–${Math.round(Math.max(...f) * 100)} %`; });
+  const el = $('#leyenda'); if (el) el.dataset.lente = '';     // la tarjeta abierta vuelve a tomar las cifras
+}
 function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';
   S.lente = k; if (mostrar) S.verLeyenda = true;
@@ -992,13 +1017,18 @@ function leyenda(c) {
   const L = LENTES[S.lente], el = $('#leyenda');
   el.hidden = !S.verLeyenda; $('#lente-info').setAttribute('aria-expanded', String(!!S.verLeyenda));
   if (!S.verLeyenda) return;
-  if (el.dataset.lente !== S.lente) {                           // textos fijos: solo al cambiar de lente
-    el.dataset.lente = S.lente;
+  const anioSol = S.lente === 'sol' && S.solModo === 'anio';
+  const claveT = S.lente + (anioSol ? '-anio' : '');
+  if (el.dataset.lente !== claveT) {                            // textos fijos: solo al cambiar de lente (o al año típico del sol)
+    el.dataset.lente = claveT;
     $('#ley-t').textContent = L.t; $('#ley-que').textContent = L.que;
     $('#ley-rampa').hidden = $('#ley-escala').hidden = !L.rampa;
-    if (L.rampa) { $('#ley-rampa').style.background = L.rampa; $('#ley-escala').innerHTML = L.esc.map((x) => `<span>${x}</span>`).join(''); }
+    if (L.rampa) {
+      $('#ley-rampa').style.background = anioSol ? 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)' : L.rampa;
+      $('#ley-escala').innerHTML = (anioSol ? ['0', '900', '1.800 kWh/m² al año'] : L.esc).map((x) => `<span>${x}</span>`).join('');
+    }
     $('#ley-leer').textContent = L.leer ?? ''; $('#ley-leer').hidden = !L.leer;
-    $('#ley-prueba').textContent = L.prueba; $('#ley-porque').textContent = L.porque; $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
+    $('#ley-prueba').textContent = L.prueba; $('#ley-porque').textContent = textoRad(L.porque); $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
     const M = MODOS[S.lente];
     $('#ley-modos').innerHTML = M ? M.map(([k, t]) => `<button type="button" data-modo="${k}">${t}</button>`).join('') : '';
     $('#ley-modos').hidden = !M; $('#ley-modos').dataset.lente = S.lente;
@@ -1007,7 +1037,10 @@ function leyenda(c) {
   $('#ley-modos').querySelectorAll('[data-modo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modo === actual)));
   const ks = Object.keys(FACHADAS), nom = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
   let filas = '';
-  if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${Math.round(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
+  if (anioSol && consultas?.radiacion) {
+    const R = consultas.radiacion;
+    filas = ks.map((k) => `<li><span>${nom[k]}</span><b>${miles(R.fachadas[k.slice(8)].total)}</b><small>kWh/m² año</small></li>`).join('') + `<li><span>TECHO</span><b>${miles(R.techo.total)}</b><small>kWh/m² año</small></li>`;
+  } else if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${Math.round(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
   else if (S.lente === 'viento') {
     const hora = S.vientoModo === 'hora';
     filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
@@ -1024,6 +1057,10 @@ function leyenda(c) {
     nota = p.alt <= 0 ? 'Ahora es de noche: nada recibe sol. Mueve la regla del día a la mañana o a la tarde.'
       : `Ahora el sol está hacia el ${rumboTexto(p.az)}, a ${f1(p.alt)}° de altura${(S.irr ?? []).every((v) => v < 5) ? ': a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan.' : '.'}`;
     if (S.solModo === 'total' && !S.hayDifusa) nota += ' Para esta hora no hay dato de luz difusa (hay entre 2001 y 2025 y en los días consultados en línea): se muestra solo el sol directo.';
+    if (anioSol) {
+      const R = consultas?.radiacion?.fachadas;
+      nota = R ? `Total de un año típico (2001–2025) en una pared sin alero de cada orientación. Solo el sol directo: SE ${miles(R.se.directa)} · SO ${miles(R.so.directa)} · NE ${miles(R.ne.directa)} · NO ${miles(R.no.directa)} kWh/m²; la difusa del cielo suma ${miles(R.se.difusa)} y la reflejada por el suelo ${miles(R.se.reflejada)} en cada una. En «Año típico» cada pared se pinta según su orientación, sin descontar la sombra del alero.` : 'Cargando los totales del año…';
+    }
   }
   if (S.lente === 'viento') {
     if (S.vientoModo === 'hora') nota = S.vientoDato ? `Ahora el viento viene del ${rumboTexto(c.dir)} a ${Math.round(c.viento)} km/h.` : 'Para esta hora no hay dato de viento con dirección (solo valores típicos). Elige «Seca», «Lluvias» o «Año», o una fecha entre 2001 y 2025.';

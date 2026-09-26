@@ -278,7 +278,7 @@
   #sirve { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px);
     width: min(410px, calc(100vw - 2 * var(--gutter))); overflow: auto; overscroll-behavior: contain; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px;
     padding: 18px; backdrop-filter: blur(18px); box-sizing: border-box; display: grid; gap: 14px; align-content: start; box-shadow: 0 24px 70px rgba(0,0,0,.4); animation: sube .45s var(--ease); }
-  html:has(#sirve:not([hidden])) #rotulo { display: none; }
+  html:has(#sirve:not([hidden])) #rotulo, html:has(#sirve:not([hidden])) #panel-fachada { display: none; }
   .sirve-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   #sirve h2 { font: 760 26px/1 var(--display); margin: 0; letter-spacing: -0.02em; }
   .sirve-intro { margin: 0; font-size: 14.5px; color: var(--cal-2); }
@@ -294,6 +294,17 @@
   .hallazgo .ver small { font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
   .hallazgo.activo { border-color: var(--sol); }
   .sirve-pie { margin: 0; font: 500 11px/1.4 var(--datos); color: var(--cal-3); }
+  .sirve-h { font: 500 11px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 6px 0 0; }
+  .para-todos { display: grid; gap: 10px; }
+  .para-todos > p { margin: 0; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
+  .para-todos > p b { color: var(--cal); }
+  .para-todos .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  .aprende { display: grid; gap: 8px; }
+  .hallazgo.simple { gap: 6px; padding: 12px; }
+  .hallazgo.simple h4 { font: 700 15.5px/1.2 var(--display); margin: 0; }
+  .hallazgo.simple p { font-size: 13.5px; color: var(--cal-2); }
+  .hallazgo.simple .ver { padding: 7px 10px; }
+  .no-es { font-size: 13.5px !important; color: var(--cal-2); border-left: 2px solid var(--linea-2); padding-left: 10px; }
   #acerca .fuentes li { font-size: 13.5px; }
   #acerca .aviso { font-size: 13px; color: var(--cal-3); margin-top: 14px; }
 
@@ -442,7 +453,7 @@
     <div class="intro-titulo-caja">
       <p class="eyebrow">Isthmus · Ciudad del Saber, Clayton</p>
       <h1>Edificio <span class="grados">106</span></h1>
-      <p class="bajada">Un modelo 3D del edificio con el sol calculado para cada minuto. De 2001 a 2025, las nubes, la lluvia y la radiación solar de cada hora salen del reanálisis ERA5.</p>
+      <p class="bajada">Una maqueta digital para ver cómo le pegan el sol, la lluvia y el viento a este edificio, a cualquier hora de cualquier día, con 25 años de datos del clima.</p>
     </div>
     <ol id="intro-rotulos" aria-live="polite">
       <li>Retícula de <b>12 × 6</b> módulos, unos <b>45 × 23 m</b></li>
@@ -473,8 +484,8 @@
 </aside>
 
 <div id="oferta-recorrido" hidden role="dialog" aria-label="Recorrido guiado">
-  <p><b>¿Primera vez aquí?</b> Un recorrido de 2 minutos te muestra qué se puede ver y aprender.</p>
-  <div><button type="button" id="oferta-si" class="boton primario">Empezar el recorrido</button><button type="button" id="oferta-no" class="boton">Ahora no</button></div>
+  <p><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo le pegan el sol, la lluvia y el viento al Edificio 106. En 2 minutos, el recorrido guiado te enseña a usarla.</p>
+  <div><button type="button" id="oferta-si" class="boton primario">Empezar el recorrido</button><button type="button" id="oferta-sirve" class="boton">¿Para qué sirve?</button><button type="button" id="oferta-no" class="boton">Ahora no</button></div>
 </div>
 
 <aside id="hud" class="tras-intro" aria-label="Orientación">
@@ -603,8 +614,49 @@
     <h2 id="sirve-t">Para qué sirve</h2>
     <button class="boton" id="cerrar-sirve" type="button" aria-label="Cerrar">Cerrar</button>
   </div>
-  <p><button class="boton" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
-  <p class="sirve-intro">La página cruza la geometría solar (NOAA) con 25 años de datos horarios ERA5 sobre el modelo del edificio. Estos seis hallazgos sirven para discutir orientación, aleros y lluvia, y cada uno trae un momento para verlo en la escena. No tratan ventilación, radiación difusa ni confort interior.</p>
+  <section class="para-todos" aria-labelledby="todos-t">
+    <h3 id="todos-t" class="sirve-h">En pocas palabras</h3>
+    <p>Es una maqueta digital del Edificio 106 de Isthmus, en Ciudad del Saber. En ella puedes ver cómo le pegan el sol, la lluvia y el viento a cualquier hora de cualquier día, con el clima de cada hora entre 2001 y 2025.</p>
+    <p><b>¿Por qué importa?</b> Un edificio no está quieto frente al clima: el sol le da primero por un lado y después por otro, los aguaceros mojan más una pared que las otras y el viento sopla casi siempre desde la misma dirección. Eso decide si adentro hace calor, si las paredes se manchan de humedad o si entra aire fresco por las ventanas. Los arquitectos tienen que pensarlo antes de construir, y en un plano cuesta imaginarlo. Aquí se ve.</p>
+    <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, e ir a días especiales, como el más lluvioso en 25 años.</p>
+    <p><button class="boton primario" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
+    <h3 class="sirve-h">Lo que se aprende en pocos minutos</h3>
+    <div class="aprende">
+      <article class="hallazgo simple" data-fecha="2026-04-12" data-hora="12:19" data-vista="aerea" data-fachada="" data-capa="" data-modo="">
+        <h4>El sol pasa casi por encima</h4>
+        <p>En Panamá, al mediodía el sol está muy alto todo el año. Dos veces al año, en abril y en agosto, pasa justo encima y casi no hay sombra.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>12 de abril de 2026, 12:19 · vista aérea</small></button>
+      </article>
+      <article class="hallazgo simple" data-fecha="2026-01-15" data-hora="10:00" data-vista="" data-fachada="se" data-capa="calor" data-modo="directa">
+        <h4>Los aleros son la visera del edificio</h4>
+        <p>Con el sol alto, los aleros de 1,65 m dejan las ventanas en sombra, como la visera de una gorra. En el mapa de sol, el vidrio bajo el alero queda azul mientras la pared sigue al sol.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>15 de enero, 10:00 · fachada sureste · mapa de sol</small></button>
+      </article>
+      <article class="hallazgo simple" data-fecha="2024-03-25" data-hora="15:30" data-vista="" data-fachada="so" data-capa="calor" data-modo="directa">
+        <h4>No todas las paredes reciben el mismo sol</h4>
+        <p>Las paredes que miran al sureste y al suroeste reciben más del doble de sol directo que la que mira al noroeste. Por eso son las que más protección necesitan.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>25 de marzo de 2024, 15:30 · fachada suroeste · mapa de sol</small></button>
+      </article>
+      <article class="hallazgo simple" data-fecha="2006-11-23" data-hora="10:30" data-vista="" data-fachada="no" data-capa="lluvia" data-modo="anio">
+        <h4>Una pared se moja mucho más que las otras</h4>
+        <p>Cuando llueve con viento, la pared noroeste recibe más de cinco veces el agua que recibe la del lado del jardín.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>Año típico · fachada noroeste · mapa de lluvia</small></button>
+      </article>
+      <article class="hallazgo simple" data-fecha="2016-02-18" data-hora="14:00" data-vista="aerea" data-fachada="" data-capa="viento" data-modo="anio">
+        <h4>El viento llega casi siempre del mismo lado</h4>
+        <p>Casi todo el año sopla del norte y del noroeste. La pared noroeste lo recibe de frente: por ahí entraría el aire fresco, y saldría por el lado opuesto.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>Año típico · vista aérea · mapa de viento</small></button>
+      </article>
+      <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
+        <h4>Llueve casi todas las tardes de mayo a noviembre</h4>
+        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y sobre todo en las tardes. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>1 de julio de 2023, 14:30 · esquina</small></button>
+      </article>
+    </div>
+    <p class="no-es"><b>Para qué no sirve:</b> no dice qué temperatura hay dentro del edificio ni si la gente está cómoda, no simula cómo circula el aire por dentro, y el clima es el de una zona de unos 28 km, no una medición en la puerta del edificio. Es para entender y conversar; los cálculos finos se hacen después con programas especializados (al final se explica cuáles).</p>
+  </section>
+  <h3 class="sirve-h">Para arquitectos: seis hallazgos con datos</h3>
+  <p class="sirve-intro">Cruzan la posición del sol (NOAA) con 25 años de datos horarios del reanálisis ERA5 sobre el modelo del edificio. Sirven para discutir orientación, aleros, lluvia y viento; cada uno trae un momento para verlo en la escena y su límite.</p>
   <div class="hallazgos">
     <article class="hallazgo" data-fecha="2026-04-12" data-hora="12:19" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Cero sombra en 2026: 12 de abril y 29 de agosto, a las 12:19</h3>
@@ -615,7 +667,7 @@
     </article>
     <article class="hallazgo" data-fecha="2024-03-05" data-hora="09:30" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Sol directo: SE y SO reciben más del doble que la NO. Con la luz difusa, la diferencia se achica</h3>
-      <p>En una pared sin alero, el sol directo de un año es de unos 374 kWh/m² en la SE, 362 en la SO, 302 en la NE y 144 en la NO. Pero el sol directo es solo el 21–41 % del total: sumando la luz difusa del cielo (~356) y la que refleja el suelo (~177), los totales son de unos 907 kWh/m² en la SE, 895 en la SO, 835 en la NE y 677 en la NO. Un techo horizontal recibe unos 1.770, de los que 712 son difusa.</p>
+      <p>En una pared sin alero, el sol directo de un año es de unos <span data-rad="se.directa">374</span> kWh/m² en la SE, <span data-rad="so.directa">362</span> en la SO, <span data-rad="ne.directa">302</span> en la NE y <span data-rad="no.directa">144</span> en la NO. Pero el sol directo es solo el <span data-rad-pct>21–41 %</span> del total: sumando la luz difusa del cielo (~<span data-rad="se.difusa">356</span>) y la que refleja el suelo (~<span data-rad="se.reflejada">177</span>), los totales son de unos <span data-rad="se.total">907</span> kWh/m² en la SE, <span data-rad="so.total">895</span> en la SO, <span data-rad="ne.total">835</span> en la NE y <span data-rad="no.total">677</span> en la NO. Un techo horizontal recibe unos <span data-rad="techo.total">1.770</span>, de los que <span data-rad="techo.difusa">712</span> son difusa. En «Ver → Sol → Año típico» están estas mismas cifras.</p>
       <p class="uso"><b>Para el diseño:</b> Ordena dónde proteger primero: el techo, luego SE y SO. Pero la NO no está libre: recibe unos tres cuartos de lo que recibe la SE, así que su vidrio también necesita control solar, aunque menos.</p>
       <p class="limite"><b>Límite:</b> ERA5 para una celda de ~28 km. La difusa y la reflejada se estiman con un modelo simple (cielo que brilla parejo y suelo que devuelve el 20 %), que no descuenta vecinos, árboles ni el pedazo de cielo que tapa el alero.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>05/03/2024 09:30 · vista aérea · Sol, solo directo: la SE marca el valor más alto; NO y SO, cero. Cambia a «Total» para ver la difusa.</small></button>
@@ -701,8 +753,10 @@
 <dialog id="acerca" aria-labelledby="acerca-t">
   <button class="boton" id="cerrar-acerca" type="button">Cerrar</button>
   <h2 id="acerca-t">Edificio 106 · Isthmus</h2>
-  <p>Un modelo 3D paramétrico del Edificio 106, con su norte real, el sol calculado (NOAA) y el tiempo de cada hora. Entre 2001 y 2025 el tiempo sale del reanálisis ERA5; para estos días, del pronóstico de modelo de Open-Meteo. Sirve para leer y discutir cómo trabajan la orientación, los aleros y la lluvia en este edificio.</p>
-  <p><button class="boton" id="acerca-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
+  <p><b>En pocas palabras:</b> una maqueta digital del Edificio 106 para ver cómo le pegan el sol, la lluvia y el viento a cualquier hora de cualquier día. Sirve para entender por qué un edificio en el trópico se diseña como se diseña: por qué los aleros son anchos, qué pared recibe más sol, cuál se moja más y de dónde llega el aire fresco.</p>
+  <p><button class="boton" id="acerca-recorrido" type="button">Hacer el recorrido guiado (2 min)</button> <button class="boton" id="acerca-sirve" type="button">Para qué sirve, explicado para todos</button></p>
+  <h3>Para arquitectos y docentes</h3>
+  <p>Un modelo 3D paramétrico del Edificio 106, con su norte real, el sol calculado (NOAA) y el tiempo de cada hora. Entre 2001 y 2025 el tiempo sale del reanálisis ERA5 (un modelo del clima alimentado con mediciones); para estos días, del pronóstico de modelo de Open-Meteo. Sirve para leer y discutir cómo trabajan la orientación, los aleros, la lluvia y el viento en este edificio.</p>
   <h3>Cómo leerlo</h3>
   <ul>
     <li><b>Ahora:</b> el sol de este minuto y el pronóstico de modelo de Open-Meteo, que se renueva cada 15 min. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
