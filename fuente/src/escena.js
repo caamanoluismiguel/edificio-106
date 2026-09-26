@@ -5,7 +5,8 @@ import {
   Fn, uniform, float, vec2, vec3, vec4, mix, clamp, smoothstep, max, min, pow, dot, sin, cos, fract, floor,
   positionWorld, normalWorld, time, hash, shapeCircle, instancedBufferAttribute, mx_noise_float,
   mx_fractal_noise_float, oneMinus, step, length, pass, texture, uv, select, mrt, normalView, velocity, sample,
-  packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property
+  packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property,
+  modelWorldMatrix, modelWorldMatrixInverse
 } from 'three/tsl';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -55,6 +56,9 @@ Object.assign(U, {
   pal1: uniform(new THREE.Color(0.08, 0.42, 0.9)),
   pal2: uniform(new THREE.Color(0.6, 0.9, 1.0)),
   aguaT: uniform(0),                     // valor del techo en la lente de fachadas (solo el año típico del sol lo usa)
+  brisa: uniform(0),                     // 0..1: viento de esa hora para la vegetación (35 km/h o más = 1)
+  vientoDir: uniform(new THREE.Vector2(1, 0)),   // hacia dónde sopla, en el plano de la escena (unitario)
+  vaiven: uniform(1),                    // 0 con movimiento reducido: la vegetación solo se inclina, no se mece
 });
 // sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol»
 const sombraSol = property('float', 'sombraSol');
@@ -257,6 +261,8 @@ export class Escena {
     const ks = this.kSol ?? 1;             // transmisión del sol directo (DNI de los datos / DNI de cielo despejado)
     this.sun.intensity = 5.0 * k * (0.55 + 0.45 * Math.min(1, up * 2)) * (1 - 0.88 * lv) * (0.1 + 0.9 * ks);
     const cub = 1 - ks;
+    // con el sol velado por nubes delgadas o bruma la sombra pierde el borde nítido (el radio va en texeles del mapa, sin recompilar)
+    this.sun.shadow.radius = 2 + 3 * cub;
     const sd = this.solDir.clone().multiplyScalar(600);
     if (!this._sd || this._sd.distanceTo(sd) > 0.4) { this._sd = sd.clone(); this.sun.shadow.needsUpdate = true; this.sucio = true; }
     this.sun.position.copy(sd); this.sun.target.position.set(0, 0, 0);
@@ -494,6 +500,20 @@ export class Escena {
       const r0 = materialRoughness;
       const rWet = mix(float(0.45), float(0.16), up).mul(float(1).sub(charco.mul(0.85)));
       m.roughnessNode = m.lenteNode ? mix(mix(r0, min(r0, rWet), wv), float(1), m.lenteNode) : mix(r0, min(r0, rWet), wv);
+    }
+
+    // el viento de esa hora mueve la vegetación: la base queda fija en el suelo y la copa se inclina y se mece, más con más viento
+    // (~20 cm en la copa de una palma de 10 m con 35 km/h; los setos casi no se mueven). Solo se ve mientras la escena se redibuja.
+    if (grupo === 'vegetacion') {
+      const pw = modelWorldMatrix.mul(vec4(positionLocal, 1)).xyz;
+      const h = min(max(pw.y, 0).div(10), 1.6);
+      const fase = time.mul(1.3).add(pw.x.mul(0.21)).add(pw.z.mul(0.17));
+      const vaiven = sin(fase).mul(0.65).add(sin(fase.mul(2.3).add(1.7)).mul(0.35)).mul(U.vaiven);
+      const amp = U.brisa.mul(h.mul(h)).mul(0.22);
+      let d = vec3(U.vientoDir.x, 0, U.vientoDir.y).mul(amp.mul(float(0.55).add(vaiven.mul(0.45))));
+      // las hojas además tiemblan un poco, cada una a su ritmo
+      if (leaf) d = d.add(vec3(sin(fase.mul(4.1).add(pw.y)), 0, cos(fase.mul(3.7).add(pw.x))).mul(U.brisa.mul(U.vaiven).mul(min(h, 1)).mul(0.035)));
+      m.positionNode = positionLocal.add(modelWorldMatrixInverse.mul(vec4(d, 0)).xyz);
     }
 
     // Revelado del grupo
@@ -807,6 +827,9 @@ export class Escena {
     }
     return (this._silueta = out.length > 8 ? out : null);
   }
+
+  /** Calcula de antemano la silueta del diagrama de sombras (para que el primer uso no espere). */
+  prepararSilueta() { return !!this.#siluetaPuntos(); }
 
   /** Dibuja la sombra de cada hora (6 a 18 h) del día elegido. */
   setDiagrama(f) {

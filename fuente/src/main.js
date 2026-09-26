@@ -156,6 +156,9 @@ async function arrancar() {
   controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.8; controls.minDistance = 12; controls.maxDistance = 360; controls.minPolarAngle = 0.01;
   controls.target.set(...ESQUINA.tgt);
   controls.addEventListener('start', alTomar);
+  U.vaiven.value = reduce ? 0 : 1;
+  // gancho para las comprobaciones automáticas (fuente/verificar.mjs): solo existe con ?prueba en la URL
+  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, controls, clima, viajarA, VISTAS, VISTA_FACHADA, posicionSol };
 
   const bytes = {};
   escena.cargar(BASE, (g, l, t) => {
@@ -177,9 +180,12 @@ async function arrancar() {
   empezarIntro();
   requestAnimationFrame(bucle);
   escena.cargaCompleta.then(async () => {
-    // compilar de antemano la lluvia, para que el primer aguacero no congele la imagen
-    const o = [escena.lluviaSpr, escena.aleros, escena.salpicaduras].filter(Boolean); o.forEach((x) => { x.visible = true; });
+    // compilar de antemano la lluvia y el diagrama de sombras, para que el primer aguacero o el primer clic en «Sombras» no congelen la imagen
+    const o = [escena.lluviaSpr, escena.aleros, escena.salpicaduras, escena.diagramaGrupo].filter(Boolean); o.forEach((x) => { x.visible = true; });
     try { await escena.renderer.compileAsync(escena.scene, escena.camera); } catch (e) { /* se compila al dibujar */ }
+    // la silueta del diagrama de sombras recorre toda la geometría (~120 ms): se calcula en un rato libre y no al primer clic
+    const libre = window.requestIdleCallback ?? ((f) => setTimeout(f, 300));
+    libre(() => escena.prepararSilueta(), { timeout: 4000 });
   });
   escena.cargaCompleta.then(() => { if (n) estadoCarga(`${n.toLocaleString('es-PA')} puntos · modelo completo`); });
   escena.cargaCompleta.then(() => clima.cargarHorario(BASE).then(() => { dibujarDecadas(); refrescar(); }).catch((e) => console.warn('clima horario', e)));
@@ -421,8 +427,19 @@ function paso(now) {
   const vel = S.viaje ? 5 : now - (S.aterrizaje ?? -1e9) < 1500 ? 3.2 : 1.4;
   lluviaSuave += (objetivo - lluviaSuave) * (salto ? 1 : Math.min(1, dt * vel));
   U.lluvia.value = lluviaSuave; escena.lv = Math.min(1, lluviaSuave * 1.1);
-  U.mojado.value += ((lluviaSuave > 0.08 ? 1 : 0) - U.mojado.value) * (salto ? 1 : Math.min(1, dt * (lluviaSuave > 0.08 ? 0.35 : 0.05)));
-  if (c?.viento != null && c?.dir != null) { const w = vectorSol(0, (c.dir + 180) % 360); const k = 0.4 + c.viento / 12; U.viento.value.set(w.x * k, w.z * k); }
+  // mojado: llueve ahora, o todavía no se seca lo que llovió en las horas anteriores (sale de la serie de datos)
+  const conSerie = c && (c.fuente === 'serie' || c.fuente === 'dia');
+  const secando = conSerie ? clima.mojado(S.fecha, S.min) ?? 0 : 0;
+  const mojadoObj = Math.max(lluviaSuave > 0.08 ? 1 : 0, secando);
+  // con serie, el secado ya viene en el dato y se sigue rápido; sin ella (tiempo real, valores típicos) se seca despacio, como antes
+  U.mojado.value += (mojadoObj - U.mojado.value) * (salto ? 1 : Math.min(1, dt * (mojadoObj > U.mojado.value ? 0.8 : conSerie ? 0.6 : 0.05)));
+  if (c?.viento != null && c?.dir != null) {
+    const w = vectorSol(0, (c.dir + 180) % 360); const k = 0.4 + c.viento / 12; U.viento.value.set(w.x * k, w.z * k);
+    const n = Math.hypot(w.x, w.z) || 1; U.vientoDir.value.set(w.x / n, w.z / n);
+  }
+  // la vegetación se mece con el viento de esa hora (el vaivén se ve mientras la escena se redibuja)
+  const brisaObj = intro || S.viaje ? 0 : clamp01((c?.viento ?? 0) / 35);
+  U.brisa.value += (brisaObj - U.brisa.value) * (salto ? 1 : Math.min(1, dt * 1.5));
   if (escena.actualizar(dt)) sonido.trueno();
   const solAnio = S.lente === 'sol' && S.solModo === 'anio';
   U.calor.value += ((S.lente === 'sol' && !solAnio ? 1 : 0) - U.calor.value) * Math.min(1, dt * 4);
@@ -455,7 +472,7 @@ function paso(now) {
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
-    [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.total.value * 100, escena.uViento.value * 100, U.viaje.value * 100, U.mojado.value * 200, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
+    [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.total.value * 100, escena.uViento.value * 100, U.viaje.value * 100, U.mojado.value * 200, U.brisa.value * 100, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
     `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}`;
   const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo || !!S.viaje;
   if (firma !== S.firma || anima || escena.sucio || now - (S.ultimoCambio || 0) < 500) {
@@ -962,10 +979,10 @@ function refrescar() { lastLect = ''; S.kClimaDia = ''; }
 // qué no dice y cómo se calcula. Las cifras de «Para el diseño» salen de la serie ERA5 2001–2025 (ver «Para qué sirve»).
 const LENTES = {
   foto: { t: 'Foto: el edificio como se vería', rampa: null,
-    que: 'El sol está calculado para este minuto exacto. El cielo, las nubes, la lluvia y el suelo mojado salen del dato del tiempo de esa hora.',
+    que: 'El sol está calculado para este minuto exacto. El cielo, las nubes y la lluvia salen del dato del tiempo de esa hora. El suelo y los muros siguen mojados mientras no se seca lo que llovió en las horas anteriores, y la vegetación se mece con el viento de esa hora.',
     prueba: 'Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, el alero de 1,65 m deja las paredes casi todas en sombra.',
     porque: 'Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.',
-    ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. Las ventanas encendidas de noche son una suposición.',
+    ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. Las ventanas encendidas de noche son una suposición. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
   sol: { t: 'Sol: cuánto sol le llega a cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
     que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
