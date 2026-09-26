@@ -72,5 +72,32 @@ for m in range(1, 13):
     j = int(J[np.argmin(dz)])
     tip.append(dict(m=m, fecha=fecha(j), kwh=round(float(Gd[j]), 2), mm=round(float(Pd[j]), 1), kwhMed=round(float(np.median(g)), 2), mmMed=round(float(np.median(p)), 1), probLluvia=round(float(np.mean(p >= 1) * 100))))
 out['tipicos'] = tip
+# viento: rosa de 16 rumbos por temporada, calmas y horas con viento de frente en cada fachada
+mesH = np.array([(t0 + dt.timedelta(hours=int(i))).month for i in range(0, n, 24)]).repeat(24)[:n]
+Vk = C['viento']                                   # km/h
+TEMP = {'seca': [12, 1, 2, 3, 4], 'lluvias': [5, 6, 7, 8, 9, 10, 11], 'anio': list(range(1, 13))}
+vien = {}
+for kk, ms in TEMP.items():
+    sel = np.isin(mesH, ms); tot = sel.sum(); mov = sel & (Vk >= 3.6)
+    sec = (((D[mov] + 11.25) % 360) // 22.5).astype(int)
+    frec = np.bincount(sec, minlength=16) / tot * 100
+    vel = np.array([Vk[mov][sec == i].mean() if (sec == i).any() else 0 for i in range(16)])
+    fr = {}
+    for f, th in FAC.items():
+        c = np.cos((D - th) * rad); fr[f] = round(float(((c > 0.5) & (Vk >= 5) & sel).sum() / anios))
+    vien[kk] = dict(frec=[round(float(x), 1) for x in frec], vel=[round(float(x), 1) for x in vel], calma=round(float((sel & (Vk < 3.6)).sum() / tot * 100), 1),
+                    media=round(float(Vk[sel].mean()), 1), frente=fr)
+out['viento'] = vien
+# radiación anual sobre cada fachada (muro sin alero): directa, difusa (cielo isotrópico) y reflejada (suelo al 20 %)
+den = np.cos(LAT * rad) * np.sqrt(1 - np.clip(cz, -1, 1) ** 2)
+aa = np.clip((np.sin(LAT * rad) * np.clip(cz, -1, 1) - np.sin(dec)) / np.where(np.abs(den) < 1e-6, 1e-6, den), -1, 1)
+az = np.where(ha > 0, (np.arccos(aa) / rad + 180) % 360, (540 - np.arccos(aa) / rad) % 360)
+calt = np.sqrt(1 - sinalt ** 2)
+rad_f = {}
+for f, th in FAC.items():
+    inc = calt * np.cos((az - th) * rad); inc = np.where((sinalt > 0) & (inc > 0), inc, 0)
+    d_ = (DNI * inc).sum() / anios / 1000; f_ = 0.5 * DIF.sum() / anios / 1000; r_ = 0.5 * 0.2 * GHI.sum() / anios / 1000
+    rad_f[f] = dict(directa=round(float(d_)), difusa=round(float(f_)), reflejada=round(float(r_)), total=round(float(d_ + f_ + r_)))
+out['radiacion'] = dict(fachadas=rad_f, techo=dict(total=round(float(GHI.sum() / anios / 1000)), directa=round(float((DNI * sinalt).sum() / anios / 1000)), difusa=round(float(DIF.sum() / anios / 1000))))
 json.dump(out, open(sys.argv[2], 'w'), ensure_ascii=False, separators=(',', ':'))
 print(json.dumps(out, ensure_ascii=False, indent=1))

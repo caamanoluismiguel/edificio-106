@@ -5,7 +5,7 @@ import {
   Fn, uniform, float, vec2, vec3, vec4, mix, clamp, smoothstep, max, min, pow, dot, sin, cos, fract, floor,
   positionWorld, normalWorld, time, hash, shapeCircle, instancedBufferAttribute, mx_noise_float,
   mx_fractal_noise_float, oneMinus, step, length, pass, texture, uv, select, mrt, normalView, velocity, sample,
-  packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition
+  packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property
 } from 'three/tsl';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -29,8 +29,6 @@ export const U = {                       // uniformes compartidos
   nubeSombra: uniform(0),                // 0..1: fuerza de las sombras de nubes
   nubeCob: uniform(0.35),                // cobertura de nubes (para el patrón)
   calor: uniform(0),                     // 0..1: capa de calor en fachadas
-  calorF: uniform(new THREE.Vector4()),  // irradiancia normalizada por fachada (SE, NO, NE, SO)
-  calorTecho: uniform(0),
   noche: uniform(0),                     // 0..1: luces interiores
   lluvia: uniform(0),                    // 0..1: intensidad de lluvia
   viento: uniform(new THREE.Vector2(1, 0.3)),
@@ -45,8 +43,20 @@ export const U = {                       // uniformes compartidos
   aguaF: uniform(new THREE.Vector4()),   // índice de lluvia batiente normalizado por fachada (SE, NO, NE, SO)
   sombras: uniform(0),                   // 0..1: lente «diagrama de sombras del día»
   viaje: uniform(0),                     // 0..1: viñeta del viaje en el tiempo
-  grisCielo: uniform(new THREE.Color(0.6, 0.62, 0.65)),
 };
+Object.assign(U, {
+  grisCielo: uniform(new THREE.Color(0.6, 0.62, 0.65)),
+  solDir: uniform(new THREE.Vector3(0, 1, 0)), // dirección hacia el sol (escena)
+  dniW: uniform(0),                      // radiación directa normal de esa hora, W/m²
+  dhiW: uniform(0),                      // difusa horizontal, W/m²
+  ghiW: uniform(0),                      // global horizontal, W/m²
+  total: uniform(0),                     // 0 = solo directa, 1 = directa + difusa + reflejada
+  pal0: uniform(new THREE.Color(0.05, 0.07, 0.1)),   // paleta de la lente de fachadas (lluvia o viento)
+  pal1: uniform(new THREE.Color(0.08, 0.42, 0.9)),
+  pal2: uniform(new THREE.Color(0.6, 0.9, 1.0)),
+});
+// sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol»
+const sombraSol = property('float', 'sombraSol');
 
 const clayColor = vec3(0.74, 0.72, 0.68);
 
@@ -114,6 +124,7 @@ export class Escena {
     this.#rosa();
     this.#ruta();
     this.#diagrama();
+    this.#vientoRosa();
 
     this.#pipeline();
 
@@ -210,6 +221,7 @@ export class Escena {
     this.alt = alt; this.az = az;
     const v = vectorSol(alt, az);
     this.solDir.set(v.x, v.y, v.z).normalize();
+    U.solDir.value.copy(this.solDir);
     this.sky.sunPosition.value.copy(this.solDir);
     this.sky2.sunPosition.value.copy(this.solDir);
     const up = Math.max(0, Math.sin(alt * Math.PI / 180));
@@ -392,24 +404,33 @@ export class Escena {
     m.colorNode = mix(clayColor, colorFinal, U.mat);
     if (glass) m.colorNode = mix(clayColor.mul(0.35), colorFinal, U.mat);
 
-    // Calor en fachadas (irradiancia directa por orientación), sobre muros y cubiertas
-    if (!glass && !leaf && grupo !== 'contexto' && grupo !== 'vegetacion') {
+    // Formas de ver sobre el edificio (muros, cubiertas y vidrio)
+    if (!leaf && grupo !== 'contexto' && grupo !== 'vegetacion' && grupo !== 'sitio') {   // solo el edificio
       const n = normalWorld;
-      const f = U.calorF;
+      // Sol: la radiación que llega a cada punto, con la sombra real (el mismo mapa de sombras de la escena)
+      const directa = U.dniW.mul(max(dot(n, U.solDir), 0)).mul(sombraSol);
+      // difusa de un cielo parejo (isotrópico) y reflejada por un suelo que devuelve el 20 %
+      const difusa = U.dhiW.mul(n.y.add(1).mul(0.5)).add(U.ghiW.mul(0.1).mul(float(1).sub(n.y)));
+      const irr = directa.add(difusa.mul(U.total)).div(800);
+      // escala de calor ordenada (azul noche → morado → rojo → naranja → amarillo), con colores puros para que el tonemapping no la lave
+      const s4 = (a, b) => smoothstep(a, b, irr);
+      const ramp = mix(mix(mix(mix(vec3(0.01, 0.03, 0.22), vec3(0.30, 0.02, 0.40), s4(0.0, 0.25)), vec3(0.85, 0.12, 0.02), s4(0.25, 0.5)),
+        vec3(1.0, 0.45, 0.0), s4(0.5, 0.75)), vec3(1.0, 0.85, 0.15), s4(0.75, 1.0));
+      const e = ramp.mul(U.calor).mul(0.8);
+      // lluvia con viento y viento de frente: reparto por orientación, con la paleta de cada lente (el techo queda neutro)
       const w = (nx, nz) => pow(max(dot(n, vec3(nx, 0, nz)), 0), 3.0);
       const dirs = Object.values(FACHADAS).map(fc => { const v = vectorSol(0, fc.rumbo); return [v.x, v.z]; });
-      const heat = w(...dirs[0]).mul(f.x).add(w(...dirs[1]).mul(f.y)).add(w(...dirs[2]).mul(f.z)).add(w(...dirs[3]).mul(f.w))
-        .add(pow(max(n.y, 0), 3.0).mul(U.calorTecho));
-      const ramp = mix(mix(vec3(0.05, 0.12, 0.35), vec3(0.95, 0.55, 0.08), smoothstep(0.0, 0.55, heat)), vec3(0.95, 0.12, 0.05), smoothstep(0.55, 1.0, heat));
-      const prevE = m.emissiveNode;
-      const e = ramp.mul(U.calor).mul(0.9);
-      // lluvia con viento: el mismo reparto por orientación, en azules (el techo queda neutro)
       const a = U.aguaF;
       const wet = w(...dirs[0]).mul(a.x).add(w(...dirs[1]).mul(a.y)).add(w(...dirs[2]).mul(a.z)).add(w(...dirs[3]).mul(a.w));
-      const rampA = mix(mix(vec3(0.05, 0.07, 0.1), vec3(0.08, 0.42, 0.9), smoothstep(0.0, 0.5, wet)), vec3(0.6, 0.9, 1.0), smoothstep(0.5, 1.0, wet));
-      const eA = rampA.mul(U.agua).mul(0.9);
+      const rampA = mix(mix(vec3(U.pal0), vec3(U.pal1), smoothstep(0.0, 0.5, wet)), vec3(U.pal2), smoothstep(0.5, 1.0, wet));
+      const eA = rampA.mul(U.agua).mul(0.8);
+      const prevE = m.emissiveNode;
       m.emissiveNode = prevE ? prevE.add(e).add(eA) : e.add(eA);
-      m.colorNode = mix(m.colorNode, m.colorNode.mul(0.35), max(U.calor, U.agua));
+      // el material se apaga (color y brillos) para que mande el color de la lente
+      const lente = max(U.calor, U.agua);
+      m.colorNode = mix(m.colorNode, m.colorNode.mul(0.04), lente);
+      m.roughnessNode = mix(m.roughnessNode ?? materialRoughness, float(1), lente);
+      m.lenteNode = lente;
     }
 
     // Mojado: superficies porosas más oscuras y brillantes; charcos en superficies horizontales bajas
@@ -423,7 +444,7 @@ export class Escena {
       m.colorNode = m.colorNode.mul(mix(float(1), mix(float(0.64), float(0.4), charco), wv));
       const r0 = materialRoughness;
       const rWet = mix(float(0.45), float(0.16), up).mul(float(1).sub(charco.mul(0.85)));
-      m.roughnessNode = mix(r0, min(r0, rWet), wv);
+      m.roughnessNode = m.lenteNode ? mix(mix(r0, min(r0, rWet), wv), float(1), m.lenteNode) : mix(r0, min(r0, rWet), wv);
     }
 
     // Revelado del grupo
@@ -444,6 +465,8 @@ export class Escena {
       m.emissiveNode = m.emissiveNode ? m.emissiveNode.add(glow) : glow;
     }
     if (!/[?&]sinnubes/.test(location.search)) m.receivedShadowNode = sombraNubes;
+    const cn = m.colorNode;
+    m.colorNode = Fn(() => { sombraSol.assign(1.0); return cn; })();   // valor por defecto, antes de la iluminación
     if (src.map) m.map = src.map;
     return m;
   }
@@ -577,6 +600,55 @@ export class Escena {
       vectorSol(p.alt, p.az, v); s.position.set(v.x * (R + 6), v.y * (R + 6) + 3, v.z * (R + 6));
     }
     this.sucio = true;
+  }
+
+  // ---------- Viento: rosa de vientos en el suelo o flechas del viento de esa hora ----------
+  #vientoRosa() {
+    const c = document.createElement('canvas'); c.width = c.height = 1024; this._vc = c;
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; this._vtex = tex;
+    const geo = new THREE.PlaneGeometry(200, 200); geo.rotateX(-Math.PI / 2);      // la rosa empieza fuera del anillo N·E·S·O (46 m)
+    this.uViento = uniform(0);
+    const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false });
+    m.colorNode = texture(tex).rgb; m.opacityNode = texture(tex).a.mul(this.uViento).mul(0.92); m.fog = false;
+    const mesh = new THREE.Mesh(geo, m);
+    const N = vectorSol(0, 0); mesh.rotation.y = Math.atan2(-N.x, -N.z);     // arriba del lienzo = norte real
+    mesh.position.set(0, 0.36, 0); mesh.renderOrder = 4; mesh.visible = false;
+    this.scene.add(mesh); this.vientoMesh = mesh;
+  }
+
+  /** Dibuja la rosa (frec: % por rumbo de 16, vel: km/h) o, con `hora`, flechas del viento de esa hora (dir: de dónde viene). */
+  dibujarViento(d) {
+    const c = this._vc, x = c.getContext('2d'), C = 512, R0 = 262, R1 = 505;
+    x.clearRect(0, 0, 1024, 1024); x.save(); x.translate(C, C);
+    const col = (v, a) => { const t = Math.min(1, v / 18); return `rgba(${Math.round(40 + 150 * t)}, ${Math.round(200 + 55 * t)}, ${Math.round(170 + 40 * t)}, ${a})`; };
+    if (d.hora) {
+      if (d.v >= 1) {
+        // flechas paralelas que cruzan el lienzo en la dirección en que sopla (de dónde viene + 180°)
+        x.rotate((d.dir + 180) * Math.PI / 180);
+        const L = 150 + Math.min(1, d.v / 20) * 280;
+        x.strokeStyle = x.fillStyle = col(d.v, 0.55 + 0.45 * Math.min(1, d.v / 15)); x.lineWidth = 12; x.lineCap = 'round';
+        for (const off of [-300, -150, 0, 150, 300]) {
+          const y0 = 420 - (Math.abs(off) === 150 ? 60 : 0);
+          x.beginPath(); x.moveTo(off, y0); x.lineTo(off, y0 - L); x.stroke();
+          x.beginPath(); x.moveTo(off, y0 - L - 34); x.lineTo(off - 26, y0 - L + 8); x.lineTo(off + 26, y0 - L + 8); x.closePath(); x.fill();
+        }
+      }
+    } else {
+      const max = Math.max(1, ...d.frec);
+      x.font = '600 34px system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      for (let i = 0; i < 16; i++) {
+        const r = R0 + (R1 - R0) * d.frec[i] / max, a0 = (i * 22.5 - 9 - 90) * Math.PI / 180, a1 = (i * 22.5 + 9 - 90) * Math.PI / 180;
+        x.beginPath(); x.arc(0, 0, R0, a0, a1); x.arc(0, 0, r, a1, a0, true); x.closePath();
+        x.fillStyle = col(d.vel[i], 0.78); x.fill();
+        if (d.frec[i] >= 4) {
+          const am = (i * 22.5 - 90) * Math.PI / 180, tx = Math.cos(am) * Math.min(R1 - 20, r + 34), ty = Math.sin(am) * Math.min(R1 - 20, r + 34), t = `${Math.round(d.frec[i])} %`;
+          x.lineWidth = 8; x.strokeStyle = 'rgba(6,14,14,0.85)'; x.strokeText(t, tx, ty); x.fillStyle = '#e6fff6'; x.fillText(t, tx, ty);
+        }
+      }
+      x.strokeStyle = 'rgba(230,255,246,0.35)'; x.lineWidth = 3; x.beginPath(); x.arc(0, 0, R0, 0, Math.PI * 2); x.stroke();
+    }
+    x.restore();
+    this._vtex.needsUpdate = true; this.sucio = true;
   }
 
   // ---------- Diagrama de sombras: la silueta de la sombra del edificio en cada hora del día ----------
@@ -775,6 +847,7 @@ export class Escena {
     if (this.rutaRotulos) for (const s of this.rutaRotulos) s.visible = this.uRuta.value > 0.01 && s.userData.arriba && U.sombras.value < 0.5;   // con el diagrama, sus rótulos mandan
     if (this.rutaSol) this.rutaSol.visible = this.uRuta.value > 0.01 && this.alt > -1;
     if (this.diagramaGrupo) this.diagramaGrupo.visible = U.sombras.value > 0.01 && !!this._diagClave;
+    if (this.vientoMesh) this.vientoMesh.visible = this.uViento.value > 0.01;
     const t0 = performance.now();
     this.pipeline.render();
     this.sucio = false;
@@ -792,6 +865,7 @@ export class Escena {
 
 // Sombras de nubes proyectadas sobre todo lo que recibe sol
 const sombraNubes = Fn(([s]) => {
+  sombraSol.assign(vec3(s).x);                 // la sombra geométrica, antes de sumar la de las nubes
   const p = positionWorld.xz.mul(0.0045).add(U.viento.mul(time.mul(0.012)));
   const n = mx_fractal_noise_float(vec3(p, 0.0), 2, 2.0, 0.5).mul(0.5).add(0.5);
   const cov = U.nubeCob;

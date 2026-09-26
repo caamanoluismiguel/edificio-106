@@ -110,6 +110,8 @@ const S = {
   mesSerie: null,                // en el paso de 25 años: índice de mes (lluvia mensual en la escena)
   lente: 'foto',                 // foto · sol · lluvia · sombras
   aguaModo: 'hora',              // lente de lluvia: esta hora o año típico
+  solModo: 'directa',            // lente de sol: solo directa o total (con difusa y reflejada)
+  vientoModo: 'anio',            // lente de viento: esta hora, temporada seca, lluvias o año
   viaje: null,                   // viaje en el tiempo en curso
 };
 let consultas = null;
@@ -280,6 +282,7 @@ function viajarA(d) {
   S.mesSerie = null; S.aguacero = false; $('#capa-aguacero').checked = false; S.explica = null;
   S.momento = d.titulo ? { titulo: d.titulo, texto: d.texto ?? '' } : null;
   if (d.lente) ponerLente(d.lente, d.lente !== 'foto' && S.paso == null);
+  if (d.modo && MODO_DE[d.lente]) S[MODO_DE[d.lente]] = d.modo;
   if (S.pestana !== 'dia') ponerPestana('dia');
   if (d.fachada) mostrarFachada('fachada-' + d.fachada); else { S.fachada = null; document.documentElement.classList.remove('en-fachada'); }
   const f1 = { y: d.fecha.y, m: d.fecha.m, d: d.fecha.d }, m1 = d.min;
@@ -421,11 +424,21 @@ function paso(now) {
   if (c?.viento != null && c?.dir != null) { const w = vectorSol(0, (c.dir + 180) % 360); const k = 0.4 + c.viento / 12; U.viento.value.set(w.x * k, w.z * k); }
   if (escena.actualizar(dt)) sonido.trueno();
   U.calor.value += ((S.lente === 'sol' ? 1 : 0) - U.calor.value) * Math.min(1, dt * 4);
-  U.agua.value += ((S.lente === 'lluvia' ? 1 : 0) - U.agua.value) * Math.min(1, dt * 4);
+  U.agua.value += ((S.lente === 'lluvia' || S.lente === 'viento' ? 1 : 0) - U.agua.value) * Math.min(1, dt * 4);
+  U.total.value += ((S.solModo === 'total' && S.hayDifusa ? 1 : 0) - U.total.value) * Math.min(1, dt * 4);
+  escena.uViento.value += ((S.lente === 'viento' && !S.viaje ? 1 : 0) - escena.uViento.value) * Math.min(1, dt * 4);
   U.sombras.value += ((S.lente === 'sombras' && !S.viaje ? 1 : 0) - U.sombras.value) * Math.min(1, dt * 4);
   if (S.lente === 'sombras' && !S.viaje) escena.setDiagrama(S.fecha);
   actualizarCalor(p, c);
   actualizarAgua(c);
+  if (S.lente === 'viento') {
+    const clave = S.vientoModo === 'hora' ? `h|${S.vientoDato ? Math.round(c.dir / 5) + '|' + Math.round(c.viento) : '-'}` : S.vientoModo + (consultas ? '1' : '0');
+    if (clave !== S.claveRosa) {
+      S.claveRosa = clave;
+      if (S.vientoModo === 'hora') escena.dibujarViento({ hora: true, dir: S.vientoDato ? c.dir : 0, v: S.vientoDato ? c.viento : 0 });
+      else if (consultas?.viento) escena.dibujarViento(consultas.viento[S.vientoModo]);
+    }
+  }
   // ayudas de orientación: la rosa y el arco del sol se ven desde arriba
   const alto = escena.camera.position.y;
   const ay = S.ayudas && !intro ? 1 : 0;
@@ -440,7 +453,7 @@ function paso(now) {
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
-    [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.viaje.value * 100, U.mojado.value * 200, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
+    [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.total.value * 100, escena.uViento.value * 100, U.viaje.value * 100, U.mojado.value * 200, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
     `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}`;
   const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo || !!S.viaje;
   if (firma !== S.firma || anima || escena.sucio || now - (S.ultimoCambio || 0) < 500) {
@@ -512,17 +525,36 @@ function actualizarCalor(p, c) {
   let dni = dniDespejado(p.alt);
   if (c?.dni != null) dni = c.dni;                                  // valor de esa hora en la serie
   else dni *= 1 - 0.75 * Math.pow(Math.min(1, (c?.nubes ?? 30) / 100), 3.4); // nubosidad (Kasten y Czeplak, 1980)
-  const ks = Object.keys(FACHADAS).map((k) => incidencia(p.alt, p.az, FACHADAS[k].rumbo) * dni);
-  U.calorF.value.set(...ks.map((v) => Math.min(1, v / 750)));
-  U.calorTecho.value = Math.min(1, Math.max(0, Math.sin(p.alt * Math.PI / 180)) * dni / 900);
-  S.irr = ks;
+  if (p.alt <= 0) dni = 0;
+  const sa = Math.max(0, Math.sin(p.alt * Math.PI / 180));
+  const dhi = p.alt > 0 ? c?.difusa ?? null : 0, ghi = dni * sa + (dhi ?? 0);
+  S.hayDifusa = dhi != null;
+  U.dniW.value = dni; U.dhiW.value = dhi ?? 0; U.ghiW.value = ghi;
+  // números por orientación: una pared sin alero de cada fachada (la escena, en cambio, cuenta la sombra real punto por punto)
+  const tot = S.solModo === 'total' && dhi != null;
+  S.irr = Object.keys(FACHADAS).map((k) => incidencia(p.alt, p.az, FACHADAS[k].rumbo) * dni + (tot ? 0.5 * dhi + 0.1 * ghi : 0));
+  S.irrTecho = dni * sa + (tot ? dhi : 0);
 }
 
 // ---------------- Lluvia con viento en fachadas (índice de ISO 15927-3 en campo abierto) ----------------
 // I = (2/9) · v · r^(8/9) · cos(D − θ), en L/m² por hora: v en m/s (10 m), r en mm/h, D = de dónde viene el viento.
 function lluviaBatiente(r, vKmh, dir, rumbo) { const c = Math.cos((dir - rumbo) * Math.PI / 180); return c > 0 && r > 0 ? 2 / 9 * (vKmh / 3.6) * Math.pow(r, 8 / 9) * c : 0; }
+const PAL = { lluvia: [[0.05, 0.07, 0.1], [0.08, 0.42, 0.9], [0.6, 0.9, 1.0]], viento: [[0.03, 0.08, 0.07], [0.1, 0.62, 0.48], [0.78, 1.0, 0.86]] };
 function actualizarAgua(c) {
-  const ks = Object.keys(FACHADAS);
+  const ks = Object.keys(FACHADAS), pal = PAL[S.lente === 'viento' ? 'viento' : 'lluvia'];
+  U.pal0.value.setRGB(...pal[0]); U.pal1.value.setRGB(...pal[1]); U.pal2.value.setRGB(...pal[2]);
+  if (S.lente === 'viento') {
+    if (S.vientoModo !== 'hora' && consultas?.viento) {
+      const V = consultas.viento[S.vientoModo]; S.vientoF = ks.map((k) => V.frente[k.slice(8)]);
+      const m = Math.max(1, ...S.vientoF); U.aguaF.value.set(...S.vientoF.map((v) => v / m));
+    } else {
+      const ok = !!c && c.viento != null && c.dir != null && ['serie', 'dia', 'vivo'].includes(c.fuente);
+      S.vientoDato = ok;
+      S.vientoF = ks.map((k) => ok ? Math.max(0, Math.cos((c.dir - FACHADAS[k].rumbo) * Math.PI / 180)) * c.viento : 0);
+      U.aguaF.value.set(...S.vientoF.map((v) => Math.min(1, v / 15)));
+    }
+    return;
+  }
   if (S.aguaModo === 'anio' && consultas?.lluviaViento) {
     const L = consultas.lluviaViento, m = Math.max(...ks.map((k) => L[k.slice(8)].anual));
     S.agua = ks.map((k) => L[k.slice(8)].anual); U.aguaF.value.set(...S.agua.map((v) => v / m));
@@ -615,7 +647,7 @@ function lecturas(p, c) {
   const xs = (Math.max(0, Math.min(299, im)) + 0.5) / 300 * 1000; $('#dec-aguja').setAttribute('x1', xs); $('#dec-aguja').setAttribute('x2', xs);
   $('#dec-aguja').style.opacity = enSerie ? 1 : 0.25;
   rotulo(p, c, sp);
-  leyenda();
+  leyenda(c);
   marcaSol(p);
   if (S.fachada) textoFachada(p);
   // fachadas: irradiancia
@@ -827,7 +859,7 @@ function prepararUI() {
     document.querySelectorAll('.hallazgo').forEach((x) => x.classList.toggle('activo', x === art));
     const [hh, mi] = d.hora.split(':').map(Number);
     if (innerWidth <= 760) abrirSirve(false);
-    viajarA({ fecha: deISO(d.fecha), min: hh * 60 + mi, vista: d.fachada ? null : d.vista || 'esquina', fachada: d.fachada || null, lente: d.capa === 'calor' ? 'sol' : d.capa || 'foto' });
+    viajarA({ fecha: deISO(d.fecha), min: hh * 60 + mi, vista: d.fachada ? null : d.vista || 'esquina', fachada: d.fachada || null, lente: d.capa === 'calor' ? 'sol' : d.capa || 'foto', modo: d.modo || null });
   }));
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
@@ -859,14 +891,14 @@ function prepararUI() {
     li.querySelector('.c-txt').textContent = (b.dataset.r != null ? `#${+b.dataset.r + 1} · ` : '') + (r.txt ?? it.txt ?? '');
     li.querySelectorAll('.rank button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     if (innerWidth <= 760) abrirIr(false);
-    viajarA({ fecha: r.f, min: r.min, vista: it.vista, fachada: it.fachada, lente: it.lente, titulo: it.t, texto: r.txt ?? it.txt });
+    viajarA({ fecha: r.f, min: r.min, vista: it.vista, fachada: it.fachada, lente: it.lente, modo: it.modo, titulo: it.t, texto: r.txt ?? it.txt });
   });
   // formas de ver
   document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
     ponerLente(b.dataset.lente, true);
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
   }));
-  document.querySelectorAll('[data-agua]').forEach((b) => b.addEventListener('click', () => { S.aguaModo = b.dataset.agua; lastLect = ''; }));
+  $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; });
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
@@ -919,13 +951,13 @@ const LENTES = {
     porque: 'Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.',
     ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. Las ventanas encendidas de noche son una suposición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
-  sol: { t: 'Sol: cuánto sol directo le pega a cada fachada', u: 'W/m²', rampa: 'linear-gradient(90deg, #0d1f59, #f28c14 55%, #f21f0d)', esc: ['nada', '375 W/m²', '750 o más'],
-    que: 'Cada fachada se pinta según el sol directo que le llega en este momento: azul oscuro es nada, naranja es bastante y rojo es mucho. Los números son vatios por metro cuadrado (W/m²).',
-    leer: 'Con cielo despejado, una pared que mira de frente al sol llega a unos 600–700 W/m². Con el sol tapado por nubes, casi a cero.',
-    prueba: 'Mueve la hora de la mañana a la tarde: el color pasa de la fachada sureste (la de la entrada) a la suroeste. Al mediodía las paredes casi no reciben sol: el sol está tan alto que le pega sobre todo al techo.',
-    porque: 'La fachada que más sol recibe es la que más se calienta y la que más protección pide: aleros, parasoles o vidrio con control solar. En un año, la sureste y la suroeste reciben más del doble de sol directo que la noroeste.',
-    ojo: 'Cuenta solo el sol directo: no la luz del cielo nublado ni la reflejada, ni la sombra de árboles o vecinos. El color y el número son los de una pared sin alero: la sombra del alero se ve en la escena, pero no se resta del número.',
-    tec: 'Radiación directa sobre un plano vertical = radiación directa normal (DNI) de ERA5 en esa hora × coseno del ángulo entre el sol y la cara de la fachada. El techo usa su plano horizontal.' },
+  sol: { t: 'Sol: cuánto sol le llega a cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
+    que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
+    leer: '«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo, en W/m².',
+    prueba: 'Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.',
+    porque: 'Muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos tres cuartos de lo que recibe la sureste (677 contra 907 kWh/m² en una pared sin alero).',
+    ojo: 'La difusa se calcula como si el cielo brillara parejo y no descuenta el pedazo de cielo que tapan el alero o los vecinos: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.',
+    tec: 'Directa: radiación directa normal (DNI) de ERA5 × coseno del ángulo entre el sol y la superficie × sombra, con el mismo mapa de sombras de la escena. Difusa: difusa horizontal de ERA5 × (1 + cos de la inclinación) / 2 (cielo isotrópico). Reflejada: global horizontal × 0,2 × (1 − cos de la inclinación) / 2.' },
   lluvia: { t: 'Lluvia: qué fachada se moja cuando llueve con viento', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['nada', '', 'mucha'],
     que: 'Con viento, la lluvia no cae derecha: se moja más la fachada que mira hacia donde viene el viento. Cada fachada se pinta en azules según esa exposición: oscuro es nada y azul claro es mucha.',
     leer: '«Esta hora» usa la lluvia y el viento de esa hora, en litros por metro cuadrado. «Año típico» es el promedio de un año, sumando 25 años de datos.',
@@ -933,6 +965,13 @@ const LENTES = {
     porque: 'Dice dónde reforzar aleros, goterones, juntas y acabados, y dónde no conviene poner materiales que sufren con el agua.',
     ojo: 'Es un índice para comparar las fachadas entre sí, no el agua que de verdad llega al muro: no descuenta el alero, los árboles ni los edificios vecinos, y el viento del modelo no tiene ráfagas.',
     tec: 'Índice de lluvia batiente de la norma ISO 15927-3 en campo abierto: (2/9) · v · r^(8/9) · cos(D − θ), con v el viento a 10 m de altura (m/s), r la lluvia (mm/h), D de dónde viene el viento y θ hacia dónde mira la fachada. Datos ERA5, celda de unos 28 km.' },
+  viento: { t: 'Viento: de dónde viene y qué fachada lo recibe de frente', rampa: 'linear-gradient(90deg, #08140f, #1a9e7a 50%, #c7ffdb)', esc: ['nada', '', 'mucho'],
+    que: 'En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.',
+    leer: '«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.',
+    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 12 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.',
+    porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
+    ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD).',
+    tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; calma, menos de 3,6 km/h. Viento de frente: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h.' },
   sombras: { t: 'Sombras: la sombra del edificio en cada hora del día', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
     que: 'Sobre el terreno se dibuja el contorno de la sombra del edificio en cada hora en punto, de 6 a 18 h: turquesa en la mañana, blanco al mediodía y naranja en la tarde. Donde se enciman más contornos, ese pedazo de suelo pasa más horas a la sombra.',
     prueba: 'Cambia la fecha con la regla del año: en diciembre las sombras son largas y caen hacia el norte; en junio son cortas y caen hacia el sur. En los días sin sombra (abril y agosto), la del mediodía casi desaparece.',
@@ -940,13 +979,16 @@ const LENTES = {
     ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos.',
     tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior. Es exacto para el volumen; los detalles pequeños quedan dentro del contorno.' },
 };
+const MODOS = { sol: [['directa', 'Solo sol directo'], ['total', 'Total']], lluvia: [['hora', 'Esta hora'], ['anio', 'Año típico']],
+  viento: [['hora', 'Esta hora'], ['seca', 'Seca'], ['lluvias', 'Lluvias'], ['anio', 'Año']] };
+const MODO_DE = { sol: 'solModo', lluvia: 'aguaModo', viento: 'vientoModo' };
 function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';
   S.lente = k; if (mostrar) S.verLeyenda = true;
   document.querySelectorAll('[data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));
   lastLect = '';
 }
-function leyenda() {
+function leyenda(c) {
   const L = LENTES[S.lente], el = $('#leyenda');
   el.hidden = !S.verLeyenda; $('#lente-info').setAttribute('aria-expanded', String(!!S.verLeyenda));
   if (!S.verLeyenda) return;
@@ -957,22 +999,36 @@ function leyenda() {
     if (L.rampa) { $('#ley-rampa').style.background = L.rampa; $('#ley-escala').innerHTML = L.esc.map((x) => `<span>${x}</span>`).join(''); }
     $('#ley-leer').textContent = L.leer ?? ''; $('#ley-leer').hidden = !L.leer;
     $('#ley-prueba').textContent = L.prueba; $('#ley-porque').textContent = L.porque; $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
+    const M = MODOS[S.lente];
+    $('#ley-modos').innerHTML = M ? M.map(([k, t]) => `<button type="button" data-modo="${k}">${t}</button>`).join('') : '';
+    $('#ley-modos').hidden = !M; $('#ley-modos').dataset.lente = S.lente;
   }
-  $('#ley-modos').hidden = S.lente !== 'lluvia';
-  document.querySelectorAll('[data-agua]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.agua === S.aguaModo)));
+  const actual = S[MODO_DE[S.lente]];
+  $('#ley-modos').querySelectorAll('[data-modo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modo === actual)));
   const ks = Object.keys(FACHADAS), nom = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
   let filas = '';
-  if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('');
+  if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${Math.round(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
+  else if (S.lente === 'viento') {
+    const hora = S.vientoModo === 'hora';
+    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
+  }
   else if (S.lente === 'lluvia') {
     const anual = S.aguaModo === 'anio';
     filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? Math.round(S.agua?.[i] ?? 0) : f1(S.agua?.[i] ?? 0)}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small></li>`).join('');
   }
-  $('#ley-fachadas').innerHTML = filas; $('#ley-fachadas').hidden = !filas;
+  $('#ley-fachadas').innerHTML = filas; $('#ley-fachadas').hidden = !filas; $('#ley-fachadas').classList.toggle('cinco', S.lente === 'sol');
   // nota de la situación: qué pasa en este momento
   let nota = '';
   const p = posicionSol({ ...S.fecha, h: 0, min: S.min });
-  if (S.lente === 'sol') nota = p.alt <= 0 ? 'Ahora es de noche: ninguna fachada recibe sol. Mueve la regla del día a la mañana o a la tarde.'
-    : `Ahora el sol está hacia el ${rumboTexto(p.az)}, a ${f1(p.alt)}° de altura${(S.irr ?? []).every((v) => v < 5) ? ': a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan.' : '.'}`;
+  if (S.lente === 'sol') {
+    nota = p.alt <= 0 ? 'Ahora es de noche: nada recibe sol. Mueve la regla del día a la mañana o a la tarde.'
+      : `Ahora el sol está hacia el ${rumboTexto(p.az)}, a ${f1(p.alt)}° de altura${(S.irr ?? []).every((v) => v < 5) ? ': a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan.' : '.'}`;
+    if (S.solModo === 'total' && !S.hayDifusa) nota += ' Para esta hora no hay dato de luz difusa (hay entre 2001 y 2025 y en los días consultados en línea): se muestra solo el sol directo.';
+  }
+  if (S.lente === 'viento') {
+    if (S.vientoModo === 'hora') nota = S.vientoDato ? `Ahora el viento viene del ${rumboTexto(c.dir)} a ${Math.round(c.viento)} km/h.` : 'Para esta hora no hay dato de viento con dirección (solo valores típicos). Elige «Seca», «Lluvias» o «Año», o una fecha entre 2001 y 2025.';
+    else if (consultas?.viento) { const V = consultas.viento[S.vientoModo]; nota = `${S.vientoModo === 'seca' ? 'Temporada seca (diciembre a abril)' : S.vientoModo === 'lluvias' ? 'Temporada de lluvias (mayo a noviembre)' : 'Todo el año'}, 2001–2025: velocidad media ${f1(V.media)} km/h; en calma el ${f1(V.calma)} % del tiempo.`; }
+  }
   if (S.lente === 'lluvia' && S.aguaModo === 'hora' && !S.viaje) {
     if (!S.aguaDato) nota = 'Para esta hora no hay dato de lluvia y viento (solo valores típicos). Pasa a «Año típico» o elige una fecha entre 2001 y 2025.';
     else if (!(S.agua ?? []).some((v) => v > 0.05)) nota = 'A esta hora no llueve con viento contra ninguna fachada. Pasa a «Año típico» o busca un aguacero en «Ir a…».';
@@ -1022,7 +1078,7 @@ function pasosRecorrido() {
       ir: () => { volarA(VISTAS.aerea, 1.8, 'aerea', false); S.ayudas = true; $('#capa-ayudas').checked = true; } },
     { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol está alto, los aleros dejan las paredes y las ventanas en sombra.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto, protege la pared.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
-    { t: '¿Qué fachada se calienta más?', txt: 'Con la forma de ver «Sol», cada fachada se pinta según el sol directo que recibe: azul es nada, rojo es mucho. A las 3:30 de la tarde, el testero suroeste lo recibe casi de frente.', dis: 'En un año, la sureste y la suroeste reciben más del doble de sol directo que la noroeste: son las que más protección piden.',
+    { t: '¿Qué fachada se calienta más?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, el testero suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos tres cuartos de lo que recibe la sureste.',
       ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(z.h * 60 + z.min)}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: z.h * 60 + z.min, vista: 'aerea', lente: 'foto' }) },
@@ -1032,7 +1088,9 @@ function pasosRecorrido() {
       ir: () => viajarA({ fecha: { y: 2023, m: 7, d: 1 }, min: 14 * 60 + 30, vista: 'esquina', lente: 'foto' }) },
     { t: 'La lluvia con viento', txt: 'La forma de ver «Lluvia» muestra qué fachada se moja más cuando llueve con viento. En un año típico, la noroeste recibe más de cinco veces lo que el testero noreste.', dis: 'Dice dónde reforzar aleros, goterones, juntas y acabados.',
       ir: () => { S.aguaModo = 'anio'; viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, fachada: 'no', lente: 'lluvia' }); } },
-    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia o Sombras.', dis: '«Para qué sirve» reúne los seis hallazgos principales, con sus límites.',
+    { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Casi todo el año sopla del norte y el noroeste, y la fachada noroeste lo recibe de frente unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
+      ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
+    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento o Sombras.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
       ir: () => { S.aguaModo = 'hora'; irAAhora(true); ponerLente('foto', false); } },
   ];
 }
@@ -1101,6 +1159,16 @@ function listaConsultas() {
       txt: `Índice anual de lluvia con viento (L/m²): ${orden}. Aquí, su hora más fuerte: ${f1(W.mm)} mm con viento de ${W.viento} km/h que llega casi de frente. Ordena fachadas; no mide el agua sobre el muro.` });
     const R = C.rachaSeca;
     lv({ t: 'La sequía más larga', f: deISO(R.hasta), min: 15 * 60, vista: 'aerea', lente: 'foto', v: `${R.dias} días`, txt: `${R.dias} días seguidos con menos de 1 mm, del ${fechaTexto(deISO(R.desde))} al ${fechaTexto(deISO(R.hasta))}. Referencia para el riego del jardín o una cisterna de agua lluvia.` });
+    const vi = g('Viento');
+    if (C.viento) {
+      const tS = C.tipicos[1], tL = C.tipicos[8];
+      vi({ t: 'El viento de la temporada seca', f: deISO(tS.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'seca', v: `${f1(C.viento.seca.media)} km/h de media`,
+        txt: `De diciembre a abril el viento llega casi siempre del norte y el noroeste (${Math.round(C.viento.seca.frec[0] + C.viento.seca.frec[15] + C.viento.seca.frec[14])} % de las horas), a unos ${Math.round(C.viento.seca.media)} km/h de media: la fachada noroeste lo recibe de frente la mayor parte del tiempo.` });
+      vi({ t: 'El viento de la temporada de lluvias', f: deISO(tL.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'lluvias', v: `${f1(C.viento.lluvias.media)} km/h de media`,
+        txt: `De mayo a noviembre el viento es más flojo (unos ${Math.round(C.viento.lluvias.media)} km/h de media) y más variable: sigue mandando el noroeste, pero también llega del sur y del oeste; en calma el ${Math.round(C.viento.lluvias.calma)} % del tiempo.` });
+      vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${C.viento.anio.frente.no.toLocaleString('es-PA')} h al año`,
+        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${C.viento.anio.frente.no.toLocaleString('es-PA')}, NE ${C.viento.anio.frente.ne.toLocaleString('es-PA')}, SO ${C.viento.anio.frente.so.toLocaleString('es-PA')}, SE ${C.viento.anio.frente.se.toLocaleString('es-PA')}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
+    }
     const lz = g('Luz y cielo');
     const S5 = C.diasSol.map((q) => ({ f: deISO(q.fecha), min: md(deISO(q.fecha)), v: `${f1(q.kwh, 2)} kWh/m²`, txt: `${fechaTexto(deISO(q.fecha))}: ${f1(q.kwh, 2)} kWh/m² de radiación global sobre el plano horizontal; un día medio recibe ${f1(C.solMedio, 2)}.` }));
     lz({ t: 'El día con más sol', ...S5[0], vista: 'aerea', lente: 'sol', rank: S5 });
@@ -1117,7 +1185,7 @@ function pintarConsultas() {
   const L = listaConsultas(); S.listaConsultas = L;
   let html = '', grupo = '';
   L.forEach((it, i) => {
-    if (it.grupo !== grupo) { if (grupo) html += '</ul></section>'; grupo = it.grupo; html += `<section class="c-grupo" data-g="${grupo === 'Lluvia' ? 'lluvia' : 'sol'}"><h4>${grupo}</h4><ul>`; }
+    if (it.grupo !== grupo) { if (grupo) html += '</ul></section>'; grupo = it.grupo; html += `<section class="c-grupo" data-g="${grupo === 'Lluvia' ? 'lluvia' : grupo === 'Viento' ? 'viento' : 'sol'}"><h4>${grupo}</h4><ul>`; }
     const rank = it.rank ? `<span class="rank" aria-label="Otros del ranking">${it.rank.slice(1).map((r, j) => `<button type="button" data-i="${i}" data-r="${j + 1}" title="${fechaCorta(r.f)} · ${r.v}">${j + 2}</button>`).join('')}</span>` : '';
     html += `<li><button type="button" class="c-item" data-i="${i}"><span class="c-t">${it.t}</span><span class="c-d num">${fechaCorta(it.f)} · ${hhmm(it.min)} · ${it.fachada ? 'fachada ' + it.fachada.toUpperCase() : it.vista === 'aerea' ? 'aérea' : it.vista}</span><span class="c-v num">${it.v ?? ''}</span><span class="c-txt">${it.txt ?? ''}</span></button>${rank}</li>`;
   });

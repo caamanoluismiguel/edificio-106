@@ -70,7 +70,7 @@ export class Clima {
     if (k in this.dias) return this.dias[k];
     const t = Date.UTC(f.y, f.m - 1, f.d), ahora = Date.now() - 5 * 3600e3, dias = (t - ahora) / 864e5;
     if (globalThis.MODELO_B64 || f.y < 1940 || dias > 15) { this.dias[k] = null; return null; }
-    const H = 'temperature_2m,relative_humidity_2m,precipitation,cloud_cover,direct_normal_irradiance,wind_speed_10m,wind_direction_10m';
+    const H = 'temperature_2m,relative_humidity_2m,precipitation,cloud_cover,direct_normal_irradiance,diffuse_radiation,wind_speed_10m,wind_direction_10m';
     const reciente = dias > -6;
     const u = (reciente ? 'https://api.open-meteo.com/v1/forecast' : 'https://archive-api.open-meteo.com/v1/archive') +
       `?latitude=${LAT}&longitude=${LON}&hourly=${H}&timezone=America%2FPanama&start_date=${k}&end_date=${k}` + (reciente ? '' : '&models=era5');
@@ -90,12 +90,13 @@ export class Clima {
     const L = (key) => v(key, h) * (1 - t) + v(key, b) * t;
     const x = h + t + 0.5, i0 = Math.min(23, Math.floor(x)), i1 = Math.min(23, i0 + 1), u = x - Math.floor(x);
     return { fuente: 'dia', modelo: D.modelo, nubes: L('cloud_cover'), lluvia: v('precipitation', b), temp: L('temperature_2m'), humedad: L('relative_humidity_2m'),
-      dni: v('direct_normal_irradiance', i0) * (1 - u) + v('direct_normal_irradiance', i1) * u, viento: L('wind_speed_10m'), dir: v('wind_direction_10m', h) };
+      dni: v('direct_normal_irradiance', i0) * (1 - u) + v('direct_normal_irradiance', i1) * u,
+      difusa: D.h.diffuse_radiation ? v('diffuse_radiation', i0) * (1 - u) + v('diffuse_radiation', i1) * u : null, viento: L('wind_speed_10m'), dir: v('wind_direction_10m', h) };
   }
 
   /** Tiempo real: pronóstico de modelo de Open-Meteo para las coordenadas del edificio. */
   async cargarVivo() {
-    const u = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,direct_normal_irradiance,is_day&timezone=America%2FPanama`;
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,direct_normal_irradiance,diffuse_radiation,is_day&timezone=America%2FPanama`;
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000);
     try {
       const r = await fetch(u, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status);
@@ -103,7 +104,7 @@ export class Clima {
       // la precipitación actual es la suma de los últimos `interval` segundos (15 min): se lleva a mm por hora
       const k = 3600 / (c.interval || 900);
       this.vivo = { fuente: 'vivo', hora: c.time.slice(11, 16), fecha: c.time.slice(0, 10), nubes: c.cloud_cover, lluvia: c.precipitation * k, lluvia15: c.precipitation, temp: c.temperature_2m,
-        humedad: c.relative_humidity_2m, viento: c.wind_speed_10m, dir: c.wind_direction_10m, dni: c.direct_normal_irradiance ?? null, recibido: Date.now() };
+        humedad: c.relative_humidity_2m, viento: c.wind_speed_10m, dir: c.wind_direction_10m, dni: c.direct_normal_irradiance ?? null, difusa: c.diffuse_radiation ?? null, recibido: Date.now() };
     } catch (e) { this.vivo = null; }
     finally { clearTimeout(to); }
     return this.vivo;
