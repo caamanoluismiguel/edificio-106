@@ -1,6 +1,6 @@
 # Edificio 106 · Isthmus
 
-Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber (Clayton, Panamá), con el sol calculado para cada minuto y el clima hora por hora de 2001 a 2025. Sirve para leer y discutir cómo trabajan la orientación, los aleros y la lluvia en este edificio.
+Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber (Clayton, Panamá), con el sol calculado para cada minuto y el clima hora por hora de 2001 a 2025. Sirve para leer y discutir cómo trabajan la orientación, los aleros y la lluvia en este edificio, y para aprender las partes básicas de un edificio.
 
 **Ver el sitio:** https://caamanoluismiguel.github.io/edificio-106/
 
@@ -8,8 +8,8 @@ Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber (Clayton
 - **Ahora:** sol de este minuto (algoritmo de NOAA) y pronóstico de modelo de Open-Meteo.
 - **Máquina del tiempo:** Día · Año · 25 años. La regla del día muestra la lluvia y las nubes de cada hora (ERA5), o la probabilidad típica de lluvia si no hay dato.
 - **Ir a…:** una fecha y hora exactas (desde 1940; entre 2001 y 2025 el dato viene incluido) o una de las consultas calculadas con la serie: días sin sombra, solsticios, equinoccio, sol de la tarde en el SO, la hora y el día más lluviosos (con su top 5), la fachada que más se moja, la sequía más larga, el día con más sol, el más oscuro y un día típico de cada mes. Cada salto es un viaje animado: corren la fecha y el sol, vuela la cámara y al llegar entra el tiempo.
-- **Ver:** Foto · Sol (el sol que llega a cada punto del edificio, con la sombra real de los aleros; solo directo o total con difusa y reflejada) · Lluvia (índice de lluvia con viento de ISO 15927-3, por hora o año típico) · Viento (rosa de vientos por temporada y qué fachada recibe el viento de frente) · Sombras (la sombra de cada hora del día sobre el terreno). Cada forma de ver trae su explicación: qué ves, cómo leerlo, algo para probar, para qué sirve, sus límites y cómo se calcula.
-- **Recorrido guiado** de 10 pasos, y cada dato de la barra de abajo se puede tocar para ver qué significa.
+- **Ver:** Foto · Sol (el sol que llega a cada punto del edificio, con la sombra real de los aleros; solo directo o total con difusa y reflejada) · Lluvia (índice de lluvia con viento de ISO 15927-3, por hora o año típico) · Viento (rosa de vientos por temporada y qué fachada recibe el viento de frente) · Sombras (la sombra de cada hora del día sobre el terreno) · Partes (el nombre de cada parte del edificio sobre el modelo, qué es y qué hace; una persona de 1,70 m y las alturas para comparar; el alero explicado como voladizo, con tres largos para probar). Cada forma de ver trae su explicación: qué ves, cómo leerlo, algo para probar, para qué sirve, sus límites y cómo se calcula.
+- **Recorrido guiado** de 11 pasos, y cada dato de la barra de abajo se puede tocar para ver qué significa.
 - **Qué no hace:** temperatura interior y confort, ventilación interior (CFD), microclima y dimensionado de drenajes. La página dice qué usar en cada caso (EnergyPlus o Ladybug Tools con el EPW de Albrook, curvas IDF de una estación cercana).
 - **Para qué sirve:** seis hallazgos (cero sombra, irradiación directa por fachada, el alero, la lluvia, la lluvia batiente y las horas cálidas), cada uno con un momento para verlo en la escena.
 - Arrastra para girar el edificio; la brújula marca el norte real y el sol. Enlaces por fachada para los QR en sitio: `#fachada-se`, `#fachada-no`, `#fachada-ne`, `#fachada-so`. Enlace a un momento: `#m-AAAAMMDD-HHMM` (por ejemplo `#m-20240724-1745`).

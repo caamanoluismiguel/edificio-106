@@ -195,6 +195,58 @@
   #ley-modos[data-lente="viento"] button[aria-pressed="true"] { background: rgba(26, 158, 122, .28); }
   #ley-fachadas.cinco { grid-template-columns: repeat(5, 1fr); }
   .lentes button[data-lente="viento"][aria-pressed="true"] { background: #3fc59c; color: #04160f; }
+  /* partes del edificio: etiquetas sobre la escena y tarjeta de la parte */
+  #partes-capa { position: fixed; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+  .parte { position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; border: 0; background: none; pointer-events: none; will-change: transform; }
+  .parte i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--sol); box-shadow: 0 0 0 2px rgba(10,17,21,.9); pointer-events: auto; cursor: pointer; }
+  .parte::before { content: ''; position: absolute; left: -0.75px; bottom: 5px; width: 1.5px; height: calc(13px + var(--dy, 0px)); background: var(--sol); opacity: .9; }
+  .parte span { position: absolute; left: 0; bottom: calc(18px + var(--dy, 0px)); transform: translateX(calc(-50% + var(--dx, 0px))); white-space: nowrap; font: 600 13px/1 var(--texto); color: var(--cal);
+    background: rgba(10,17,21,.84); border: 1px solid rgba(239,233,222,.32); border-radius: 999px; padding: 8px 12px; pointer-events: auto; cursor: pointer; backdrop-filter: blur(8px);
+    transition: background .15s, color .15s, border-color .15s; }
+  .parte:hover span { border-color: var(--sol); }
+  .parte[aria-pressed="true"] span { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  .parte.persona span { font-family: var(--datos); font-size: 12px; }
+  .parte:focus-visible { outline: none; } .parte:focus-visible span { outline: 2px solid var(--sol); outline-offset: 2px; }
+  .cota { position: absolute; left: 0; top: 0; white-space: nowrap; font: 600 12px/1 var(--datos); color: var(--sol); background: rgba(10,17,21,.88); border: 1px solid var(--sol);
+    border-radius: 999px; padding: 6px 10px; pointer-events: none; translate: 12px -50%; }
+  .lentes button[data-lente="partes"][aria-pressed="true"] { background: var(--sol); color: #1d1405; }
+  #ley-parte { display: grid; gap: 7px; }
+  #ley-parte p { margin: 0; font-size: 12.5px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
+  #ley-parte p b { color: var(--cal); font-weight: 600; } #ley-parte p b.k2 { color: var(--sol); }
+  #lp-tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
+  #lp-tabla th, #lp-tabla td { padding: 4px 0; border-top: 1px solid var(--linea); text-align: right; font: 500 11.5px/1.25 var(--datos); color: var(--cal); white-space: nowrap; padding-left: 8px; }
+  #lp-tabla thead th { font: 500 9.5px/1.2 var(--datos); letter-spacing: .06em; text-transform: uppercase; color: var(--cal-3); border-top: 0; white-space: normal; }
+  #lp-tabla tbody th { text-align: left; font: 400 12px/1.25 var(--texto); color: var(--cal-2); white-space: normal; padding-left: 0; }
+  #lp-tabla td:last-child { color: var(--sol); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .lp-link { justify-self: start; border: 0; background: none; padding: 2px 0; cursor: pointer; font: 600 12.5px/1.3 var(--texto); color: var(--sol); text-align: left; }
+  .lp-link:hover { color: var(--sol-2); text-decoration: underline; }
+  .lp-mostrar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border-top: 1px solid var(--linea); padding-top: 7px; }
+  .lp-mostrar span { font: 500 10px/1 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--cal-3); }
+  .lp-mostrar button, .vol-largos button { font: 600 12px/1 var(--texto); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 7px 11px; cursor: pointer; }
+  .lp-mostrar button[aria-pressed="true"], .vol-largos button[aria-pressed="true"] { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  /* el alero como voladizo */
+  #voladizo { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); width: min(560px, calc(100vw - 2 * var(--gutter)));
+    max-height: calc(100vh - var(--dock-h) - 110px); overflow: auto; overscroll-behavior: contain; box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--sol);
+    border-radius: 18px; padding: 14px 18px; backdrop-filter: blur(16px); display: grid; gap: 9px; box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .3s var(--ease); }
+  html:has(#voladizo:not([hidden])) #rotulo, html:has(#voladizo:not([hidden])) #panel-fachada, html:has(#voladizo:not([hidden])) #leyenda { display: none; }
+  html.en-partes:not(.en-recorrido) #rotulo:not(:has(#rotulo-cerrar:not([hidden]))) { display: none; }
+  .vol-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .vol-eyebrow { font: 500 10.5px/1.2 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
+  #cerrar-voladizo { padding: 7px 12px; font-size: 12.5px; }
+  #voladizo h2 { margin: 0; font: 760 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+  #voladizo p { margin: 0; font-size: 14px; line-height: 1.45; text-wrap: pretty; } #voladizo p b.k2 { color: var(--sol); font-weight: 600; }
+  .vol-largos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .vol-largos span { font: 500 11px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; text-transform: uppercase; }
+  .vol-largos button { font-family: var(--datos); font-size: 13px; padding: 9px 13px; }
+  #vol-svg { display: block; width: 100%; height: auto; max-height: 176px; background: rgba(239,233,222,.03); border-radius: 12px; }
+  #vol-svg .vt { font: 600 11px var(--texto); } #vol-svg .vt.m { font: 500 10px var(--datos); fill: var(--cal-3); }
+  .vol-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .vol-datos div { border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; display: grid; gap: 4px; align-content: start; }
+  .vol-datos span { font: 500 10px/1.2 var(--datos); color: var(--cal-3); text-transform: uppercase; letter-spacing: .06em; }
+  .vol-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; }
+  .vol-datos small { font-size: 11.5px; color: var(--cal-2); line-height: 1.3; }
+  #voladizo .vol-nota { font-size: 12px; color: var(--cal-3); }
   .c-grupo[data-g="viento"] h4 { color: #5fd3b0; }
   .c-grupo[data-g="viento"] .c-item:hover { box-shadow: inset 2px 0 0 0 #5fd3b0; }
   .c-grupo[data-g="viento"] li.activo > .c-item { border-color: #5fd3b0; background: rgba(63, 197, 156, .12); }
@@ -422,6 +474,9 @@
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
+    #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
+    #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 10.5px; }
+    .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 10.5px; padding: 4px 7px; }
   }
   @media (max-width: 480px) { #estado { display: none; } #abrir-sirve { padding: 9px 11px; font-size: 12.5px; } .acciones { gap: 6px; } .marca b { font-size: 17px; } }
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
@@ -432,6 +487,7 @@
 
 <div id="lienzo"></div>
 <div id="velo"></div>
+<div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
 <header class="barra">
   <a class="marca" href="#" aria-label="Isthmus · Edificio 106">
@@ -456,9 +512,9 @@
       <p class="bajada">Una maqueta digital para ver cómo le pegan el sol, la lluvia y el viento a este edificio, a cualquier hora de cualquier día, con 25 años de datos del clima.</p>
     </div>
     <ol id="intro-rotulos" aria-live="polite">
-      <li>Retícula de <b>12 × 6</b> módulos, unos <b>45 × 23 m</b></li>
-      <li><b>3</b> pisos sobre un zócalo de <b>0,65 m</b></li>
-      <li><b>116</b> vanos: 112 ventanas y 4 puertas</li>
+      <li>Planta de <b>45,5 × 23 m</b></li>
+      <li><b>3</b> pisos sobre una base de <b>0,65 m</b></li>
+      <li><b>116</b> aberturas: 112 ventanas y 4 puertas</li>
       <li>Aleros de <b>1,65 m</b> en 3 niveles · <b>78</b> ménsulas</li>
       <li>Clayton, Panamá · eje largo a <b>56°</b> del norte</li>
     </ol>
@@ -519,11 +575,30 @@
     <button type="button" data-lente="lluvia" aria-pressed="false" title="Lluvia con viento sobre cada fachada">Lluvia</button>
     <button type="button" data-lente="viento" aria-pressed="false" title="De dónde viene el viento y qué fachada lo recibe de frente">Viento</button>
     <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra de cada hora del día sobre el terreno">Sombras</button>
+    <button type="button" data-lente="partes" aria-pressed="false" title="Cómo se llama cada parte del edificio y qué hace">Partes</button>
     <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
   </div>
   <div id="leyenda" hidden aria-live="polite">
     <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
     <p id="ley-que"></p>
+    <div id="ley-parte" hidden>
+      <p><b>En este edificio:</b> <span id="lp-aqui"></span></p>
+      <table id="lp-tabla" hidden>
+        <thead><tr><th scope="col"><span class="sr">Qué</span></th><th scope="col">Medida</th><th scope="col">Personas</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Un piso</th><td>3,66 m</td><td>≈ 2</td></tr>
+          <tr><th scope="row">Tercer alero</th><td>11,10 m</td><td>≈ 6½</td></tr>
+          <tr><th scope="row">Cumbrera</th><td>15,7 m</td><td>≈ 9</td></tr>
+          <tr><th scope="row">Salida del alero</th><td>1,65 m</td><td>≈ 1 acostada</td></tr>
+        </tbody>
+      </table>
+      <p><b class="k2" id="lp-hace-k">Qué hace:</b> <span id="lp-hace"></span></p>
+      <button type="button" id="lp-voladizo" class="lp-link" hidden>El alero como voladizo: cómo trabaja →</button>
+      <div class="lp-mostrar" role="group" aria-label="Mostrar en la escena"><span>Mostrar</span>
+        <button type="button" data-mostrar="persona" aria-pressed="true">Persona de 1,70 m</button>
+        <button type="button" data-mostrar="alturas" aria-pressed="false">Alturas</button>
+      </div>
+    </div>
     <div id="ley-rampa"></div>
     <div id="ley-escala"></div>
     <ul id="ley-fachadas"></ul>
@@ -541,6 +616,25 @@
   <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
 </aside>
 <div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
+
+<aside id="voladizo" hidden aria-labelledby="vol-t">
+  <div class="vol-cab"><span class="vol-eyebrow">Partes del edificio · alero</span><button class="boton" id="cerrar-voladizo" type="button">Volver a las partes</button></div>
+  <h2 id="vol-t">El alero como voladizo (o volado)</h2>
+  <p>Un voladizo es una pieza sujeta por un solo lado, como un trampolín. Con su peso, arriba se estira (tracción) y abajo se aprieta (compresión); donde más trabaja es en la raíz, junto al muro.</p>
+  <div class="vol-largos" role="group" aria-label="Largo del alero"><span>Largo del alero</span>
+    <button type="button" data-largo="1" aria-pressed="false">1,00 m</button>
+    <button type="button" data-largo="1.65" aria-pressed="true">1,65 m · el real</button>
+    <button type="button" data-largo="2.5" aria-pressed="false">2,50 m</button>
+  </div>
+  <svg id="vol-svg" viewBox="0 0 518 200" role="img" aria-label="Esquema del alero en voladizo: tracción arriba, compresión abajo y el esfuerzo máximo en la raíz, junto al muro"></svg>
+  <div class="vol-datos">
+    <div><span>Esfuerzo en la raíz</span><b id="vol-m">igual</b><small>que el alero real</small></div>
+    <div><span>Cuánto baja la punta</span><b id="vol-d">igual</b><small>que el alero real</small></div>
+    <div><span>Vidrio en sombra</span><b id="vol-a">45°</b><small>con el sol por encima de ese ángulo</small></div>
+  </div>
+  <p><b class="k2">La regla:</b> si el alero crece al doble, el esfuerzo en su raíz crece cuatro veces y la punta baja dieciséis veces más. Un alero más largo da más horas de sombra, pero pide ménsulas, una losa más gruesa o tensores.</p>
+  <p class="vol-nota">Proporciones con la misma sección y la misma carga por metro, no el cálculo de este alero: no se conoce su estructura real. El ángulo de sombra (el del sol visto de perfil) sale de la geometría de las ventanas del modelo.</p>
+</aside>
 
 <aside id="panel-fachada" aria-live="polite">
   <p class="eyebrow">Estás frente al edificio</p>
@@ -618,7 +712,7 @@
     <h3 id="todos-t" class="sirve-h">En pocas palabras</h3>
     <p>Es una maqueta digital del Edificio 106 de Isthmus, en Ciudad del Saber. En ella puedes ver cómo le pegan el sol, la lluvia y el viento a cualquier hora de cualquier día, con el clima de cada hora entre 2001 y 2025.</p>
     <p><b>¿Por qué importa?</b> Un edificio no está quieto frente al clima: el sol le da primero por un lado y después por otro, los aguaceros mojan más una pared que las otras y el viento sopla casi siempre desde la misma dirección. Eso decide si adentro hace calor, si las paredes se manchan de humedad o si entra aire fresco por las ventanas. Los arquitectos tienen que pensarlo antes de construir, y en un plano cuesta imaginarlo. Aquí se ve.</p>
-    <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, e ir a días especiales, como el más lluvioso en 25 años.</p>
+    <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, aprender cómo se llama cada parte del edificio e ir a días especiales, como el más lluvioso en 25 años.</p>
     <p><button class="boton primario" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
     <h3 class="sirve-h">Lo que se aprende en pocos minutos</h3>
     <div class="aprende">
@@ -646,6 +740,11 @@
         <h4>El viento llega casi siempre del mismo lado</h4>
         <p>Casi todo el año sopla del norte y del noroeste. La pared noroeste lo recibe de frente: por ahí entraría el aire fresco, y saldría por el lado opuesto.</p>
         <button class="ver" type="button"><span>Verlo</span><small>Año típico · vista aérea · mapa de viento</small></button>
+      </article>
+      <article class="hallazgo simple" data-fecha="2024-03-25" data-hora="09:30" data-vista="esquina" data-fachada="" data-capa="partes" data-modo="">
+        <h4>Cada parte del edificio tiene su nombre</h4>
+        <p>Techo a cuatro aguas, alero, ménsula, base o zócalo, módulo: toca cada etiqueta y aprende qué es, cómo es en este edificio y qué hace. Hay una persona de 1,70 m al lado para comparar, y el alero se puede probar como voladizo.</p>
+        <button class="ver" type="button"><span>Verlo</span><small>Ver → Partes · esquina</small></button>
       </article>
       <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
         <h4>Llueve casi todas las tardes de mayo a noviembre</h4>
@@ -687,16 +786,16 @@
       <button class="ver" type="button"><span>Verlo en la escena</span><small>01/07/2023 14:30 · esquina: la hora más lluviosa de ERA5 en la serie (19 mm entre las 14:00 y las 15:00); mira las cortinas de agua desde los tres aleros.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2006-11-23" data-hora="12:30" data-vista="" data-fachada="no" data-capa="">
-      <h3>Lluvia batiente: la NO recibe más de cinco veces lo que el testero NE</h3>
+      <h3>Lluvia batiente: la NO recibe más de cinco veces lo que la fachada lateral NE</h3>
       <p>Índice ISO 15927-3 en campo abierto: NO unos 450 L/m² al año (de ~300 a ~650 según el año), SO ~350, SE ~280 y NE ~80. En ERA5 el viento durante la lluvia es flojo (mediana de 7 km/h); el modelo no capta las ráfagas de los aguaceros.</p>
-      <p class="uso"><b>Para el diseño:</b> Indica dónde reforzar alero, goterones, juntas y acabados: primero NO y SO; el testero NE pide menos.</p>
+      <p class="uso"><b>Para el diseño:</b> Indica dónde reforzar alero, bordes que cortan el goteo, juntas y acabados: primero NO y SO; la fachada lateral NE pide menos.</p>
       <p class="limite"><b>Límite:</b> Es lluvia que cruza un plano vertical en campo abierto: ordena fachadas, no mide el agua que recibe el muro.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>23/11/2006 12:30 · fachada NO: llueve con viento de unos 25 km/h que llega de frente a esta fachada.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2003-04-11" data-hora="15:30" data-vista="" data-fachada="so" data-capa="calor" data-modo="directa">
-      <h3>En las horas más cálidas, el sol da de lleno en el testero SO</h3>
+      <h3>En las horas más cálidas, el sol da de lleno en la fachada lateral SO</h3>
       <p>En las horas de 30 °C o más de ERA5 (unas 440 al año, de ~200 a ~870 según el año), el sol está frente al SO en el 78 % y le llega con más de 100 W/m² en el 59 %. Detrás del alero, los vidrios SE y NE nunca reciben sol en esas horas; el del SO, unas 30 horas al año.</p>
-      <p class="uso"><b>Para el diseño:</b> Sugiere sombrear o ventilar el testero SO, y no poner ahí espacios muy ocupados por la tarde.</p>
+      <p class="uso"><b>Para el diseño:</b> Sugiere sombrear o ventilar la fachada lateral SO, y no poner ahí espacios muy ocupados por la tarde.</p>
       <p class="limite"><b>Límite:</b> ERA5 subestima el rango diario (da 4–6 °C; máxima de 32,8 °C en 25 años): las horas de 30 °C cambian mucho con el umbral.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>11/04/2003 15:30 · fachada SO · sol directo en fachadas: más de 30 °C y el SO con el valor más alto.</small></button>
     </article>
@@ -764,7 +863,7 @@
     <li><b>Orientación:</b> arrastra para girar el edificio. La brújula marca el norte real y el sol; en el suelo están la rosa N·E·S·O y el arco del sol del día.</li>
     <li><b>Qué significa cada dato:</b> toca la hora, «Sol», «Sombra de 1 m» o «Clima» en la barra de abajo, o las pestañas Día · Año · 25 años, y aparece la explicación con los valores de ese momento.</li>
     <li><b>Ir a…:</b> una fecha y hora exactas, o los días que más se consultan: sin sombra, solsticios, la hora y el día más lluviosos, el día con más sol, la fachada que más se moja y un día típico de cada mes.</li>
-    <li><b>Ver:</b> «Foto» es la escena; «Sol» pinta el sol que llega a cada punto del edificio, con la sombra real de los aleros (solo directo o total, con difusa y reflejada); «Lluvia», el índice de lluvia con viento de ISO 15927-3; «Viento», la rosa de vientos y qué fachada recibe el viento de frente; «Sombras», la sombra de cada hora del día sobre el terreno. «Capas» → «Aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
+    <li><b>Ver:</b> «Foto» es la escena; «Sol» pinta el sol que llega a cada punto del edificio, con la sombra real de los aleros (solo directo o total, con difusa y reflejada); «Lluvia», el índice de lluvia con viento de ISO 15927-3; «Viento», la rosa de vientos y qué fachada recibe el viento de frente; «Sombras», la sombra de cada hora del día sobre el terreno; «Partes», el nombre de cada parte del edificio y qué hace, con una persona de 1,70 m para comparar y el alero explicado como voladizo. «Capas» → «Aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
     <li id="cenit-txt"></li>
   </ul>
   <h3>Qué no es</h3>
@@ -776,7 +875,7 @@
   </ul>
   <h3>Contexto</h3>
   <p>Isthmus, que abrió en 2000, se presenta como el primer programa en operar en Ciudad del Saber, en la antigua base militar de Clayton; hoy tiene su sede en el Edificio 106. El proyecto de Fort Clayton se aprobó en 1919 y sus primeros 36 edificios estaban listos en agosto de 1920; la ampliación empezó en junio de 1939. La base pasó a Panamá el 30 de noviembre de 1999, y de 243 edificios recibidos se conservan más de 130.</p>
-  <p>Según el informe de CERL (2000), en Clayton se usó concreto armado, bloque de concreto repellado y techos de teja española sobre armazón de madera, con aleros anchos que alejan la lluvia de los muros, viseras sobre las ventanas y, en los pisos intermedios, lo que el informe llama <i>mediagua</i>: un alero corrido. Esta página no afirma año de construcción, uso original, autor ni estilo del Edificio 106.</p>
+  <p>Según el informe de CERL (2000), en Clayton se usó concreto armado, bloque de concreto con repello (revoque) y techos de teja española sobre armazón de madera, con aleros anchos que alejan la lluvia de los muros, viseras sobre las ventanas y, en los pisos intermedios, lo que el informe llama <i>mediagua</i>: un alero corrido. Esta página no afirma año de construcción, uso original, autor ni estilo del Edificio 106.</p>
   <h3>Fuentes y créditos</h3>
   <ul class="fuentes">
     <li><b>Tiempo:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0): pronóstico para «Ahora», serie 2001–2025 y consultas en línea.</li>

@@ -94,9 +94,9 @@ const VISTA_FACHADA = {
   'fachada-so': { pos: [-46, 1.65, 4], tgt: [-22.75, 6.2, 0] },
 };
 const ROTULOS = [ // aparecen durante el armado, en el orden de los grupos
-  { b: 0, t: '12 × 6 crujías sobre 45,5 × 23 m' },       // aparece cuando los puntos ya formaron el edificio
+  { b: 0, t: 'Planta de 45,5 × 23 m' },       // aparece cuando los puntos ya formaron el edificio
   { b: 1.3, t: '3 pisos de 3,65 m' },
-  { b: 2.3, t: '113 vanos' },
+  { b: 2.3, t: '116 aberturas' },
   { b: 3.3, t: 'Teja de arcilla y 78 ménsulas' },
   { b: 6.4, t: 'Ciudad del Saber · 8,9993° N, 79,5827° O' },
 ];
@@ -108,10 +108,11 @@ const S = {
   fecha: { y: hoy.y, m: hoy.m, d: hoy.d }, min: hoy.min,
   pestana: 'dia', reproduce: false, aguacero: false, calor: false, ayudas: true, fachada: null,
   mesSerie: null,                // en el paso de 25 años: índice de mes (lluvia mensual en la escena)
-  lente: 'foto',                 // foto · sol · lluvia · sombras
+  lente: 'foto',                 // foto · sol · lluvia · viento · sombras · partes
   aguaModo: 'hora',              // lente de lluvia: esta hora o año típico
   solModo: 'directa',            // lente de sol: solo directa o total (con difusa y reflejada)
   vientoModo: 'anio',            // lente de viento: esta hora, temporada seca, lluvias o año
+  parte: 'alero', persona: true, alturas: false, largo: 1.65,   // lente de partes: la parte elegida, la persona de 1,70 m, la regla y el largo del voladizo
   viaje: null,                   // viaje en el tiempo en curso
 };
 let consultas = null;
@@ -463,6 +464,7 @@ function paso(now) {
     if (S.midiendo) { const r0 = performance.now(); S.midiendo.cpu.push(r0 - S.midiendo.tFrame); S.midiendo.dts.push(now - S.midiendo.last); S.midiendo.last = now; }
     else medirCuadro(now, dtReal);
   } else S.dibujoPrevio = false;
+  pintarPartes();
 }
 
 // ---------------- Resolución adaptable ----------------
@@ -842,6 +844,7 @@ function prepararUI() {
   $('#lente-info').addEventListener('click', () => { S.verLeyenda = !S.verLeyenda; lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
   if (innerWidth <= 760) $('#ley-mas').open = false;
+  prepararPartes();
   // recorrido guiado
   const abrirRec = () => { $('#oferta-recorrido').hidden = true; abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
   ['#abrir-recorrido', '#sirve-recorrido', '#acerca-recorrido', '#oferta-si'].forEach((x) => $(x)?.addEventListener('click', abrirRec));
@@ -862,7 +865,7 @@ function prepararUI() {
   });
   $('#reproducir').addEventListener('click', reproducir);
   // para qué sirve: hallazgos con un momento para verlos en la escena
-  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) $('#oferta-recorrido').hidden = true; };
+  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { $('#oferta-recorrido').hidden = true; abrirVoladizo(false); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
@@ -875,7 +878,7 @@ function prepararUI() {
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
-    if (abrir) $('#oferta-recorrido').hidden = true;
+    if (abrir) { $('#oferta-recorrido').hidden = true; abrirVoladizo(false); }
     if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
       $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
@@ -907,8 +910,9 @@ function prepararUI() {
   });
   // formas de ver
   document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
-    ponerLente(b.dataset.lente, true);
+    ponerLente(b.dataset.lente, !(b.dataset.lente === 'partes' && innerWidth <= 760));   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
+    if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
   $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; });
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
@@ -926,7 +930,7 @@ function prepararUI() {
     else if (S.paso != null && e.key === 'ArrowRight') recorrido(S.paso + 1);
     else if (S.paso != null && e.key === 'ArrowLeft') recorrido(S.paso - 1);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
@@ -973,8 +977,8 @@ const LENTES = {
   lluvia: { t: 'Lluvia: qué fachada se moja cuando llueve con viento', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['nada', '', 'mucha'],
     que: 'Con viento, la lluvia no cae derecha: se moja más la fachada que mira hacia donde viene el viento. Cada fachada se pinta en azules según esa exposición: oscuro es nada y azul claro es mucha.',
     leer: '«Esta hora» usa la lluvia y el viento de esa hora, en litros por metro cuadrado. «Año típico» es el promedio de un año, sumando 25 años de datos.',
-    prueba: 'Pasa a «Año típico»: la noroeste se moja más de cinco veces lo que el testero noreste. Luego abre «Ir a…» y elige «La fachada que más se moja».',
-    porque: 'Dice dónde reforzar aleros, goterones, juntas y acabados, y dónde no conviene poner materiales que sufren con el agua.',
+    prueba: 'Pasa a «Año típico»: la noroeste se moja más de cinco veces lo que la fachada lateral noreste. Luego abre «Ir a…» y elige «La fachada que más se moja».',
+    porque: 'Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados, y dónde no conviene poner materiales que sufren con el agua.',
     ojo: 'Es un índice para comparar las fachadas entre sí, no el agua que de verdad llega al muro: no descuenta el alero, los árboles ni los edificios vecinos, y el viento del modelo no tiene ráfagas.',
     tec: 'Índice de lluvia batiente de la norma ISO 15927-3 en campo abierto: (2/9) · v · r^(8/9) · cos(D − θ), con v el viento a 10 m de altura (m/s), r la lluvia (mm/h), D de dónde viene el viento y θ hacia dónde mira la fachada. Datos ERA5, celda de unos 28 km.' },
   viento: { t: 'Viento: de dónde viene y qué fachada lo recibe de frente', rampa: 'linear-gradient(90deg, #08140f, #1a9e7a 50%, #c7ffdb)', esc: ['nada', '', 'mucho'],
@@ -990,6 +994,11 @@ const LENTES = {
     porque: 'Sirve para decidir dónde poner un patio, una terraza, una banca o un árbol: qué partes del jardín tienen sombra en la mañana y cuáles en la tarde.',
     ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos.',
     tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior. Es exacto para el volumen; los detalles pequeños quedan dentro del contorno.' },
+  partes: { t: 'Partes del edificio', rampa: null, que: '',
+    prueba: 'Toca «Alero» y luego «El alero como voladizo»: cambia el largo y mira cuánto crece el esfuerzo. Después gira el edificio: las etiquetas pasan a la cara que tienes enfrente.',
+    porque: 'Nombrar las partes es el primer paso para leer un edificio y conversar sobre él: son las mismas palabras de los planos y de una clase de diseño.',
+    ojo: 'Los nombres son los de uso común en arquitectura. Las medidas salen del modelo 3D, que tiene una escala aproximada (±12 %), no de planos oficiales. El modelo muestra lo que se ve por fuera: no dice cómo es la estructura por dentro (columnas, vigas, refuerzos).',
+    tec: 'Cada etiqueta se ancla a un punto del modelo y se dibuja en la cara que mira hacia ti. Medidas tomadas de la geometría: planta de 45,5 × 23 m; aleros a 3,74, 7,40 y 11,10 m, que salen 1,65 m del muro; base de 0,65 m; cumbrera a 15,7 m.' },
 };
 const MODOS = { sol: [['directa', 'Solo directo'], ['total', 'Total'], ['anio', 'Año típico']], lluvia: [['hora', 'Esta hora'], ['anio', 'Año típico']],
   viento: [['hora', 'Esta hora'], ['seca', 'Seca'], ['lluvias', 'Lluvias'], ['anio', 'Año']] };
@@ -1011,6 +1020,8 @@ function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';
   S.lente = k; if (mostrar) S.verLeyenda = true;
   document.querySelectorAll('[data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));
+  aplicarPartes(); pintarPartes.f = '';
+  document.documentElement.classList.toggle('en-partes', k === 'partes');
   lastLect = '';
 }
 function leyenda(c) {
@@ -1018,10 +1029,18 @@ function leyenda(c) {
   el.hidden = !S.verLeyenda; $('#lente-info').setAttribute('aria-expanded', String(!!S.verLeyenda));
   if (!S.verLeyenda) return;
   const anioSol = S.lente === 'sol' && S.solModo === 'anio';
-  const claveT = S.lente + (anioSol ? '-anio' : '');
-  if (el.dataset.lente !== claveT) {                            // textos fijos: solo al cambiar de lente (o al año típico del sol)
+  const esPartes = S.lente === 'partes', P = esPartes ? (PARTES[S.parte] ?? PARTES.alero) : null;
+  const claveT = S.lente + (anioSol ? '-anio' : '') + (esPartes ? '-' + S.parte : '');
+  if (el.dataset.lente !== claveT) {                            // textos fijos: solo al cambiar de lente (o al año típico del sol, o de parte)
     el.dataset.lente = claveT;
-    $('#ley-t').textContent = L.t; $('#ley-que').textContent = L.que;
+    $('#ley-t').textContent = esPartes ? P.t : L.t; $('#ley-que').textContent = esPartes ? P.que : L.que;
+    $('#ley-parte').hidden = !esPartes;
+    if (esPartes) {
+      $('#lp-aqui').textContent = P.aqui; $('#lp-hace').textContent = P.hace;
+      $('#lp-hace-k').textContent = P.hk ?? 'Qué hace:';
+      $('#lp-tabla').hidden = S.parte !== 'escala';
+      $('#lp-voladizo').hidden = S.parte !== 'alero';
+    }
     $('#ley-rampa').hidden = $('#ley-escala').hidden = !L.rampa;
     if (L.rampa) {
       $('#ley-rampa').style.background = anioSol ? 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)' : L.rampa;
@@ -1035,6 +1054,7 @@ function leyenda(c) {
   }
   const actual = S[MODO_DE[S.lente]];
   $('#ley-modos').querySelectorAll('[data-modo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modo === actual)));
+  if (esPartes) document.querySelectorAll('#ley-parte [data-mostrar]').forEach((b) => b.setAttribute('aria-pressed', String(!!S[b.dataset.mostrar])));
   const ks = Object.keys(FACHADAS), nom = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
   let filas = '';
   if (anioSol && consultas?.radiacion) {
@@ -1072,7 +1092,209 @@ function leyenda(c) {
   }
   if (S.lente === 'lluvia' && S.aguaModo === 'anio') nota = 'Promedio de un año, 2001–2025.';
   if (S.lente === 'sombras') nota = !escena._diagClave ? 'El diagrama aparece cuando termina de cargar el modelo.' : `Sombras del ${fechaTexto(S.fecha)}. Se ven mejor desde arriba: botón «Planta».`;
+  if (esPartes) nota = 'Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente.';
   $('#ley-nota').textContent = nota; $('#ley-nota').hidden = !nota;
+}
+
+// ---------------- Partes del edificio (forma de ver «Partes») ----------------
+// Etiquetas ancladas al modelo (metros; +X = noreste, +Z = sureste; el muro va de ±22,75 × ±11,5 y los aleros llegan a ±24,4 × ±13,15).
+// Cada parte trae candidatos en varias caras, en orden: se usa el primero que mira hacia la cámara, así las etiquetas se reparten
+// entre las fachadas que se ven. Posiciones medidas en la geometría del modelo (ménsulas, ventanas, aleros, cumbrera).
+const LADO = { se: [0, 0, 1], no: [0, 0, -1], ne: [1, 0, 0], so: [-1, 0, 0] };
+const PARTES = {
+  techo: { e: 'Techo a cuatro aguas', t: 'Techo a cuatro aguas', a: [[[3, 15.7, 0], null]],
+    que: 'Un techo con cuatro lados inclinados que bajan hacia las cuatro fachadas.',
+    aqui: 'De teja de arcilla. En el modelo, la línea más alta del techo (la cumbrera) queda a unos 15,7 m del suelo y mide unos 29 m de largo.',
+    hace: 'La pendiente saca rápido el agua de lluvia (aquí caen unos 2.000 mm al año), y los cuatro lados terminan en aleros que protegen todas las fachadas.' },
+  alero: { e: 'Alero', t: 'Alero', a: [[[24.4, 7.4, -3], 'ne'], [[-13, 7.4, 13.15], 'se'], [[13, 7.4, -13.15], 'no'], [[-24.4, 7.4, 3], 'so']],
+    que: 'La parte del techo o de la losa que sobresale del muro, como la visera de una gorra.',
+    aqui: 'Tres aleros, uno por piso, a 3,74, 7,40 y 11,10 m de altura. Los tres salen 1,65 m del muro.',
+    hace: 'Dan sombra a las ventanas cuando el sol está alto y alejan la lluvia de los muros. Cuanto más largo, más protege, pero más cuesta sostenerlo.' },
+  lateral: { e: 'Fachada lateral', t: 'Fachada lateral', a: [[[22.75, 9.3, -6], 'ne'], [[-22.75, 9.3, 6], 'so']],
+    que: 'Cada una de las caras cortas de un edificio alargado. En arquitectura también se le dice testero.',
+    aqui: 'Dos de 23 m: la noreste, hacia el jardín de la esquina, y la suroeste.',
+    hace: 'Son más cortas, pero no reciben menos sol por metro: la suroeste recibe de frente el sol bajo de la tarde, el de las horas más calurosas.' },
+  principal: { e: 'Fachada principal', t: 'Fachada principal', a: [[[-17, 9.2, 11.5], 'se']],
+    que: 'Cada cara exterior de un edificio es una fachada; la principal es la de la entrada.',
+    aqui: 'Mira al sureste y tiene la entrada con el letrero 106. La de atrás mira al noroeste. Las dos miden 45,5 m.',
+    hace: 'Hacia dónde mira cada fachada decide cuánto sol, lluvia y viento recibe. Pruébalo con Sol, Lluvia y Viento.' },
+  mensula: { e: 'Ménsula', t: 'Ménsula', a: [[[16.75, 3.35, 12.0], 'se'], [[23.3, 3.35, 7.26], 'ne'], [[-4.52, 3.35, -12.0], 'no'], [[-23.4, 3.35, -6.85], 'so']],
+    que: 'Una pieza en forma de escuadra que sostiene el alero desde abajo, como el soporte de una repisa.',
+    aqui: '78 ménsulas bajo los tres aleros. En la fachada principal se repiten cada 6,70 m. El modelo no dice si cargan de verdad o son decorativas.',
+    hace: 'Es el apoyo típico de un voladizo: lleva parte de su peso hasta el muro.' },
+  vano: { e: 'Abertura (vano)', t: 'Abertura (vano)', a: [[[-11.36, 6.3, 11.5], 'se'], [[9.78, 6.3, -11.5], 'no'], [[22.7, 6.3, 5.82], 'ne'], [[-22.7, 6.3, 5.9], 'so']],
+    que: 'Cualquier hueco en un muro: una ventana o una puerta. En arquitectura se le llama vano.',
+    aqui: '116 aberturas: 112 ventanas y 4 puertas. En los pisos 2 y 3 de la fachada principal, las ventanas van de dos en dos.',
+    hace: 'Deja entrar la luz y el aire. Su tamaño y su lugar deciden cuánto sol entra; por eso importa el alero que tiene encima.' },
+  modulo: { e: 'Módulo', t: 'Módulo', a: [[[16.75, 5.6, 11.6], 'se']],
+    que: 'Una medida o un tramo que se repite a lo largo del edificio.',
+    aqui: 'En los pisos 2 y 3 de la fachada principal, el tramo resaltado se repite cada 6,70 m: dos ventanas juntas y una ménsula sobre el muro angosto que las separa. Hay seis tramos iguales y, en cada punta, uno más corto con una sola ventana.',
+    hace: 'Repetir un mismo tramo ordena la fachada y simplifica el diseño y la construcción: se resuelve una vez y se repite.' },
+  zocalo: { e: 'Base o zócalo', t: 'Base o zócalo', a: [[[22.8, 0.35, 4], 'ne'], [[-22.8, 0.35, -4], 'so'], [[-16, 0.35, 11.55], 'se'], [[8, 0.35, -11.55], 'no']],
+    que: 'La franja de abajo del edificio, más alta que el terreno.',
+    aqui: '0,65 m de alto, en todo el perímetro.',
+    hace: 'Separa los muros del suelo: el agua que salpica cuando llueve y la humedad del terreno no llegan a la pared.' },
+  escala: { e: '1,70 m', t: 'Escala humana: ¿qué tan grande es?', a: [[[24.7, 1.95, 11.3], null]], hk: 'Qué enseña:',
+    que: 'Una persona de 1,70 m junto a la esquina del jardín, para comparar el edificio con el cuerpo.',
+    aqui: 'Con «Alturas» se ven las medidas en la esquina. Cada fila compara una medida con personas de 1,70 m:',
+    hace: 'Los pisos son más altos que en un edificio de apartamentos común (de 2,6 a 3 m): así el aire caliente sube y queda lejos de la cabeza.' },
+};
+// cotas de la regla de alturas (esquina noreste–sureste) y la cumbrera
+const COTAS = [[[22.75, 0.65, 11.5], '0,65 m · base'], [[22.75, 3.74, 11.5], '3,74 m · primer alero'], [[22.75, 7.4, 11.5], '7,40 m · segundo alero'],
+  [[22.75, 11.1, 11.5], '11,10 m · tercer alero'], [[14.4, 15.73, 0], 'cumbrera · 15,7 m', 'der']];
+
+function prepararPartes() {
+  const capa = $('#partes-capa');
+  capa.innerHTML = Object.entries(PARTES).map(([k, P]) => `<button type="button" class="parte${k === 'escala' ? ' persona' : ''}" data-parte="${k}" aria-pressed="false" hidden><i></i><span>${P.e}</span></button>`).join('')
+    + COTAS.map(([, t, d], i) => `<span class="cota${d ? ' der' : ''}" data-cota="${i}" hidden>${t}</span>`).join('');
+  capa.addEventListener('click', (e) => { const b = e.target.closest('[data-parte]'); if (b) elegirParte(b.dataset.parte); });
+  document.querySelectorAll('#ley-parte [data-mostrar]').forEach((b) => b.addEventListener('click', () => {
+    const k = b.dataset.mostrar; S[k] = !S[k];
+    if (!S.persona && S.parte === 'escala') S.parte = 'alero';
+    aplicarPartes(); pintarPartes.f = ''; lastLect = ''; $('#leyenda').dataset.lente = '';
+  }));
+  $('#lp-voladizo').addEventListener('click', () => abrirVoladizo(true));
+  $('#cerrar-voladizo').addEventListener('click', () => abrirVoladizo(false));
+  document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.addEventListener('click', () => { S.largo = +b.dataset.largo; pintarVoladizo(); }));
+  pintarVoladizo();
+}
+function elegirParte(k) {
+  if (!PARTES[k]) return;
+  S.parte = k; S.verLeyenda = true;
+  if (k === 'escala') { S.persona = true; S.alturas = true; }
+  aplicarPartes(); pintarPartes.f = ''; lastLect = '';
+}
+/** La persona, la regla y el módulo resaltado solo existen dentro de «Partes». */
+function aplicarPartes() {
+  const on = S.lente === 'partes';
+  escena?.setPartes({ persona: on && S.persona, alturas: on && S.alturas, modulo: on && S.parte === 'modulo' });
+  document.querySelectorAll('.parte').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.parte === S.parte)));
+  if (!on) abrirVoladizo(false);
+}
+const _pp = new THREE.Vector3(), _pv = new THREE.Vector3();
+// paneles de la interfaz que las etiquetas no deben tapar ni quedar debajo
+const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#panel-fachada', '#aviso.ver'];
+/** Coloca las etiquetas sobre la imagen: proyecta cada ancla con la cámara, esquiva los paneles y evita que se encimen. */
+function pintarPartes() {
+  const capa = $('#partes-capa'); if (!capa || !escena) return;
+  const ver = S.lente === 'partes' && !intro && !S.viaje && !S.voladizo;
+  if (capa.hidden === ver) capa.hidden = !ver;
+  if (!ver) return;
+  const cam = escena.camera, W = innerWidth, H = innerHeight;
+  const firma = [cam.position.x, cam.position.y, cam.position.z, controls.target.x, controls.target.y, controls.target.z].map((v) => Math.round(v * 50)).join(',')
+    + `|${W}x${H}|${S.persona}|${S.alturas}|${S.parte}|${S.verLeyenda}|${S.paso}|${$('#sirve').hidden}${$('#ir-a').hidden}${$('#capas').hidden}`;
+  if (firma === pintarPartes.f) return;
+  pintarPartes.f = firma;
+  // 1) leer: dónde están los paneles (antes de mover nada, para no forzar el diseño dos veces)
+  const obst = [[0, 0, W, 66]];
+  for (const q of OBSTACULOS) {
+    const el = document.querySelector(q); if (!el || el.hidden || el.offsetParent === null) continue;
+    const r = el.getBoundingClientRect(); if (r.width && r.height) obst.push([r.left - 6, r.top - 6, r.width + 12, r.height + 12]);
+  }
+  const cruza = (a, b, m = 5) => a[0] < b[0] + b[2] + m && b[0] < a[0] + a[2] + m && a[1] < b[1] + b[3] + m && b[1] < a[1] + a[3] + m;
+  const tapa = (r) => obst.some((o) => cruza(r, o, 0));
+  const puestos = [];
+  const aPantalla = (p) => {
+    _pv.set(p[0], p[1], p[2]).project(cam);
+    if (_pv.z > 1 || _pv.z < -1 || Math.abs(_pv.x) > 0.98 || Math.abs(_pv.y) > 0.98) return null;
+    return [(_pv.x + 1) / 2 * W, (1 - _pv.y) / 2 * H];
+  };
+  const anchos = new Map();
+  capa.querySelectorAll('.parte, .cota').forEach((el) => { if (!el._w) { const h0 = el.hidden; el.hidden = false; el._w = (el.querySelector('span') ?? el).offsetWidth; el.hidden = h0; } anchos.set(el, el._w || 110); });
+  // 2) cotas de la regla (fijas: se ponen primero y las etiquetas las esquivan)
+  capa.querySelectorAll('.cota').forEach((el) => {
+    const q = S.alturas ? aPantalla(COTAS[+el.dataset.cota][0]) : null;
+    const r = q && [q[0] + 12, q[1] - 13, anchos.get(el), 26];
+    const ok = r && !tapa(r) && !puestos.some((o) => cruza(r, o, 2));
+    el.hidden = !ok; if (!ok) return;
+    puestos.push(r);
+    el.style.transform = `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px)`;
+  });
+  // 3) etiquetas: primero el lugar natural (arriba del punto); si choca, más arriba o corrida a un lado
+  for (const [k, P] of Object.entries(PARTES)) {
+    const el = capa.querySelector(`[data-parte="${k}"]`); if (!el) continue;
+    let q = null;
+    if (k !== 'escala' || S.persona) for (const [p, lado] of P.a) {
+      if (lado) {                                                     // solo la cara que mira hacia la cámara
+        const n = LADO[lado]; _pp.set(p[0], p[1], p[2]); _pv.copy(cam.position).sub(_pp).normalize();
+        if (n[0] * _pv.x + n[1] * _pv.y + n[2] * _pv.z < 0.12) continue;
+      }
+      q = aPantalla(p); if (q && tapa([q[0] - 6, q[1] - 6, 12, 12])) q = null;   // el punto mismo quedaría bajo un panel
+      if (q) break;
+    }
+    if (!q) { el.hidden = true; continue; }
+    const w = anchos.get(el), h = 31, lx = Math.max(0, w / 2 - 16);
+    const opciones = [[0, 0], [0, 36], [-lx, 0], [lx, 0], [0, 72], [-lx, 36], [lx, 36], [0, 108]];
+    let elegido = null;
+    for (const pasada of [0, 1]) {                                    // 0: sin tocar nada · 1: se permite encimar etiquetas, nunca paneles
+      for (const [dx, dy] of opciones) {
+        const r = [q[0] - w / 2 + dx, q[1] - 18 - h - dy, w, h];
+        if (tapa(r) || r[0] < 4 || r[0] + w > W - 4) continue;
+        if (pasada === 0 && puestos.some((o) => cruza(r, o))) continue;
+        elegido = [dx, dy, r]; break;
+      }
+      if (elegido) break;
+    }
+    if (!elegido) { el.hidden = true; continue; }
+    el.hidden = false; puestos.push(elegido[2]);
+    el.style.transform = `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px)`;
+    el.style.setProperty('--dx', elegido[0].toFixed(1) + 'px'); el.style.setProperty('--dy', elegido[1] + 'px');
+  }
+}
+
+// El alero como voladizo: proporciones con la misma sección y la misma carga por metro (no es el cálculo de este alero)
+const VISTA_ALERO = { pos: [40, 7.5, 36], tgt: [19, 7.5, 11] };            // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel
+function abrirVoladizo(abrir) {
+  const el = $('#voladizo'); if (!el) return;
+  if (!!S.voladizo === abrir) return;
+  S.voladizo = abrir; el.hidden = !abrir; pintarPartes.f = '';
+  if (abrir) {
+    $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); globalThis.__abrirIr?.(false);
+    S.fachada = null; document.documentElement.classList.remove('en-fachada');
+    S.vistaPrevia = { pos: escena.camera.position.toArray(), tgt: controls.target.toArray() };
+    volarA(VISTA_ALERO, 1.6, null);
+  } else if (S.vistaPrevia && S.lente === 'partes') { volarA(S.vistaPrevia, 1.4, null); S.vistaPrevia = null; }
+  else S.vistaPrevia = null;
+}
+function pintarVoladizo() {
+  const L = S.largo ?? 1.65, coma = (v, n) => v.toFixed(n).replace('.', ',');
+  const K = 150, x0 = 46, y0 = 70, th = 14, Lp = L * K;
+  const tip = 14 * Math.pow(L / 1.65, 4);
+  const baja = (s) => tip * (s * s * (6 - 4 * s + s * s) / 3);          // forma de la deformada de una viga en voladizo con carga repartida
+  const curva = (off) => Array.from({ length: 25 }, (_, i) => { const s = i / 24; return [x0 + s * Lp, y0 + off + baja(s)]; });
+  const top = curva(0), bot = curva(th);
+  const trazo = (a) => a.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const cuerpo = trazo(top) + ' ' + bot.slice().reverse().map((p) => 'L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') + ' Z';
+  let flechas = '';
+  for (let x = x0 + 18; x <= x0 + Lp - 4; x += 30) {
+    const y = y0 + baja((x - x0) / Lp) - 3;
+    flechas += `M${x.toFixed(1)} 26 L${x.toFixed(1)} ${y.toFixed(1)} M${(x - 4).toFixed(1)} ${(y - 7).toFixed(1)} L${x.toFixed(1)} ${y.toFixed(1)} L${(x + 4).toFixed(1)} ${(y - 7).toFixed(1)} `;
+  }
+  const yb = 186, hm = 26 * Math.pow(L / 1.65, 2);
+  let mom = `M${x0} ${yb}`;
+  for (let i = 0; i <= 24; i++) { const s = i / 24; mom += ` L${(x0 + s * Lp).toFixed(1)} ${(yb - hm * (1 - s) * (1 - s)).toFixed(1)}`; }
+  mom += ' Z';
+  const xc = x0 + 10 + Math.max(0, Math.min(Lp - 160, 150)), yc = y0 + th + baja((xc - x0) / Lp) + 16;
+  $('#vol-svg').innerHTML = `
+    <rect x="18" y="16" width="28" height="176" fill="#3a4448"></rect>
+    <path d="M18 30 L46 16 M18 58 L46 44 M18 86 L46 72 M18 114 L46 100 M18 142 L46 128 M18 170 L46 156 M18 192 L42 180" stroke="#5a666b" stroke-width="1.5"></path>
+    <text x="32" y="12" text-anchor="middle" class="vt m">muro</text>
+    <rect x="46" y="70" width="${(1.65 * K).toFixed(1)}" height="14" fill="none" stroke="rgba(239,233,222,0.35)" stroke-dasharray="4 4"></rect>
+    <path d="${flechas}" stroke="#b6bdb9" stroke-width="1.5" fill="none"></path>
+    <path d="${cuerpo}" fill="rgba(239,233,222,0.22)"></path>
+    <path d="${trazo(top)}" stroke="#e2553a" stroke-width="3" fill="none"></path>
+    <path d="${trazo(bot)}" stroke="#4aa8dc" stroke-width="3" fill="none"></path>
+    <path d="${mom}" fill="rgba(244,181,69,0.28)" stroke="#f4b545" stroke-width="1.5"></path>
+    <line x1="46" y1="186" x2="${(x0 + Lp).toFixed(1)}" y2="186" stroke="rgba(239,233,222,0.35)"></line>
+    <text x="56" y="62" class="vt" fill="#ff8a70">tracción: se estira</text>
+    <text x="${xc.toFixed(0)}" y="${yc.toFixed(0)}" class="vt" fill="#7cc4ec">compresión: se aprieta</text>
+    <text x="52" y="${yb - 7}" class="vt" fill="#f4b545">momento: máximo en la raíz</text>
+    <text x="504" y="30" text-anchor="end" class="vt m">deformación exagerada</text>`;
+  const m = Math.pow(L / 1.65, 2), d = Math.pow(L / 1.65, 4), ang = Math.atan(1.65 / L) * 180 / Math.PI, real = Math.abs(L - 1.65) < 0.01;
+  $('#vol-m').textContent = real ? 'igual' : '×' + coma(m, m < 1 ? 2 : 1);
+  $('#vol-d').textContent = real ? 'igual' : '×' + coma(d, d < 1 ? 2 : 1);
+  $('#vol-a').textContent = Math.round(ang) + '°';
+  document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.largo - L) < 0.01)));
 }
 
 // ---------------- Qué significa cada dato (se toca un dato del dock) ----------------
@@ -1115,7 +1337,7 @@ function pasosRecorrido() {
       ir: () => { volarA(VISTAS.aerea, 1.8, 'aerea', false); S.ayudas = true; $('#capa-ayudas').checked = true; } },
     { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol está alto, los aleros dejan las paredes y las ventanas en sombra.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto, protege la pared.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
-    { t: '¿Qué fachada se calienta más?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, el testero suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos tres cuartos de lo que recibe la sureste.',
+    { t: '¿Qué fachada se calienta más?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos tres cuartos de lo que recibe la sureste.',
       ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(z.h * 60 + z.min)}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: z.h * 60 + z.min, vista: 'aerea', lente: 'foto' }) },
@@ -1123,11 +1345,13 @@ function pasosRecorrido() {
       ir: () => viajarA({ fecha: { y, m: 12, d: 21 }, min: 15 * 60, vista: 'planta', lente: 'sombras' }) },
     { t: 'La lluvia', txt: 'Aquí llueven unos 2.000 mm al año, casi todo de mayo a noviembre y sobre todo en la tarde. Esta es la hora más lluviosa de 25 años de datos: 19 mm entre las 14:00 y las 15:00 del 1 de julio de 2023. Mira las cortinas de agua que caen de los tres aleros.', dis: 'Por eso los aleros anchos: alejan el agua de los muros y de las ventanas.',
       ir: () => viajarA({ fecha: { y: 2023, m: 7, d: 1 }, min: 14 * 60 + 30, vista: 'esquina', lente: 'foto' }) },
-    { t: 'La lluvia con viento', txt: 'La forma de ver «Lluvia» muestra qué fachada se moja más cuando llueve con viento. En un año típico, la noroeste recibe más de cinco veces lo que el testero noreste.', dis: 'Dice dónde reforzar aleros, goterones, juntas y acabados.',
+    { t: 'La lluvia con viento', txt: 'La forma de ver «Lluvia» muestra qué fachada se moja más cuando llueve con viento. En un año típico, la noroeste recibe más de cinco veces lo que la fachada lateral noreste.', dis: 'Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados.',
       ir: () => { S.aguaModo = 'anio'; viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, fachada: 'no', lente: 'lluvia' }); } },
     { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Casi todo el año sopla del norte y el noroeste, y la fachada noroeste lo recibe de frente unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
-    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento o Sombras.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
+    { t: 'Las partes del edificio', txt: 'La forma de ver «Partes» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. Toca una etiqueta para saber qué es, cómo es en este edificio y qué hace. La persona de 1,70 m junto a la esquina sirve para comparar tamaños.', dis: 'El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos.',
+      ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('partes', false); elegirParte('alero'); } },
+    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
       ir: () => { S.aguaModo = 'hora'; irAAhora(true); ponerLente('foto', false); } },
   ];
 }
@@ -1141,7 +1365,7 @@ function recorrido(i) {
   $('#rec-prev').disabled = i === 0; $('#rec-sig').textContent = i === P.length - 1 ? 'Terminar' : 'Siguiente';
   $('#rec-puntos').innerHTML = P.map((_, j) => `<i class="${j === i ? 'hoy' : j < i ? 'ya' : ''}"></i>`).join('');
   $('#recorrido').hidden = false; document.documentElement.classList.add('en-recorrido');
-  ['#sirve', '#ir-a', '#capas'].forEach((x) => { $(x).hidden = true; });
+  ['#sirve', '#ir-a', '#capas'].forEach((x) => { $(x).hidden = true; }); abrirVoladizo(false);
   q.ir(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
 }
 
@@ -1183,7 +1407,7 @@ function listaConsultas() {
   const fa = g('Sol en fachadas');
   if (C) {
     const ds = C.diasSol[1] ?? C.diasSol[0], tE = C.tipicos[0], tJ = C.tipicos[5];
-    fa({ t: 'Sol de la tarde en el testero SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol da casi de frente al testero SO y el alero solo sombrea la parte alta de cada piso.` });
+    fa({ t: 'Sol de la tarde en la fachada lateral SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol da casi de frente a la fachada lateral SO y el alero solo sombrea la parte alta de cada piso.` });
     fa({ t: 'Sol de la mañana en la entrada SE', f: deISO(tE.fecha), min: 7 * 60 + 45, fachada: 'se', lente: 'sol', v: 'día típico', txt: 'Un día típico de enero: el sol bajo de la mañana entra bajo el alero de la fachada principal. Pasa la regla a las 10:00 para ver el ángulo de corte.' });
     fa({ t: 'Sol del poniente en la NO (junio)', f: deISO(tJ.fecha), min: 17 * 60, fachada: 'no', lente: 'sol', v: 'día típico', txt: 'En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, que casi todo el año queda a la sombra. Suele estar nublado: mira el valor en W/m².' });
     const lv = g('Lluvia');
@@ -1295,5 +1519,5 @@ function depurar() {
   f();
 }
 
-globalThis.__e106 = { S, DIAG, get escena() { return escena; }, get intro() { return intro; }, clima, rescatar };
+globalThis.__e106 = { S, DIAG, U, get escena() { return escena; }, get controls() { return controls; }, get intro() { return intro; }, clima, rescatar };
 arrancar();

@@ -101,8 +101,8 @@ export function rumboTexto(b) {
 export const FACHADAS = {
   'fachada-se': { nombre: 'Fachada sureste', lugar: 'calle Graig, con la entrada 106', rumbo: 146 },
   'fachada-no': { nombre: 'Fachada noroeste', lugar: 'hacia el cuadrángulo', rumbo: 326 },
-  'fachada-ne': { nombre: 'Testero noreste', lugar: 'el jardín de la esquina', rumbo: 56 },
-  'fachada-so': { nombre: 'Testero suroeste', lugar: 'el extremo opuesto al jardín', rumbo: 236 },
+  'fachada-ne': { nombre: 'Fachada lateral noreste', lugar: 'el jardín de la esquina', rumbo: 56 },
+  'fachada-so': { nombre: 'Fachada lateral suroeste', lugar: 'el extremo opuesto al jardín', rumbo: 236 },
 };
 
 /** Coseno de incidencia del sol sobre una fachada vertical de rumbo dado (0 si el sol está detrás). */

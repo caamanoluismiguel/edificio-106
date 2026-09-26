@@ -126,6 +126,7 @@ export class Escena {
     this.#ruta();
     this.#diagrama();
     this.#vientoRosa();
+    this.#partes();
 
     this.#pipeline();
 
@@ -600,6 +601,48 @@ export class Escena {
       const p = posicionSol({ ...f, h: s.userData.h, min: 0 }); s.userData.arriba = p.alt > 2;
       vectorSol(p.alt, p.az, v); s.position.set(v.x * (R + 6), v.y * (R + 6) + 3, v.z * (R + 6));
     }
+    this.sucio = true;
+  }
+
+  // ---------- Partes del edificio: persona de 1,70 m, regla de alturas y un módulo resaltado ----------
+  #partes() {
+    const ambar = new THREE.Color(0xf4b545);
+    // persona de 1,70 m junto a la esquina del jardín (fuera del alero, que termina a 24,4 m)
+    const mp = new THREE.MeshStandardNodeMaterial({ color: ambar, roughness: 0.6, metalness: 0 });
+    mp.emissive = new THREE.Color(0x3a2400);
+    const persona = new THREE.Group();
+    const cuerpo = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 1.02, 6, 14), mp); cuerpo.position.y = 0.70;
+    const cabeza = new THREE.Mesh(new THREE.SphereGeometry(0.125, 16, 12), mp); cabeza.position.y = 1.575;
+    for (const o of [cuerpo, cabeza]) { o.castShadow = true; o.layers.enable(1); persona.add(o); }
+    persona.position.set(24.7, 0, 11.3); persona.visible = false;
+    this.scene.add(persona); this.persona = persona;
+    // regla de alturas en la esquina noreste–sureste: suelo, base (0,65), aleros (3,74 · 7,40 · 11,10)
+    const X = 22.78, Z = 11.53, niveles = [0, 0.65, 3.74, 7.4, 11.1], pts = [X, 0, Z, X, 11.1, Z];
+    for (const y of niveles) pts.push(X - 0.45, y, Z + 0.45, X + 0.45, y, Z - 0.45);
+    const gr = new THREE.BufferGeometry(); gr.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    gr.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(pts.length / 3 * 2), 2));   // algunos pasos del render piden uv
+    const mr = new THREE.LineBasicNodeMaterial({ color: ambar, depthTest: false, depthWrite: false, transparent: true });
+    mr.fog = false;
+    const regla = new THREE.LineSegments(gr, mr); regla.renderOrder = 30; regla.visible = false; regla.frustumCulled = false;
+    this.scene.add(regla); this.regla = regla;
+    // un módulo de la fachada principal: entre dos ménsulas (6,70 m), en el piso 2
+    const x0 = 13.4, x1 = 20.1, y0 = 3.95, y1 = 7.2, z = 11.56;
+    const gm = new THREE.BufferGeometry();
+    gm.setAttribute('position', new THREE.Float32BufferAttribute([x0, y0, z, x1, y0, z, x1, y0, z, x1, y1, z, x1, y1, z, x0, y1, z, x0, y1, z, x0, y0, z], 3));
+    gm.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(16), 2));
+    const mm = new THREE.LineBasicNodeMaterial({ color: ambar }); mm.fog = false;
+    const marco = new THREE.LineSegments(gm, mm); marco.renderOrder = 29;
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), new THREE.MeshBasicNodeMaterial({ color: ambar, transparent: true, opacity: 0.3, depthWrite: false }));
+    pl.position.set((x0 + x1) / 2, (y0 + y1) / 2, z + 0.01); pl.material.fog = false; pl.renderOrder = 28;
+    const modulo = new THREE.Group(); modulo.add(marco, pl); modulo.visible = false;
+    this.scene.add(modulo); this.moduloResaltado = modulo;
+  }
+
+  /** Muestra u oculta la persona de 1,70 m, la regla de alturas y el módulo resaltado. */
+  setPartes({ persona = false, alturas = false, modulo = false } = {}) {
+    if (!this.persona) return;
+    if (this.persona.visible !== persona) { this.persona.visible = persona; this.sun.shadow.needsUpdate = true; }
+    this.regla.visible = alturas; this.moduloResaltado.visible = modulo;
     this.sucio = true;
   }
 
