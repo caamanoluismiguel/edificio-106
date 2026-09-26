@@ -91,7 +91,7 @@ const VISTA_FACHADA = {
   'fachada-se': { pos: [9, 1.65, 30], tgt: [4, 6.2, 11.5] },
   'fachada-no': { pos: [-2, 1.65, -32], tgt: [0, 6.2, -11.5] },
   'fachada-ne': { pos: [46, 1.65, -4], tgt: [22.75, 6.2, 0] },
-  'fachada-so': { pos: [-46, 1.65, 4], tgt: [-22.75, 6.2, 0] },
+  'fachada-so': { pos: [-41, 1.65, 4], tgt: [-22.75, 6.2, 0] },   // el edificio vecino empieza en x ≈ −43,9: más atrás la cámara quedaba dentro de su muro
 };
 const ROTULOS = [ // aparecen durante el armado, en el orden de los grupos
   { b: 0, t: 'Planta de 45,5 × 23 m' },       // aparece cuando los puntos ya formaron el edificio

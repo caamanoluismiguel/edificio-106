@@ -60,6 +60,20 @@ Object.assign(U, {
 const sombraSol = property('float', 'sombraSol');
 
 const clayColor = vec3(0.74, 0.72, 0.68);
+const TEX_BLANCA = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);   // mientras llega la textura real
+TEX_BLANCA.needsUpdate = true;
+/** 1 / color promedio (lineal) de una imagen sRGB, para que la textura multiplique alrededor de 1. */
+function promedioInverso(img) {
+  const v = new THREE.Vector3(1, 1, 1);
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const x = c.getContext('2d'); x.drawImage(img, 0, 0, 64, 64);
+    const d = x.getImageData(0, 0, 64, 64).data, lin = (u) => { u /= 255; return u <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4; };
+    let r = 0, g = 0, b = 0; for (let i = 0; i < d.length; i += 4) { r += lin(d[i]); g += lin(d[i + 1]); b += lin(d[i + 2]); }
+    const n = d.length / 4; v.set(n / Math.max(r, 1e-3), n / Math.max(g, 1e-3), n / Math.max(b, 1e-3));
+  } catch (e) { /* sin lienzo: la textura queda tal cual */ }
+  return v;
+}
 
 export class Escena {
   constructor(canvasParent, calidad) {
@@ -103,8 +117,10 @@ export class Escena {
     sun.castShadow = true;
     const S = this.calidad.sombras;
     sun.shadow.mapSize.set(S, S);
-    const sc = sun.shadow.camera; sc.left = -115; sc.right = 115; sc.top = 115; sc.bottom = -115; sc.near = 10; sc.far = 1400;
-    sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.35;
+    // ±70 m cubre el edificio, los árboles cercanos y las sombras largas de la mañana; con 4096 px, un texel mide 3,4 cm
+    const sc = sun.shadow.camera; sc.left = -70; sc.right = 70; sc.top = 70; sc.bottom = -70; sc.near = 10; sc.far = 1400;
+    // normalBias va en metros: con 0,35 cada punto se probaba 35 cm fuera del muro y los aleros sombreaban como si fueran un 21 % más cortos
+    sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.05;
     sun.shadow.radius = 2;
     sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true;   // se recalcula solo cuando cambia el sol o el armado
     sun.shadow.camera.layers.set(1);                                 // proyectan sombra solo los objetos en la capa 1
@@ -187,7 +203,9 @@ export class Escena {
     const vig = smoothstep(float(1.25), float(0.35), length(screenUV.sub(0.5).mul(vec2(1.35, 1.0))));
     const grano = hash(screenUV.mul(viewportSize).add(fract(time.mul(13.7)).mul(517.0))).sub(0.5).mul(0.035);
     // suavizado FXAA sobre la imagen ya tonemapeada (más barato que MSAA ×4 a esta resolución)
-    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(float(0.72).sub(U.viaje.mul(0.3)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(renderOutput(v)) : renderOutput(v); };
+    // curva S suave después del tonemapping (AgX sale plano): más contraste entre sol y sombra, sin tocar los extremos
+    const curva = (o) => vec4(mix(o.rgb, smoothstep(0.0, 1.0, o.rgb), 0.3), o.a);
+    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(float(0.72).sub(U.viaje.mul(0.3)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(curva(renderOutput(v))) : curva(renderOutput(v)); };
     this.pipeline.outputColorTransform = false;
     const aa = this.calidad.nivel !== 'bajo';
     this.salidas = { sinBloom: acabar(col, aa), sinAA: acabar(col, false) };
@@ -252,10 +270,11 @@ export class Escena {
     this.sky.showSunDisc.value = ks > 0.35 && lv < 0.3 ? 1 : 0;
     this.sky.mieCoefficient.value = 0.006 * (0.2 + 0.8 * ks) * (1 - 0.8 * lv);
     this.hemi.intensity = 0.08 + day * (0.22 + 0.95 * cubierto) + 5 * fl;
-    const hc = new THREE.Color().setRGB(0.55 + 0.2 * day, 0.62 + 0.2 * day, 0.85 + 0.05 * day).lerp(new THREE.Color(0.86, 0.89, 0.93), cubierto);
+    // relleno del cielo menos azul y rebote del suelo más cálido: con el azul de antes, todo lo que quedaba en sombra se veía pizarra
+    const hc = new THREE.Color().setRGB(0.55 + 0.27 * day, 0.62 + 0.21 * day, 0.85 - 0.02 * day).lerp(new THREE.Color(0.88, 0.89, 0.9), cubierto);
     this.hemi.color.copy(hc);
-    this.hemi.groundColor.setRGB(0.2 + 0.15 * day, 0.2 + 0.14 * day, 0.14 + 0.08 * day);
-    this.renderer.toneMappingExposure = 0.85 + 0.6 * (1 - day) + 0.2 * cubierto;
+    this.hemi.groundColor.setRGB(0.2 + 0.2 * day, 0.2 + 0.17 * day, 0.14 + 0.07 * day);
+    this.renderer.toneMappingExposure = 0.95 + 0.5 * (1 - day) + 0.2 * cubierto;
     const fogC = new THREE.Color().setRGB(0.1 + 0.52 * day, 0.13 + 0.55 * day, 0.2 + 0.55 * day);
     fogC.lerp(new THREE.Color(g * 0.88, g * 0.92, g * 0.96), Math.max(lv, cubierto * 0.6));
     this.scene.fog.color.copy(fogC);
@@ -375,10 +394,14 @@ export class Escena {
     m.name = src.name;
     let colBase = materialColor;     // referencia al color del material: el mismo shader sirve para todos
     if (ex.image) {
+      // el suelo llega sin coordenadas de textura: se proyecta desde arriba, con el tamaño de repetición que anota el exportador
       const f = ex.image.replace(/_4k\.jpg$|_2k\.jpg$/, '_1k.webp');
-      m.color.setRGB(1, 1, 1);
-      cargaTex(f).then((t) => { if (t) { m.map = t; m.needsUpdate = true; this.sucio = true; } });
-      colBase = materialColor;       // con map, materialColor ya incluye la textura
+      const rep = ex.ground_uv || 2;
+      // el color del material es el promedio que dio Blender (con el tinte del nodo: el pasto de Poly Haven es pardo y allá
+      // se tiñe de verde); la textura solo aporta la variación alrededor de su propio promedio
+      const tn = texture(TEX_BLANCA, positionWorld.xz.div(rep)), inv = uniform(new THREE.Vector3(1, 1, 1));
+      cargaTex(f).then((t) => { if (t) { tn.value = t; inv.value.copy(promedioInverso(t.image)); this.sucio = true; } });
+      colBase = tn.rgb.mul(inv).mul(materialColor);
     }
     if (glass) {
       m.color.setRGB(0.03, 0.04, 0.045); m.roughness = 0.06; m.metalness = 0.0;
@@ -389,9 +412,13 @@ export class Escena {
       const on = step(0.35, hash(cell.x.mul(17.0).add(cell.y.mul(131.0))));
       m.emissiveNode = vec3(1.0, 0.62, 0.3).mul(on).mul(U.noche).mul(3.2);
     }
-    const nmPlaster = nm.includes('plaster') || nm.includes('cream trim');
+    const nmPlaster = (nm.includes('plaster') || nm.includes('cream trim')) && !nm.includes('interior');
     let colorFinal = colBase;
+    // interiores inventados (v014): oscuros y neutros, para que detrás del vidrio no aparezcan manchas blancas
+    if (nm.includes('interior') || nm.includes('ceiling') || nm.includes('diffuser')) colorFinal = colBase.mul(0.3);
     if (nmPlaster) {
+      // blanco cálido de las fotos (WA0014, WA0017) en lugar del gris verdoso que dejó el promedio del exportador
+      colBase = colBase.mul(vec3(1.0, 0.91, 0.78));
       // pañete: algas y salpicadura en la base del muro + manchas amplias de la pintura
       const y = positionWorld.y;
       const n = mx_fractal_noise_float(positionWorld.mul(vec3(0.35, 0.9, 0.35)), 3, 2.0, 0.5).mul(0.5).add(0.5);
@@ -402,6 +429,20 @@ export class Escena {
     if (nm.includes('terracotta') || nm.includes('clay')) {
       const n = mx_noise_float(positionWorld.mul(1.7)).mul(0.5).add(0.5);
       colorFinal = colBase.mul(mix(0.78, 1.25, n));
+    }
+    // bajo los aleros: las caras que miran hacia abajo solo ven el suelo y la sombra del propio alero (en las fotos se leen
+    // como una franja parda oscura); no reciben sol directo, así que oscurecerlas no cambia ninguna sombra del análisis
+    if (!leaf && !glass && grupo !== 'sitio' && grupo !== 'vegetacion') {
+      const abajo = smoothstep(-0.2, -0.75, normalWorld.y).mul(smoothstep(2.4, 3.2, positionWorld.y));
+      colorFinal = colorFinal.mul(mix(float(1), float(0.42), abajo));
+    }
+    // sustituto de oclusión bajo los aleros (hasta hornear la de Blender): el alero de 1,65 m le tapa el cielo al muro en
+    // el metro y pico bajo su encuentro, medido en el modelo a 4,40 · 8,05 · ~11,7 m
+    if (nmPlaster && grupo !== 'sitio' && grupo !== 'contexto') {
+      const y = positionWorld.y, vertical = smoothstep(0.6, 0.3, abs(normalWorld.y));
+      const bajo = (j) => step(y, j).mul(smoothstep(1.3, 0.0, float(j).sub(y)));
+      const occ = max(max(bajo(4.4), bajo(8.05)), bajo(11.7)).mul(vertical);
+      colorFinal = colorFinal.mul(mix(float(1), float(0.5), occ));
     }
     m.colorNode = mix(clayColor, colorFinal, U.mat);
     if (glass) m.colorNode = mix(clayColor.mul(0.35), colorFinal, U.mat);
