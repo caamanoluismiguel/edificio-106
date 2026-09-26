@@ -2,7 +2,7 @@
 
 Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber (Clayton, Panamá), con el sol calculado para cada minuto y el clima hora por hora de 2001 a 2025. Sirve para leer y discutir cómo trabajan la orientación, los aleros y la lluvia en este edificio.
 
-**Ver el sitio:** https://USUARIO.github.io/NOMBRE-DEL-REPO/
+**Ver el sitio:** https://caamanoluismiguel.github.io/edificio-106/
 
 ## Qué hace
 - **Ahora:** sol de este minuto (algoritmo de NOAA) y pronóstico de modelo de Open-Meteo.
