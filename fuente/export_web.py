@@ -4,8 +4,8 @@
 - Color base de materiales procedurales = promedio de sus rampas de color.
 - Ejes: Blender (x, y, z-arriba) -> glTF (x, z, -y)."""
 import bpy, numpy as np, json, struct, os, math, random
-SRC = "/mnt/user-data/uploads/isthmus-digitaldouble/delivery/v016/Isthmus_v016_rampa_contexto_luz.blend"
-OUT = "/home/claude/web106/raw"
+SRC = os.environ.get("BLEND", "Isthmus_v016.blend")          # archivo .blend de origen
+OUT = os.environ.get("SALIDA", "raw")
 bpy.ops.wm.open_mainfile(filepath=SRC)
 dg = bpy.context.evaluated_depsgraph_get()
 
@@ -197,7 +197,7 @@ for gname, cols in GROUPS:
 for im in bpy.data.images:
     if im.name in ("leafy_grass_diff_4k.jpg", "asphalt_02_diff_4k.jpg", "concrete_floor_01_diff_2k.jpg", "kloofendal_48d_partly_cloudy_puresky_8k.hdr", "asphalt_02_nor_gl_4k.jpg"):
         if im.packed_file:
-            with open(os.path.join("/home/claude/web106/tex", im.name), "wb") as f: f.write(im.packed_file.data)
+            with open(os.path.join(os.environ.get("TEXTURAS", "tex"), im.name), "wb") as f: f.write(im.packed_file.data)
 # cameras
 cams = {o.name: dict(loc=list(o.location), rot=list(o.rotation_euler), lens=o.data.lens) for o in bpy.data.objects if o.type == 'CAMERA'}
 json.dump(dict(summary=summary, materials=MATS, cameras=cams), open(os.path.join(OUT, "export_summary.json"), "w"), indent=1, ensure_ascii=False)

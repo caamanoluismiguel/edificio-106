@@ -5,10 +5,43 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Escena, U, GRUPOS } from './escena.js';
 import { Sonido } from './sonido.js';
 import { puntosIntro } from './datos.js';
-import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar } from './sol.js';
+import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { Clima } from './clima.js';
 
 const $ = (s) => document.querySelector(s);
+export const VERSION = 'v3 · 25 sep 2026';
+
+// ---------------- Diagnóstico: todo error queda anotado y, si hace falta, visible en pantalla ----------------
+const DIAG = { log: [], gpu: 0, t0: performance.now() };
+function anotar(tipo, m) {
+  const txt = String(m?.message ?? m ?? '').replace(/\s+/g, ' ').slice(0, 420);
+  const prev = DIAG.log[DIAG.log.length - 1];
+  if (prev && prev.tipo === tipo && prev.txt === txt) { prev.n++; pintarDiag(); return; }
+  DIAG.log.push({ t: ((performance.now() - DIAG.t0) / 1000).toFixed(1), tipo, txt, n: 1 });
+  if (DIAG.log.length > 40) DIAG.log.shift();
+  pintarDiag();
+}
+function pintarDiag() {
+  let el = document.getElementById('diag');
+  const graves = DIAG.log.filter((x) => x.tipo !== 'aviso').length;
+  if (!el) {
+    if (!graves && location.hash !== '#depurar') return;
+    el = document.createElement('details'); el.id = 'diag';
+    el.innerHTML = '<summary></summary><pre></pre>';
+    document.body.appendChild(el);
+    if (location.hash === '#depurar') el.open = true;
+  }
+  let be = '…'; try { be = escena?.backend ?? '…'; } catch (e) { /* aún no hay escena */ }
+  el.querySelector('summary').textContent = `Diagnóstico · ${be} · ${graves} error${graves === 1 ? '' : 'es'} · ${VERSION}`;
+  el.querySelector('pre').textContent = DIAG.log.map((x) => `${x.t} s  ${x.tipo}${x.n > 1 ? ' ×' + x.n : ''}: ${x.txt}`).join('\n');
+}
+addEventListener('error', (e) => anotar('error', e.message + (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '')));
+addEventListener('unhandledrejection', (e) => anotar('promesa', e.reason?.stack?.split('\n').slice(0, 2).join(' ') ?? e.reason));
+{
+  const ce = console.error.bind(console), cw = console.warn.bind(console);
+  console.error = (...a) => { anotar('consola', a.map((x) => x?.message ?? String(x)).join(' ')); ce(...a); };
+  console.warn = (...a) => { const t = a.map((x) => x?.message ?? String(x)).join(' '); if (/THREE|WebGPU|GPU/i.test(t)) anotar('aviso', t); cw(...a); };
+}
 const BASE = new URL('../', import.meta.url).href;              // js/app.js -> raíz del sitio
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -28,6 +61,9 @@ const diaDelAnio = (f) => Math.min(364, Math.round((Date.UTC(f.y, f.m - 1, f.d) 
 const fechaDeDia = (y, n) => { const d = new Date(Date.UTC(y, 0, 1) + n * 864e5); return { y, m: d.getUTCMonth() + 1, d: d.getUTCDate() }; };
 const diasMes = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
 const fechaTexto = (f) => `${f.d} de ${MESES[f.m - 1]} de ${f.y}`;
+const kf2 = (f) => `${f.y}-${String(f.m).padStart(2, '0')}-${String(f.d).padStart(2, '0')}`;
+const deISO = (t) => { const [y, m, d] = t.split('-').map(Number); return { y, m, d }; };
+const fechaCorta = (f) => `${f.d} ${MES3[f.m - 1]} ${f.y}`;
 
 // ---------------- Calidad según el equipo ----------------
 function calidad() {
@@ -72,7 +108,11 @@ const S = {
   fecha: { y: hoy.y, m: hoy.m, d: hoy.d }, min: hoy.min,
   pestana: 'dia', reproduce: false, aguacero: false, calor: false, ayudas: true, fachada: null,
   mesSerie: null,                // en el paso de 25 años: índice de mes (lluvia mensual en la escena)
+  lente: 'foto',                 // foto · sol · lluvia · sombras
+  aguaModo: 'hora',              // lente de lluvia: esta hora o año típico
+  viaje: null,                   // viaje en el tiempo en curso
 };
+let consultas = null;
 let escena, controls, clima = new Clima(), sonido = new Sonido(), intro = null;
 let lluviaSuave = 0, nubesSuave = 30;
 const cam = { anim: null };
@@ -94,13 +134,16 @@ async function arrancar() {
   const q = calidad();
   estadoCarga('Preparando la escena…');
   const MIDE = /^#medir/.test(location.hash);
-  try { escena = await new Escena($('#lienzo'), q).init(/[?&]webgl/.test(location.search) || location.hash === '#medir-gl'); }
+  let pideGL = /[?&]webgl/.test(location.search) || location.hash === '#medir-gl' || location.hash === '#webgl';
+  try { if (localStorage.getItem('e106-motor') === 'webgl' && location.hash !== '#webgpu') pideGL = true; if (location.hash === '#webgpu') localStorage.removeItem('e106-motor'); } catch (e) { /* sin almacenamiento */ }
+  try { escena = await new Escena($('#lienzo'), q).init(pideGL); }
   catch (e) {
     try { escena = await new Escena($('#lienzo'), { ...q, nivel: 'medio', sombras: 2048, bloom: false }).init(true); }
     catch (e2) { estadoCarga('Este navegador no puede mostrar la escena 3D. Prueba con Chrome, Edge o Safari actualizados.'); return; }
   }
   document.documentElement.dataset.backend = escena.backend;
   $('#motor').textContent = escena.backend;
+  vigilarGPU();
   const cam0 = new THREE.Vector3(...ESQUINA.pos).add(new THREE.Vector3(22, 13, 15));
   escena.camera.position.copy(cam0); escena.camera.lookAt(...ESQUINA.tgt);
   escena.setSol(-7.5, 95);
@@ -119,7 +162,8 @@ async function arrancar() {
     if (l === 1 && t === 1) compilarPronto();
   });
   const pIntro = puntosIntro(BASE).catch((e) => { console.warn(e); return null; });
-  clima.cargarResumen(BASE + 'datos/clima_resumen.json').then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); } });
+  clima.cargarResumen(BASE + 'datos/clima_resumen.json').then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
+  fetch(BASE + 'datos/consultas.json').then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
   setInterval(() => { if (S.modo === 'ahora') clima.cargarVivo(); }, 10 * 60e3);
 
@@ -220,20 +264,81 @@ function terminarIntro() {
 function irAMomentoHash() {
   const r = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})$/.exec(location.hash); if (!r) return false;
   const [, y, mo, d, hh, mi] = r.map(Number);
-  parar(); explorar(); S.momento = null; S.mesSerie = null; S.fecha = { y, m: mo, d }; S.min = hh * 60 + mi; S.salto = true;
+  viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi });
+  return true;
+}
+
+// ---------------- Viaje en el tiempo ----------------
+// Al saltar a otra fecha: la fecha y la hora corren en el dock, el sol recorre el cielo por el camino más corto
+// (nunca un día tras otro: sin parpadeo de día y noche), la cámara vuela a la vista pedida y, al llegar, entra el tiempo.
+const easeViaje = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const marcaT = (f, min) => Date.UTC(f.y, f.m - 1, f.d) + min * 60e3;
+function solDeVector(v) { const alt = Math.asin(Math.max(-1, Math.min(1, v.y))) * 180 / Math.PI; const az = ((EJE_LARGO - Math.atan2(-v.z, v.x) * 180 / Math.PI) % 360 + 360) % 360; return { alt, az }; }
+function viajarA(d) {
+  parar(); explorar();
+  S.mesSerie = null; S.aguacero = false; $('#capa-aguacero').checked = false;
+  S.momento = d.titulo ? { titulo: d.titulo, texto: d.texto ?? '' } : null;
+  if (d.lente) ponerLente(d.lente);
   if (S.pestana !== 'dia') ponerPestana('dia');
-  lastLect = ''; return true;
+  if (d.fachada) mostrarFachada('fachada-' + d.fachada); else { S.fachada = null; document.documentElement.classList.remove('en-fachada'); }
+  const f1 = { y: d.fecha.y, m: d.fecha.m, d: d.fecha.d }, m1 = d.min;
+  const dh = Math.abs(marcaT(f1, m1) - marcaT(S.fecha, S.min)) / 3.6e6;
+  const T = reduce || d.inmediato ? 0 : Math.min(2800, Math.max(900, 900 + 350 * Math.log10(1 + dh)));
+  const vista = d.fachada ? VISTA_FACHADA['fachada-' + d.fachada] : d.vista ? VISTAS[d.vista] : null;
+  if (vista) volarA(vista, Math.max(1.2, T / 1000), d.fachada ? null : d.vista, false);
+  if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; lastLect = ''; llegada(d); return; }
+  const p0 = posicionSol({ ...S.fecha, h: 0, min: S.min }), p1 = posicionSol({ ...f1, h: 0, min: m1 });
+  const v0 = vectorSol(p0.alt, p0.az), v1 = vectorSol(p1.alt, p1.az);
+  const mismoDia = f1.y === S.fecha.y && f1.m === S.fecha.m && f1.d === S.fecha.d;
+  S.viaje = { t0: performance.now(), T, ts0: marcaT(S.fecha, S.min), ts1: marcaT(f1, m1), f1, m1, mismoDia,
+    v0: new THREE.Vector3(v0.x, v0.y, v0.z), v1: new THREE.Vector3(v1.x, v1.y, v1.z), nubes0: nubesSuave, d };
+  $('#viaje-destino').textContent = `${f1.d} ${MES3[f1.m - 1]} ${f1.y} · ${hhmm(m1)}`;
+  $('#viaje').hidden = false; document.documentElement.classList.add('viajando');
+  $('#viaje').classList.remove('llego');
+  lastLect = '';
+}
+const _vs = new THREE.Vector3();
+function pasoViaje(now) {
+  const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T), e = easeViaje(k);
+  const ts = V.ts0 + (V.ts1 - V.ts0) * e, dd = new Date(ts);
+  S.fecha = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() + 1, d: dd.getUTCDate() };
+  S.min = dd.getUTCHours() * 60 + dd.getUTCMinutes() + dd.getUTCSeconds() / 60;
+  // el sol: dentro del mismo día sigue su arco real; si no, el camino más corto por el cielo (a lo sumo un cruce del horizonte)
+  if (V.mismoDia) S.solViaje = null;
+  else { const ang = V.v0.angleTo(V.v1); if (ang < 1e-4) _vs.copy(V.v1); else { _vs.copy(V.v0).multiplyScalar(Math.sin((1 - e) * ang)).addScaledVector(V.v1, Math.sin(e * ang)).divideScalar(Math.sin(ang)); } S.solViaje = solDeVector(_vs); }
+  U.viaje.value = Math.sin(Math.PI * k);
+  $('#viaje-barra').style.transform = `scaleX(${k.toFixed(3)})`;
+  if (k >= 1) {
+    S.fecha = V.f1; S.min = V.m1; S.viaje = null; S.solViaje = null; U.viaje.value = 0; S.aterrizaje = now; lastLect = '';
+    llegada(V.d);
+  }
+}
+function llegada(d) {
+  document.documentElement.classList.remove('viajando');
+  if (d.aAhora) { S.modo = 'ahora'; const a = ahoraPanama(); S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min; lastLect = ''; }
+  const el = $('#viaje'); el.hidden = false; el.classList.add('llego');
+  $('#viaje-barra').style.transform = 'scaleX(1)';
+  clearTimeout(llegada.t); llegada.t = setTimeout(() => { el.hidden = true; el.classList.remove('llego'); }, 2600);
 }
 
 // ---------------- Cámara ----------------
-function volarA(v, dur = 1.6) {
+function volarA(v, dur = 1.6, clave = null, avisar = true) {
   const p0 = escena.camera.position.clone(), t0 = controls.target.clone();
-  cam.anim = { p0, t0, p1: new THREE.Vector3(...v.pos), t1: new THREE.Vector3(...v.tgt), k: 0, dur: reduce ? 0.01 : dur };
+  const p1 = new THREE.Vector3(...v.pos), t1 = new THREE.Vector3(...v.tgt);
+  marcarVista(clave);
+  if (p0.distanceTo(p1) < 0.6 && t0.distanceTo(t1) < 0.6) {           // ya estás ahí: un pequeño empujón para que se note
+    if (clave && avisar) aviso(`Ya estás en la vista ${clave === 'aerea' ? 'aérea' : clave}.`, 1600);
+    cam.anim = { p0: p0.clone().lerp(t0, -0.03), t0, p1, t1, k: 0, dur: reduce ? 0.01 : 0.45, clave };
+  } else cam.anim = { p0, t0, p1, t1, k: 0, dur: reduce ? 0.01 : dur, clave };
   controls.enabled = false;
+}
+function marcarVista(clave) {
+  document.querySelectorAll('[data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === clave)); b.style.setProperty('--p', b.dataset.vista === clave ? 0 : 1); });
 }
 function pasoCamara(dt) {
   const a = cam.anim; if (!a) return false;
   a.k = Math.min(1, a.k + dt / a.dur); const e = eio(a.k);
+  if (a.clave) document.querySelector(`[data-vista="${a.clave}"]`)?.style.setProperty('--p', e.toFixed(3));
   escena.camera.position.lerpVectors(a.p0, a.p1, e);
   // arco suave: sube un poco a mitad de camino para no atravesar el edificio
   escena.camera.position.y += Math.sin(Math.PI * e) * Math.min(30, a.p0.distanceTo(a.p1) * 0.18);
@@ -246,11 +351,13 @@ function pasoCamara(dt) {
 let deslizar = null;
 function alTomar() {
   document.documentElement.classList.add('girado');
+  marcarVista(null);
   if (controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
 }
 
 // ---------------- Clima en la fecha y hora elegidas ----------------
 function climaEn(f, min) {
+  if (S.viaje) return { fuente: 'viaje', nubes: S.viaje.nubes0 + (35 - S.viaje.nubes0) * Math.min(1, (performance.now() - S.viaje.t0) / S.viaje.T), lluvia: 0, dni: null, temp: null };
   if (S.modo === 'ahora' && clima.vivo) return clima.vivo;
   if (S.mesSerie !== null) { const q = clima.meses[S.mesSerie]; if (q) return { fuente: 'mes', nubes: q.nubes ?? 55, lluviaMes: q.lluvia, lluvia: 0, temp: null }; }
   const r = clima.registro(f, min); if (r) return r;
@@ -264,11 +371,19 @@ const intensidad = (mm) => mm < 0.2 ? 0 : Math.min(1, 0.25 + 0.75 * Math.log1p(m
 // ---------------- Bucle ----------------
 let last = performance.now(), lastHour = -1;
 function bucle(now) {
+  requestAnimationFrame(bucle);                 // primero: un error en un cuadro no detiene los siguientes
+  if (S.pausa) return;
+  // el visor de claude.ai precarga la página oculta y sin tamaño: la intro espera a que se vea
+  if (innerWidth < 2 || innerHeight < 2) { last = now; return; }
+  try { paso(now); } catch (e) { anotar('cuadro', e?.stack?.split('\n').slice(0, 3).join(' ← ') ?? e); }
+}
+function paso(now) {
   if (S.midiendo) { S.midiendo.tFrame = performance.now(); S.midiendo.giro(); escena.renderer.info.reset(); }
   const dtReal = Math.min(0.25, (now - last) / 1000), dt = Math.min(0.05, dtReal); last = now;
   if (intro) { pasoIntro(dtReal); (S.dtIntro ??= []).push(now - (S.lastIntro ?? now)); S.lastIntro = now; }  // la intro sigue el reloj real
   else if (S.modo === 'ahora') { const a = ahoraPanama(); S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min; }
   if (S.reproduce) pasoReproducir(dt);
+  if (S.viaje) pasoViaje(now);
   const moviendo = pasoCamara(dtReal);
   if (!moviendo && !intro) {
     if (deslizar) { deslizar.k = Math.min(1, deslizar.k + dtReal / 0.9); controls.target.lerpVectors(deslizar.t0, new THREE.Vector3(...CENTRO), eio(deslizar.k)); if (deslizar.k >= 1) deslizar = null; }
@@ -279,7 +394,7 @@ function bucle(now) {
   }
 
   // sol
-  const p = posicionSol({ ...S.fecha, h: 0, min: S.min });
+  const p = S.solViaje ?? posicionSol({ ...S.fecha, h: 0, min: S.min });
   const c = climaEn(S.fecha, S.min);
   const nub = c?.nubes ?? 30;
   const salto = !!S.salto; S.salto = false;               // al saltar a un momento, el tiempo se muestra de inmediato
@@ -292,18 +407,24 @@ function bucle(now) {
   escena.setNubes(0.08 + 0.85 * nubesSuave / 100);
   U.nubeSombra.value = 0.25 + 2.4 * S.kSol * (1 - S.kSol);         // las sombras de nubes pesan más con cielo a medias
   escena.setSol(p.alt, p.az);
-  escena.setRuta(S.fecha);
+  if (!S.viaje) escena.setRuta(S.fecha);
   // lluvia: la de los datos (o la del mes en el paso de 25 años), o el aguacero de la capa
   let objetivo = c ? (c.fuente === 'mes' ? Math.min(1, (c.lluviaMes ?? 0) / 380) : intensidad(c.lluvia ?? 0)) : 0;
   if (S.aguacero) objetivo = 1;
-  if (intro) objetivo = 0;
-  lluviaSuave += (objetivo - lluviaSuave) * (salto ? 1 : Math.min(1, dt * 1.4));
+  if (intro || S.viaje) objetivo = 0;
+  // al llegar de un viaje la lluvia entra rápido (~0,6 s); en el resto, suave
+  const vel = S.viaje ? 5 : now - (S.aterrizaje ?? -1e9) < 1500 ? 3.2 : 1.4;
+  lluviaSuave += (objetivo - lluviaSuave) * (salto ? 1 : Math.min(1, dt * vel));
   U.lluvia.value = lluviaSuave; escena.lv = Math.min(1, lluviaSuave * 1.1);
   U.mojado.value += ((lluviaSuave > 0.08 ? 1 : 0) - U.mojado.value) * (salto ? 1 : Math.min(1, dt * (lluviaSuave > 0.08 ? 0.35 : 0.05)));
   if (c?.viento != null && c?.dir != null) { const w = vectorSol(0, (c.dir + 180) % 360); const k = 0.4 + c.viento / 12; U.viento.value.set(w.x * k, w.z * k); }
   if (escena.actualizar(dt)) sonido.trueno();
-  U.calor.value += ((S.calor ? 1 : 0) - U.calor.value) * Math.min(1, dt * 4);
+  U.calor.value += ((S.lente === 'sol' ? 1 : 0) - U.calor.value) * Math.min(1, dt * 4);
+  U.agua.value += ((S.lente === 'lluvia' ? 1 : 0) - U.agua.value) * Math.min(1, dt * 4);
+  U.sombras.value += ((S.lente === 'sombras' && !S.viaje ? 1 : 0) - U.sombras.value) * Math.min(1, dt * 4);
+  if (S.lente === 'sombras' && !S.viaje) escena.setDiagrama(S.fecha);
   actualizarCalor(p, c);
+  actualizarAgua(c);
   // ayudas de orientación: la rosa y el arco del sol se ven desde arriba
   const alto = escena.camera.position.y;
   const ay = S.ayudas && !intro ? 1 : 0;
@@ -318,19 +439,48 @@ function bucle(now) {
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
-    [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.mojado.value * 200, escena.uRosa.value * 100, escena.uRuta.value * 100].map(Math.round).join(',') +
+    [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.viaje.value * 100, U.mojado.value * 200, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
     `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}`;
-  const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo;
+  const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo || !!S.viaje;
   if (firma !== S.firma || anima || escena.sucio || now - (S.ultimoCambio || 0) < 500) {
     if (firma !== S.firma) { S.firma = firma; S.ultimoCambio = now; }
-    escena.render();
+    escena.render(); S.dibujados = (S.dibujados || 0) + 1;
     if (S.midiendo) { const r0 = performance.now(); S.midiendo.cpu.push(r0 - S.midiendo.tFrame); S.midiendo.dts.push(now - S.midiendo.last); S.midiendo.last = now; }
     else {
       S.cuadros = (S.cuadros || 0) + 1; S.msAcum = (S.msAcum || 0) + dt * 1000;
       if (S.cuadros >= 40) { escena.ajustarResolucion(S.msAcum / S.cuadros); S.cuadros = 0; S.msAcum = 0; }
     }
   } else { S.cuadros = 0; S.msAcum = 0; }
-  requestAnimationFrame(bucle);
+}
+
+// ---------------- GPU: errores, pérdida del dispositivo y paso automático a WebGL ----------------
+function vigilarGPU() {
+  const dev = escena.renderer.backend?.device; if (!dev) return;
+  dev.addEventListener('uncapturederror', (e) => {
+    if (innerWidth < 2 || innerHeight < 2 || document.visibilityState === 'hidden') { anotar('aviso', 'GPU con la página oculta: ' + (e.error?.message ?? '')); return; }
+    DIAG.gpu++; anotar('GPU', e.error?.message ?? e.error);
+    if (DIAG.gpu >= 3) rescatar('la tarjeta gráfica rechazó cuadros');
+  });
+  dev.lost.then((i) => { if (i.reason === 'destroyed' && rescatando) return; anotar('GPU perdida', `${i.reason ?? ''} ${i.message ?? ''}`); rescatar('se perdió la tarjeta gráfica'); });
+}
+let rescatando = false;
+async function rescatar(motivo) {
+  if (rescatando || escena?.backend !== 'WebGPU') return;
+  rescatando = true; S.pausa = true;
+  anotar('rescate', `${motivo}: paso a WebGL`);
+  try { localStorage.setItem('e106-motor', 'webgl'); } catch (e) { /* sin almacenamiento */ }
+  try {
+    await escena.pasarAWebGL();
+    controls.disconnect(); controls.connect(escena.renderer.domElement);
+    document.documentElement.dataset.backend = escena.backend; $('#motor').textContent = escena.backend;
+    S.firma = ''; escena.sucio = true;
+    aviso('WebGPU falló en este equipo. La escena sigue en modo compatible (WebGL 2).');
+  } catch (e) { anotar('rescate', e); try { location.reload(); } catch (e2) { /* nada */ } }
+  S.pausa = false; rescatando = false; pintarDiag();
+}
+function aviso(t, ms = 6000) {
+  let el = $('#aviso'); if (!el) { el = document.createElement('div'); el.id = 'aviso'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+  el.textContent = t; el.classList.add('ver'); clearTimeout(aviso.t); aviso.t = setTimeout(() => el.classList.remove('ver'), ms);
 }
 
 // ---------------- Calor en fachadas ----------------
@@ -342,6 +492,22 @@ function actualizarCalor(p, c) {
   U.calorF.value.set(...ks.map((v) => Math.min(1, v / 750)));
   U.calorTecho.value = Math.min(1, Math.max(0, Math.sin(p.alt * Math.PI / 180)) * dni / 900);
   S.irr = ks;
+}
+
+// ---------------- Lluvia con viento en fachadas (índice de ISO 15927-3 en campo abierto) ----------------
+// I = (2/9) · v · r^(8/9) · cos(D − θ), en L/m² por hora: v en m/s (10 m), r en mm/h, D = de dónde viene el viento.
+function lluviaBatiente(r, vKmh, dir, rumbo) { const c = Math.cos((dir - rumbo) * Math.PI / 180); return c > 0 && r > 0 ? 2 / 9 * (vKmh / 3.6) * Math.pow(r, 8 / 9) * c : 0; }
+function actualizarAgua(c) {
+  const ks = Object.keys(FACHADAS);
+  if (S.aguaModo === 'anio' && consultas?.lluviaViento) {
+    const L = consultas.lluviaViento, m = Math.max(...ks.map((k) => L[k.slice(8)].anual));
+    S.agua = ks.map((k) => L[k.slice(8)].anual); U.aguaF.value.set(...S.agua.map((v) => v / m));
+  } else {
+    const ok = c && c.lluvia != null && c.viento != null && c.dir != null && (c.fuente === 'serie' || c.fuente === 'dia' || c.fuente === 'vivo');
+    S.agua = ks.map((k) => ok ? lluviaBatiente(c.lluvia, c.viento, c.dir, FACHADAS[k].rumbo) : 0);
+    S.aguaDato = ok;
+    U.aguaF.value.set(...S.agua.map((v) => Math.min(1, v / 5)));
+  }
 }
 
 // ---------------- Brújula: el norte real en pantalla ----------------
@@ -367,8 +533,10 @@ function brujula(p) {
 let lastLect = '';
 function lecturas(p, c) {
   const kf = `${S.fecha.y}-${S.fecha.m}-${S.fecha.d}`;
-  if (kf !== S.kf) { S.kf = kf; dibujarReglas(); }
-  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada].join('|');
+  if (kf !== S.kf && !S.viaje) { S.kf = kf; dibujarReglas(); }
+  const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0);
+  if (kc !== S.kClimaDia && !S.viaje) { S.kClimaDia = kc; pintarClimaDia(); }
+  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, !!S.viaje].join('|');
   if (key === lastLect) return; lastLect = key;
   const vivo = S.modo === 'ahora';
   $('#l-hora').textContent = hhmm(S.min);
@@ -384,7 +552,8 @@ function lecturas(p, c) {
   $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
   // clima
   let temp = '—', det = '', fuente = '';
-  if (c) {
+  if (c?.fuente === 'viaje') { det = 'viajando…'; }
+  else if (c) {
     if (c.temp != null) temp = f1(c.temp) + ' °C';
     // línea 1: cielo · línea 2: lluvia (o la diferencia con lo típico)
     const cielo = [];
@@ -422,6 +591,7 @@ function lecturas(p, c) {
   const xs = (Math.max(0, Math.min(299, im)) + 0.5) / 300 * 1000; $('#dec-aguja').setAttribute('x1', xs); $('#dec-aguja').setAttribute('x2', xs);
   $('#dec-aguja').style.opacity = enSerie ? 1 : 0.25;
   rotulo(p, c, sp);
+  leyenda();
   marcaSol(p);
   if (S.fachada) textoFachada(p);
   // fachadas: irradiancia
@@ -441,6 +611,7 @@ function marcaSol(p) {
 
 function rotulo(p, c, sp) {
   const tipo = $('#rotulo-tipo'), txt = $('#rotulo-texto');
+  if (S.viaje) { tipo.textContent = 'Viajando en el tiempo'; txt.textContent = `Hacia el ${fechaTexto(S.viaje.f1)}, a las ${hhmm(S.viaje.m1)}.`; return; }
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y cae hacia el ${rumboTexto(sp.rumbo)}.`
     : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : 'Es de noche: las ventanas encendidas son una suposición del modelo, no un dato.';
@@ -513,8 +684,14 @@ function pintarMomentos() {
 
 function irAMomento(m) {
   const [y, mo, d] = m.fecha.split('-').map(Number);
-  explorar(); parar(); S.fecha = { y, m: mo, d }; S.min = /^hora-lluvia|^dia/.test(m.id) ? m.hora * 60 - 30 : m.hora * 60;
   const esMes = /^mes/.test(m.id), esAnio = /^anio/.test(m.id);
+  if (!esMes && !esAnio) {
+    const cuando = `${d} de ${MESES[mo - 1]} de ${y}${/^hora-lluvia|^dia/.test(m.id) ? `, de ${hhmm(m.hora * 60 - 60)} a ${hhmm(m.hora * 60)}` : ', ' + hhmm(m.hora * 60)}`;
+    viajarA({ fecha: { y, m: mo, d }, min: /^hora-lluvia|^dia/.test(m.id) ? m.hora * 60 - 30 : m.hora * 60, vista: 'esquina', titulo: m.titulo + ' de la serie',
+      texto: `${cuando}: ${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.` });
+    ponerPestana('decadas'); S.momento = S.momento; return;
+  }
+  explorar(); parar(); S.fecha = { y, m: mo, d }; S.min = m.hora * 60;
   const cuando = esAnio ? `${y}` : esMes ? `${MESES[mo - 1]} de ${y}` : `${d} de ${MESES[mo - 1]} de ${y}${/^hora-lluvia/.test(m.id) ? `, de ${hhmm(m.hora * 60 - 60)} a ${hhmm(m.hora * 60)}` : /^hora/.test(m.id) ? ', ' + hhmm(m.hora * 60) : ''}`;
   S.momento = { titulo: m.titulo + ' de la serie', texto: `${cuando}: ${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.` };
   // mes y año: la escena muestra la lluvia del mes; hora y día: el dato de esa hora
@@ -554,9 +731,14 @@ function parar() { S.reproduce = false; $('#reproducir').setAttribute('aria-pres
 // ---------------- Modos ----------------
 function explorar() { if (S.modo !== 'explorar') { S.modo = 'explorar'; lastLect = ''; } }
 function irAAhora(volar = true) {
-  parar(); S.modo = 'ahora'; S.mesSerie = null; S.momento = null; S.aguacero = false; $('#capa-aguacero').checked = false;
-  const a = ahoraPanama(); S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min;
-  if (volar && !S.fachada) volarA(VISTAS.esquina);
+  parar(); S.mesSerie = null; S.momento = null; S.aguacero = false; $('#capa-aguacero').checked = false;
+  const a = ahoraPanama();
+  if (volar && S.modo !== 'ahora') {                   // volver a ahora también es un viaje
+    viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null, aAhora: true });
+    return;
+  }
+  S.modo = 'ahora'; S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min;
+  if (volar && !S.fachada) volarA(VISTAS.esquina, 1.6, 'esquina');
   lastLect = '';
 }
 function ponerPestana(t) {
@@ -597,54 +779,74 @@ function prepararUI() {
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
     const art = b.closest('.hallazgo'), d = art.dataset;
     document.querySelectorAll('.hallazgo').forEach((x) => x.classList.toggle('activo', x === art));
-    const [y, mo, dd] = d.fecha.split('-').map(Number), [hh, mi] = d.hora.split(':').map(Number);
-    parar(); explorar(); S.momento = null; S.mesSerie = null; S.fachada = null; document.documentElement.classList.remove('en-fachada');
-    S.aguacero = false; $('#capa-aguacero').checked = false;
-    S.calor = d.capa === 'calor'; $('#capa-calor').checked = S.calor;
-    S.fecha = { y, m: mo, d: dd }; S.min = hh * 60 + mi;
-    if (S.pestana !== 'dia') ponerPestana('dia');
-    volarA(d.fachada ? VISTA_FACHADA['fachada-' + d.fachada] : VISTAS[d.vista || 'esquina']);
+    const [hh, mi] = d.hora.split(':').map(Number);
     if (innerWidth <= 760) abrirSirve(false);
-    S.salto = true; lastLect = '';
+    viajarA({ fecha: deISO(d.fecha), min: hh * 60 + mi, vista: d.fachada ? null : d.vista || 'esquina', fachada: d.fachada || null, lente: d.capa === 'calor' ? 'sol' : d.capa || 'foto' });
   }));
-  // ir a un momento exacto (p. ej. para comparar con una foto)
+  // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
-    $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir));
+    $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
+    if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
-      $('#ir-fecha').value = `${S.fecha.y}-${String(S.fecha.m).padStart(2, '0')}-${String(S.fecha.d).padStart(2, '0')}`;
-      $('#ir-hora').value = hhmm(S.min); $('#ir-fecha').focus();
+      $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
+      pintarConsultas(); if (innerWidth > 760) $('#ir-fecha').focus();
     }
   };
+  globalThis.__abrirIr = abrirIr;
   $('#elegir').addEventListener('click', () => abrirIr($('#ir-a').hidden));
+  $('#abrir-ir').addEventListener('click', () => abrirIr($('#ir-a').hidden));
+  $('#ir-fecha').addEventListener('change', () => { const [y, m] = $('#ir-fecha').value.split('-').map(Number); if (y > 1900 && m) { const f0 = S.fecha; S.fecha = { ...S.fecha, y, m }; pintarConsultas(); S.fecha = f0; } });
   $('#cerrar-ir').addEventListener('click', () => abrirIr(false));
-  $('#ir-a').addEventListener('submit', (e) => {
+  $('#ir-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const [y, mo, d] = $('#ir-fecha').value.split('-').map(Number), [hh, mi] = $('#ir-hora').value.split(':').map(Number);
     if (!y || !mo || !d || isNaN(hh)) return;
-    parar(); explorar(); S.momento = null; S.mesSerie = null; S.aguacero = false; $('#capa-aguacero').checked = false;
-    S.fecha = { y, m: mo, d }; S.min = hh * 60 + (mi || 0);
-    if (S.pestana === 'decadas') ponerPestana('dia');
-    S.salto = true; abrirIr(false); lastLect = '';
+    if (innerWidth <= 760) abrirIr(false);
+    viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + (mi || 0) });
   });
-  $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); });
-  $('#capa-calor').addEventListener('change', (e) => { S.calor = e.target.checked; });
+  $('#consultas').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-i]'); if (!b) return;
+    const it = S.listaConsultas?.[+b.dataset.i]; if (!it) return;
+    const r = b.dataset.r != null ? it.rank[+b.dataset.r] : it;
+    document.querySelectorAll('#consultas .activo').forEach((x) => x.classList.remove('activo'));
+    const li = b.closest('li'); li.classList.add('activo');
+    li.querySelector('.c-txt').textContent = (b.dataset.r != null ? `#${+b.dataset.r + 1} · ` : '') + (r.txt ?? it.txt ?? '');
+    li.querySelectorAll('.rank button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    if (innerWidth <= 760) abrirIr(false);
+    viajarA({ fecha: r.f, min: r.min, vista: it.vista, fachada: it.fachada, lente: it.lente, titulo: it.t, texto: r.txt ?? it.txt });
+  });
+  // formas de ver
+  document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
+    ponerLente(b.dataset.lente);
+    if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
+  }));
+  document.querySelectorAll('[data-agua]').forEach((b) => b.addEventListener('click', () => { S.aguaModo = b.dataset.agua; lastLect = ''; }));
+  $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) abrirIr(false); });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
-  document.querySelectorAll('[data-vista]').forEach((b) => b.addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); volarA(VISTAS[b.dataset.vista]); }));
-  $('#brujula').addEventListener('click', () => volarA(VISTAS.planta));
+  document.querySelectorAll('[data-vista]').forEach((b) => b.addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
+  $('#brujula').addEventListener('click', () => volarA(VISTAS.planta, 1.6, 'planta'));
   document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada); }));
-  $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); history.replaceState(null, '', location.pathname + location.search); volarA(VISTAS.esquina); });
+  $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
   addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (intro) return; if (FACHADAS[h]) irAFachada(h); else irAMomentoHash(); });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); } });
+  addEventListener('keydown', (e) => {
+    if (e.target.closest?.('input, textarea')) return;
+    if (e.key === '1' || e.key === '2' || e.key === '3') { const k = ['esquina', 'aerea', 'planta'][+e.key - 1]; S.fachada = null; document.documentElement.classList.remove('en-fachada'); volarA(VISTAS[k], 1.6, k); }
+    if (S.viaje && (e.key === 'Escape' || e.key === ' ')) { S.viaje.t0 = -1e9; e.preventDefault(); }
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
 }
 
 function irAFachada(k) {
+  if (!FACHADAS[k]) return;
+  irAAhora(false); mostrarFachada(k); volarA(VISTA_FACHADA[k]);
+}
+function mostrarFachada(k) {
   const f = FACHADAS[k]; if (!f) return;
-  S.fachada = k; irAAhora(false);
-  volarA(VISTA_FACHADA[k]);
+  S.fachada = k; marcarVista(null);
   document.documentElement.classList.add('en-fachada');
   $('#fachada-titulo').textContent = `${f.nombre}: ${f.lugar}`;
   $('#panel-fachada').hidden = false;
@@ -657,7 +859,126 @@ function textoFachada(p) {
     : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería caer hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
 }
 
-function refrescar() { lastLect = ''; }
+function refrescar() { lastLect = ''; S.kClimaDia = ''; }
+
+// ---------------- Formas de ver (lentes) ----------------
+const LENTES = {
+  foto: null,
+  sol: { t: 'Sol directo en fachadas', u: 'W/m²', rampa: 'linear-gradient(90deg, #0d1f59, #f28c14 55%, #f21f0d)', esc: ['0', '375', '750+'],
+    nota: 'Irradiancia directa sobre cada fachada (DNI de ERA5 × ángulo de incidencia). Sin difusa ni reflejada, sin descontar vecinos. El techo, en su plano horizontal.' },
+  lluvia: { t: 'Lluvia con viento en fachadas', u: 'L/m²·h', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['0', '2,5', '5+'],
+    nota: 'Índice de ISO 15927-3 en campo abierto, con el viento de 10 m de ERA5 (celda de ~28 km, sin ráfagas). Ordena las fachadas; no mide el agua que llega al muro detrás del alero.' },
+  sombras: { t: 'Diagrama de sombras del día', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
+    nota: 'La sombra del edificio en cada hora en punto sobre el terreno: donde se superponen más horas, más oscuro. Geometría solar exacta (NOAA); volumen del edificio sin árboles ni vecinos.' },
+};
+function ponerLente(k) {
+  if (!(k in LENTES)) k = 'foto';
+  S.lente = k;
+  document.querySelectorAll('[data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));
+  lastLect = '';
+}
+function leyenda() {
+  const L = LENTES[S.lente], el = $('#leyenda');
+  el.hidden = !L; if (!L) return;
+  $('#ley-t').textContent = L.t;
+  $('#ley-rampa').style.background = L.rampa;
+  $('#ley-escala').innerHTML = L.esc.map((x) => `<span>${x}</span>`).join('');
+  $('#ley-modos').hidden = S.lente !== 'lluvia';
+  document.querySelectorAll('[data-agua]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.agua === S.aguaModo)));
+  const ks = Object.keys(FACHADAS), nom = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
+  let filas = '';
+  if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('');
+  else if (S.lente === 'lluvia') {
+    const anual = S.aguaModo === 'anio';
+    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? Math.round(S.agua?.[i] ?? 0) : f1(S.agua?.[i] ?? 0)}</b><small>${anual ? 'L/m²·año' : 'L/m²·h'}</small></li>`).join('');
+  }
+  $('#ley-fachadas').innerHTML = filas; $('#ley-fachadas').hidden = !filas;
+  let nota = L.nota;
+  if (S.lente === 'lluvia' && S.aguaModo === 'hora' && !S.viaje) {
+    if (!S.aguaDato) nota = 'Para esta hora no hay dato de lluvia y viento (solo valores típicos). Pasa a «Año típico» o elige una fecha entre 2001 y 2025. ' + nota;
+    else if (!(S.agua ?? []).some((v) => v > 0.05)) nota = 'A esta hora no llueve con viento contra ninguna fachada. ' + nota;
+  }
+  if (S.lente === 'lluvia' && S.aguaModo === 'anio') nota = 'Promedio anual 2001–2025. ' + nota;
+  if (S.lente === 'sombras' && !escena._diagClave) nota = 'El diagrama aparece cuando termina de cargar el modelo. ' + nota;
+  $('#ley-nota').textContent = nota;
+}
+
+// ---------------- Regla del día: lluvia y sol de cada hora ----------------
+function pintarClimaDia() {
+  const f = S.fecha, g = $('#dia-clima'); if (!g) return;
+  let h = '', fuente = '';
+  const reg = (min) => clima.registro(f, min) ?? clima.registroDia(f, min);
+  const hay = !!reg(0);
+  for (let i = 0; i < 24; i++) {
+    const x = i / 24 * 1000 + 2, w = 1000 / 24 - 4;
+    if (hay) {
+      const r = reg(i * 60), q = reg(i * 60 + 30), alt = posicionSol({ ...f, h: i, min: 30 }).alt;
+      if (alt > 2 && q?.dni != null) { const k = clamp01(q.dni / Math.max(40, dniDespejado(alt))); if (k < 0.85) h += `<rect class="nube" x="${x - 2}" y="6" width="${w + 4}" height="16" opacity="${(0.62 * (1 - k)).toFixed(2)}"></rect>`; }
+      const mm = r?.lluvia ?? 0;
+      if (mm >= 0.1) { const hh = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(mm) / Math.log1p(15))); h += `<rect class="gota" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm</title></rect>`; }
+      fuente = 'lluvia y nubes de cada hora (ERA5)';
+    } else if (clima.ok) {
+      const t = clima.tipico(f.m, i * 60), pr = t?.probLluvia ?? 0;
+      if (pr >= 5) { const hh = Math.max(1.5, 16 * pr / 100); h += `<rect class="prob" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: llueve en ${Math.round(pr)} % de estas horas (típico de ${MESES[f.m - 1]})</title></rect>`; }
+      fuente = `probabilidad de lluvia típica de ${MESES[f.m - 1]}`;
+    }
+  }
+  g.innerHTML = h;
+  $('#dia-ley').textContent = fuente ? '▮ ' + fuente : '';
+}
+
+// ---------------- Consultas: los días que un arquitecto quiere ver ----------------
+function listaConsultas() {
+  const C = consultas, y = S.fecha.y, z = diasCeroSombra(y), md = (f) => { const m = mediodiaSolar(f.y, f.m, f.d); return m.h * 60 + m.min; };
+  const out = [];
+  const g = (grupo) => (it) => out.push({ grupo, ...it });
+  const sol = g('Sol y sombra');
+  z.forEach((q, i) => sol({ t: `Día sin sombra de ${i ? 'agosto' : 'abril'}`, f: { y, m: q.m, d: q.d }, min: q.h * 60 + q.min, vista: 'aerea', lente: 'sombras',
+    v: `sol a ${f1(q.alt, 1)}°`, txt: `El sol pasa a ${f1(90 - q.alt, 1)}° del cenit: a mediodía la sombra queda casi toda bajo los aleros. Geometría solar exacta (NOAA).` }));
+  sol({ t: 'Solsticio de junio', f: { y, m: 6, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 6, 21).alt, 1)}° al N`, txt: 'El sol del mediodía pasa al norte del cenit: las sombras de la tarde caen hacia el sureste y el sur. Diagrama con el volumen del edificio, sin árboles ni vecinos.' });
+  sol({ t: 'Solsticio de diciembre', f: { y, m: 12, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 12, 21).alt, 1)}° al S`, txt: 'Las sombras más largas del año, hacia el norte: el jardín noreste recibe la sombra del edificio en la tarde.' });
+  sol({ t: 'Equinoccio de marzo', f: { y, m: 3, d: 20 }, min: md({ y, m: 3, d: 20 }), vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 3, 20).alt, 1)}°`, txt: 'El sol sale por el este y se pone por el oeste: la punta de las sombras recorre una línea recta.' });
+  const fa = g('Sol en fachadas');
+  if (C) {
+    const ds = C.diasSol[1] ?? C.diasSol[0], tE = C.tipicos[0], tJ = C.tipicos[5];
+    fa({ t: 'Sol de la tarde en el testero SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol da casi de frente al testero SO y el alero solo sombrea la parte alta de cada piso.` });
+    fa({ t: 'Sol de la mañana en la entrada SE', f: deISO(tE.fecha), min: 7 * 60 + 45, fachada: 'se', lente: 'sol', v: 'día típico', txt: 'Un día típico de enero: el sol bajo de la mañana entra bajo el alero de la fachada principal. Pasa la regla a las 10:00 para ver el ángulo de corte.' });
+    fa({ t: 'Sol del poniente en la NO (junio)', f: deISO(tJ.fecha), min: 17 * 60, fachada: 'no', lente: 'sol', v: 'día típico', txt: 'En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, que casi todo el año queda a la sombra. Suele estar nublado: mira el valor en W/m².' });
+    const lv = g('Lluvia');
+    const H = C.horasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${f1(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)}: ${f1(q.mm)} mm. Es el promedio de una celda de ~28 km: en el sitio pudo llover más.` }));
+    lv({ t: 'La hora más lluviosa', ...H[0], vista: 'esquina', lente: 'foto', rank: H });
+    const D = C.diasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${q.mm} mm`, txt: `${fechaTexto(deISO(q.fecha))}: ${q.mm} mm en el día; la hora más fuerte, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)} (${f1(q.pico)} mm).` }));
+    lv({ t: 'El día más lluvioso', ...D[0], vista: 'esquina', lente: 'foto', rank: D });
+    const W = C.lluviaViento.no.max, orden = Object.entries(C.lluviaViento).sort((a, b) => b[1].anual - a[1].anual).map(([k, v]) => `${k.toUpperCase()} ${v.anual}`).join(' · ');
+    lv({ t: 'La fachada que más se moja', f: deISO(W.fecha), min: W.hora * 60 - 30, fachada: 'no', lente: 'lluvia', v: `NO · ${Math.round(C.lluviaViento.no.anual)} L/m²·año`,
+      txt: `Índice anual de lluvia con viento (L/m²): ${orden}. Aquí, su hora más fuerte: ${f1(W.mm)} mm con viento de ${W.viento} km/h que llega casi de frente. Ordena fachadas; no mide el agua sobre el muro.` });
+    const R = C.rachaSeca;
+    lv({ t: 'La sequía más larga', f: deISO(R.hasta), min: 15 * 60, vista: 'aerea', lente: 'foto', v: `${R.dias} días`, txt: `${R.dias} días seguidos con menos de 1 mm, del ${fechaTexto(deISO(R.desde))} al ${fechaTexto(deISO(R.hasta))}. Referencia para el riego del jardín o una cisterna de agua lluvia.` });
+    const lz = g('Luz y cielo');
+    const S5 = C.diasSol.map((q) => ({ f: deISO(q.fecha), min: md(deISO(q.fecha)), v: `${f1(q.kwh, 2)} kWh/m²`, txt: `${fechaTexto(deISO(q.fecha))}: ${f1(q.kwh, 2)} kWh/m² de radiación global sobre el plano horizontal; un día medio recibe ${f1(C.solMedio, 2)}.` }));
+    lz({ t: 'El día con más sol', ...S5[0], vista: 'aerea', lente: 'sol', rank: S5 });
+    const O5 = C.diasOscuros.map((q) => ({ f: deISO(q.fecha), min: 12 * 60 + 30, v: `${f1(q.kwh, 2)} kWh/m²`, txt: `${fechaTexto(deISO(q.fecha))}: ${f1(q.kwh, 2)} kWh/m² y ${q.mm} mm de lluvia. Casi toda la luz es difusa: un cielo gris parejo.` }));
+    lz({ t: 'El día más oscuro', ...O5[0], vista: 'esquina', lente: 'foto', rank: O5 });
+    const tm = C.tipicos[S.fecha.m - 1];
+    lz({ t: `Un día típico de ${MESES[tm.m - 1]}`, f: deISO(tm.fecha), min: 14 * 60 + 30, vista: 'esquina', lente: 'foto', v: `${f1(tm.mm)} mm · ${f1(tm.kwh, 2)} kWh/m²`,
+      txt: `El día real más parecido a la mediana de ${MESES[tm.m - 1]} en 2001–2025: ${f1(tm.kwh, 2)} kWh/m² de sol y ${f1(tm.mm)} mm de lluvia. Llueve (1 mm o más) en el ${tm.probLluvia} % de los días de ${MESES[tm.m - 1]}.` });
+  }
+  return out;
+}
+function pintarConsultas() {
+  const ul = $('#consultas'); if (!ul) return;
+  const L = listaConsultas(); S.listaConsultas = L;
+  let html = '', grupo = '';
+  L.forEach((it, i) => {
+    if (it.grupo !== grupo) { if (grupo) html += '</ul></section>'; grupo = it.grupo; html += `<section class="c-grupo" data-g="${grupo === 'Lluvia' ? 'lluvia' : 'sol'}"><h4>${grupo}</h4><ul>`; }
+    const rank = it.rank ? `<span class="rank" aria-label="Otros del ranking">${it.rank.slice(1).map((r, j) => `<button type="button" data-i="${i}" data-r="${j + 1}" title="${fechaCorta(r.f)} · ${r.v}">${j + 2}</button>`).join('')}</span>` : '';
+    html += `<li><button type="button" class="c-item" data-i="${i}"><span class="c-t">${it.t}</span><span class="c-d num">${fechaCorta(it.f)} · ${hhmm(it.min)} · ${it.fachada ? 'fachada ' + it.fachada.toUpperCase() : it.vista === 'aerea' ? 'aérea' : it.vista}</span><span class="c-v num">${it.v ?? ''}</span><span class="c-txt">${it.txt ?? ''}</span></button>${rank}</li>`;
+  });
+  if (grupo) html += '</ul></section>';
+  if (!consultas) html += '<p class="nota">Cargando los extremos de la serie…</p>';
+  ul.innerHTML = html;
+  $('#consultas-anio').textContent = S.fecha.y;
+}
 
 // ---------------- Medición de rendimiento (#medir): cuadros continuos girando alrededor del edificio ----------------
 async function medir() {
@@ -708,14 +1029,19 @@ async function medir() {
 }
 
 function depurar() {
-  const d = document.createElement('pre');
-  d.style.cssText = 'position:fixed;left:8px;top:70px;z-index:99;background:#000c;color:#9f9;font:11px/1.3 monospace;padding:6px 8px;max-width:60vw;max-height:40vh;overflow:auto;margin:0;pointer-events:none';
-  document.body.appendChild(d); const errs = [];
-  addEventListener('error', (e) => errs.push(e.message)); addEventListener('unhandledrejection', (e) => errs.push(String(e.reason)));
+  pintarDiag();
   let n = 0, t0 = performance.now();
-  const f = () => { n++; const t = performance.now(); if (t - t0 > 1000) { const i = escena.renderer.info; d.textContent = `${escena.backend} · ${Math.round(n * 1000 / (t - t0))} fps · dpr ${escena.renderer.getPixelRatio().toFixed(2)} · ${Math.round(innerWidth * innerHeight * escena.renderer.getPixelRatio() ** 2 / 1e5) / 10} MP · tris ${Math.round((i.render?.triangles ?? 0) / 1e3)}k · sol ${f1(escena.alt ?? 0)}° · modo ${S.modo} · listos ${[...(escena.listos ?? [])].length}\n` + errs.slice(-8).join('\n'); n = 0; t0 = t; } requestAnimationFrame(f); };
+  const f = () => {
+    n++; const t = performance.now();
+    if (t - t0 > 1000) {
+      const i = escena.renderer.info, el = document.getElementById('diag');
+      if (el) el.querySelector('summary').textContent = `${VERSION} · ${escena.backend} · ${Math.round(n * 1000 / (t - t0))} fps · dpr ${escena.renderer.getPixelRatio().toFixed(2)} · tris ${Math.round((i.render?.triangles ?? 0) / 1e3)}k · sol ${f1(escena.alt ?? 0)}° · lluvia ${f1(U.lluvia.value, 2)} · modo ${S.modo} · cuadros ${S.dibujados ?? 0}`;
+      n = 0; t0 = t;
+    }
+    requestAnimationFrame(f);
+  };
   f();
 }
 
-globalThis.__e106 = { S, get escena() { return escena; }, get intro() { return intro; }, clima };
+globalThis.__e106 = { S, DIAG, get escena() { return escena; }, get intro() { return intro; }, clima, rescatar };
 arrancar();

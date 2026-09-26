@@ -6,9 +6,12 @@ Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber (Clayton
 
 ## Qué hace
 - **Ahora:** sol de este minuto (algoritmo de NOAA) y pronóstico de modelo de Open-Meteo.
-- **Máquina del tiempo:** Día · Año · 25 años, o una fecha y hora exactas. Entre 2001 y 2025, las nubes, la lluvia y la radiación directa de cada hora salen del reanálisis ERA5; otras fechas se consultan en línea.
+- **Máquina del tiempo:** Día · Año · 25 años. La regla del día muestra la lluvia y las nubes de cada hora (ERA5), o la probabilidad típica de lluvia si no hay dato.
+- **Ir a…:** una fecha y hora exactas (desde 1940; entre 2001 y 2025 el dato viene incluido) o una de las consultas calculadas con la serie: días sin sombra, solsticios, equinoccio, sol de la tarde en el SO, la hora y el día más lluviosos (con su top 5), la fachada que más se moja, la sequía más larga, el día con más sol, el más oscuro y un día típico de cada mes. Cada salto es un viaje animado: corren la fecha y el sol, vuela la cámara y al llegar entra el tiempo.
+- **Ver:** Foto · Sol (irradiancia directa por fachada, W/m²) · Lluvia (índice de lluvia con viento de ISO 15927-3, por hora o año típico) · Sombras (la sombra de cada hora del día sobre el terreno).
 - **Para qué sirve:** seis hallazgos (cero sombra, irradiación directa por fachada, el alero, la lluvia, la lluvia batiente y las horas cálidas), cada uno con un momento para verlo en la escena.
-- Arrastra para girar el edificio; la brújula marca el norte real y el sol. Enlaces por fachada para los QR en sitio: `#fachada-se`, `#fachada-no`, `#fachada-ne`, `#fachada-so`.
+- Arrastra para girar el edificio; la brújula marca el norte real y el sol. Enlaces por fachada para los QR en sitio: `#fachada-se`, `#fachada-no`, `#fachada-ne`, `#fachada-so`. Enlace a un momento: `#m-AAAAMMDD-HHMM` (por ejemplo `#m-20240724-1745`).
+- Si WebGPU falla en un equipo, la página pasa sola a WebGL 2. `#webgl` fuerza WebGL; `#webgpu` vuelve a probar WebGPU; `#depurar` muestra el diagnóstico.
 
 ## Qué no es
 Un levantamiento (escala ±12 %, ventanas regularizadas) ni una medición del clima en el sitio: ERA5 representa una celda de 0,25° (unos 28 km). No sirve para dimensionar desagües ni calcula ventilación o confort.

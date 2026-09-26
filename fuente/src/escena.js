@@ -41,6 +41,10 @@ export const U = {                       // uniformes compartidos
   relampago: uniform(0),
   cielo: uniform(0.2),                 // ganancia del cielo de Preetham (sale ~20× más brillante que la escena)
   cubierto: uniform(0),                  // 0..1: cielo gris parejo (nublado o con lluvia)
+  agua: uniform(0),                      // 0..1: lente «lluvia con viento en fachadas»
+  aguaF: uniform(new THREE.Vector4()),   // índice de lluvia batiente normalizado por fachada (SE, NO, NE, SO)
+  sombras: uniform(0),                   // 0..1: lente «diagrama de sombras del día»
+  viaje: uniform(0),                     // 0..1: viñeta del viaje en el tiempo
   grisCielo: uniform(new THREE.Color(0.6, 0.62, 0.65)),
 };
 
@@ -56,19 +60,8 @@ export class Escena {
   }
 
   async init(forceWebGL = false) {
-    const r = new THREE.WebGPURenderer({ antialias: false, forceWebGL, powerPreference: 'high-performance' });
-    await r.init();
-    this.backend = r.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
-    r.setPixelRatio(this.dprMax());
-    r.setSize(window.innerWidth, window.innerHeight);
-    r.toneMapping = THREE.AgXToneMapping;
-    r.toneMappingExposure = 1.0;
-    r.shadowMap.enabled = true;
-    r.shadowMap.type = THREE.PCFShadowMap;
-    this.parent.appendChild(r.domElement);
-    r.domElement.style.touchAction = 'none';
-    r.domElement.setAttribute('aria-hidden', 'true');
-    this.renderer = r;
+    await this.#crearRenderer(forceWebGL);
+    const r = this.renderer;
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x9fb3c0, 350, 2600);
@@ -120,9 +113,48 @@ export class Escena {
     this.#lluvia();
     this.#rosa();
     this.#ruta();
+    this.#diagrama();
 
+    this.#pipeline();
+
+    window.addEventListener('resize', () => this.resize());
+    this.setSol(-8, 90);
+    return this;
+  }
+
+  async #crearRenderer(forceWebGL) {
+    const r = new THREE.WebGPURenderer({ antialias: false, forceWebGL, powerPreference: 'high-performance' });
+    await r.init();
+    this.backend = r.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
+    r.setPixelRatio(this.dprMax());
+    this._w = Math.max(2, window.innerWidth); this._h = Math.max(2, window.innerHeight);
+    r.setSize(this._w, this._h);
+    r.toneMapping = THREE.AgXToneMapping;
+    r.toneMappingExposure = this.renderer?.toneMappingExposure ?? 1.0;
+    r.shadowMap.enabled = true;
+    r.shadowMap.type = THREE.PCFShadowMap;
+    r.domElement.style.touchAction = 'none';
+    r.domElement.setAttribute('aria-hidden', 'true');
+    if (this.renderer) this.renderer.domElement.replaceWith(r.domElement); else this.parent.appendChild(r.domElement);
+    this.renderer = r;
+  }
+
+  /** Si WebGPU falla en este equipo, la misma escena pasa a WebGL 2 sin recargar la página. */
+  async pasarAWebGL() {
+    const viejo = this.renderer;
+    await this.#crearRenderer(true);
+    try { viejo.setAnimationLoop?.(null); viejo.dispose(); } catch (e) { /* el dispositivo ya no existe */ }
+    this.pmrem = new THREE.PMREMGenerator(this.renderer);
+    this._envRT = null; this.scene.environment = null; this._envClave = null; this._envT = 0;
+    this.#pipeline();
+    this.sun.shadow.needsUpdate = true; this.sucio = true;
+    this.setSol(this.alt, this.az);
+  }
+
+  #pipeline() {
     // Postproceso: oclusión ambiental (GTAO) + suavizado temporal (TRAA) en equipos potentes,
     // bloom suave, viñeta y grano de película.
+    const r = this.renderer, scene = this.scene, cam = this.camera;
     this.pipeline = new THREE.RenderPipeline(r);
     const scenePass = pass(scene, cam);
     let col = scenePass.getTextureNode('output');
@@ -142,7 +174,7 @@ export class Escena {
     const vig = smoothstep(float(1.25), float(0.35), length(screenUV.sub(0.5).mul(vec2(1.35, 1.0))));
     const grano = hash(screenUV.mul(viewportSize).add(fract(time.mul(13.7)).mul(517.0))).sub(0.5).mul(0.035);
     // suavizado FXAA sobre la imagen ya tonemapeada (más barato que MSAA ×4 a esta resolución)
-    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(0.72, 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(renderOutput(v)) : renderOutput(v); };
+    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(float(0.72).sub(U.viaje.mul(0.3)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(renderOutput(v)) : renderOutput(v); };
     this.pipeline.outputColorTransform = false;
     const aa = this.calidad.nivel !== 'bajo';
     this.salidas = { sinBloom: acabar(col, aa), sinAA: acabar(col, false) };
@@ -150,9 +182,6 @@ export class Escena {
     this.bloomOn = !!this.calidad.bloom;
     this.pipeline.outputNode = this.bloomOn ? this.salidas.conBloom : this.salidas.sinBloom;
 
-    window.addEventListener('resize', () => this.resize());
-    this.setSol(-8, 90);
-    return this;
   }
 
   /** Cambia la salida del postproceso (para medir o para bajar costo). */
@@ -166,6 +195,8 @@ export class Escena {
 
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
+    if (w < 2 || h < 2) return;
+    this._w = w; this._h = h;
     this.renderer.setPixelRatio(Math.min(this.renderer.getPixelRatio(), this.dprMax()));
     this.camera.aspect = w / h;
     this.camera.fov = w / h < 0.8 ? 58 : 38;
@@ -219,7 +250,7 @@ export class Escena {
     this.sky.cloudDensity.value = 0.45 + 0.5 * lv;
     this.sky.turbidity.value = 7 + 5 * lv;
     this.sky2.cloudCoverage.value = 0.2 + 0.75 * lv;
-    U.luzLluvia.value = 0.25 + 0.75 * day + 2 * fl;
+    U.luzLluvia.value = 0.62 + 0.38 * day + 2 * fl;              // de noche las gotas siguen visibles (reflejan las luces)
     U.noche.value = 1 - THREE.MathUtils.smoothstep(alt, -6, 2);
     const clave = [Math.round(alt * 4), Math.round(az * 2), Math.round(lv * 20), Math.round(cubierto * 20)].join(',');
     if (clave !== this._envClave) { this._envClave = clave; this.#envTalVez(); }
@@ -297,7 +328,7 @@ export class Escena {
     const promesas = {};
     let i = 0;
     const siguiente = () => { if (i >= orden.length) return null; const g = orden[i++]; return (promesas[g] = uno(g).catch((e) => { console.warn('grupo', g, e); this.listos.add(g); })).then(siguiente); };
-    this.cargaCompleta = Promise.all([siguiente(), siguiente()]);
+    this.cargaCompleta = Promise.all([siguiente(), siguiente()]).then((r) => { this.cargado = true; return r; });
     this.promesas = promesas;
     return this;
   }
@@ -372,8 +403,13 @@ export class Escena {
       const ramp = mix(mix(vec3(0.05, 0.12, 0.35), vec3(0.95, 0.55, 0.08), smoothstep(0.0, 0.55, heat)), vec3(0.95, 0.12, 0.05), smoothstep(0.55, 1.0, heat));
       const prevE = m.emissiveNode;
       const e = ramp.mul(U.calor).mul(0.9);
-      m.emissiveNode = prevE ? prevE.add(e) : e;
-      m.colorNode = mix(m.colorNode, m.colorNode.mul(0.35), U.calor);
+      // lluvia con viento: el mismo reparto por orientación, en azules (el techo queda neutro)
+      const a = U.aguaF;
+      const wet = w(...dirs[0]).mul(a.x).add(w(...dirs[1]).mul(a.y)).add(w(...dirs[2]).mul(a.z)).add(w(...dirs[3]).mul(a.w));
+      const rampA = mix(mix(vec3(0.05, 0.07, 0.1), vec3(0.08, 0.42, 0.9), smoothstep(0.0, 0.5, wet)), vec3(0.6, 0.9, 1.0), smoothstep(0.5, 1.0, wet));
+      const eA = rampA.mul(U.agua).mul(0.9);
+      m.emissiveNode = prevE ? prevE.add(e).add(eA) : e.add(eA);
+      m.colorNode = mix(m.colorNode, m.colorNode.mul(0.35), max(U.calor, U.agua));
     }
 
     // Mojado: superficies porosas más oscuras y brillantes; charcos en superficies horizontales bajas
@@ -449,6 +485,10 @@ export class Escena {
     mat.opacityNode = shapeCircle().mul(float(0.32).add(e.mul(0.22))).mul(oneMinus(reveal)).mul(U.puntos).mul(cerca);
     mat.fog = false;
     const spr = new THREE.Sprite(mat);
+    // geometría propia: todos los Sprite de three.js comparten una sola geometría (intercalada); si se liberara esa,
+    // three.js destruye su búfer en la GPU y no lo vuelve a crear, y cualquier sprite (la lluvia, los rótulos del arco
+    // del sol) dejaba a WebGPU rechazando cada cuadro: la imagen se quedaba congelada en el último cuadro bueno.
+    spr.geometry = new THREE.PlaneGeometry(1, 1);
     spr.count = N; spr.frustumCulled = false; spr.renderOrder = 10;
     this.scene.add(spr); this.particulas = spr;
     return N;
@@ -457,7 +497,8 @@ export class Escena {
   /** Terminado el armado, las partículas se liberan de la memoria de la GPU. */
   liberarParticulas() {
     if (!this.particulas) return;
-    this.scene.remove(this.particulas); this.particulas.material.dispose(); this.particulas.geometry?.dispose?.();
+    this.scene.remove(this.particulas); this.particulas.material.dispose();
+    if (this.particulas.geometry?.type === 'PlaneGeometry') this.particulas.geometry.dispose();   // nunca la compartida
     this.particulas = null; this.sucio = true;
   }
 
@@ -496,7 +537,7 @@ export class Escena {
     this.uRuta = uniform(0);
     this.rutaMat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     this.rutaMat.colorNode = vec3(1.0, 0.7, 0.3); this.rutaMat.opacityNode = this.uRuta.mul(0.6); this.rutaMat.fog = false;
-    this.rutaLinea = new THREE.Mesh(new THREE.BufferGeometry(), this.rutaMat); this.rutaLinea.frustumCulled = false; this.rutaLinea.renderOrder = 6;
+    this.rutaLinea = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), this.rutaMat); this.rutaLinea.frustumCulled = false; this.rutaLinea.renderOrder = 6;
     const gp = new THREE.BufferGeometry(); gp.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(3 * 25), 3));
     const mp = new THREE.PointsNodeMaterial({ transparent: true, depthWrite: false, sizeAttenuation: false });
     mp.colorNode = vec3(1.0, 0.85, 0.55); mp.opacityNode = this.uRuta; mp.sizeNode = float(6); mp.fog = false;
@@ -536,6 +577,106 @@ export class Escena {
       vectorSol(p.alt, p.az, v); s.position.set(v.x * (R + 6), v.y * (R + 6) + 3, v.z * (R + 6));
     }
     this.sucio = true;
+  }
+
+  // ---------- Diagrama de sombras: la silueta de la sombra del edificio en cada hora del día ----------
+  #diagrama() {
+    const MAX = 13 * 96 * 6;                        // 13 horas × hasta 96 lados × 2 triángulos
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAX * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(MAX * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    g.setDrawRange(0, 0);
+    const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, vertexColors: true, side: THREE.DoubleSide });
+    m.opacityNode = U.sombras.mul(0.95); m.fog = false;
+    const lineas = new THREE.Mesh(g, m); lineas.frustumCulled = false; lineas.renderOrder = 9;
+    // relleno: cada hora suma un velo oscuro; donde se superponen más horas, más oscuro (horas de sombra)
+    const gf = new THREE.BufferGeometry();
+    gf.setAttribute('position', new THREE.BufferAttribute(new Float32Array(13 * 96 * 3 * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    gf.setDrawRange(0, 0);
+    const mf = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    mf.colorNode = vec3(0.02, 0.03, 0.06); mf.opacityNode = U.sombras.mul(0.075); mf.fog = false;
+    const relleno = new THREE.Mesh(gf, mf); relleno.frustumCulled = false; relleno.renderOrder = 8;
+    this.diagramaGrupo = new THREE.Group(); this.diagramaGrupo.add(relleno, lineas); this.diagramaGrupo.visible = false;
+    this.scene.add(this.diagramaGrupo);
+    this.diagLineas = lineas; this.diagRelleno = relleno;
+    this.diagRotulos = [];
+    for (let h = 6; h <= 18; h++) {
+      const c = document.createElement('canvas'); c.width = 160; c.height = 80; const x = c.getContext('2d');
+      x.font = '600 54px system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.lineWidth = 10; x.strokeStyle = 'rgba(8,12,16,0.85)'; x.strokeText(`${h} h`, 80, 42);
+      x.fillStyle = '#' + colorHora(h).getHexString(); x.fillText(`${h} h`, 80, 42);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+      const ms = new THREE.SpriteNodeMaterial({ transparent: true, depthWrite: false, depthTest: false });
+      ms.colorNode = texture(t).rgb; ms.opacityNode = texture(t).a.mul(U.sombras); ms.fog = false;
+      const sp = new THREE.Sprite(ms); sp.scale.set(8, 4, 1); sp.renderOrder = 12; sp.visible = false; sp.userData.h = h;
+      this.diagramaGrupo.add(sp); this.diagRotulos.push(sp);
+    }
+  }
+
+  /** Puntos candidatos de la silueta (una sola vez): los extremos del edificio, franja por franja de altura. */
+  #siluetaPuntos() {
+    if (this._silueta) return this._silueta;
+    if (!this.cargado) return null;                    // con el modelo a medias la silueta saldría incompleta
+    const bandas = new Map(), v = new THREE.Vector3(), mi = new THREE.Matrix4(), mw = new THREE.Matrix4();
+    const poner = (p) => { if (p.y < 0.05) return; const k = Math.floor(p.y / 0.5); let b = bandas.get(k); if (!b) bandas.set(k, b = []); b.push(p.x, p.y, p.z); };
+    for (const nombre of ['arquitectura', 'cubiertas', 'entrada', 'ventanas', 'detalles']) {
+      const info = this.grupos[nombre]; if (!info) continue;
+      info.root.updateMatrixWorld(true);
+      info.root.traverse((o) => {
+        if (!o.isMesh || !o.geometry?.attributes?.position) return;
+        const pos = o.geometry.attributes.position;
+        if (o.isInstancedMesh) {
+          o.geometry.computeBoundingBox(); const bb = o.geometry.boundingBox;
+          for (let i = 0; i < o.count; i++) {
+            o.getMatrixAt(i, mi); mw.multiplyMatrices(o.matrixWorld, mi);
+            for (let c = 0; c < 8; c++) { v.set(c & 1 ? bb.max.x : bb.min.x, c & 2 ? bb.max.y : bb.min.y, c & 4 ? bb.max.z : bb.min.z).applyMatrix4(mw); poner(v); }
+          }
+        } else {
+          const paso = Math.max(1, Math.floor(pos.count / 40000));
+          for (let i = 0; i < pos.count; i += paso) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); poner(v); }
+        }
+      });
+    }
+    const out = [];
+    for (const arr of bandas.values()) {
+      const pts = []; for (let i = 0; i < arr.length; i += 3) pts.push([arr[i], arr[i + 2], arr[i + 1]]);
+      for (const p of envolvente(pts)) out.push(p);           // [x, z, y]
+    }
+    return (this._silueta = out.length > 8 ? out : null);
+  }
+
+  /** Dibuja la sombra de cada hora (6 a 18 h) del día elegido. */
+  setDiagrama(f) {
+    const clave = `${f.y}-${f.m}-${f.d}`; if (clave === this._diagClave) return true;
+    const P = this.#siluetaPuntos(); if (!P) return false;
+    this._diagClave = clave;
+    const pos = this.diagLineas.geometry.attributes.position, col = this.diagLineas.geometry.attributes.color, fp = this.diagRelleno.geometry.attributes.position;
+    let n = 0, nf = 0; const Y = 0.12, W = 0.28, d = {};
+    for (const sp of this.diagRotulos) {
+      const p = posicionSol({ ...f, h: sp.userData.h, min: 0 });
+      sp.visible = false;
+      if (p.alt < 3) continue;
+      vectorSol(p.alt, p.az, d);
+      const k = 1 / d.y, proy = P.map(([x, z, y]) => [x - d.x * y * k, z - d.z * y * k]);
+      const H = envolvente(proy); if (H.length < 3) continue;
+      const c = colorHora(sp.userData.h);
+      // contorno como cinta de 0,56 m (las líneas de 1 px casi no se ven desde arriba)
+      let cx = 0, cz = 0; H.forEach(([x, z]) => { cx += x; cz += z; }); cx /= H.length; cz /= H.length;
+      for (let i = 0; i < H.length && n < pos.count - 6; i++) {
+        const [x0, z0] = H[i], [x1, z1] = H[(i + 1) % H.length];
+        const ex = x1 - x0, ez = z1 - z0, L = Math.hypot(ex, ez) || 1, nx = -ez / L * W, nz = ex / L * W;
+        const q = [[x0 - nx, z0 - nz], [x1 - nx, z1 - nz], [x1 + nx, z1 + nz], [x0 - nx, z0 - nz], [x1 + nx, z1 + nz], [x0 + nx, z0 + nz]];
+        for (const [x, z] of q) { pos.setXYZ(n, x, Y, z); col.setXYZ(n, c.r, c.g, c.b); n++; }
+        if (nf < fp.count - 3) { fp.setXYZ(nf++, cx, Y - 0.02, cz); fp.setXYZ(nf++, x0, Y - 0.02, z0); fp.setXYZ(nf++, x1, Y - 0.02, z1); }
+      }
+      // rótulo en la punta de la sombra (el vértice más lejos del edificio)
+      let best = H[0], bd = -1; for (const q of H) { const dd = q[0] * q[0] + q[1] * q[1]; if (dd > bd) { bd = dd; best = q; } }
+      const r = Math.sqrt(bd) || 1; sp.position.set(best[0] + best[0] / r * 5, 1.5, best[1] + best[1] / r * 5); sp.visible = true;
+    }
+    pos.needsUpdate = col.needsUpdate = fp.needsUpdate = true;
+    this.diagLineas.geometry.setDrawRange(0, n); this.diagRelleno.geometry.setDrawRange(0, nf);
+    this.sucio = true;
+    return true;
   }
 
   #reticula() {
@@ -621,6 +762,9 @@ export class Escena {
   }
 
   render() {
+    // el visor de claude.ai precarga la página oculta y sin tamaño: con 0 × 0 px WebGPU rechaza el búfer de profundidad
+    if (window.innerWidth < 2 || window.innerHeight < 2) return 0;
+    if (this._w !== window.innerWidth || this._h !== window.innerHeight) this.resize();
     U.cam.value.copy(this.camera.position);
     const llueve = U.lluvia.value > 0.01;
     if (this.lluviaSpr) this.lluviaSpr.visible = this.aleros.visible = this.salpicaduras.visible = llueve;
@@ -628,8 +772,9 @@ export class Escena {
     if (this.lineasReticula) this.lineasReticula.visible = U.reticula.value > 0.001;
     if (this.rosaMesh) this.rosaMesh.visible = this.uRosa.value > 0.01;
     if (this.rutaLinea) this.rutaLinea.visible = this.rutaHoras.visible = this.uRuta.value > 0.01;
-    if (this.rutaRotulos) for (const s of this.rutaRotulos) s.visible = this.uRuta.value > 0.01 && s.userData.arriba;
+    if (this.rutaRotulos) for (const s of this.rutaRotulos) s.visible = this.uRuta.value > 0.01 && s.userData.arriba && U.sombras.value < 0.5;   // con el diagrama, sus rótulos mandan
     if (this.rutaSol) this.rutaSol.visible = this.uRuta.value > 0.01 && this.alt > -1;
+    if (this.diagramaGrupo) this.diagramaGrupo.visible = U.sombras.value > 0.01 && !!this._diagClave;
     const t0 = performance.now();
     this.pipeline.render();
     this.sucio = false;
@@ -658,3 +803,20 @@ const sombraNubes = Fn(([s]) => {
 });
 
 export function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/** Envolvente convexa 2D (cadena monótona de Andrew). Recibe [x, z, ...] y devuelve los vértices en orden. */
+export function envolvente(pts) {
+  const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (p.length < 3) return p;
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], hi = [];
+  for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (hi.length >= 2 && cr(hi[hi.length - 2], hi[hi.length - 1], q) <= 0) hi.pop(); hi.push(q); }
+  lo.pop(); hi.pop(); return lo.concat(hi);
+}
+
+/** Color de cada hora en el diagrama de sombras: mañana azul verdosa, mediodía claro, tarde ámbar. */
+export function colorHora(h) {
+  const t = Math.min(1, Math.max(0, (h - 6) / 12));
+  const a = new THREE.Color(0x5cc8d6), b = new THREE.Color(0xf2efe6), c = new THREE.Color(0xf4a23a);
+  return t < 0.5 ? a.lerp(b, t * 2) : b.clone().lerp(c, (t - 0.5) * 2);
+}

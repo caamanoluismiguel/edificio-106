@@ -31,6 +31,14 @@
   :focus-visible { outline: 2px solid var(--sol); outline-offset: 3px; border-radius: 8px; }
   button { font: inherit; color: inherit; }
   .num { font-family: var(--datos); font-variant-numeric: tabular-nums; }
+  #diag { position: fixed; left: 8px; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 30; max-width: min(640px, calc(100vw - 16px)); font: 11px/1.35 var(--datos);
+    color: #ffd9a8; background: rgba(20, 8, 4, .88); border: 1px solid rgba(255, 140, 80, .45); border-radius: 10px; padding: 6px 10px; }
+  #diag summary { cursor: pointer; }
+  #diag pre { margin: 6px 0 0; white-space: pre-wrap; max-height: 38vh; overflow: auto; color: #f3e6d6; }
+  #aviso { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 70px); z-index: 25; transform: translate(-50%, -8px); opacity: 0; pointer-events: none;
+    max-width: min(520px, calc(100vw - 32px)); font: 600 13.5px/1.4 var(--texto); color: var(--cal); background: var(--panel-2); border: 1px solid var(--linea-2);
+    border-radius: 14px; padding: 10px 14px; backdrop-filter: blur(12px); transition: opacity .3s, transform .3s var(--ease); text-align: center; }
+  #aviso.ver { opacity: 1; transform: translate(-50%, 0); }
 
   /* ---------- barra superior ---------- */
   .barra { position: fixed; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -117,10 +125,50 @@
   .vistas { display: flex; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 3px; backdrop-filter: blur(10px); }
   .vistas button { border: 0; background: none; cursor: pointer; font: 600 12.5px/1 var(--texto); color: var(--cal-2); padding: 8px 11px; border-radius: 999px; transition: background .2s, color .2s; }
   .vistas button:hover { color: var(--cal); background: rgba(239,233,222,.08); }
+  .vistas button, .lentes button { position: relative; transition: background .2s, color .2s, transform .08s cubic-bezier(.2, 0, 0, 1); }
+  .vistas button:active, .lentes button:active { transform: scale(.96); }
+  .vistas button[aria-pressed="true"] { color: var(--cal); background: var(--sol-tenue); }
+  .vistas button::after { content: ''; position: absolute; left: 11px; right: 11px; bottom: 3px; height: 2px; border-radius: 1px; background: var(--sol);
+    transform: scaleX(var(--p, 0)); transform-origin: left; opacity: 0; transition: opacity .3s; }
+  .vistas button[aria-pressed="true"]::after { opacity: 1; }
+  .lentes { display: flex; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 3px; backdrop-filter: blur(10px); gap: 2px; }
+  .lentes::before { content: 'Ver'; font: 500 10px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--cal-3); align-self: center; padding: 0 6px 0 8px; }
+  .lentes button { border: 0; background: none; cursor: pointer; font: 600 12.5px/1 var(--texto); color: var(--cal-2); padding: 8px 10px; border-radius: 999px; }
+  .lentes button:hover { color: var(--cal); background: rgba(239,233,222,.08); }
+  .lentes button[aria-pressed="true"] { color: #1d1405; background: var(--sol); }
+  .lentes button[data-lente="lluvia"][aria-pressed="true"] { background: var(--lluvia); color: #04121c; }
+  .lentes button[data-lente="sombras"][aria-pressed="true"] { background: var(--cal); color: #0b1216; }
+  #leyenda { width: min(17rem, calc(100vw - 2 * var(--gutter))); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 14px; padding: 11px 12px;
+    backdrop-filter: blur(14px); display: grid; gap: 7px; animation: sube .3s var(--ease); }
+  #ley-t { margin: 0; font: 600 13px/1.2 var(--texto); }
+  #ley-rampa { height: 8px; border-radius: 4px; }
+  #ley-escala { display: flex; justify-content: space-between; font: 500 10.5px/1 var(--datos); color: var(--cal-2); margin-top: -2px; }
+  #ley-fachadas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  #ley-fachadas li { display: grid; justify-items: center; gap: 1px; border: 1px solid var(--linea); border-radius: 8px; padding: 5px 2px; }
+  #ley-fachadas span { font: 500 10px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; }
+  #ley-fachadas b { font: 600 15px/1.1 var(--datos); font-variant-numeric: tabular-nums; }
+  #ley-fachadas small { font: 500 9.5px/1 var(--datos); color: var(--cal-3); }
+  #ley-nota { margin: 0; font-size: 11.5px; line-height: 1.38; color: var(--cal-2); text-wrap: pretty; }
+  .segmento { display: flex; border: 1px solid var(--linea-2); border-radius: 999px; padding: 2px; }
+  .segmento button { flex: 1; border: 0; background: none; cursor: pointer; font: 600 11.5px/1 var(--texto); color: var(--cal-2); padding: 6px 8px; border-radius: 999px; }
+  .segmento button[aria-pressed="true"] { background: rgba(74, 168, 220, .22); color: var(--cal); }
+  /* viaje en el tiempo */
+  #viaje { position: fixed; z-index: 9; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 68px); transform: translateX(-50%); display: grid; justify-items: center; gap: 5px;
+    padding: 10px 20px 12px; border-radius: 16px; background: var(--panel-2); border: 1px solid var(--sol); backdrop-filter: blur(14px); pointer-events: none; min-width: 250px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35); animation: sube .25s cubic-bezier(.2, 0, 0, 1); }
+  #viaje small { font: 500 10.5px/1 var(--datos); letter-spacing: .12em; text-transform: uppercase; color: var(--sol); }
+  #viaje b { font: 700 23px/1.1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  #viaje i { display: block; height: 2px; width: 100%; background: var(--sol); transform-origin: left; transform: scaleX(0); border-radius: 1px; }
+  #viaje .v2, #viaje.llego .v1 { display: none; } #viaje.llego .v2 { display: inline; }
+  #viaje.llego { transition: opacity .6s .9s; opacity: 0; }
+  html.viajando #l-hora, html.viajando #l-fecha { color: var(--sol-2); }
+  html.viajando .dock-lect { opacity: .55; transition: opacity .2s; }
   .pista { margin: 0; font: 500 10.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; max-width: 13rem; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
   html.girado .pista { opacity: 0; }
 
   /* ---------- máquina del tiempo ---------- */
+  #dia .gota { fill: var(--lluvia); } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
+  .dia-ley { margin: 2px 0 0; font: 500 10px/1.2 var(--datos); color: var(--cal-3); text-align: right; min-height: 12px; }
   #dock { position: fixed; z-index: 6; left: var(--gutter); right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
     display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "hora centro lect botones"; gap: 10px 26px; align-items: center; padding: 14px 18px;
     border-radius: 18px; background: var(--panel-2); border: 1px solid var(--linea); backdrop-filter: blur(18px); box-shadow: 0 24px 70px rgba(0,0,0,.4); box-sizing: border-box; }
@@ -197,21 +245,45 @@
   #acerca .fuentes li { font-size: 13.5px; }
   #acerca .aviso { font-size: 13px; color: var(--cal-3); margin-top: 14px; }
 
-  /* ---------- ir a un momento exacto ---------- */
+  /* ---------- ir a… (fecha exacta y consultas) ---------- */
   #elegir { display: inline-flex; gap: 6px; align-items: center; border: 0; background: none; padding: 2px 0; cursor: pointer; color: var(--cal-2); border-bottom: 1px dashed var(--linea-2); }
   #elegir:hover { color: var(--cal); border-bottom-color: var(--sol); }
   #elegir .lapiz { font-size: 10px; color: var(--sol); }
-  #ir-a { position: fixed; z-index: 7; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px); width: min(380px, calc(100vw - 2 * var(--gutter)));
-    background: var(--panel-2); border: 1px solid var(--sol); border-radius: 16px; padding: 16px; backdrop-filter: blur(16px); display: grid; gap: 12px; box-sizing: border-box;
-    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); }
-  #ir-a h3 { font: 500 10.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0; }
-  #ir-a .campos { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+  /* panel lateral a la izquierda: deja ver el edificio y la brújula mientras se viaja */
+  #ir-a { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px);
+    width: min(400px, calc(100vw - 2 * var(--gutter) - 150px)); align-content: start; overflow: auto; overscroll-behavior: contain;
+    background: var(--panel-2); border: 1px solid var(--sol); border-radius: 18px; padding: 16px; backdrop-filter: blur(18px); display: grid; gap: 12px; box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .22s cubic-bezier(.2, 0, 0, 1); }
+  .ir-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  #ir-a h3 { font: 760 22px/1 var(--display); margin: 0; letter-spacing: -0.01em; }
+  .ir-form { display: grid; grid-template-columns: 1.3fr 1fr auto; gap: 10px; align-items: end; }
   #ir-a label { display: grid; gap: 6px; font: 600 12px/1 var(--texto); color: var(--cal-2); }
   #ir-a input { font: 500 16px/1 var(--datos); color: var(--cal); background: rgba(239,233,222,.06); border: 1px solid var(--linea-2); border-radius: 10px; padding: 10px; min-width: 0; color-scheme: dark; }
   #ir-a input:focus { outline: 2px solid var(--sol); outline-offset: 1px; }
-  #ir-a .nota { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--cal-2); }
-  #ir-a .acciones-ir { display: flex; gap: 8px; }
-  #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  #ir-a .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-3); }
+  #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
+  .consultas { display: grid; gap: 14px; }
+  html:has(#ir-a:not([hidden])) #rotulo, html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
+  .c-grupo h4 { font: 500 10.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
+  .c-grupo[data-g="lluvia"] h4 { color: var(--lluvia); }
+  .c-grupo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+  .c-grupo li { display: grid; gap: 3px; animation: sube .24s cubic-bezier(.2, 0, 0, 1) both; }
+  .c-item { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; align-items: baseline; text-align: left; width: 100%; border: 1px solid var(--linea); background: rgba(239,233,222,.03); border-radius: 10px;
+    padding: 8px 10px; cursor: pointer; box-shadow: inset 0 0 0 0 var(--sol); transition: border-color .15s, background .15s, box-shadow .15s; }
+  .c-item:hover { border-color: var(--linea-2); background: rgba(239,233,222,.07); box-shadow: inset 2px 0 0 0 var(--sol); }
+  .c-grupo[data-g="lluvia"] .c-item:hover { box-shadow: inset 2px 0 0 0 var(--lluvia); }
+  li.activo > .c-item { border-color: var(--sol); background: var(--sol-tenue); }
+  .c-grupo[data-g="lluvia"] li.activo > .c-item { border-color: var(--lluvia); background: rgba(74, 168, 220, .14); }
+  .c-t { grid-column: 1 / -1; font: 600 14px/1.2 var(--texto); color: var(--cal); }
+  .c-d { font: 500 10.5px/1.2 var(--datos); color: var(--cal-3); }
+  .c-v { font: 500 11.5px/1.2 var(--datos); color: var(--cal-2); text-align: right; white-space: nowrap; }
+  .c-txt { display: none; grid-column: 1 / -1; margin: 4px 0 0; font: 400 12.5px/1.42 var(--texto); color: var(--cal-2); text-wrap: pretty; }
+  li.activo .c-txt { display: block; }
+  .rank { display: flex; gap: 4px; padding-left: 4px; align-items: center; }
+  .rank::before { content: 'otros:'; font: 500 10px/1 var(--datos); color: var(--cal-3); margin-right: 2px; }
+  .rank button { font: 600 11px/1 var(--datos); color: var(--cal-2); background: none; border: 1px solid var(--linea); border-radius: 6px; width: 24px; height: 22px; cursor: pointer; padding: 0; }
+  .rank button:hover { border-color: var(--cal-2); color: var(--cal); }
+  .rank button[aria-pressed="true"] { border-color: var(--sol); color: var(--sol); }
 
   /* ---------- capas ---------- */
   #capas { position: fixed; z-index: 7; right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px); width: min(360px, calc(100vw - 2 * var(--gutter)));
@@ -272,10 +344,17 @@
     .dock-lect small { font-size: 10.5px; }
     #l-fuente { display: none; }
     #capas, #ir-a { left: 8px; right: 8px; width: auto; }
+    #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px 18px 14px 14px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
+    .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
+    .lentes::before { display: none; } .lentes button { padding: 7px 8px; font-size: 11.5px; }
+    #leyenda { padding: 9px 10px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
+    #ir-a { background: var(--solido); }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
   }
+  @media (max-width: 480px) { #estado { display: none; } #abrir-sirve { padding: 9px 11px; font-size: 12.5px; } .acciones { gap: 6px; } .marca b { font-size: 17px; } }
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -349,8 +428,23 @@
     <button type="button" data-vista="aerea">Aérea</button>
     <button type="button" data-vista="planta">Planta</button>
   </div>
+  <div class="lentes" role="group" aria-label="Formas de ver">
+    <button type="button" data-lente="foto" aria-pressed="true" title="La escena tal como se vería">Foto</button>
+    <button type="button" data-lente="sol" aria-pressed="false" title="Sol directo sobre cada fachada, en W/m²">Sol</button>
+    <button type="button" data-lente="lluvia" aria-pressed="false" title="Lluvia con viento sobre cada fachada">Lluvia</button>
+    <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra de cada hora del día sobre el terreno">Sombras</button>
+  </div>
+  <div id="leyenda" hidden aria-live="polite">
+    <p id="ley-t"></p>
+    <div id="ley-rampa"></div>
+    <div id="ley-escala"></div>
+    <ul id="ley-fachadas"></ul>
+    <div id="ley-modos" class="segmento" hidden><button type="button" data-agua="hora">Esta hora</button><button type="button" data-agua="anio">Año típico</button></div>
+    <p id="ley-nota"></p>
+  </div>
   <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
 </aside>
+<div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
 
 <aside id="panel-fachada" aria-live="polite">
   <p class="eyebrow">Estás frente al edificio</p>
@@ -375,11 +469,13 @@
       <svg id="dia" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="grad-dia" x1="0" x2="1" y1="0" y2="0"></linearGradient></defs>
         <rect x="0" y="6" width="1000" height="16" rx="8" fill="url(#grad-dia)"></rect>
+        <g id="dia-clima"></g>
         <g id="dia-ticks"></g>
         <line id="dia-aguja" class="aguja" x1="0" x2="0" y1="1" y2="27"></line>
       </svg>
       <div class="etiquetas" id="dia-etiquetas"></div>
       <input id="hora" type="range" min="0" max="1439" step="1" aria-label="Hora del día">
+      <p class="dia-ley" id="dia-ley"></p>
     </div>
     <div class="regla" id="regla-anio" hidden>
       <svg id="anio" viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
@@ -411,6 +507,7 @@
   </div>
   <div class="dock-botones">
     <button class="boton" id="reproducir" type="button" aria-pressed="false" aria-label="Reproducir"></button>
+    <button class="boton" id="abrir-ir" type="button" aria-expanded="false" aria-controls="ir-a" title="Una fecha exacta o uno de los días extremos de la serie">Ir a…</button>
     <button class="boton" id="abrir-capas" type="button" aria-expanded="false" aria-controls="capas">Capas</button>
   </div>
 </section>
@@ -468,22 +565,23 @@
   <p class="sirve-pie">Cálculos: geometría solar NOAA minuto a minuto (2026) y datos horarios ERA5 2001–2025 de Open-Meteo, sobre el modelo paramétrico (escala ±12 %, ventanas inferidas). Detalle de fuentes en «Qué es · fuentes».</p>
 </aside>
 
-<form id="ir-a" hidden aria-label="Ir a una fecha y hora">
-  <h3>Ir a un momento exacto</h3>
-  <div class="campos">
+<aside id="ir-a" hidden aria-labelledby="ir-a-t">
+  <div class="ir-cab"><h3 id="ir-a-t">Ir a…</h3><button class="boton" type="button" id="cerrar-ir">Cerrar</button></div>
+  <form id="ir-form" class="ir-form" aria-label="Una fecha y hora exactas">
     <label>Fecha<input type="date" id="ir-fecha" min="1940-01-01" max="2040-12-31" required></label>
     <label>Hora (Panamá)<input type="time" id="ir-hora" step="60" required></label>
-  </div>
-  <p class="nota">Entre 2001 y 2025 el dato de esa hora viene incluido (reanálisis ERA5). Otras fechas desde 1940, y hasta 15 días adelante, se consultan en línea a Open-Meteo. Es dato de modelo para una celda de ~28 km: sirve para comparar con una foto, pero un aguacero muy local puede no aparecer.</p>
-  <div class="acciones-ir"><button class="boton primario" type="submit">Ver ese momento</button><button class="boton" type="button" id="cerrar-ir">Cancelar</button></div>
-</form>
+    <button class="boton primario" type="submit">Ir</button>
+  </form>
+  <p class="nota">Entre 2001 y 2025 el dato de esa hora viene incluido (ERA5). Desde 1940 y hasta 15 días adelante se consulta en línea a Open-Meteo. Es dato de modelo para una celda de ~28 km: sirve para comparar con una foto, pero un aguacero muy local puede no aparecer.</p>
+  <div id="consultas" class="consultas" aria-label="Consultas"></div>
+  <p class="nota">Los extremos de lluvia y luz salen de la serie ERA5 2001–2025, calculados, no elegidos a mano. Las fechas de sol y sombra son las del año <b id="consultas-anio"></b> (cambia el año con la fecha de arriba).</p>
+</aside>
 
 <div id="capas" hidden>
   <div>
     <h3>Capas</h3>
     <div class="interruptores">
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
-      <label><input type="checkbox" id="capa-calor"><b>Sol directo en fachadas</b><small>Irradiancia directa sobre cada fachada, en W/m² (sin difusa ni reflejada).</small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa.</small></label>
     </div>
   </div>
@@ -507,7 +605,8 @@
     <li><b>Ahora:</b> el sol de este minuto y el pronóstico de modelo de Open-Meteo, que se renueva cada 15 min. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
     <li><b>Máquina del tiempo:</b> Día · Año · 25 años, o una fecha y hora exactas (toca la fecha bajo la hora grande). Entre 2001 y 2025, si ERA5 da lluvia en esa hora, llueve en la escena.</li>
     <li><b>Orientación:</b> arrastra para girar el edificio. La brújula marca el norte real y el sol; en el suelo están la rosa N·E·S·O y el arco del sol del día.</li>
-    <li><b>Capas:</b> «Sol directo en fachadas» da la irradiancia directa sobre cada una, en W/m². «Aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
+    <li><b>Ir a…:</b> una fecha y hora exactas, o los días que más se consultan: sin sombra, solsticios, la hora y el día más lluviosos, el día con más sol, la fachada que más se moja y un día típico de cada mes.</li>
+    <li><b>Ver:</b> «Foto» es la escena; «Sol» pinta la irradiancia directa sobre cada fachada (W/m²); «Lluvia», el índice de lluvia con viento de ISO 15927-3; «Sombras», la sombra de cada hora del día sobre el terreno. «Capas» → «Aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
     <li id="cenit-txt"></li>
   </ul>
   <h3>Qué no es</h3>
