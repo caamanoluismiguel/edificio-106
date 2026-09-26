@@ -108,7 +108,11 @@ export class Escena {
     const sky2 = new SkyMesh(); sky2.scale.setScalar(1000);
     for (const k of ['turbidity', 'rayleigh', 'mieCoefficient', 'mieDirectionalG']) sky2[k].value = sky[k].value;
     sky2.cloudCoverage.value = 0.2; sky2.cloudDensity.value = 0.3; sky2.showSunDisc.value = 0;
-    sky2.material.colorNode = mix(sky2.material.colorNode.mul(vec4(vec3(U.cielo), 1)), vec4(U.grisCielo, 1), U.cubierto);
+    // la bóveda que ilumina y se refleja va casi sin saturación: el azul puro teñía de pizarra todo lo que queda en sombra
+    // (en las fotos los muros en sombra son blanco neutro, (184, 184, 181) en WA0024)
+    const c2 = sky2.material.colorNode.mul(vec4(vec3(U.cielo), 1));
+    const l2 = dot(c2.rgb, vec3(0.2126, 0.7152, 0.0722));
+    sky2.material.colorNode = mix(vec4(mix(c2.rgb, vec3(l2), 0.8), 1), vec4(U.grisCielo, 1), U.cubierto);
     this.skyEnvScene.add(sky2); this.sky2 = sky2;
     this.pmrem = new THREE.PMREMGenerator(r);
 
@@ -417,8 +421,8 @@ export class Escena {
     // interiores inventados (v014): oscuros y neutros, para que detrás del vidrio no aparezcan manchas blancas
     if (nm.includes('interior') || nm.includes('ceiling') || nm.includes('diffuser')) colorFinal = colBase.mul(0.3);
     if (nmPlaster) {
-      // blanco cálido de las fotos (WA0014, WA0017) en lugar del gris verdoso que dejó el promedio del exportador
-      colBase = colBase.mul(vec3(1.0, 0.91, 0.78));
+      // blanco casi neutro, como en las fotos (WA0014, WA0024), en lugar del gris verdoso que dejó el promedio del exportador
+      colBase = colBase.mul(vec3(0.99, 0.97, 0.93));
       // pañete: algas y salpicadura en la base del muro + manchas amplias de la pintura
       const y = positionWorld.y;
       const n = mx_fractal_noise_float(positionWorld.mul(vec3(0.35, 0.9, 0.35)), 3, 2.0, 0.5).mul(0.5).add(0.5);
@@ -428,21 +432,23 @@ export class Escena {
     }
     if (nm.includes('terracotta') || nm.includes('clay')) {
       const n = mx_noise_float(positionWorld.mul(1.7)).mul(0.5).add(0.5);
-      colorFinal = colBase.mul(mix(0.78, 1.25, n));
+      // más naranja y menos azul, medido contra las tejas de WA0014, WA0018, WA0024 (mediana ≈ (125, 63, 50))
+      colorFinal = colBase.mul(vec3(1.2, 0.85, 0.7)).mul(mix(0.78, 1.25, n));
     }
     // bajo los aleros: las caras que miran hacia abajo solo ven el suelo y la sombra del propio alero (en las fotos se leen
     // como una franja parda oscura); no reciben sol directo, así que oscurecerlas no cambia ninguna sombra del análisis
     if (!leaf && !glass && grupo !== 'sitio' && grupo !== 'vegetacion') {
       const abajo = smoothstep(-0.2, -0.75, normalWorld.y).mul(smoothstep(2.4, 3.2, positionWorld.y));
-      colorFinal = colorFinal.mul(mix(float(1), float(0.42), abajo));
+      colorFinal = colorFinal.mul(mix(float(1), float(0.22), abajo));   // cabios y sofitos: en las fotos, una franja parda oscura
     }
     // sustituto de oclusión bajo los aleros (hasta hornear la de Blender): el alero de 1,65 m le tapa el cielo al muro en
     // el metro y pico bajo su encuentro, medido en el modelo a 4,40 · 8,05 · ~11,7 m
     if (nmPlaster && grupo !== 'sitio' && grupo !== 'contexto') {
       const y = positionWorld.y, vertical = smoothstep(0.6, 0.3, abs(normalWorld.y));
-      const bajo = (j) => step(y, j).mul(smoothstep(1.3, 0.0, float(j).sub(y)));
+      // fuerte en el primer metro (entre los cabios, donde las fotos muestran una franja oscura) y se desvanece hacia 1,6 m
+      const bajo = (j) => step(y, j).mul(smoothstep(1.6, 0.5, float(j).sub(y)));
       const occ = max(max(bajo(4.4), bajo(8.05)), bajo(11.7)).mul(vertical);
-      colorFinal = colorFinal.mul(mix(float(1), float(0.5), occ));
+      colorFinal = colorFinal.mul(mix(float(1), float(0.32), occ));
     }
     m.colorNode = mix(clayColor, colorFinal, U.mat);
     if (glass) m.colorNode = mix(clayColor.mul(0.35), colorFinal, U.mat);

@@ -30372,22 +30372,24 @@ var OB = class {
 			"mieCoefficient",
 			"mieDirectionalG"
 		]) a[e].value = i[e].value;
-		a.cloudCoverage.value = .2, a.cloudDensity.value = .3, a.showSunDisc.value = 0, a.material.colorNode = DL(a.material.colorNode.mul(pR(fR(X.cielo), 1)), pR(X.grisCielo, 1), X.cubierto), this.skyEnvScene.add(a), this.sky2 = a, this.pmrem = new sS(t);
-		let o = new Zs(16777215, 3);
-		o.castShadow = !0;
-		let s = this.calidad.sombras;
-		o.shadow.mapSize.set(s, s);
-		let c = o.shadow.camera;
-		c.left = -70, c.right = 70, c.top = 70, c.bottom = -70, c.near = 10, c.far = 1400, o.shadow.bias = -4e-4, o.shadow.normalBias = .05, o.shadow.radius = 2, o.shadow.autoUpdate = !1, o.shadow.needsUpdate = !0, o.shadow.camera.layers.set(1), n.add(o), n.add(o.target), this.sun = o, this.hemi = new Ms(12571878, 5986878, .6), n.add(this.hemi);
-		let l = new so(3200, 64);
-		l.rotateX(-Math.PI / 2);
-		let u = new kS({
+		a.cloudCoverage.value = .2, a.cloudDensity.value = .3, a.showSunDisc.value = 0;
+		let o = a.material.colorNode.mul(pR(fR(X.cielo), 1)), s = sL(o.rgb, fR(.2126, .7152, .0722));
+		a.material.colorNode = DL(pR(DL(o.rgb, fR(s), .8), 1), pR(X.grisCielo, 1), X.cubierto), this.skyEnvScene.add(a), this.sky2 = a, this.pmrem = new sS(t);
+		let c = new Zs(16777215, 3);
+		c.castShadow = !0;
+		let l = this.calidad.sombras;
+		c.shadow.mapSize.set(l, l);
+		let u = c.shadow.camera;
+		u.left = -70, u.right = 70, u.top = 70, u.bottom = -70, u.near = 10, u.far = 1400, c.shadow.bias = -4e-4, c.shadow.normalBias = .05, c.shadow.radius = 2, c.shadow.autoUpdate = !1, c.shadow.needsUpdate = !0, c.shadow.camera.layers.set(1), n.add(c), n.add(c.target), this.sun = c, this.hemi = new Ms(12571878, 5986878, .6), n.add(this.hemi);
+		let d = new so(3200, 64);
+		d.rotateX(-Math.PI / 2);
+		let f = new kS({
 			color: new lr(.05, .085, .03),
 			roughness: .95
 		});
-		u.colorNode = DL(TB.mul(.55), fR(.05, .085, .03), X.mat), u.receivedShadowNode = kB;
-		let d = new ea(l, u);
-		return d.position.y = -.05, d.receiveShadow = !0, n.add(d), this.suelo = d, this.#d(), this.#f(), this.#a(), this.#o(), this.#l(), this.#c(), this.#s(), this.#t(), window.addEventListener("resize", () => this.resize()), this.setSol(-8, 90), this;
+		f.colorNode = DL(TB.mul(.55), fR(.05, .085, .03), X.mat), f.receivedShadowNode = kB;
+		let p = new ea(d, f);
+		return p.position.y = -.05, p.receiveShadow = !0, n.add(p), this.suelo = p, this.#d(), this.#f(), this.#a(), this.#o(), this.#l(), this.#c(), this.#s(), this.#t(), window.addEventListener("resize", () => this.resize()), this.setSol(-8, 90), this;
 	}
 	async #e(e) {
 		let t = new gI({
@@ -30568,21 +30570,21 @@ var OB = class {
 		}
 		let p = (s.includes("plaster") || s.includes("cream trim")) && !s.includes("interior"), m = f;
 		if ((s.includes("interior") || s.includes("ceiling") || s.includes("diffuser")) && (m = f.mul(.3)), p) {
-			f = f.mul(fR(1, .91, .78));
+			f = f.mul(fR(.99, .97, .93));
 			let e = HL.y, t = jL(HL.mul(fR(.35, .9, .35)), 3, 2, .5).mul(.5).add(.5), n = eR(1, 0, e).mul(.35).mul(t.add(.4)), r = ML(HL.mul(fR(.08, .3, .08))).mul(.06);
 			m = f.mul(J(1).sub(n).sub(r)).mul(fR(1, 1, .985)).add(fR(-.02, 0, -.02).mul(n));
 		}
 		if (s.includes("terracotta") || s.includes("clay")) {
 			let e = ML(HL.mul(1.7)).mul(.5).add(.5);
-			m = f.mul(DL(.78, 1.25, e));
+			m = f.mul(fR(1.2, .85, .7)).mul(DL(.78, 1.25, e));
 		}
 		if (!u && !l && t !== "sitio" && t !== "vegetacion") {
 			let e = eR(-.2, -.75, FL.y).mul(eR(2.4, 3.2, HL.y));
-			m = m.mul(DL(J(1), J(.42), e));
+			m = m.mul(DL(J(1), J(.22), e));
 		}
 		if (p && t !== "sitio" && t !== "contexto") {
-			let e = HL.y, t = eR(.6, .3, YI(FL.y)), n = (t) => tR(e, t).mul(eR(1.3, 0, J(t).sub(e))), r = TL(TL(n(4.4), n(8.05)), n(11.7)).mul(t);
-			m = m.mul(DL(J(1), J(.5), r));
+			let e = HL.y, t = eR(.6, .3, YI(FL.y)), n = (t) => tR(e, t).mul(eR(1.6, .5, J(t).sub(e))), r = TL(TL(n(4.4), n(8.05)), n(11.7)).mul(t);
+			m = m.mul(DL(J(1), J(.32), r));
 		}
 		if (d.colorNode = DL(TB, m, X.mat), l && (d.colorNode = DL(TB.mul(.35), m, X.mat)), !u && t !== "contexto" && t !== "vegetacion" && t !== "sitio") {
 			let e = FL, t = X.dniW.mul(TL(sL(e, X.solDir), 0)).mul(wB), n = X.dhiW.mul(e.y.add(1).mul(.5)).add(X.ghiW.mul(.1).mul(J(1).sub(e.y))), r = t.add(n.mul(X.total)).div(800), i = (e, t) => eR(e, t, r), a = DL(DL(DL(DL(fR(.01, .03, .22), fR(.3, .02, .4), i(0, .25)), fR(.85, .12, .02), i(.25, .5)), fR(1, .45, 0), i(.5, .75)), fR(1, .85, .15), i(.75, 1)).mul(X.calor).mul(.8), o = (t, n) => UL(TL(sL(e, fR(t, 0, n)), 0), 3), s = Object.values(mB).map((e) => {
