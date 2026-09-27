@@ -660,7 +660,11 @@ function lecturas(p, c) {
   const vivo = S.modo === 'ahora', V = S.viaje;
   // en el viaje, mientras corre la fecha, la hora no se muestra: todavía no es la de ningún momento real
   $('#l-hora').textContent = V?.fase === 'fecha' ? '··:··' : hhmm(S.min);
-  $('#l-fecha').textContent = S.mesSerie !== null ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : fechaTexto(S.fecha);
+  // fecha larga y corta (la corta es la del teléfono: «26 sep 2026»); el CSS muestra una u otra
+  const larga = S.mesSerie !== null ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : fechaTexto(S.fecha);
+  const corta = S.mesSerie !== null ? `${MES3[S.fecha.m - 1]} ${S.fecha.y}` : fechaCorta(S.fecha);
+  const lf = $('#l-fecha'); if (!lf.firstChild) lf.innerHTML = '<span class="larga"></span><span class="corta"></span>';
+  lf.children[0].textContent = larga; lf.children[1].textContent = corta;
   document.documentElement.classList.toggle('vivo', vivo);
   $('#ahora').textContent = vivo ? 'Ahora' : 'Volver a ahora';
   $('#ahora').setAttribute('aria-pressed', String(vivo));
@@ -699,6 +703,8 @@ function lecturas(p, c) {
       : c.buscando ? 'Buscando el dato de ese día en Open-Meteo…' : globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión.' : 'Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.';
   }
   $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
+  // resumen de una línea para el teléfono: solo los valores
+  $('#lect-resumen-t').textContent = V ? 'Viajando…' : sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol bajo el horizonte · ${temp}`;
   // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
   const est = $('#estado-txt');
   if (V) { /* se actualiza al llegar */ }
@@ -933,6 +939,12 @@ function prepararUI() {
     S.mesSerie = null; S.fecha = { y, m, d: Math.min(S.fecha.d, diasMes(y, m)) };
   });
   $('#reproducir').addEventListener('click', () => { cerrarOferta(); reproducir(); });
+  $('#lect-resumen').addEventListener('click', () => {
+    const abrir = !document.documentElement.classList.contains('lect-abiertas');
+    document.documentElement.classList.toggle('lect-abiertas', abrir); $('#lect-resumen').setAttribute('aria-expanded', String(abrir));
+  });
+  // indicio de que hay más: la fila de botones del teléfono (hacia la derecha) y la leyenda (hacia abajo)
+  for (const el of [$('.hud-botones'), $('#leyenda')]) { el.addEventListener('scroll', () => hayMas(el), { passive: true }); new ResizeObserver(() => hayMas(el)).observe(el); }
   ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
   const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); } };
@@ -1005,6 +1017,14 @@ function prepararUI() {
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
+}
+
+/** Marca con .hay-mas un panel que tiene contenido oculto por desplazar (a la derecha si es una fila, abajo si no). */
+function hayMas(el) {
+  if (!el) return;
+  const fila = el.scrollWidth > el.clientWidth + 2 && getComputedStyle(el).overflowX !== 'visible';
+  const mas = fila ? el.scrollLeft + el.clientWidth < el.scrollWidth - 4 : el.scrollTop + el.clientHeight < el.scrollHeight - 4;
+  if (el.classList.contains('hay-mas') !== mas) el.classList.toggle('hay-mas', mas);
 }
 
 function irAFachada(k) {
@@ -1166,6 +1186,7 @@ function leyenda(c) {
   if (S.lente === 'sombras') nota = !escena._diagClave ? 'El diagrama aparece cuando termina de cargar el modelo.' : `Sombras del ${fechaTexto(S.fecha)}. Se ven mejor desde arriba: botón «Planta».`;
   if (esPartes) nota = 'Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente.';
   $('#ley-nota').textContent = nota; $('#ley-nota').hidden = !nota;
+  hayMas(el);
 }
 
 // ---------------- Partes del edificio (forma de ver «Partes») ----------------

@@ -95,7 +95,7 @@
   .carga i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--linea-2); border-top-color: var(--sol); animation: gira 1s linear infinite; }
   @keyframes gira { to { transform: rotate(360deg) } }
   #intro { transition: opacity 1.2s var(--ease); }
-  html.listo #intro { opacity: 0; pointer-events: none; }
+  html.listo #intro { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity 1.2s var(--ease), visibility 0s 1.2s; }   /* oculta también para el teclado: «Saltar» no queda en el orden de Tab */
   html.listo #intro > * { pointer-events: none; }
 
   /* ---------- lo que aparece al terminar el armado ---------- */
@@ -144,6 +144,14 @@
   #leyenda { width: min(19.5rem, calc(100vw - 2 * var(--gutter))); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 14px; padding: 12px 13px;
     backdrop-filter: blur(14px); display: grid; gap: 8px; animation: sube .3s var(--ease); max-height: calc(100vh - var(--dock-h) - 340px); min-height: 120px; overflow: auto; overscroll-behavior: contain; }
   html:has(#leyenda:not([hidden])) .pista { display: none; }
+  .hud-botones { display: contents; }                            /* en el teléfono es una fila con desplazamiento horizontal */
+  /* indicio de que esa fila sigue: una flecha fija en el borde derecho mientras quede algo oculto */
+  .hud-botones.hay-mas::after { content: '›' / ''; position: sticky; right: 0; flex: none; display: grid; place-items: center; width: 30px; margin-left: -30px; border-radius: 999px;
+    background: var(--solido); border: 1px solid var(--linea-2); color: var(--sol); font: 700 20px/1 var(--texto); pointer-events: none; }
+  /* aviso de que la leyenda sigue más abajo (se muestra solo si hay contenido oculto) */
+  .ley-sigue { display: none; position: sticky; bottom: -12px; margin: 0 -13px -12px; padding: 7px 13px 8px; font: 600 12px/1.2 var(--texto); color: var(--sol);
+    background: var(--solido); border-top: 1px solid var(--linea-2); border-radius: 0 0 14px 14px; pointer-events: none; }
+  #leyenda.hay-mas .ley-sigue { display: block; }
   .ley-cab { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
   #ley-t { margin: 0; font: 700 14.5px/1.25 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
   #ley-cerrar { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: none; color: var(--cal-2);
@@ -285,6 +293,9 @@
   .dock-hora { grid-area: hora; display: grid; gap: 5px; justify-items: start; min-width: 8.2em; }
   #l-hora { font: 720 46px/0.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; }
   #l-fecha { font: 500 12px/1.2 var(--datos); color: var(--cal-2); white-space: nowrap; }
+  #l-fecha .corta { display: none; }
+  /* resumen de las lecturas en una línea (solo en el teléfono): se toca y se despliega el detalle */
+  #lect-resumen { display: none; }
   #ahora { font: 600 12px/1 var(--texto); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 6px 10px 6px 9px; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; margin-top: 3px; }
   #ahora::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cal-3); }
   html.vivo #ahora { border-color: rgba(95, 211, 138, .5); cursor: default; }
@@ -451,42 +462,104 @@
     #info .t, #sonido .t { display: none; }
     .boton { padding: 10px 12px; }
     #rotulo-texto { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    #hud { top: calc(env(safe-area-inset-top, 0px) + 64px); gap: 6px; }
-    #brujula { width: 76px; height: 76px; }
-    .vistas button { padding: 7px 8px; font-size: 11.5px; }
-    .pista { display: none; }
-    #rotulo { max-width: calc(100vw - 2 * var(--gutter) - 90px); }
+    /* la explicación de un dato se lee entera: sin recorte y con desplazamiento si hace falta */
+    #rotulo:has(#rotulo-cerrar:not([hidden])) #rotulo-texto { display: block; max-height: 32vh; overflow: auto; pointer-events: auto; overscroll-behavior: contain; }
+    /* orientación en una sola franja: formas de ver y vistas en una fila que se desliza, y la brújula al lado */
+    #hud { left: 8px; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 60px); grid-template-columns: minmax(0, 1fr) auto; justify-items: stretch; align-items: center; gap: 8px; pointer-events: none; }
+    #hud > * { pointer-events: auto; }                               /* el hueco entre paneles deja arrastrar la escena */
+    #mirando, .pista { display: none; }
+    #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
+    #brujula text { font-size: 13px; } #brujula text.n { font-size: 15px; }
+    .hud-botones { display: flex; grid-column: 1; grid-row: 1; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+    .hud-botones::-webkit-scrollbar { display: none; }
+    .vistas, .lentes { flex: none; scroll-snap-align: start; }
+    .vistas button { padding: 7px 10px; font-size: 12.5px; }
+    #leyenda { grid-column: 1 / -1; grid-row: 2; width: auto; }
+    html.en-recorrido #leyenda { display: none; }                    /* en el recorrido, la tarjeta del paso ya lo explica */
+    #rotulo { max-width: none; right: 8px; left: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); padding: 9px 12px; gap: 5px; }
     #rotulo-texto { font-size: 13.5px; }
-    #dock { left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 12px; gap: 10px 12px;
-      grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "hora botones" "centro centro" "lect lect"; }
-    #l-hora { font-size: 34px; }
-    .dock-botones { justify-self: end; }
-    .dock-lect { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+    /* dock compacto: hora y fecha corta · pestañas y «Ahora» · la regla · las lecturas en una línea que se despliega */
+    #dock { left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 12px; gap: 5px 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: "hora botones" "fecha botones" "tabs ahora" "regla regla" "momentos momentos" "resumen resumen" "lect lect"; }
+    .dock-hora, .dock-centro { display: contents; }
+    #l-hora { grid-area: hora; justify-self: start; font-size: 30px; }
+    #elegir { grid-area: fecha; justify-self: start; }
+    #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
+    #ahora { grid-area: ahora; justify-self: end; align-self: center; margin: 0; }
+    .pestanas { grid-area: tabs; align-self: center; } .pestanas button { white-space: nowrap; padding: 7px 10px; }
+    .regla { grid-area: regla; } #regla-dia { margin-top: 12px; }
+    #momentos-caja { grid-area: momentos; }
+    .dock-botones { grid-area: botones; justify-self: end; align-self: center; }
+    #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
+    #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-height: 40px; box-sizing: border-box; min-width: 0; padding: 8px 12px; margin-top: 2px;
+      border: 1px solid var(--linea-2); border-radius: 12px; background: rgba(239,233,222,.04); cursor: pointer; font: 500 12.5px/1.2 var(--datos); color: var(--cal); text-align: left; }
+    #lect-resumen-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #lect-resumen i { font-style: normal; color: var(--sol); transition: transform .2s; }
+    html.lect-abiertas #lect-resumen i { transform: rotate(180deg); }
+    .dock-lect { grid-area: lect; display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; padding-top: 4px; }
+    html.lect-abiertas .dock-lect { display: grid; }
     .dock-lect b { font-size: 15px; white-space: normal; }
-    .dock-lect small { font-size: 10.5px; }
+    .dock-lect small { font-size: 11.5px; }
     #l-fuente { display: none; }
     #capas, #ir-a { left: 8px; right: 8px; width: auto; }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px 18px 14px 14px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
-    .lentes::before { display: none; } .lentes button { padding: 7px 8px; font-size: 11.5px; }
-    #leyenda { padding: 9px 10px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .lentes::before { display: none; } .lentes button { padding: 7px 10px; font-size: 12.5px; }
+    #leyenda { padding: 9px 10px; } .ley-sigue { bottom: -9px; margin: 0 -10px -9px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
     #ir-a { background: var(--solido); }
     #abrir-recorrido { display: none; }
     #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 46vh; overflow: auto; }
     #rec-t { font-size: 18px; } #rec-txt { font-size: 13.5px; } .rec-dis { font-size: 12px; }
-    #leyenda { max-height: 38vh; min-height: 0; }
+    #leyenda { max-height: 30vh; min-height: 0; }
     #oferta-recorrido { width: auto; right: 8px; left: 8px; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
     .dock-lect [data-explica] .k::after { display: none; }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
     #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
-    #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 10.5px; }
-    .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 10.5px; padding: 4px 7px; }
+    #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 11.5px; }
+    .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 11.5px; padding: 4px 7px; }
   }
+  /* teléfonos bajos: la leyenda de la regla del día se explica al tocar «Día» */
+  @media (max-width: 760px) and (max-height: 800px) { #dia-ley { display: none; } }
+  @media (max-width: 400px) { .marca svg { display: none; } .marca { padding: 7px 12px; } .acciones { gap: 5px; } }
   @media (max-width: 480px) { #estado { display: none; } #abrir-sirve { padding: 9px 11px; font-size: 12.5px; } .acciones { gap: 6px; } .marca b { font-size: 17px; } }
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
+  /* ---------- teléfono en horizontal (y ventanas muy bajas) ---------- */
+  @media (max-height: 500px) and (min-width: 761px) {
+    .barra { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); padding-bottom: 6px; }
+    .barra .boton { padding: 8px 12px; } .marca small, #estado { display: none; }
+    #hud { left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 52px); grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; pointer-events: none; }
+    #hud > * { pointer-events: auto; }
+    #mirando, .pista { display: none; }
+    #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
+    .hud-botones { display: flex; grid-column: 1; grid-row: 1; justify-self: end; gap: 6px; max-width: 100%; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .hud-botones::-webkit-scrollbar { display: none; }
+    .vistas, .lentes { flex: none; } .lentes::before { display: none; }
+    #leyenda { grid-column: 1 / -1; grid-row: 2; justify-self: end; max-height: calc(100vh - var(--dock-h) - 124px); min-height: 0; }
+    #rotulo { max-width: 46vw; padding: 8px 12px; gap: 4px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
+    #rotulo-texto { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #rotulo:has(#rotulo-cerrar:not([hidden])) #rotulo-texto { display: block; max-height: 26vh; overflow: auto; pointer-events: auto; }
+    #dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 14px; gap: 4px 18px; grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
+      grid-template-areas: "hora centro botones" "fecha centro resumen" "ahora centro resumen" "lect lect lect"; }
+    .dock-hora, .dock-centro { display: contents; }
+    #l-hora { grid-area: hora; font-size: 28px; } #elegir { grid-area: fecha; justify-self: start; } #ahora { grid-area: ahora; justify-self: start; margin: 0; }
+    #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
+    .pestanas { grid-area: centro; align-self: start; } .regla { grid-area: centro; align-self: end; margin-top: 60px; } #momentos-caja { display: none !important; }
+    .dia-ley, #dec-leyenda, #l-fuente { display: none; }
+    .dock-botones { grid-area: botones; justify-self: end; } #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
+    #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 10px; border: 1px solid var(--linea-2); border-radius: 12px;
+      background: rgba(239,233,222,.04); cursor: pointer; font: 500 12px/1.3 var(--datos); color: var(--cal); text-align: left; align-self: stretch; }
+    #lect-resumen-t { flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #lect-resumen i { font-style: normal; color: var(--sol); } html.lect-abiertas #lect-resumen i { transform: rotate(180deg); }
+    .dock-lect { grid-area: lect; display: none; } html.lect-abiertas .dock-lect { display: grid; }
+    /* los paneles grandes usan todo el alto, por encima del dock (se cierran con su botón o con Escape) */
+    #sirve, #ir-a, #capas, #voladizo, #recorrido { top: calc(env(safe-area-inset-top, 0px) + 52px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: none; z-index: 11; overflow: auto; }
+    #recorrido { width: min(27rem, 50vw); } #capas { width: min(360px, 50vw); }
+    #oferta-recorrido { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
+  }
   @media (max-width: 1400px) and (min-width: 761px) { .marca small { display: none; } }
   @media (max-width: 1100px) and (min-width: 761px) { #abrir-recorrido { padding: 10px 12px; } #sonido .t { display: none; } }
   /* en pantallas táctiles, los grupos de botones de arriba y las pestañas se tocan con el dedo: al menos 40 px de alto */
@@ -574,6 +647,7 @@
     </svg>
   </button>
   <p id="mirando">Miras hacia el suroeste</p>
+  <div class="hud-botones">
   <div class="vistas" role="group" aria-label="Vistas">
     <button type="button" data-vista="esquina">Esquina</button>
     <button type="button" data-vista="aerea">Aérea</button>
@@ -587,6 +661,7 @@
     <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra de cada hora del día sobre el terreno">Sombras</button>
     <button type="button" data-lente="partes" aria-pressed="false" title="Cómo se llama cada parte del edificio y qué hace">Partes</button>
     <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
+  </div>
   </div>
   <div id="leyenda" hidden aria-live="off">
     <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
@@ -622,6 +697,7 @@
       <p><b>Ojo:</b> <span id="ley-ojo"></span></p>
       <p class="tec"><b>Cómo se calcula:</b> <span id="ley-tec"></span></p>
     </details>
+    <p class="ley-sigue" aria-hidden="true">Hay más abajo ▾</p>
   </div>
   <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
 </aside>
@@ -700,7 +776,8 @@
       <ul id="momentos" aria-label="Extremos de la serie"></ul>
     </div>
   </div>
-  <div class="dock-lect">
+  <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>
+  <div class="dock-lect" id="dock-lect">
     <div data-explica="sol" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
     <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
     <div data-explica="clima" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
