@@ -849,36 +849,59 @@ export class Escena {
   #siluetaPuntos() {
     if (this._silueta) return this._silueta;
     if (!this.cargado) return null;                    // con el modelo a medias la silueta saldría incompleta
+    for (const _ of this.#recorrerSilueta()) { /* de un tirón */ }
+    return this._silueta;
+  }
+
+  /** Arma la silueta pieza por pieza: cede el control después de cada malla y de cada franja de altura. */
+  *#recorrerSilueta() {
     const bandas = new Map(), v = new THREE.Vector3(), mi = new THREE.Matrix4(), mw = new THREE.Matrix4();
     const poner = (p) => { if (p.y < 0.05) return; const k = Math.floor(p.y / 0.5); let b = bandas.get(k); if (!b) bandas.set(k, b = []); b.push(p.x, p.y, p.z); };
+    const mallas = [];
     for (const nombre of ['arquitectura', 'cubiertas', 'entrada', 'ventanas', 'detalles']) {
       const info = this.grupos[nombre]; if (!info) continue;
       info.root.updateMatrixWorld(true);
-      info.root.traverse((o) => {
-        if (!o.isMesh || !o.geometry?.attributes?.position) return;
-        const pos = o.geometry.attributes.position;
-        if (o.isInstancedMesh) {
-          o.geometry.computeBoundingBox(); const bb = o.geometry.boundingBox;
-          for (let i = 0; i < o.count; i++) {
-            o.getMatrixAt(i, mi); mw.multiplyMatrices(o.matrixWorld, mi);
-            for (let c = 0; c < 8; c++) { v.set(c & 1 ? bb.max.x : bb.min.x, c & 2 ? bb.max.y : bb.min.y, c & 4 ? bb.max.z : bb.min.z).applyMatrix4(mw); poner(v); }
-          }
-        } else {
-          const paso = Math.max(1, Math.floor(pos.count / 40000));
-          for (let i = 0; i < pos.count; i += paso) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); poner(v); }
+      info.root.traverse((o) => { if (o.isMesh && o.geometry?.attributes?.position) mallas.push(o); });
+    }
+    for (const o of mallas) {
+      const pos = o.geometry.attributes.position;
+      if (o.isInstancedMesh) {
+        o.geometry.computeBoundingBox(); const bb = o.geometry.boundingBox;
+        for (let i = 0; i < o.count; i++) {
+          o.getMatrixAt(i, mi); mw.multiplyMatrices(o.matrixWorld, mi);
+          for (let c = 0; c < 8; c++) { v.set(c & 1 ? bb.max.x : bb.min.x, c & 2 ? bb.max.y : bb.min.y, c & 4 ? bb.max.z : bb.min.z).applyMatrix4(mw); poner(v); }
         }
-      });
+      } else {
+        const paso = Math.max(1, Math.floor(pos.count / 40000));
+        for (let i = 0; i < pos.count; i += paso) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); poner(v); }
+      }
+      yield;
     }
     const out = [];
     for (const arr of bandas.values()) {
       const pts = []; for (let i = 0; i < arr.length; i += 3) pts.push([arr[i], arr[i + 2], arr[i + 1]]);
       for (const p of envolvente(pts)) out.push(p);           // [x, z, y]
+      yield;
     }
-    return (this._silueta = out.length > 8 ? out : null);
+    this._silueta = out.length > 8 ? out : null;
   }
 
-  /** Calcula de antemano la silueta del diagrama de sombras (para que el primer uso no espere). */
-  prepararSilueta() { return !!this.#siluetaPuntos(); }
+  /** Calcula de antemano la silueta del diagrama de sombras en ratos libres, sin bloquear más de unos milisegundos
+   *  seguidos (de un tirón tomaba ~120 ms y, si coincidía con un clic, se notaba como un tirón). */
+  async prepararSilueta() {
+    if (this._silueta || !this.cargado) return !!this._silueta;
+    const libre = () => new Promise((ok) => (window.requestIdleCallback ?? ((f) => setTimeout(() => f({ timeRemaining: () => 6 }), 30)))(ok, { timeout: 1000 }));
+    const it = this.#recorrerSilueta();
+    let d = await libre();
+    for (;;) {
+      if (this._silueta) return true;                 // mientras tanto alguien la pidió de un tirón
+      const t0 = performance.now();
+      let r;
+      do { r = it.next(); } while (!r.done && performance.now() - t0 < Math.min(8, Math.max(2, d.timeRemaining())));
+      if (r.done) return !!this._silueta;
+      d = await libre();
+    }
+  }
 
   /** Dibuja la sombra de cada hora (6 a 18 h) del día elegido. */
   setDiagrama(f) {
