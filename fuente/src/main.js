@@ -348,6 +348,7 @@ function pasoViaje(now) {
 }
 function llegada(d) {
   document.documentElement.classList.remove('viajando');
+  anunciar();
   if (d.aAhora) { S.modo = 'ahora'; const a = ahoraPanama(); S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min; lastLect = ''; }
   const el = $('#viaje'); el.hidden = false; el.classList.add('llego');
   $('#viaje-barra').style.transform = 'scaleX(1)';
@@ -388,6 +389,17 @@ function alTomar() {
   marcarVista(null);
   if (controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
 }
+
+// ---------------- Avisos para lectores de pantalla ----------------
+// #rotulo, #leyenda y #panel-fachada se reescriben con cada minuto simulado. Quedan en silencio (aria-live="off") y solo
+// hablan un momento después de algo que el usuario hizo a propósito: nunca mientras se reproduce o se arrastra la regla.
+const VIVAS = ['#rotulo', '#leyenda', '#panel-fachada'];
+function anunciar(ms = 1500) {
+  if (S.reproduce) return;
+  VIVAS.forEach((x) => $(x)?.setAttribute('aria-live', 'polite'));
+  clearTimeout(anunciar.t); anunciar.t = setTimeout(silenciar, ms);
+}
+function silenciar() { clearTimeout(anunciar.t); VIVAS.forEach((x) => $(x)?.setAttribute('aria-live', 'off')); }
 
 // ---------------- Clima en la fecha y hora elegidas ----------------
 function climaEn(f, min) {
@@ -695,11 +707,14 @@ function lecturas(p, c) {
   // agujas y controles
   $('#hora').value = Math.round(S.min) % 1440;
   $('#dia-anio').value = diaDelAnio(S.fecha);
+  $('#hora').setAttribute('aria-valuetext', hhmm(S.min));
+  $('#dia-anio').setAttribute('aria-valuetext', fechaTexto(S.fecha));
   const xd = (S.min % 1440) / 1440 * 1000; $('#dia-aguja').setAttribute('x1', xd); $('#dia-aguja').setAttribute('x2', xd);
   const xa = diaDelAnio(S.fecha) / 364 * 1000; $('#anio-aguja').setAttribute('x1', xa); $('#anio-aguja').setAttribute('x2', xa);
   const im = (S.fecha.y - 2001) * 12 + S.fecha.m - 1;
   const enSerie = im >= 0 && im < 300;
   $('#mes-serie').value = Math.max(0, Math.min(299, im));
+  $('#mes-serie').setAttribute('aria-valuetext', enSerie ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : `${MESES[S.fecha.m - 1]} de ${S.fecha.y}, fuera de 2001–2025`);
   const xs = (Math.max(0, Math.min(299, im)) + 0.5) / 300 * 1000; $('#dec-aguja').setAttribute('x1', xs); $('#dec-aguja').setAttribute('x2', xs);
   $('#dec-aguja').style.opacity = enSerie ? 1 : 0.25;
   rotulo(p, c, sp);
@@ -839,7 +854,7 @@ function reproducir() {
   if (S.pestana === 'dia') { const { sale } = saleYPone(S.fecha.y, S.fecha.m, S.fecha.d); S.min = sale - 25; }
   else if (S.pestana === 'anio') { S.fecha = { y: S.fecha.y, m: 1, d: 1 }; }
   else { S.mesSerie = -1; S.acum = 1; }
-  $('#reproducir').setAttribute('aria-pressed', 'true'); $('#reproducir').setAttribute('aria-label', 'Pausar');
+  $('#reproducir').setAttribute('aria-pressed', 'true'); $('#reproducir').setAttribute('aria-label', 'Pausar'); silenciar();
 }
 function parar() { S.reproduce = false; $('#reproducir').setAttribute('aria-pressed', 'false'); $('#reproducir').setAttribute('aria-label', 'Reproducir'); }
 
@@ -858,7 +873,7 @@ function irAAhora(volar = true) {
 }
 function ponerPestana(t) {
   S.pestana = t;
-  document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  document.querySelectorAll('[data-tab]').forEach((b) => { b.setAttribute('aria-selected', String(b.dataset.tab === t)); b.tabIndex = b.dataset.tab === t ? 0 : -1; });
   for (const k of ['dia', 'anio', 'decadas']) $('#regla-' + k).hidden = k !== t;
   $('#momentos-caja').hidden = t !== 'decadas';
   if (t !== 'decadas') { S.mesSerie = null; S.momento = null; }
@@ -879,13 +894,22 @@ function prepararUI() {
   $('#info').addEventListener('click', () => { const d = $('#acerca'); d.showModal ? d.showModal() : d.setAttribute('open', ''); });
   $('#cerrar-acerca').addEventListener('click', () => $('#acerca').close?.());
   $('#ahora').addEventListener('click', () => irAAhora());
-  document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { ponerPestana(b.dataset.tab); S.explica = 'tab-' + b.dataset.tab; lastLect = ''; }));
+  const tabs = [...document.querySelectorAll('[data-tab]')];
+  const elegirTab = (b) => { ponerPestana(b.dataset.tab); S.explica = 'tab-' + b.dataset.tab; lastLect = ''; anunciar(); };
+  tabs.forEach((b, i) => {
+    b.addEventListener('click', () => elegirTab(b));
+    b.addEventListener('keydown', (e) => {
+      const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key]; if (j == null) return;
+      e.preventDefault(); e.stopPropagation();                        // las flechas no deben pasar al recorrido guiado
+      const t = tabs[(j + tabs.length) % tabs.length]; t.focus(); elegirTab(t);
+    });
+  });
   // qué significa cada dato
   document.querySelectorAll('[data-explica]').forEach((b) => {
     b.addEventListener('click', () => explicar(b.dataset.explica));
     b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); explicar(b.dataset.explica); } });
   });
-  $('#rotulo-cerrar').addEventListener('click', () => { S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
+  $('#rotulo-cerrar').addEventListener('click', () => { anunciar(); S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
   $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
   if (innerWidth <= 760) $('#ley-mas').open = false;
@@ -909,7 +933,7 @@ function prepararUI() {
     S.mesSerie = null; S.fecha = { y, m, d: Math.min(S.fecha.d, diasMes(y, m)) };
   });
   $('#reproducir').addEventListener('click', () => { cerrarOferta(); reproducir(); });
-  ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', cerrarOferta));
+  ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
   const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
@@ -956,12 +980,12 @@ function prepararUI() {
   });
   // formas de ver
   document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
-    cerrarOferta();
+    cerrarOferta(); anunciar();
     ponerLente(b.dataset.lente, !(b.dataset.lente === 'partes' && innerWidth <= 760));   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
-  $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; });
+  $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; anunciar(); });
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
@@ -989,6 +1013,7 @@ function irAFachada(k) {
 }
 function mostrarFachada(k) {
   const f = FACHADAS[k]; if (!f) return;
+  anunciar();
   S.fachada = k; marcarVista(null);
   document.documentElement.classList.add('en-fachada');
   $('#fachada-titulo').textContent = `${f.nombre}: ${f.lugar}`;
@@ -1207,6 +1232,7 @@ function prepararPartes() {
 }
 function elegirParte(k) {
   if (!PARTES[k]) return;
+  anunciar();
   S.parte = k; S.verLeyenda = true;
   if (k === 'escala') { S.persona = true; S.alturas = true; }
   aplicarPartes(); pintarPartes.f = ''; lastLect = '';
@@ -1369,6 +1395,7 @@ function explicacion(k, p, c) {
   return null;
 }
 function explicar(k) {
+  anunciar();
   S.explica = S.explica === k ? null : k;
   document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.explica === S.explica)));
   lastLect = '';

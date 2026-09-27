@@ -142,7 +142,8 @@
   html:has(#leyenda:not([hidden])) .pista { display: none; }
   .ley-cab { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
   #ley-t { margin: 0; font: 700 14.5px/1.25 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
-  #ley-cerrar { border: 0; background: none; color: var(--cal-2); font: 400 20px/1 var(--texto); cursor: pointer; padding: 0 2px; }
+  #ley-cerrar { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: none; color: var(--cal-2);
+    font: 400 20px/1 var(--texto); cursor: pointer; padding: 0; }
   #ley-cerrar:hover { color: var(--cal); }
   #ley-que { margin: 0; font-size: 13px; line-height: 1.42; color: var(--cal); text-wrap: pretty; }
   #ley-leer { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
@@ -482,6 +483,11 @@
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
   @media (max-width: 1400px) and (min-width: 761px) { .marca small { display: none; } }
   @media (max-width: 1100px) and (min-width: 761px) { #abrir-recorrido { padding: 10px 12px; } #sonido .t { display: none; } }
+  /* en pantallas táctiles, los grupos de botones de arriba y las pestañas se tocan con el dedo: al menos 40 px de alto */
+  @media (pointer: coarse) {
+    .vistas, .lentes, .pestanas { min-height: 40px; box-sizing: border-box; }
+    .vistas button, .lentes button, .pestanas button { min-height: 40px; }
+  }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 
@@ -525,7 +531,7 @@
   </div>
 </section>
 
-<div id="rotulo" class="tras-intro" aria-live="polite">
+<div id="rotulo" class="tras-intro" aria-live="off">
   <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
   <p id="rotulo-texto"></p>
   <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
@@ -578,7 +584,7 @@
     <button type="button" data-lente="partes" aria-pressed="false" title="Cómo se llama cada parte del edificio y qué hace">Partes</button>
     <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
   </div>
-  <div id="leyenda" hidden aria-live="polite">
+  <div id="leyenda" hidden aria-live="off">
     <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
     <p id="ley-que"></p>
     <div id="ley-parte" hidden>
@@ -636,7 +642,7 @@
   <p class="vol-nota">Proporciones con la misma sección y la misma carga por metro, no el cálculo de este alero: no se conoce su estructura real. El ángulo de sombra (el del sol visto de perfil) sale de la geometría de las ventanas del modelo.</p>
 </aside>
 
-<aside id="panel-fachada" aria-live="polite">
+<aside id="panel-fachada" aria-live="off">
   <p class="eyebrow">Estás frente al edificio</p>
   <h2 id="fachada-titulo"></h2>
   <p id="fachada-texto"></p>
@@ -651,11 +657,11 @@
   </div>
   <div class="dock-centro">
     <div class="pestanas" role="tablist" aria-label="Escala de tiempo">
-      <button type="button" role="tab" data-tab="dia" aria-selected="true">Día</button>
-      <button type="button" role="tab" data-tab="anio" aria-selected="false">Año</button>
-      <button type="button" role="tab" data-tab="decadas" aria-selected="false">25 años</button>
+      <button type="button" role="tab" id="tab-dia" data-tab="dia" aria-selected="true" aria-controls="regla-dia">Día</button>
+      <button type="button" role="tab" id="tab-anio" data-tab="anio" aria-selected="false" aria-controls="regla-anio" tabindex="-1">Año</button>
+      <button type="button" role="tab" id="tab-decadas" data-tab="decadas" aria-selected="false" aria-controls="regla-decadas" tabindex="-1">25 años</button>
     </div>
-    <div class="regla" id="regla-dia">
+    <div class="regla" id="regla-dia" role="tabpanel" aria-labelledby="tab-dia">
       <svg id="dia" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="grad-dia" x1="0" x2="1" y1="0" y2="0"></linearGradient></defs>
         <rect x="0" y="6" width="1000" height="16" rx="8" fill="url(#grad-dia)"></rect>
@@ -667,7 +673,7 @@
       <input id="hora" type="range" min="0" max="1439" step="1" aria-label="Hora del día">
       <p class="dia-ley" id="dia-ley"></p>
     </div>
-    <div class="regla" id="regla-anio" hidden>
+    <div class="regla" id="regla-anio" role="tabpanel" aria-labelledby="tab-anio" hidden>
       <svg id="anio" viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
         <g id="anio-marcas"></g>
         <line id="anio-aguja" class="aguja" x1="0" x2="0" y1="0" y2="20"></line>
@@ -676,7 +682,7 @@
       <input id="dia-anio" type="range" min="0" max="364" step="1" aria-label="Día del año">
       <p class="dia-ley">▮ temporada de lluvias · ┃ solsticios · ● días sin sombra</p>
     </div>
-    <div class="regla" id="regla-decadas" hidden>
+    <div class="regla" id="regla-decadas" role="tabpanel" aria-labelledby="tab-decadas" hidden>
       <svg id="decadas" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
         <rect x="0" y="32" width="1000" height="1" fill="var(--linea-2)"></rect>
         <g id="dec-barras"></g>
