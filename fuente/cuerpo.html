@@ -21,11 +21,9 @@
   [hidden] { display: none !important; }
   html, body { height: 100%; background: var(--noche); color: var(--cal); overflow: hidden; }
   body { font: 16px/1.5 var(--texto); margin: 0; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
-  #lienzo { position: fixed; inset: 0; z-index: 0; background: radial-gradient(120% 90% at 70% 40%, #14222a 0%, var(--noche) 70%); }
+  #lienzo { position: fixed; inset: 0; z-index: 0; background: #101b21; }
   #lienzo canvas { width: 100% !important; height: 100% !important; display: block; outline: none; }
-  #velo { position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(8,14,18,.62) 0%, rgba(8,14,18,0) 16%, rgba(8,14,18,0) 58%, rgba(8,14,18,.7) 100%),
-                linear-gradient(90deg, rgba(8,14,18,.55) 0%, rgba(8,14,18,0) 38%); transition: opacity 1.2s var(--ease); }
+  /* sin velos degradados sobre la escena: cada texto que va encima del edificio lleva su propio panel plano */
   a { color: var(--sol); }
   :focus-visible { outline: 2px solid var(--sol); outline-offset: 3px; border-radius: 8px; }
   button { font: inherit; color: inherit; }
@@ -43,7 +41,8 @@
   .barra { position: fixed; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter) 10px; pointer-events: none; }
   .barra > * { pointer-events: auto; }
-  .marca { display: flex; gap: 11px; align-items: center; color: var(--cal); text-decoration: none; }
+  .marca { display: flex; gap: 11px; align-items: center; color: var(--cal); text-decoration: none; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
+    padding: 7px 14px 7px 11px; backdrop-filter: blur(10px); }
   .marca svg { width: 38px; height: 22px; overflow: visible; }
   .marca .arco { fill: none; stroke: var(--cal-3); stroke-width: 1.5; }
   .marca .horizonte { stroke: var(--cal-3); stroke-width: 1.5; }
@@ -54,8 +53,9 @@
   #estado { display: flex; gap: 9px; align-items: center; font: 500 12px/1 var(--datos); color: var(--cal-2); background: var(--panel); border: 1px solid var(--linea);
     border-radius: 999px; padding: 9px 13px 9px 11px; backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; white-space: nowrap; transition: opacity .8s var(--ease); }
   #estado .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--cal-3); flex: none; }
-  html.vivo #estado .punto { background: #5fd38a; box-shadow: 0 0 0 0 rgba(95, 211, 138, .6); animation: latido 2s infinite; }
-  @keyframes latido { 70% { box-shadow: 0 0 0 8px rgba(95, 211, 138, 0) } 100% { box-shadow: 0 0 0 0 rgba(95, 211, 138, 0) } }
+  /* en vivo: un punto fijo que cada 10 s parpadea una vez (solo opacidad y escala: no repinta) */
+  html.vivo #estado .punto { background: #5fd38a; animation: latido 10s infinite; }
+  @keyframes latido { 0%, 90%, 100% { opacity: 1; transform: none } 95% { opacity: .35; transform: scale(.7) } }
   .boton { font: 600 14px/1 var(--texto); color: var(--cal); background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
     padding: 10px 15px; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, background .2s, transform .2s var(--ease); display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
   .boton:hover { border-color: rgba(239,233,222,.42); }
@@ -78,17 +78,19 @@
   h1 { font: 780 clamp(50px, 8.4vw, 128px)/0.86 var(--display); letter-spacing: -0.035em; margin: 0; font-variation-settings: "opsz" 96; text-wrap: balance; }
   h1 .grados { color: var(--sol); }
   .bajada { font-size: clamp(16px, 1.45vw, 19px); max-width: 36rem; margin: 0; color: var(--cal); text-wrap: pretty; }
-  .intro-titulo-caja { display: grid; gap: 18px; transition: opacity 1.1s var(--ease), transform 1.4s var(--ease), filter 1.1s; transform-origin: left center; }
+  /* panel plano detrás del título: la misma legibilidad que daba el velo, sin degradado */
+  .intro-titulo-caja { display: grid; gap: 18px; justify-self: start; background: var(--panel-2); border: 1px solid var(--linea); border-radius: 22px;
+    padding: clamp(18px, 2.4vw, 30px) clamp(18px, 2.6vw, 34px); backdrop-filter: blur(12px); transition: opacity 1.1s var(--ease), transform 1.4s var(--ease), filter 1.1s; transform-origin: left center; }
   html:not(.intro-titulo) .intro-titulo-caja { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); }
   #intro-rotulos { list-style: none; margin: 0; padding: 0; position: relative; height: 1.2em; font: 700 clamp(28px, 4.2vw, 62px)/1.05 var(--display); letter-spacing: -0.02em; font-variation-settings: "opsz" 72; }
-  #intro-rotulos li { position: absolute; left: 0; top: 0; white-space: nowrap; opacity: 0; transform: translateY(60%); filter: blur(8px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s; }
+  #intro-rotulos li { position: absolute; left: 0; top: 0; white-space: nowrap; background: var(--panel-2); border-radius: 16px; padding: .12em .42em .18em; opacity: 0; transform: translateY(60%); filter: blur(8px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s; }
   #intro-rotulos li.activo { opacity: 1; transform: none; filter: none; }
   #intro-rotulos li.pasado { opacity: 0; transform: translateY(-70%); filter: blur(6px); }
   #intro-rotulos li b { color: var(--sol); font-weight: inherit; }
   html.intro-titulo #intro-rotulos { opacity: 0; }
   #intro-rotulos { transition: opacity .6s; }
   .intro-pie { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
-  .carga { display: flex; gap: 10px; align-items: center; font: 500 12px/1.3 var(--datos); color: var(--cal-2); }
+  .carga { display: flex; gap: 10px; align-items: center; font: 500 12px/1.3 var(--datos); color: var(--cal-2); margin: 0; background: var(--panel); border-radius: 999px; padding: 8px 14px 8px 10px; backdrop-filter: blur(10px); }
   .carga i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--linea-2); border-top-color: var(--sol); animation: gira 1s linear infinite; }
   @keyframes gira { to { transform: rotate(360deg) } }
   #intro { transition: opacity 1.2s var(--ease); }
@@ -102,8 +104,9 @@
   html:not(.listo) #estado { opacity: .0; }
 
   /* rótulo: qué estás viendo */
-  #rotulo { position: fixed; z-index: 4; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 30px); max-width: min(34rem, calc(100vw - 2 * var(--gutter) - 130px));
-    display: grid; gap: 8px; text-shadow: 0 1px 16px rgba(6, 12, 15, .7); pointer-events: none; }
+  #rotulo { position: fixed; z-index: 4; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); max-width: min(34rem, calc(100vw - 2 * var(--gutter) - 130px));
+    display: grid; gap: 8px; pointer-events: none; box-sizing: border-box; background: var(--panel); border: 1px solid var(--linea); border-radius: 16px; padding: 12px 16px;
+    backdrop-filter: blur(12px); }
   #rotulo-texto { margin: 0; font-size: 16.5px; text-wrap: pretty; }
 
   /* ---------- brújula y vistas ---------- */
@@ -492,7 +495,6 @@
 </style>
 
 <div id="lienzo"></div>
-<div id="velo"></div>
 <div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
 <header class="barra">
