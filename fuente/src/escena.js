@@ -235,7 +235,7 @@ export class Escena {
     // suavizado FXAA sobre la imagen ya tonemapeada (más barato que MSAA ×4 a esta resolución)
     // curva S suave después del tonemapping (AgX sale plano): más contraste entre sol y sombra, sin tocar los extremos
     const curva = (o) => vec4(mix(o.rgb, smoothstep(0.0, 1.0, o.rgb), 0.3), o.a);
-    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(float(0.72).sub(U.viaje.mul(0.3)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(curva(renderOutput(v))) : curva(renderOutput(v)); };
+    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(float(0.72).sub(U.viaje.mul(0.15)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(curva(renderOutput(v))) : curva(renderOutput(v)); };
     this.pipeline.outputColorTransform = false;
     const aa = this.calidad.nivel !== 'bajo';
     this.salidas = { sinBloom: acabar(col, aa), sinAA: acabar(col, false) };
