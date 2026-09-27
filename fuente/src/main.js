@@ -114,6 +114,7 @@ const S = {
   vientoModo: 'anio',            // lente de viento: esta hora, temporada seca, lluvias o año
   parte: 'alero', persona: true, alturas: false, largo: 1.65,   // lente de partes: la parte elegida, la persona de 1,70 m, la regla y el largo del voladizo
   viaje: null,                   // viaje en el tiempo en curso
+  interactuo: false,             // el visitante ya tocó algo: la bienvenida no vuelve a salir
 };
 let consultas = null;
 let escena, controls, clima = new Clima(), sonido = new Sonido(), intro = null;
@@ -264,11 +265,22 @@ function terminarIntro() {
   document.documentElement.classList.add('listo');
   controls.enabled = true;
   irAAhora(false);
-  if (!visto && !location.hash) setTimeout(() => { if (S.paso == null && $('#sirve').hidden && $('#ir-a').hidden) { $('#oferta-recorrido').hidden = false; setTimeout(() => { $('#oferta-recorrido').hidden = true; }, 30000); } }, 900);
+  if (!visto && !location.hash) setTimeout(mostrarOferta, 900);
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) irAFachada(h);
   irAMomentoHash();
 }
+
+// ---------------- Bienvenida («¿Primera vez aquí?») ----------------
+// Sale una vez, al terminar la intro de quien llega por primera vez. Se va con la primera interacción real (una forma de ver,
+// una vista, arrastrar la escena, la regla, Escape) o a los 30 s, pero no mientras tenga el foco dentro.
+function mostrarOferta() {
+  if (S.paso != null || !$('#sirve').hidden || !$('#ir-a').hidden || S.interactuo) return;
+  const el = $('#oferta-recorrido'); el.hidden = false;
+  const vencer = () => { if (el.hidden) return; if (el.contains(document.activeElement)) mostrarOferta.t = setTimeout(vencer, 5000); else el.hidden = true; };
+  clearTimeout(mostrarOferta.t); mostrarOferta.t = setTimeout(vencer, 30000);
+}
+function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = true; clearTimeout(mostrarOferta.t); }
 
 /** Enlace directo a un momento: #m-AAAAMMDD-HHMM (p. ej. #m-20240724-1745). */
 function irAMomentoHash() {
@@ -279,10 +291,15 @@ function irAMomentoHash() {
 }
 
 // ---------------- Viaje en el tiempo ----------------
-// Al saltar a otra fecha: la fecha y la hora corren en el dock, el sol recorre el cielo por el camino más corto
-// (nunca un día tras otro: sin parpadeo de día y noche), la cámara vuela a la vista pedida y, al llegar, entra el tiempo.
+// Al saltar a otra fecha el viaje va en dos tramos, para que el reloj del dock nunca diga una hora que el sol no muestra.
+// Tramo 1 (0–65 %): corre solo la fecha, día a día; la hora queda en «··:··» y el sol se desliza por el camino más corto
+// hasta donde estaría a la hora de salida en el día de llegada (nunca un día tras otro: sin parpadeo de día y noche).
+// Tramo 2 (65–100 %): la hora va de la vieja a la nueva por el camino corto (nunca más de 12 h) y el sol sigue su arco
+// real de ese día. Dentro del mismo día solo hay tramo 2. La cámara vuela a la vista pedida y, al llegar, entra el tiempo.
 const easeViaje = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const TRAMO_FECHA = 0.65;
 const marcaT = (f, min) => Date.UTC(f.y, f.m - 1, f.d) + min * 60e3;
+const numDia = (f) => Math.round(Date.UTC(f.y, f.m - 1, f.d) / 864e5);
 function solDeVector(v) { const alt = Math.asin(Math.max(-1, Math.min(1, v.y))) * 180 / Math.PI; const az = ((EJE_LARGO - Math.atan2(-v.z, v.x) * 180 / Math.PI) % 360 + 360) % 360; return { alt, az }; }
 function viajarA(d) {
   parar(); explorar();
@@ -298,11 +315,13 @@ function viajarA(d) {
   const vista = d.fachada ? VISTA_FACHADA['fachada-' + d.fachada] : d.vista ? VISTAS[d.vista] : null;
   if (vista) volarA(vista, Math.max(1.2, T / 1000), d.fachada ? null : d.vista, false);
   if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; lastLect = ''; llegada(d); return; }
-  const p0 = posicionSol({ ...S.fecha, h: 0, min: S.min }), p1 = posicionSol({ ...f1, h: 0, min: m1 });
-  const v0 = vectorSol(p0.alt, p0.az), v1 = vectorSol(p1.alt, p1.az);
+  const m0 = S.min, dm = ((((m1 - m0) % 1440) + 2160) % 1440) - 720;       // camino corto de la hora: entre −12 h y +12 h
   const mismoDia = f1.y === S.fecha.y && f1.m === S.fecha.m && f1.d === S.fecha.d;
-  S.viaje = { t0: performance.now(), T, ts0: marcaT(S.fecha, S.min), ts1: marcaT(f1, m1), f1, m1, mismoDia,
-    v0: new THREE.Vector3(v0.x, v0.y, v0.z), v1: new THREE.Vector3(v1.x, v1.y, v1.z), nubes0: nubesSuave, d };
+  // el sol del tramo 1: de donde está ahora a donde estaría a la hora de salida en el día de llegada
+  const p0 = posicionSol({ ...S.fecha, h: 0, min: m0 }), pA = posicionSol({ ...f1, h: 0, min: m0 });
+  const v0 = vectorSol(p0.alt, p0.az), vA = vectorSol(pA.alt, pA.az);
+  S.viaje = { t0: performance.now(), T, tramo: mismoDia ? 0 : TRAMO_FECHA, dia0: numDia(S.fecha), dia1: numDia(f1), m0, dm, f1, m1, fase: mismoDia ? 'hora' : 'fecha',
+    v0: new THREE.Vector3(v0.x, v0.y, v0.z), vA: new THREE.Vector3(vA.x, vA.y, vA.z), nubes0: nubesSuave, d };
   $('#viaje-destino').textContent = `${f1.d} ${MES3[f1.m - 1]} ${f1.y} · ${hhmm(m1)}`;
   $('#viaje').hidden = false; document.documentElement.classList.add('viajando');
   $('#viaje').classList.remove('llego');
@@ -310,13 +329,17 @@ function viajarA(d) {
 }
 const _vs = new THREE.Vector3();
 function pasoViaje(now) {
-  const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T), e = easeViaje(k);
-  const ts = V.ts0 + (V.ts1 - V.ts0) * e, dd = new Date(ts);
+  const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T);
+  const kA = V.tramo ? Math.min(1, k / V.tramo) : 1, kB = clamp01((k - V.tramo) / (1 - V.tramo));
+  const eA = easeViaje(kA), eB = easeViaje(kB);
+  V.fase = kA < 1 ? 'fecha' : 'hora';
+  // tramo 1: la fecha, día a día · tramo 2: la hora, por el camino corto
+  const dd = new Date((V.dia0 + Math.round((V.dia1 - V.dia0) * eA)) * 864e5);
   S.fecha = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() + 1, d: dd.getUTCDate() };
-  S.min = dd.getUTCHours() * 60 + dd.getUTCMinutes() + dd.getUTCSeconds() / 60;
-  // el sol: dentro del mismo día sigue su arco real; si no, el camino más corto por el cielo (a lo sumo un cruce del horizonte)
-  if (V.mismoDia) S.solViaje = null;
-  else { const ang = V.v0.angleTo(V.v1); if (ang < 1e-4) _vs.copy(V.v1); else { _vs.copy(V.v0).multiplyScalar(Math.sin((1 - e) * ang)).addScaledVector(V.v1, Math.sin(e * ang)).divideScalar(Math.sin(ang)); } S.solViaje = solDeVector(_vs); }
+  S.min = (((V.m0 + V.dm * eB) % 1440) + 1440) % 1440;
+  // el sol: en el tramo 1, el camino más corto por el cielo (a lo sumo un cruce del horizonte); en el 2, su arco real (S.solViaje = null)
+  if (V.fase === 'hora') S.solViaje = null;
+  else { const ang = V.v0.angleTo(V.vA); if (ang < 1e-4) _vs.copy(V.vA); else { _vs.copy(V.v0).multiplyScalar(Math.sin((1 - eA) * ang)).addScaledVector(V.vA, Math.sin(eA * ang)).divideScalar(Math.sin(ang)); } S.solViaje = solDeVector(_vs); }
   U.viaje.value = Math.sin(Math.PI * k);
   $('#viaje-barra').style.transform = `scaleX(${k.toFixed(3)})`;
   if (k >= 1) {
@@ -326,6 +349,7 @@ function pasoViaje(now) {
 }
 function llegada(d) {
   document.documentElement.classList.remove('viajando');
+  anunciar();
   if (d.aAhora) { S.modo = 'ahora'; const a = ahoraPanama(); S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min; lastLect = ''; }
   const el = $('#viaje'); el.hidden = false; el.classList.add('llego');
   $('#viaje-barra').style.transform = 'scaleX(1)';
@@ -361,10 +385,22 @@ function pasoCamara(dt) {
 // al empezar a girar desde la esquina, el pivote se desliza al centro del edificio
 let deslizar = null;
 function alTomar() {
+  cerrarOferta();
   document.documentElement.classList.add('girado');
   marcarVista(null);
   if (controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
 }
+
+// ---------------- Avisos para lectores de pantalla ----------------
+// #rotulo, #leyenda y #panel-fachada se reescriben con cada minuto simulado. Quedan en silencio (aria-live="off") y solo
+// hablan un momento después de algo que el usuario hizo a propósito: nunca mientras se reproduce o se arrastra la regla.
+const VIVAS = ['#rotulo', '#leyenda', '#panel-fachada'];
+function anunciar(ms = 1500) {
+  if (S.reproduce) return;
+  VIVAS.forEach((x) => $(x)?.setAttribute('aria-live', 'polite'));
+  clearTimeout(anunciar.t); anunciar.t = setTimeout(silenciar, ms);
+}
+function silenciar() { clearTimeout(anunciar.t); VIVAS.forEach((x) => $(x)?.setAttribute('aria-live', 'off')); }
 
 // ---------------- Clima en la fecha y hora elegidas ----------------
 function climaEn(f, min) {
@@ -628,20 +664,28 @@ function lecturas(p, c) {
   if (kf !== S.kf && !S.viaje) { S.kf = kf; dibujarReglas(); }
   const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0);
   if (kc !== S.kClimaDia && !S.viaje) { S.kClimaDia = kc; pintarClimaDia(); }
-  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, !!S.viaje].join('|');
+  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, S.viaje?.fase].join('|');
   if (key === lastLect) return; lastLect = key;
-  const vivo = S.modo === 'ahora';
-  $('#l-hora').textContent = hhmm(S.min);
-  $('#l-fecha').textContent = S.mesSerie !== null ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : fechaTexto(S.fecha);
+  const vivo = S.modo === 'ahora', V = S.viaje;
+  // en el viaje, mientras corre la fecha, la hora no se muestra: todavía no es la de ningún momento real
+  $('#l-hora').textContent = V?.fase === 'fecha' ? '··:··' : hhmm(S.min);
+  // fecha larga y corta (la corta es la del teléfono: «26 sep 2026»); el CSS muestra una u otra
+  const larga = S.mesSerie !== null ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : fechaTexto(S.fecha);
+  const corta = S.mesSerie !== null ? `${MES3[S.fecha.m - 1]} ${S.fecha.y}` : fechaCorta(S.fecha);
+  const lf = $('#l-fecha'); if (!lf.firstChild) lf.innerHTML = '<span class="larga"></span><span class="corta"></span>';
+  lf.children[0].textContent = larga; lf.children[1].textContent = corta;
   document.documentElement.classList.toggle('vivo', vivo);
   $('#ahora').textContent = vivo ? 'Ahora' : 'Volver a ahora';
   $('#ahora').setAttribute('aria-pressed', String(vivo));
-  // sol y sombra
-  $('#l-alt').textContent = p.alt > -0.5 ? f1(p.alt) + '°' : 'bajo el horizonte';
-  $('#l-az').textContent = p.alt > -0.5 ? `hacia el ${rumboTexto(p.az)} · ${Math.round(p.az)}°` : `${f1(-p.alt)}° bajo el horizonte`;
+  // sol y sombra (en el viaje, «—», como el clima: el sol va de paso, no es el de un momento)
   const sp = sombraPoste(p.alt, p.az);
-  $('#l-sombra').textContent = sp ? (sp.largo > 99 ? '> 99 m' : f1(sp.largo, 2) + ' m') : 'sin sol';
-  $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
+  if (V) { $('#l-alt').textContent = '—'; $('#l-az').textContent = ''; $('#l-sombra').textContent = '—'; $('#l-sombra-r').textContent = ''; }
+  else {
+    $('#l-alt').textContent = p.alt > -0.5 ? f1(p.alt) + '°' : 'bajo el horizonte';
+    $('#l-az').textContent = p.alt > -0.5 ? `hacia el ${rumboTexto(p.az)} · ${Math.round(p.az)}°` : `${f1(-p.alt)}° bajo el horizonte`;
+    $('#l-sombra').textContent = sp ? (sp.largo > 99 ? '> 99 m' : f1(sp.largo, 2) + ' m') : 'sin sol';
+    $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
+  }
   // clima
   let temp = '—', det = '', fuente = '';
   if (c?.fuente === 'viaje') { det = 'viajando…'; }
@@ -668,24 +712,30 @@ function lecturas(p, c) {
       : c.buscando ? 'Buscando el dato de ese día en Open-Meteo…' : globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión.' : 'Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.';
   }
   $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
-  // estado de la barra
+  // resumen de una línea para el teléfono: solo los valores
+  $('#lect-resumen-t').textContent = V ? 'Viajando…' : sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol bajo el horizonte · ${temp}`;
+  // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
   const est = $('#estado-txt');
-  if (vivo) est.textContent = c?.fuente === 'vivo' ? `En vivo · ${hhmm(S.min)} · ${f1(c.temp)} °C · ${Math.round(c.nubes)} % nubes` : `Ahora · ${hhmm(S.min)} en Panamá`;
+  if (V) { /* se actualiza al llegar */ }
+  else if (vivo) est.textContent = c?.fuente === 'vivo' ? `En vivo · ${hhmm(S.min)} · ${f1(c.temp)} °C · ${Math.round(c.nubes)} % nubes` : `Ahora · ${hhmm(S.min)} en Panamá`;
   else est.textContent = `Explorando · ${S.mesSerie !== null ? MESES[S.fecha.m - 1] + ' de ' + S.fecha.y : fechaTexto(S.fecha)}`;
   // agujas y controles
   $('#hora').value = Math.round(S.min) % 1440;
   $('#dia-anio').value = diaDelAnio(S.fecha);
+  $('#hora').setAttribute('aria-valuetext', hhmm(S.min));
+  $('#dia-anio').setAttribute('aria-valuetext', fechaTexto(S.fecha));
   const xd = (S.min % 1440) / 1440 * 1000; $('#dia-aguja').setAttribute('x1', xd); $('#dia-aguja').setAttribute('x2', xd);
   const xa = diaDelAnio(S.fecha) / 364 * 1000; $('#anio-aguja').setAttribute('x1', xa); $('#anio-aguja').setAttribute('x2', xa);
   const im = (S.fecha.y - 2001) * 12 + S.fecha.m - 1;
   const enSerie = im >= 0 && im < 300;
   $('#mes-serie').value = Math.max(0, Math.min(299, im));
+  $('#mes-serie').setAttribute('aria-valuetext', enSerie ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : `${MESES[S.fecha.m - 1]} de ${S.fecha.y}, fuera de 2001–2025`);
   const xs = (Math.max(0, Math.min(299, im)) + 0.5) / 300 * 1000; $('#dec-aguja').setAttribute('x1', xs); $('#dec-aguja').setAttribute('x2', xs);
   $('#dec-aguja').style.opacity = enSerie ? 1 : 0.25;
   rotulo(p, c, sp);
   leyenda(c);
   marcaSol(p);
-  if (S.fachada) textoFachada(p);
+  if (S.fachada) { if (V) $('#fachada-texto').textContent = `Viajando al ${fechaTexto(V.f1)}, a las ${hhmm(V.m1)}.`; else textoFachada(p); }
   // fachadas: irradiancia
   Object.keys(FACHADAS).forEach((k, i) => {
     const el = document.querySelector(`[data-fachada="${k}"]`); if (!el) return;
@@ -819,7 +869,7 @@ function reproducir() {
   if (S.pestana === 'dia') { const { sale } = saleYPone(S.fecha.y, S.fecha.m, S.fecha.d); S.min = sale - 25; }
   else if (S.pestana === 'anio') { S.fecha = { y: S.fecha.y, m: 1, d: 1 }; }
   else { S.mesSerie = -1; S.acum = 1; }
-  $('#reproducir').setAttribute('aria-pressed', 'true'); $('#reproducir').setAttribute('aria-label', 'Pausar');
+  $('#reproducir').setAttribute('aria-pressed', 'true'); $('#reproducir').setAttribute('aria-label', 'Pausar'); silenciar();
 }
 function parar() { S.reproduce = false; $('#reproducir').setAttribute('aria-pressed', 'false'); $('#reproducir').setAttribute('aria-label', 'Reproducir'); }
 
@@ -838,7 +888,7 @@ function irAAhora(volar = true) {
 }
 function ponerPestana(t) {
   S.pestana = t;
-  document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  document.querySelectorAll('[data-tab]').forEach((b) => { b.setAttribute('aria-selected', String(b.dataset.tab === t)); b.tabIndex = b.dataset.tab === t ? 0 : -1; });
   for (const k of ['dia', 'anio', 'decadas']) $('#regla-' + k).hidden = k !== t;
   $('#momentos-caja').hidden = t !== 'decadas';
   if (t !== 'decadas') { S.mesSerie = null; S.momento = null; }
@@ -859,22 +909,31 @@ function prepararUI() {
   $('#info').addEventListener('click', () => { const d = $('#acerca'); d.showModal ? d.showModal() : d.setAttribute('open', ''); });
   $('#cerrar-acerca').addEventListener('click', () => $('#acerca').close?.());
   $('#ahora').addEventListener('click', () => irAAhora());
-  document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { ponerPestana(b.dataset.tab); S.explica = 'tab-' + b.dataset.tab; lastLect = ''; }));
+  const tabs = [...document.querySelectorAll('[data-tab]')];
+  const elegirTab = (b) => { ponerPestana(b.dataset.tab); S.explica = 'tab-' + b.dataset.tab; lastLect = ''; anunciar(); };
+  tabs.forEach((b, i) => {
+    b.addEventListener('click', () => elegirTab(b));
+    b.addEventListener('keydown', (e) => {
+      const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key]; if (j == null) return;
+      e.preventDefault(); e.stopPropagation();                        // las flechas no deben pasar al recorrido guiado
+      const t = tabs[(j + tabs.length) % tabs.length]; t.focus(); elegirTab(t);
+    });
+  });
   // qué significa cada dato
   document.querySelectorAll('[data-explica]').forEach((b) => {
     b.addEventListener('click', () => explicar(b.dataset.explica));
     b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); explicar(b.dataset.explica); } });
   });
-  $('#rotulo-cerrar').addEventListener('click', () => { S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
-  $('#lente-info').addEventListener('click', () => { S.verLeyenda = !S.verLeyenda; lastLect = ''; });
+  $('#rotulo-cerrar').addEventListener('click', () => { anunciar(); S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
+  $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
   if (innerWidth <= 760) $('#ley-mas').open = false;
   prepararPartes();
   // recorrido guiado
-  const abrirRec = () => { $('#oferta-recorrido').hidden = true; abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
+  const abrirRec = () => { cerrarOferta(); abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
   ['#abrir-recorrido', '#sirve-recorrido', '#acerca-recorrido', '#oferta-si'].forEach((x) => $(x)?.addEventListener('click', abrirRec));
-  $('#oferta-no').addEventListener('click', () => { $('#oferta-recorrido').hidden = true; });
-  $('#oferta-sirve').addEventListener('click', () => { $('#oferta-recorrido').hidden = true; abrirSirve(true); $('#sirve').scrollTop = 0; });
+  $('#oferta-no').addEventListener('click', () => { cerrarOferta(); });
+  $('#oferta-sirve').addEventListener('click', () => { cerrarOferta(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#acerca-sirve').addEventListener('click', () => { $('#acerca').close?.(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
@@ -888,9 +947,16 @@ function prepararUI() {
     parar(); explorar(); S.momento = null; const i = +e.target.value, y = 2001 + Math.floor(i / 12), m = (i % 12) + 1;
     S.mesSerie = null; S.fecha = { y, m, d: Math.min(S.fecha.d, diasMes(y, m)) };
   });
-  $('#reproducir').addEventListener('click', reproducir);
+  $('#reproducir').addEventListener('click', () => { cerrarOferta(); reproducir(); });
+  $('#lect-resumen').addEventListener('click', () => {
+    const abrir = !document.documentElement.classList.contains('lect-abiertas');
+    document.documentElement.classList.toggle('lect-abiertas', abrir); $('#lect-resumen').setAttribute('aria-expanded', String(abrir));
+  });
+  // indicio de que hay más: la fila de botones del teléfono (hacia la derecha) y la leyenda (hacia abajo)
+  for (const el of [$('.hud-botones'), $('#leyenda')]) { el.addEventListener('scroll', () => hayMas(el), { passive: true }); new ResizeObserver(() => hayMas(el)).observe(el); }
+  ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
-  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { $('#oferta-recorrido').hidden = true; abrirVoladizo(false); } };
+  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
@@ -903,7 +969,7 @@ function prepararUI() {
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
-    if (abrir) { $('#oferta-recorrido').hidden = true; abrirVoladizo(false); }
+    if (abrir) { cerrarOferta(); abrirVoladizo(false); }
     if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
       $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
@@ -935,16 +1001,17 @@ function prepararUI() {
   });
   // formas de ver
   document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
+    cerrarOferta(); anunciar();
     ponerLente(b.dataset.lente, !(b.dataset.lente === 'partes' && innerWidth <= 760));   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
-  $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; });
+  $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; anunciar(); });
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
-  document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
-  $('#brujula').addEventListener('click', () => volarA(VISTAS.planta, 1.6, 'planta'));
+  document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
+  $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
   document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada); }));
   $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
   addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (intro) return; if (FACHADAS[h]) irAFachada(h); else irAMomentoHash(); });
@@ -955,10 +1022,18 @@ function prepararUI() {
     else if (S.paso != null && e.key === 'ArrowRight') recorrido(S.paso + 1);
     else if (S.paso != null && e.key === 'ArrowLeft') recorrido(S.paso - 1);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
+}
+
+/** Marca con .hay-mas un panel que tiene contenido oculto por desplazar (a la derecha si es una fila, abajo si no). */
+function hayMas(el) {
+  if (!el) return;
+  const fila = el.scrollWidth > el.clientWidth + 2 && getComputedStyle(el).overflowX !== 'visible';
+  const mas = fila ? el.scrollLeft + el.clientWidth < el.scrollWidth - 4 : el.scrollTop + el.clientHeight < el.scrollHeight - 4;
+  if (el.classList.contains('hay-mas') !== mas) el.classList.toggle('hay-mas', mas);
 }
 
 function irAFachada(k) {
@@ -967,6 +1042,7 @@ function irAFachada(k) {
 }
 function mostrarFachada(k) {
   const f = FACHADAS[k]; if (!f) return;
+  anunciar();
   S.fachada = k; marcarVista(null);
   document.documentElement.classList.add('en-fachada');
   $('#fachada-titulo').textContent = `${f.nombre}: ${f.lugar}`;
@@ -1119,6 +1195,7 @@ function leyenda(c) {
   if (S.lente === 'sombras') nota = !escena._diagClave ? 'El diagrama aparece cuando termina de cargar el modelo.' : `Sombras del ${fechaTexto(S.fecha)}. Se ven mejor desde arriba: botón «Planta».`;
   if (esPartes) nota = 'Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente.';
   $('#ley-nota').textContent = nota; $('#ley-nota').hidden = !nota;
+  hayMas(el);
 }
 
 // ---------------- Partes del edificio (forma de ver «Partes») ----------------
@@ -1132,7 +1209,7 @@ const PARTES = {
     aqui: 'De teja de arcilla. En el modelo, la línea más alta del techo (la cumbrera) queda a unos 15,7 m del suelo y mide unos 29 m de largo.',
     hace: 'La pendiente saca rápido el agua de lluvia (aquí caen unos 2.000 mm al año), y los cuatro lados terminan en aleros que protegen todas las fachadas.' },
   alero: { e: 'Alero', t: 'Alero', a: [[[24.4, 7.4, -3], 'ne'], [[-13, 7.4, 13.15], 'se'], [[13, 7.4, -13.15], 'no'], [[-24.4, 7.4, 3], 'so']],
-    que: 'La parte del techo o de la losa que sobresale del muro, como la visera de una gorra.',
+    que: 'La parte del techo o del piso de arriba (la losa) que sobresale del muro, como la visera de una gorra.',
     aqui: 'Tres aleros, uno por piso, a 3,74, 7,40 y 11,10 m de altura. Los tres salen 1,65 m del muro.',
     hace: 'Dan sombra a las ventanas cuando el sol está alto y alejan la lluvia de los muros. Cuanto más largo, más protege, pero más cuesta sostenerlo.' },
   lateral: { e: 'Fachada lateral', t: 'Fachada lateral', a: [[[22.75, 9.3, -6], 'ne'], [[-22.75, 9.3, 6], 'so']],
@@ -1185,6 +1262,7 @@ function prepararPartes() {
 }
 function elegirParte(k) {
   if (!PARTES[k]) return;
+  anunciar();
   S.parte = k; S.verLeyenda = true;
   if (k === 'escala') { S.persona = true; S.alturas = true; }
   aplicarPartes(); pintarPartes.f = ''; lastLect = '';
@@ -1347,6 +1425,7 @@ function explicacion(k, p, c) {
   return null;
 }
 function explicar(k) {
+  anunciar();
   S.explica = S.explica === k ? null : k;
   document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.explica === S.explica)));
   lastLect = '';
@@ -1358,11 +1437,11 @@ function pasosRecorrido() {
   return [
     { t: 'Este es el Edificio 106', txt: 'Un edificio de 3 pisos de Isthmus, en Ciudad del Saber, la antigua base de Clayton. Tiene un alero de 1,65 m en cada piso y techo de teja. Todo lo que verás está calculado para este edificio y con su orientación real.', dis: 'Arrastra la escena para girar el edificio; la rueda del ratón o el pellizco acercan.',
       ir: () => viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: 'esquina', lente: 'foto', aAhora: true }) },
-    { t: 'El norte y el recorrido del sol', txt: 'La rosa del suelo marca el norte real. El edificio no mira al norte: su eje largo gira 56°, así que sus cuatro fachadas miran al sureste, noroeste, noreste y suroeste. El arco dorado es el recorrido del sol hoy, con las horas marcadas.', dis: 'A 9° al norte del ecuador el sol pasa muy alto: casi encima al mediodía, todo el año.',
+    { t: 'El norte y el recorrido del sol', txt: 'La rosa del suelo marca el norte real. El edificio no mira al norte: su eje largo gira 56°, así que sus cuatro fachadas miran al sureste, noroeste, noreste y suroeste. El arco dorado es el recorrido del sol hoy, con las horas marcadas.', dis: 'A 9° al norte del ecuador el sol pasa muy alto al mediodía durante todo el año. Por eso aquí el techo recibe más sol que cualquier pared.',
       ir: () => { volarA(VISTAS.aerea, 1.8, 'aerea', false); S.ayudas = true; $('#capa-ayudas').checked = true; } },
     { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol está alto, los aleros dejan las paredes y las ventanas en sombra.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto, protege la pared.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
-    { t: '¿Qué fachada se calienta más?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos tres cuartos de lo que recibe la sureste.',
+    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos tres cuartos de lo que recibe la sureste.',
       ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(z.h * 60 + z.min)}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: z.h * 60 + z.min, vista: 'aerea', lente: 'foto' }) },
