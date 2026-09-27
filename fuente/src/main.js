@@ -6,6 +6,7 @@ import { Escena, U, GRUPOS } from './escena.js';
 import { Sonido } from './sonido.js';
 import { puntosIntro } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
+import { posicionLuna } from './luna.js';
 import { Clima } from './clima.js';
 import QRCode from 'qrcode';
 
@@ -454,7 +455,9 @@ function paso(now) {
   escena.kSol = S.kSol; escena.nb = nubesSuave / 100;
   escena.setNubes(0.08 + 0.85 * nubesSuave / 100);
   U.nubeSombra.value = 0.25 + 2.4 * S.kSol * (1 - S.kSol);         // las sombras de nubes pesan más con cielo a medias
+  escena.luna = p.alt < 2 ? posicionLuna({ ...S.fecha, h: 0, min: S.min }) : null;   // la luna de esa noche (de día no hace falta)
   escena.setSol(p.alt, p.az);
+  document.documentElement.classList.toggle('de-noche', p.alt < -4);   // los interruptores y el rótulo de los modos de noche
   if (!S.viaje) escena.setRuta(S.fecha);
   // lluvia: la de los datos (o la del mes en el paso de 25 años), o el aguacero de la capa
   let objetivo = c ? (c.fuente === 'mes' ? Math.min(1, (c.lluviaMes ?? 0) / 380) : intensidad(c.lluvia ?? 0)) : 0;
@@ -753,15 +756,31 @@ function marcaSol(p) {
   el.style.opacity = p.alt > -1 ? 1 : 0.25;
 }
 
+/** Qué luz hay de noche, dicho en simple: depende de si la luna está arriba, de su fase y de las nubes de esa hora. */
+function textoNoche(c) {
+  const L = escena.luna, nub = c?.nubes ?? 30;
+  let t = `Son las ${hhmm(S.min)} en Panamá y el sol está bajo el horizonte, así que ahora el edificio no recibe sol. `;
+  const sup = 'las ventanas encendidas y el tipo de lámpara son una suposición.';
+  if (!L || L.alt <= 0) t += `La luna todavía no sale o ya se puso, así que la luz que ves es la del cielo de la ciudad y la del poste de la esquina; ${sup}`;
+  else if (L.frac < 0.05) t += `Es casi luna nueva y la luna no alumbra, así que la luz que ves es la del cielo de la ciudad y la del poste de la esquina; ${sup}`;
+  else if (nub >= 70) t += `Las nubes tapan casi toda la luna de esta noche, así que la luz que ves es sobre todo el resplandor de la ciudad en las nubes y la del poste de la esquina; ${sup}`;
+  else t += `La luz que ves es la de la luna de esta noche${L.frac < 0.6 ? ', que está a menos de la mitad,' : ''} y la del poste de la esquina; ${sup}`;
+  return t;
+}
+
 function rotulo(p, c, sp) {
   const tipo = $('#rotulo-tipo'), txt = $('#rotulo-texto');
   const cerrar = $('#rotulo-cerrar');
+  // de noche, dos atajos para ver el mismo día con luz
+  const noche = !S.viaje && !S.explica && !S.momento && S.mesSerie === null && p.alt <= -6;
+  $('#rotulo-noche').hidden = !noche;
+  if (noche) $('#noche-atardecer').textContent = `Ver el atardecer de hoy (${hhmm(saleYPone(S.fecha.y, S.fecha.m, S.fecha.d).pone)})`;
   if (S.viaje) { cerrar.hidden = true; tipo.textContent = 'Viajando en el tiempo'; txt.textContent = `Hacia el ${fechaTexto(S.viaje.f1)}, a las ${hhmm(S.viaje.m1)}.`; return; }
   if (S.explica) { const e = explicacion(S.explica, p, c); if (e) { cerrar.hidden = false; tipo.textContent = 'Qué significa · ' + e[0]; txt.textContent = e[1]; return; } }
   cerrar.hidden = true;
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y cae hacia el ${rumboTexto(sp.rumbo)}.`
-    : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : 'Es de noche. La escena se aclara para que el edificio se vea, como en una foto de exposición larga, y las ventanas encendidas son una suposición del modelo, no un dato.';
+    : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : textoNoche(c);
   let clTxt = '';
   if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Está lloviendo (${f1(c.lluvia)} mm/h).` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
   else if (c?.fuente === 'serie' || c?.fuente === 'dia') {
@@ -1013,6 +1032,17 @@ function prepararUI() {
   $('#guardar-img').addEventListener('click', guardarImagen);
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
+  // modos de la noche para comparar: uno a la vez; cada uno se rotula en la escena mientras está activo
+  const modoNoche = (m) => {
+    $('#capa-larga').checked = m === 'larga'; $('#capa-maqueta').checked = m === 'maqueta';
+    escena.setModoNoche(m); const a = $('#aviso-noche');
+    a.textContent = m === 'larga' ? 'Exposición larga: la escena se aclara como una foto de 20 segundos en trípode' : m === 'maqueta' ? 'Maqueta aclarada: esta luz no existe, sirve para ver la forma de noche' : '';
+    a.hidden = m === 'honesta';
+  };
+  $('#capa-larga').addEventListener('change', (e) => modoNoche(e.target.checked ? 'larga' : 'honesta'));
+  $('#capa-maqueta').addEventListener('change', (e) => modoNoche(e.target.checked ? 'maqueta' : 'honesta'));
+  $('#noche-dia').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: 9 * 60, vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
+  $('#noche-atardecer').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: Math.round(saleYPone(S.fecha.y, S.fecha.m, S.fecha.d).pone), vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
   $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
@@ -1122,7 +1152,7 @@ const LENTES = {
     que: 'El sol está calculado para este minuto exacto. El cielo, las nubes y la lluvia salen del dato del tiempo de esa hora. El suelo y los muros siguen mojados mientras no se seca lo que llovió en las horas anteriores, y la vegetación se mece con el viento de esa hora.',
     prueba: 'Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, el alero de 1,65 m deja las paredes casi todas en sombra.',
     porque: 'Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.',
-    ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche la escena se aclara para que el edificio se vea, como en una foto de exposición larga: esa luz de luna no es la real, y las ventanas encendidas son una suposición. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
+    ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el poste de la esquina es la única lámpara del modelo, y cuál lámpara tiene (LED o sodio) es una suposición, igual que las ventanas encendidas. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
   sol: { t: 'Sol: cuánto sol le llega a cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
     que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',

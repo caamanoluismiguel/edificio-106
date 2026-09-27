@@ -60,7 +60,14 @@ Object.assign(U, {
   brisa: uniform(0),                     // 0..1: viento de esa hora para la vegetación (35 km/h o más = 1)
   vientoDir: uniform(new THREE.Vector2(1, 0)),   // hacia dónde sopla, en el plano de la escena (unitario)
   vaiven: uniform(1),                    // 0 con movimiento reducido: la vegetación solo se inclina, no se mece
-  nocturna: uniform(0),                  // 0..1: visión nocturna (cielo azul noche y relleno frío), sube al ponerse el sol
+  nocturna: uniform(0),                  // 0..1: de noche (cielo de noche y relleno del cielo urbano), sube al ponerse el sol
+  cieloH: uniform(new THREE.Color(0.05, 0.05, 0.05)),   // bóveda de noche en el horizonte y en el cenit (lineal), según las nubes y la luna
+  cieloZ: uniform(new THREE.Color(0.02, 0.02, 0.02)),
+  entornoN: uniform(new THREE.Color(0.03, 0.03, 0.03)), // la misma bóveda, para el mapa de entorno (lo que ilumina y se refleja)
+  purkinje: uniform(0),                  // 0..1: cuánto se acerca la imagen a la visión nocturna (menos color, algo más fría)
+  poste: uniform(0),                     // intensidad del poste de la esquina (0 de día)
+  posteCol: uniform(new THREE.Color(1, 1, 1)),          // color de su lámpara, con luminancia 1
+  ventanasN: uniform(0),                 // encendido de las ventanas y su derrame (0 de día o en la maqueta)
 });
 // sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol».
 // Ojo con el orden: three.js emite el emisivo ANTES que el código de las luces (la sombra se calcula al usarse la iluminación,
@@ -68,20 +75,29 @@ Object.assign(U, {
 // se suma por eso en outputNode, que se evalúa después de la iluminación.
 const sombraSol = property('float', 'sombraSol');
 
-// Visión nocturna: de noche la escena se aclara como una foto de exposición larga, con una luz fría y tenue de luna y el
-// resplandor del cielo urbano. La luna es fija (no se calcula su posición ni su fase): viene del noreste a 28°, ilumina de lleno
-// la fachada del jardín y deja la de la calle en sombra, para que se lean los volúmenes y la sombra de los aleros. No es un dato.
-// Medido en la vista de la esquina (26/09/2026, 21:30): muro en sombra L* ≈ 40, muro a la luz de la luna L* ≈ 65, cielo L* ≈ 27.
+// Noche honesta: de noche la escena solo recibe la luz que de verdad hay. La luna sale de luna.js (posición y fase de esa
+// noche) y pasa por las nubes del dato; el cielo nublado devuelve el resplandor anaranjado de la ciudad (más claro que un muro
+// sin luz) y el despejado es más oscuro y neutro; la única fuente de la escena es el poste de la esquina, más las ventanas
+// encendidas, que son una suposición. El frío de la noche no está en la luz sino en la visión (Purkinje, en el postproceso).
 const NOCHE = {
-  luna: { alt: 28, az: 40 },             // de dónde viene la luz de luna (grados)
-  lunaInt: 2.0,                          // intensidad de la luz de luna (el sol de mediodía llega a 5)
-  lunaColor: [0.55, 0.68, 1.0],
-  relleno: 0.35,                         // luz hemisférica del cielo urbano, además de la de día
-  puente: 0.6,                           // relleno extra del crepúsculo, antes de que entre la luna
-  cielo: [0.5, 0.6, 0.95], suelo: [0.16, 0.15, 0.13],
-  cenit: [0.010, 0.019, 0.052], horizonte: [0.045, 0.05, 0.068],   // bóveda azul noche, un poco más clara cerca del horizonte
-  entorno: [0.10, 0.12, 0.17],           // bóveda que ilumina y se refleja (mapa de entorno)
+  lunaMax: 0.42,                         // luna llena en el cenit con cielo despejado (el sol de mediodía llega a 5)
+  lunaColor: [1.0, 0.96, 0.9],           // es luz del sol reflejada, apenas más cálida
+  nubladoH: [0.09, 0.08, 0.075], nubladoZ: [0.05, 0.045, 0.042],      // resplandor urbano en nubes bajas
+  despejadoH: [0.05, 0.05, 0.056], despejadoZ: [0.009, 0.0105, 0.016],
+  lunaCielo: [0.012, 0.017, 0.028],      // lo que suma la luna llena alta al cielo despejado
+  crepH: [0.30, 0.25, 0.30], crepZ: [0.10, 0.13, 0.24],               // cielo del crepúsculo cuando el sol está a −2°
+  relleno: 0.35,                         // relleno hemisférico, en proporción a la luz de la bóveda (lo recibe el muro en sombra)
+  suelo: [0.30, 0.28, 0.25],             // rebote del suelo, relativo a la bóveda
+  exposicion: 1.1,
+  pasosLarga: 3,                         // «Exposición larga»: pasos de exposición sobre la noche honesta
+  ventanas: 3.0,                         // emisivo de una ventana encendida
+  poste: 330,                            // intensidad del poste (el charco llega a ~2,5 en el centro)
+  lamparas: { led: [1.0, 0.617, 0.381], sodio: [1.0, 0.42, 0.07] },  // 4000 K y sodio de alta presión (~2100 K), lineales
 };
+for (const c of Object.values(NOCHE.lamparas)) { const l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; c.forEach((v, i) => { c[i] = v / l; }); }
+// dónde está la cabeza del poste de la esquina (grupo «sitio»: fuste en (45,6; 16,4), brazo hacia la calle) y la planta del edificio
+const POSTE = new THREE.Vector3(48.6, 11.3, 16.43);
+const PLANTA = [22.75, 11.5];
 const clayColor = vec3(0.74, 0.72, 0.68);
 const TEX_BLANCA = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);   // mientras llega la textura real
 TEX_BLANCA.needsUpdate = true;
@@ -124,9 +140,9 @@ export class Escena {
     sky.turbidity.value = 7; sky.rayleigh.value = 2.0; sky.mieCoefficient.value = 0.006; sky.mieDirectionalG.value = 0.8;
     sky.cloudCoverage.value = 0.35; sky.cloudDensity.value = 0.45; sky.cloudElevation.value = 0.5;
     sky.material.fog = false;
-    // de noche la bóveda pasa a azul noche (visión nocturna), con el resplandor de la ciudad cerca del horizonte
+    // de noche la bóveda pasa a la de noche (U.cieloH y U.cieloZ, según las nubes, la luna y el crepúsculo; ver setSol)
     const altura = clamp(normalize(positionWorld).y, 0, 1);
-    const cieloNoche = vec4(mix(vec3(...NOCHE.horizonte), vec3(...NOCHE.cenit), pow(altura, 0.45)), 1);
+    const cieloNoche = vec4(mix(vec3(U.cieloH), vec3(U.cieloZ), pow(altura, 0.45)), 1);
     sky.material.colorNode = mix(mix(sky.material.colorNode.mul(vec4(vec3(U.cielo), 1)), vec4(U.grisCielo, 1), U.cubierto), cieloNoche, U.nocturna);
     scene.add(sky); this.sky = sky;
     // escena aparte para el mapa de entorno (misma bóveda, sin nubes densas)
@@ -138,7 +154,7 @@ export class Escena {
     // (en las fotos los muros en sombra son blanco neutro, (184, 184, 181) en WA0024)
     const c2 = sky2.material.colorNode.mul(vec4(vec3(U.cielo), 1));
     const l2 = dot(c2.rgb, vec3(0.2126, 0.7152, 0.0722));
-    sky2.material.colorNode = mix(mix(vec4(mix(c2.rgb, vec3(l2), 0.8), 1), vec4(U.grisCielo, 1), U.cubierto), vec4(vec3(...NOCHE.entorno), 1), U.nocturna);
+    sky2.material.colorNode = mix(mix(vec4(mix(c2.rgb, vec3(l2), 0.8), 1), vec4(U.grisCielo, 1), U.cubierto), vec4(vec3(U.entornoN), 1), U.nocturna);
     this.skyEnvScene.add(sky2); this.sky2 = sky2;
     this.pmrem = new THREE.PMREMGenerator(r);
 
@@ -235,7 +251,11 @@ export class Escena {
     // suavizado FXAA sobre la imagen ya tonemapeada (más barato que MSAA ×4 a esta resolución)
     // curva S suave después del tonemapping (AgX sale plano): más contraste entre sol y sombra, sin tocar los extremos
     const curva = (o) => vec4(mix(o.rgb, smoothstep(0.0, 1.0, o.rgb), 0.3), o.a);
-    const acabar = (n, aa) => { const v = vec4(n.rgb.mul(mix(float(0.72).sub(U.viaje.mul(0.15)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(curva(renderOutput(v))) : curva(renderOutput(v)); };
+    // visión nocturna (Purkinje): con poca luz el ojo ve con los bastones, casi sin color y algo más frío. Se mezcla hacia la
+    // luminancia antes del tonemapping, por uniforme; lo claro (las ventanas, la lámpara y su charco) conserva su color,
+    // como pasa en la visión mesópica. Nada de esto cambia la luz de la escena, solo cómo se ve.
+    const nocturno = (c) => { const lum = dot(c, vec3(0.2126, 0.7152, 0.0722)); return mix(c, vec3(lum).mul(vec3(0.85, 0.95, 1.1)), U.purkinje.mul(oneMinus(smoothstep(0.05, 0.6, lum)))); };
+    const acabar = (n, aa) => { const v = vec4(nocturno(n.rgb).mul(mix(float(0.72).sub(U.viaje.mul(0.15)), 1.0, vig)).mul(float(1).add(grano)).add(U.relampago.mul(0.35)), 1.0); return aa ? fxaa(curva(renderOutput(v))) : curva(renderOutput(v)); };
     this.pipeline.outputColorTransform = false;
     const aa = this.calidad.nivel !== 'bajo';
     this.salidas = { sinBloom: acabar(col, aa), sinAA: acabar(col, false) };
@@ -285,21 +305,32 @@ export class Escena {
     const cub = 1 - ks;
     // con el sol velado por nubes delgadas o bruma la sombra pierde el borde nítido (el radio va en texeles del mapa, sin recompilar)
     this.sun.shadow.radius = 2 + 3 * cub;
-    // visión nocturna: el relleno frío sube desde que el sol está a 4° sobre el horizonte, a la par que se va la luz del día, para
-    // que la escena no pase por un bache oscuro al ponerse el sol; el cielo azul noche llega justo después (de 0,5° sobre el
-    // horizonte a 4° bajo él), para no tapar el arrebol. La misma luz direccional pasa a ser la luna cuando el sol ya se apagó
-    // del todo (k = 0), así que el cambio de dirección no se ve y nada se recompila.
-    const nv = 1 - THREE.MathUtils.smoothstep(alt, -4, 4);
-    U.nocturna.value = 1 - THREE.MathUtils.smoothstep(alt, -4, 0.5);
-    const luna = k === 0;
-    const nl = luna ? 1 - THREE.MathUtils.smoothstep(alt, -5, -1.5) : 0;   // en −1,5° el sol termina de apagarse y la luna empieza
+    // De noche. El cielo de noche entra de 0,5° sobre el horizonte a 4° bajo él, para no tapar el arrebol. La misma luz
+    // direccional pasa a ser la luna cuando el sol ya se apagó del todo (k = 0), así que nada se recompila.
+    const S_ = THREE.MathUtils.smoothstep;
+    const nv = 1 - S_(alt, -4, 4);
+    U.nocturna.value = 1 - S_(alt, -4, 0.5);
+    const modo = this.modoNoche ?? 'honesta', maq = modo === 'maqueta' ? U.nocturna.value : 0;
+    const nb = Math.min(1, Math.max(this.nb ?? 0.3, lv));   // nubes del dato; con lluvia, cielo cubierto
+    // luna de esa noche (luna.js; la pone main.js). Su brillo frente a la llena sale de la magnitud según el ángulo de fase φ
+    // (Allen, «Astrophysical Quantities»): la media luna da ~9 % de la llena, no la mitad. La extinción del aire la baja cerca
+    // del horizonte (masa de aire de Kasten y Young, 1989).
+    const L = this.luna;
+    let bl = 0;
+    if (L && L.alt > -1) {
+      const phi = Math.acos(Math.min(1, Math.max(-1, 2 * L.frac - 1))) * 180 / Math.PI, h = Math.max(L.alt, 0);
+      const masa = 1 / (Math.sin(h * Math.PI / 180) + 0.50572 * (h + 6.07995) ** -1.6364);
+      bl = 10 ** (-0.4 * (0.026 * phi + 4e-9 * phi ** 4)) * Math.exp(-0.2 * (masa - 1)) * S_(L.alt, -0.5, 3);
+    }
+    this.brilloLuna = bl;
+    const nl = k === 0 ? 1 - S_(alt, -5, -1.5) : 0;   // en −1,5° el sol termina de apagarse y la luna empieza
     let sd;
-    if (luna) {
-      const v = vectorSol(NOCHE.luna.alt, NOCHE.luna.az);
-      sd = new THREE.Vector3(v.x, v.y, v.z).multiplyScalar(600);
+    if (k === 0) {
+      if (bl > 0) { const v = vectorSol(L.alt, L.az); sd = new THREE.Vector3(v.x, v.y, v.z).multiplyScalar(600); }
+      else sd = this._sd ? this._sd.clone() : this.solDir.clone().multiplyScalar(600);   // sin luna: la sombra no se recalcula
       this.sun.color.setRGB(...NOCHE.lunaColor);
-      this.sun.intensity = NOCHE.lunaInt * nl * (1 - 0.6 * lv);
-      this.sun.shadow.radius = 3;
+      this.sun.intensity = NOCHE.lunaMax * bl * (1 - 0.9 * nb) * nl * (1 - maq);
+      this.sun.shadow.radius = 2 + 10 * nb;          // con nubes la luz de la luna llega difusa: sombra de borde blando
     } else sd = this.solDir.clone().multiplyScalar(600);
     if (!this._sd || this._sd.distanceTo(sd) > 0.4) { this._sd = sd.clone(); this.sun.shadow.needsUpdate = true; this.sucio = true; }
     this.sun.position.copy(sd); this.sun.target.position.set(0, 0, 0);
@@ -316,16 +347,38 @@ export class Escena {
     U.grisCielo.value.setRGB(g * 0.92, g * 0.96, g * 1.0);
     this.sky.showSunDisc.value = ks > 0.35 && lv < 0.3 ? 1 : 0;
     this.sky.mieCoefficient.value = 0.006 * (0.2 + 0.8 * ks) * (1 - 0.8 * lv);
-    // mientras la luna no ha entrado (crepúsculo), el relleno la reemplaza: así no hay un bache oscuro entre el sol y la luna
-    this.hemi.intensity = 0.08 + day * (0.22 + 0.95 * cubierto) + NOCHE.relleno * nv + NOCHE.puente * nv * (1 - nl) + 5 * fl;
-    // relleno del cielo menos azul y rebote del suelo más cálido: con el azul de antes, todo lo que quedaba en sombra se veía pizarra
-    const hc = new THREE.Color().setRGB(0.55 + 0.27 * day, 0.62 + 0.21 * day, 0.85 - 0.02 * day).lerp(new THREE.Color(0.88, 0.89, 0.9), cubierto);
-    this.hemi.color.copy(hc.lerp(new THREE.Color(...NOCHE.cielo), nv));
-    this.hemi.groundColor.setRGB(0.2 + 0.2 * day, 0.2 + 0.17 * day, 0.14 + 0.07 * day).lerp(new THREE.Color(...NOCHE.suelo), nv);
-    this.renderer.toneMappingExposure = 0.95 + 0.5 * (1 - day) + 0.2 * cubierto;
+    // bóveda de noche: nublada, el resplandor de la ciudad en las nubes; despejada, oscura y neutra, más clara con luna alta.
+    // En el crepúsculo se suma la luz que queda del sol, que cae ~10 veces cada 4° (a −3° todavía se ve, a −15° ya no).
+    const crep = alt >= -2 ? 1 : 10 ** ((alt + 2) / 4);
+    const cmix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
+    const lunaC = bl * (1 - nb);
+    const H = cmix(NOCHE.despejadoH, NOCHE.nubladoH, nb).map((x, i) => x + NOCHE.lunaCielo[i] * lunaC + NOCHE.crepH[i] * crep);
+    const Z = cmix(NOCHE.despejadoZ, NOCHE.nubladoZ, nb).map((x, i) => x + NOCHE.lunaCielo[i] * 0.8 * lunaC + NOCHE.crepZ[i] * crep);
+    U.cieloH.value.setRGB(...H); U.cieloZ.value.setRGB(...Z);
+    U.entornoN.value.setRGB(...H.map((x, i) => (x + Z[i]) / 2));
+    // relleno: de día el de antes; de noche, la misma bóveda (así el muro en sombra nunca queda más claro que el cielo).
+    // En la maqueta aclarada, una luz pareja y neutra que no existe.
+    const Iday = 0.08 + day * (0.22 + 0.95 * cubierto);
+    const hc = new THREE.Color().setRGB(0.55 + 0.27 * day, 0.62 + 0.21 * day, 0.85 - 0.02 * day).lerp(new THREE.Color(0.88, 0.89, 0.9), cubierto).multiplyScalar(Iday);
+    const hn = new THREE.Color().setRGB(...H.map((x, i) => (x * 0.4 + Z[i] * 0.6) * NOCHE.relleno * 10));
+    const hm = new THREE.Color(0.95, 0.95, 0.95);
+    this.hemi.intensity = 1;
+    this.hemi.color.copy(hc.lerp(hn, nv).lerp(hm, maq)).addScalar(5 * fl);
+    const gd = new THREE.Color().setRGB(0.2 + 0.2 * day, 0.2 + 0.17 * day, 0.14 + 0.07 * day).multiplyScalar(Iday);
+    this.hemi.groundColor.copy(gd.lerp(new THREE.Color(...NOCHE.suelo).multiply(hn), nv).lerp(new THREE.Color(0.22, 0.22, 0.22), maq)).addScalar(5 * fl);
+    // exposición: la noche honesta, 1,1 (antes 1,45); la exposición larga suma sus pasos sin agregar luz
+    const larga = modo === 'larga' ? 2 ** (NOCHE.pasosLarga * U.nocturna.value) : 1;
+    this.renderer.toneMappingExposure = (0.95 + (NOCHE.exposicion - 0.95) * (1 - day) + 0.2 * cubierto) * larga;
+    U.purkinje.value = 0.8 * U.nocturna.value * (1 - maq);
+    if (modo === 'maqueta') U.mat.value = 1 - maq;
+    // fuentes: el poste se enciende al ponerse el sol (fotocelda); las ventanas, como antes
+    U.noche.value = 1 - S_(alt, -6, 2);
+    U.poste.value = NOCHE.poste * (1 - S_(alt, -3, 1)) * (1 - maq);
+    U.ventanasN.value = NOCHE.ventanas * U.noche.value * (1 - maq);
+    U.posteCol.value.setRGB(...NOCHE.lamparas[this.lampara ?? 'led']);
     const fogC = new THREE.Color().setRGB(0.1 + 0.52 * day, 0.13 + 0.55 * day, 0.2 + 0.55 * day);
     fogC.lerp(new THREE.Color(g * 0.88, g * 0.92, g * 0.96), Math.max(lv, cubierto * 0.6));
-    fogC.lerp(new THREE.Color(...NOCHE.horizonte), nv * (1 - lv));  // de noche, la niebla del mismo azul del horizonte
+    fogC.lerp(new THREE.Color(...H), nv);             // de noche, la niebla del color del horizonte
     this.scene.fog.color.copy(fogC);
     this.scene.fog.near = 350 - 310 * lv; this.scene.fog.far = 2600 - 1900 * lv;
     this.sky.cloudCoverage.value = Math.min(1, Math.max(U.nubeCob.value, lv));
@@ -333,8 +386,7 @@ export class Escena {
     this.sky.turbidity.value = 7 + 5 * lv;
     this.sky2.cloudCoverage.value = 0.2 + 0.75 * lv;
     U.luzLluvia.value = 0.62 + 0.38 * day + 2 * fl;              // de noche las gotas siguen visibles (reflejan las luces)
-    U.noche.value = 1 - THREE.MathUtils.smoothstep(alt, -6, 2);
-    const clave = [Math.round(alt * 4), Math.round(az * 2), Math.round(lv * 20), Math.round(cubierto * 20), Math.round(nv * 20)].join(',');
+    const clave = [Math.round(alt * 4), Math.round(az * 2), Math.round(lv * 20), Math.round(cubierto * 20), Math.round(nv * 20), Math.round(nb * 20), Math.round(bl * 20), modo].join(',');
     if (clave !== this._envClave) { this._envClave = clave; this.#envTalVez(); }
   }
 
@@ -365,6 +417,17 @@ export class Escena {
   }
 
   setNubes(cob) { U.nubeCob.value = cob; }
+
+  /** Constantes de la noche (para ajustarlas desde las pruebas). */
+  get NOCHE() { return NOCHE; }
+
+  /** Noche: 'honesta' (la luz que hay), 'larga' (la misma, con más exposición) o 'maqueta' (arcilla con luz pareja). */
+  setModoNoche(m) {
+    if (this.modoNoche === 'maqueta' && m !== 'maqueta') U.mat.value = 1;
+    this.modoNoche = m; this.sucio = true; this.setSol(this.alt, this.az);
+  }
+  /** Lámpara del poste de la esquina: 'led' (4000 K) o 'sodio' (~2100 K). No se sabe cuál hay: es una suposición. */
+  setLampara(k) { this.lampara = k; this.sucio = true; this.setSol(this.alt, this.az); }
 
   // ---------- Carga ----------
   /** Carga los grupos del modelo. `prioridad` define el orden; vegetación y contexto llegan al final. */
@@ -458,9 +521,10 @@ export class Escena {
       m.envMapIntensity = 1.6;
       // luces interiores de noche: celdas de 3,8 m × 3,65 m, encendidas al azar (~65 %)
       const cell = floor(vec2(positionWorld.x.add(positionWorld.z).div(3.8), positionWorld.y.div(3.65)));
-      const on = step(0.35, hash(cell.x.mul(17.0).add(cell.y.mul(131.0))));
-      // más tenues que antes (3,2): con la visión nocturna la escena ya está más clara y a 3,2 las ventanas salían blancas, quemadas
-      m.emissiveNode = vec3(1.0, 0.5, 0.2).mul(on).mul(U.noche).mul(1.5);
+      // en los edificios vecinos (paños de vidrio grandes) se encienden menos y más tenues, para que no aparezcan bloques de luz
+      const on = step(grupo === 'contexto' ? 0.6 : 0.35, hash(cell.x.mul(17.0).add(cell.y.mul(131.0)))).mul(grupo === 'contexto' ? 0.45 : 1);
+      // con la noche honesta la escena es oscura y las ventanas vuelven a ser lo más claro (U.ventanasN, ~3,6)
+      m.emissiveNode = vec3(1.0, 0.42, 0.13).mul(on).mul(U.ventanasN);
     }
     const nmPlaster = (nm.includes('plaster') || nm.includes('cream trim')) && !nm.includes('interior');
     let colorFinal = colBase;
@@ -549,6 +613,32 @@ export class Escena {
       const r0 = materialRoughness;
       const rWet = mix(float(0.45), float(0.16), up).mul(float(1).sub(charco.mul(0.85)));
       m.roughnessNode = m.lenteNode ? mix(mix(r0, min(r0, rWet), wv), float(1), m.lenteNode) : mix(r0, min(r0, rWet), wv);
+    }
+
+    // luz de las fuentes de la noche, sin luces nuevas (una luz de three.js más obligaría a recompilar todo): se suma como
+    // emisivo, multiplicada por el color del material. El poste de la esquina es un punto que alumbra hacia abajo y cae con
+    // la distancia al cuadrado (el charco mide unos 20 m); las ventanas encendidas derraman un poco de luz cálida en el suelo
+    // y los pasillos que tienen al frente y en el sofito que tienen encima (misma celda al azar que el vidrio).
+    if (!glass) {
+      const dL = vec3(...POSTE.toArray()).sub(positionWorld), d2 = dot(dL, dL), l = dL.div(d2.sqrt());
+      const ePoste = vec3(U.posteCol).mul(U.poste).mul(max(dot(normalWorld, l), 0)).mul(pow(max(l.y, 0), 1.5)).div(d2.add(1)).mul(smoothstep(0.3, 1.2, d2))
+        .mul(oneMinus(step(abs(positionWorld.z.sub(POSTE.z)), 0.45).mul(step(45.2, positionWorld.x)).mul(step(0.4, positionWorld.y))));   // el poste no se alumbra a sí mismo
+      const q = clamp(positionWorld.xz, vec2(-PLANTA[0], -PLANTA[1]), vec2(PLANTA[0], PLANTA[1]));
+      const dq = length(positionWorld.xz.sub(q)), y = positionWorld.y;
+      const arriba = smoothstep(0.5, 0.9, normalWorld.y), abajo = smoothstep(-0.5, -0.9, normalWorld.y);
+      // piso cuya ventana alumbra: la de su mismo piso si la cara mira arriba, la de abajo si mira abajo (sofito)
+      const piso = max(floor(mix(y.add(0.3), y.sub(0.2), abajo).div(3.65)), 0);
+      const cel = floor(q.x.add(q.y).div(3.8));
+      const enc = step(0.35, hash(cel.mul(17.0).add(piso.mul(131.0)))).mul(step(piso, 2.5));
+      const cerca = arriba.mul(pow(float(0.5), dq.div(0.9))).mul(0.3).add(abajo.mul(smoothstep(2.4, 0.8, dq)).mul(0.18));
+      const eVent = vec3(1.0, 0.55, 0.25).mul(enc).mul(cerca).mul(U.ventanasN).mul(0.28);
+      const eArt = m.colorNode.mul(ePoste.add(eVent));
+      m.emissiveNode = m.emissiveNode ? m.emissiveNode.add(eArt) : eArt;
+      // la cabeza del poste: la lámpara misma, que satura y hace bloom
+      if (grupo === 'sitio' && nm.includes('soffit')) {
+        const cabeza = step(POSTE.y + 0.05, positionWorld.y).mul(step(47.9, positionWorld.x)).mul(abajo.max(0.3));
+        m.emissiveNode = m.emissiveNode.add(vec3(U.posteCol).mul(U.poste).mul(cabeza).mul(0.08));
+      }
     }
 
     // el viento de esa hora mueve la vegetación: la base queda fija en el suelo y la copa se inclina y se mece, más con más viento
