@@ -279,10 +279,15 @@ function irAMomentoHash() {
 }
 
 // ---------------- Viaje en el tiempo ----------------
-// Al saltar a otra fecha: la fecha y la hora corren en el dock, el sol recorre el cielo por el camino más corto
-// (nunca un día tras otro: sin parpadeo de día y noche), la cámara vuela a la vista pedida y, al llegar, entra el tiempo.
+// Al saltar a otra fecha el viaje va en dos tramos, para que el reloj del dock nunca diga una hora que el sol no muestra.
+// Tramo 1 (0–65 %): corre solo la fecha, día a día; la hora queda en «··:··» y el sol se desliza por el camino más corto
+// hasta donde estaría a la hora de salida en el día de llegada (nunca un día tras otro: sin parpadeo de día y noche).
+// Tramo 2 (65–100 %): la hora va de la vieja a la nueva por el camino corto (nunca más de 12 h) y el sol sigue su arco
+// real de ese día. Dentro del mismo día solo hay tramo 2. La cámara vuela a la vista pedida y, al llegar, entra el tiempo.
 const easeViaje = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const TRAMO_FECHA = 0.65;
 const marcaT = (f, min) => Date.UTC(f.y, f.m - 1, f.d) + min * 60e3;
+const numDia = (f) => Math.round(Date.UTC(f.y, f.m - 1, f.d) / 864e5);
 function solDeVector(v) { const alt = Math.asin(Math.max(-1, Math.min(1, v.y))) * 180 / Math.PI; const az = ((EJE_LARGO - Math.atan2(-v.z, v.x) * 180 / Math.PI) % 360 + 360) % 360; return { alt, az }; }
 function viajarA(d) {
   parar(); explorar();
@@ -298,11 +303,13 @@ function viajarA(d) {
   const vista = d.fachada ? VISTA_FACHADA['fachada-' + d.fachada] : d.vista ? VISTAS[d.vista] : null;
   if (vista) volarA(vista, Math.max(1.2, T / 1000), d.fachada ? null : d.vista, false);
   if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; lastLect = ''; llegada(d); return; }
-  const p0 = posicionSol({ ...S.fecha, h: 0, min: S.min }), p1 = posicionSol({ ...f1, h: 0, min: m1 });
-  const v0 = vectorSol(p0.alt, p0.az), v1 = vectorSol(p1.alt, p1.az);
+  const m0 = S.min, dm = ((((m1 - m0) % 1440) + 2160) % 1440) - 720;       // camino corto de la hora: entre −12 h y +12 h
   const mismoDia = f1.y === S.fecha.y && f1.m === S.fecha.m && f1.d === S.fecha.d;
-  S.viaje = { t0: performance.now(), T, ts0: marcaT(S.fecha, S.min), ts1: marcaT(f1, m1), f1, m1, mismoDia,
-    v0: new THREE.Vector3(v0.x, v0.y, v0.z), v1: new THREE.Vector3(v1.x, v1.y, v1.z), nubes0: nubesSuave, d };
+  // el sol del tramo 1: de donde está ahora a donde estaría a la hora de salida en el día de llegada
+  const p0 = posicionSol({ ...S.fecha, h: 0, min: m0 }), pA = posicionSol({ ...f1, h: 0, min: m0 });
+  const v0 = vectorSol(p0.alt, p0.az), vA = vectorSol(pA.alt, pA.az);
+  S.viaje = { t0: performance.now(), T, tramo: mismoDia ? 0 : TRAMO_FECHA, dia0: numDia(S.fecha), dia1: numDia(f1), m0, dm, f1, m1, fase: mismoDia ? 'hora' : 'fecha',
+    v0: new THREE.Vector3(v0.x, v0.y, v0.z), vA: new THREE.Vector3(vA.x, vA.y, vA.z), nubes0: nubesSuave, d };
   $('#viaje-destino').textContent = `${f1.d} ${MES3[f1.m - 1]} ${f1.y} · ${hhmm(m1)}`;
   $('#viaje').hidden = false; document.documentElement.classList.add('viajando');
   $('#viaje').classList.remove('llego');
@@ -310,13 +317,17 @@ function viajarA(d) {
 }
 const _vs = new THREE.Vector3();
 function pasoViaje(now) {
-  const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T), e = easeViaje(k);
-  const ts = V.ts0 + (V.ts1 - V.ts0) * e, dd = new Date(ts);
+  const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T);
+  const kA = V.tramo ? Math.min(1, k / V.tramo) : 1, kB = clamp01((k - V.tramo) / (1 - V.tramo));
+  const eA = easeViaje(kA), eB = easeViaje(kB);
+  V.fase = kA < 1 ? 'fecha' : 'hora';
+  // tramo 1: la fecha, día a día · tramo 2: la hora, por el camino corto
+  const dd = new Date((V.dia0 + Math.round((V.dia1 - V.dia0) * eA)) * 864e5);
   S.fecha = { y: dd.getUTCFullYear(), m: dd.getUTCMonth() + 1, d: dd.getUTCDate() };
-  S.min = dd.getUTCHours() * 60 + dd.getUTCMinutes() + dd.getUTCSeconds() / 60;
-  // el sol: dentro del mismo día sigue su arco real; si no, el camino más corto por el cielo (a lo sumo un cruce del horizonte)
-  if (V.mismoDia) S.solViaje = null;
-  else { const ang = V.v0.angleTo(V.v1); if (ang < 1e-4) _vs.copy(V.v1); else { _vs.copy(V.v0).multiplyScalar(Math.sin((1 - e) * ang)).addScaledVector(V.v1, Math.sin(e * ang)).divideScalar(Math.sin(ang)); } S.solViaje = solDeVector(_vs); }
+  S.min = (((V.m0 + V.dm * eB) % 1440) + 1440) % 1440;
+  // el sol: en el tramo 1, el camino más corto por el cielo (a lo sumo un cruce del horizonte); en el 2, su arco real (S.solViaje = null)
+  if (V.fase === 'hora') S.solViaje = null;
+  else { const ang = V.v0.angleTo(V.vA); if (ang < 1e-4) _vs.copy(V.vA); else { _vs.copy(V.v0).multiplyScalar(Math.sin((1 - eA) * ang)).addScaledVector(V.vA, Math.sin(eA * ang)).divideScalar(Math.sin(ang)); } S.solViaje = solDeVector(_vs); }
   U.viaje.value = Math.sin(Math.PI * k);
   $('#viaje-barra').style.transform = `scaleX(${k.toFixed(3)})`;
   if (k >= 1) {
@@ -620,20 +631,24 @@ function lecturas(p, c) {
   if (kf !== S.kf && !S.viaje) { S.kf = kf; dibujarReglas(); }
   const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0);
   if (kc !== S.kClimaDia && !S.viaje) { S.kClimaDia = kc; pintarClimaDia(); }
-  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, !!S.viaje].join('|');
+  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, S.viaje?.fase].join('|');
   if (key === lastLect) return; lastLect = key;
-  const vivo = S.modo === 'ahora';
-  $('#l-hora').textContent = hhmm(S.min);
+  const vivo = S.modo === 'ahora', V = S.viaje;
+  // en el viaje, mientras corre la fecha, la hora no se muestra: todavía no es la de ningún momento real
+  $('#l-hora').textContent = V?.fase === 'fecha' ? '··:··' : hhmm(S.min);
   $('#l-fecha').textContent = S.mesSerie !== null ? `${MESES[S.fecha.m - 1]} de ${S.fecha.y}` : fechaTexto(S.fecha);
   document.documentElement.classList.toggle('vivo', vivo);
   $('#ahora').textContent = vivo ? 'Ahora' : 'Volver a ahora';
   $('#ahora').setAttribute('aria-pressed', String(vivo));
-  // sol y sombra
-  $('#l-alt').textContent = p.alt > -0.5 ? f1(p.alt) + '°' : 'bajo el horizonte';
-  $('#l-az').textContent = p.alt > -0.5 ? `hacia el ${rumboTexto(p.az)} · ${Math.round(p.az)}°` : `${f1(-p.alt)}° bajo el horizonte`;
+  // sol y sombra (en el viaje, «—», como el clima: el sol va de paso, no es el de un momento)
   const sp = sombraPoste(p.alt, p.az);
-  $('#l-sombra').textContent = sp ? (sp.largo > 99 ? '> 99 m' : f1(sp.largo, 2) + ' m') : 'sin sol';
-  $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
+  if (V) { $('#l-alt').textContent = '—'; $('#l-az').textContent = ''; $('#l-sombra').textContent = '—'; $('#l-sombra-r').textContent = ''; }
+  else {
+    $('#l-alt').textContent = p.alt > -0.5 ? f1(p.alt) + '°' : 'bajo el horizonte';
+    $('#l-az').textContent = p.alt > -0.5 ? `hacia el ${rumboTexto(p.az)} · ${Math.round(p.az)}°` : `${f1(-p.alt)}° bajo el horizonte`;
+    $('#l-sombra').textContent = sp ? (sp.largo > 99 ? '> 99 m' : f1(sp.largo, 2) + ' m') : 'sin sol';
+    $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
+  }
   // clima
   let temp = '—', det = '', fuente = '';
   if (c?.fuente === 'viaje') { det = 'viajando…'; }
@@ -660,9 +675,10 @@ function lecturas(p, c) {
       : c.buscando ? 'Buscando el dato de ese día en Open-Meteo…' : globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión.' : 'Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.';
   }
   $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
-  // estado de la barra
+  // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
   const est = $('#estado-txt');
-  if (vivo) est.textContent = c?.fuente === 'vivo' ? `En vivo · ${hhmm(S.min)} · ${f1(c.temp)} °C · ${Math.round(c.nubes)} % nubes` : `Ahora · ${hhmm(S.min)} en Panamá`;
+  if (V) { /* se actualiza al llegar */ }
+  else if (vivo) est.textContent = c?.fuente === 'vivo' ? `En vivo · ${hhmm(S.min)} · ${f1(c.temp)} °C · ${Math.round(c.nubes)} % nubes` : `Ahora · ${hhmm(S.min)} en Panamá`;
   else est.textContent = `Explorando · ${S.mesSerie !== null ? MESES[S.fecha.m - 1] + ' de ' + S.fecha.y : fechaTexto(S.fecha)}`;
   // agujas y controles
   $('#hora').value = Math.round(S.min) % 1440;
@@ -677,7 +693,7 @@ function lecturas(p, c) {
   rotulo(p, c, sp);
   leyenda(c);
   marcaSol(p);
-  if (S.fachada) textoFachada(p);
+  if (S.fachada) { if (V) $('#fachada-texto').textContent = `Viajando al ${fechaTexto(V.f1)}, a las ${hhmm(V.m1)}.`; else textoFachada(p); }
   // fachadas: irradiancia
   Object.keys(FACHADAS).forEach((k, i) => {
     const el = document.querySelector(`[data-fachada="${k}"]`); if (!el) return;
