@@ -146,7 +146,7 @@
   html:has(#leyenda:not([hidden])) .pista { display: none; }
   .hud-botones { display: contents; }                            /* en el teléfono es una fila con desplazamiento horizontal */
   /* indicio de que esa fila sigue: una flecha fija en el borde derecho mientras quede algo oculto */
-  .hud-botones.hay-mas::after { content: '›' / ''; position: sticky; right: 0; flex: none; display: grid; place-items: center; width: 30px; margin-left: -30px; border-radius: 999px;
+  .hud-botones.hay-mas::after { content: '›'; content: '›' / ''; position: sticky; right: 0; flex: none; display: grid; place-items: center; width: 30px; margin-left: -30px; border-radius: 999px;
     background: var(--solido); border: 1px solid var(--linea-2); color: var(--sol); font: 700 20px/1 var(--texto); pointer-events: none; }
   /* aviso de que la leyenda sigue más abajo (se muestra solo si hay contenido oculto) */
   .ley-sigue { display: none; position: sticky; bottom: -12px; margin: 0 -13px -12px; padding: 7px 13px 8px; font: 600 12px/1.2 var(--texto); color: var(--sol);

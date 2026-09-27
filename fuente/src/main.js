@@ -114,6 +114,7 @@ const S = {
   vientoModo: 'anio',            // lente de viento: esta hora, temporada seca, lluvias o año
   parte: 'alero', persona: true, alturas: false, largo: 1.65,   // lente de partes: la parte elegida, la persona de 1,70 m, la regla y el largo del voladizo
   viaje: null,                   // viaje en el tiempo en curso
+  interactuo: false,             // el visitante ya tocó algo: la bienvenida no vuelve a salir
 };
 let consultas = null;
 let escena, controls, clima = new Clima(), sonido = new Sonido(), intro = null;
