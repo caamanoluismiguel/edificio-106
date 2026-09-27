@@ -264,11 +264,22 @@ function terminarIntro() {
   document.documentElement.classList.add('listo');
   controls.enabled = true;
   irAAhora(false);
-  if (!visto && !location.hash) setTimeout(() => { if (S.paso == null && $('#sirve').hidden && $('#ir-a').hidden) { $('#oferta-recorrido').hidden = false; setTimeout(() => { $('#oferta-recorrido').hidden = true; }, 30000); } }, 900);
+  if (!visto && !location.hash) setTimeout(mostrarOferta, 900);
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) irAFachada(h);
   irAMomentoHash();
 }
+
+// ---------------- Bienvenida («¿Primera vez aquí?») ----------------
+// Sale una vez, al terminar la intro de quien llega por primera vez. Se va con la primera interacción real (una forma de ver,
+// una vista, arrastrar la escena, la regla, Escape) o a los 30 s, pero no mientras tenga el foco dentro.
+function mostrarOferta() {
+  if (S.paso != null || !$('#sirve').hidden || !$('#ir-a').hidden || S.interactuo) return;
+  const el = $('#oferta-recorrido'); el.hidden = false;
+  const vencer = () => { if (el.hidden) return; if (el.contains(document.activeElement)) mostrarOferta.t = setTimeout(vencer, 5000); else el.hidden = true; };
+  clearTimeout(mostrarOferta.t); mostrarOferta.t = setTimeout(vencer, 30000);
+}
+function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = true; clearTimeout(mostrarOferta.t); }
 
 /** Enlace directo a un momento: #m-AAAAMMDD-HHMM (p. ej. #m-20240724-1745). */
 function irAMomentoHash() {
@@ -372,6 +383,7 @@ function pasoCamara(dt) {
 // al empezar a girar desde la esquina, el pivote se desliza al centro del edificio
 let deslizar = null;
 function alTomar() {
+  cerrarOferta();
   document.documentElement.classList.add('girado');
   marcarVista(null);
   if (controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
@@ -874,15 +886,15 @@ function prepararUI() {
     b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); explicar(b.dataset.explica); } });
   });
   $('#rotulo-cerrar').addEventListener('click', () => { S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
-  $('#lente-info').addEventListener('click', () => { S.verLeyenda = !S.verLeyenda; lastLect = ''; });
+  $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
   if (innerWidth <= 760) $('#ley-mas').open = false;
   prepararPartes();
   // recorrido guiado
-  const abrirRec = () => { $('#oferta-recorrido').hidden = true; abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
+  const abrirRec = () => { cerrarOferta(); abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
   ['#abrir-recorrido', '#sirve-recorrido', '#acerca-recorrido', '#oferta-si'].forEach((x) => $(x)?.addEventListener('click', abrirRec));
-  $('#oferta-no').addEventListener('click', () => { $('#oferta-recorrido').hidden = true; });
-  $('#oferta-sirve').addEventListener('click', () => { $('#oferta-recorrido').hidden = true; abrirSirve(true); $('#sirve').scrollTop = 0; });
+  $('#oferta-no').addEventListener('click', () => { cerrarOferta(); });
+  $('#oferta-sirve').addEventListener('click', () => { cerrarOferta(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#acerca-sirve').addEventListener('click', () => { $('#acerca').close?.(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
@@ -896,9 +908,10 @@ function prepararUI() {
     parar(); explorar(); S.momento = null; const i = +e.target.value, y = 2001 + Math.floor(i / 12), m = (i % 12) + 1;
     S.mesSerie = null; S.fecha = { y, m, d: Math.min(S.fecha.d, diasMes(y, m)) };
   });
-  $('#reproducir').addEventListener('click', reproducir);
+  $('#reproducir').addEventListener('click', () => { cerrarOferta(); reproducir(); });
+  ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', cerrarOferta));
   // para qué sirve: hallazgos con un momento para verlos en la escena
-  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { $('#oferta-recorrido').hidden = true; abrirVoladizo(false); } };
+  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
@@ -911,7 +924,7 @@ function prepararUI() {
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
-    if (abrir) { $('#oferta-recorrido').hidden = true; abrirVoladizo(false); }
+    if (abrir) { cerrarOferta(); abrirVoladizo(false); }
     if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
       $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
@@ -943,6 +956,7 @@ function prepararUI() {
   });
   // formas de ver
   document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
+    cerrarOferta();
     ponerLente(b.dataset.lente, !(b.dataset.lente === 'partes' && innerWidth <= 760));   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
@@ -951,8 +965,8 @@ function prepararUI() {
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
-  document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
-  $('#brujula').addEventListener('click', () => volarA(VISTAS.planta, 1.6, 'planta'));
+  document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
+  $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
   document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada); }));
   $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
   addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (intro) return; if (FACHADAS[h]) irAFachada(h); else irAMomentoHash(); });
@@ -963,7 +977,7 @@ function prepararUI() {
     else if (S.paso != null && e.key === 'ArrowRight') recorrido(S.paso + 1);
     else if (S.paso != null && e.key === 'ArrowLeft') recorrido(S.paso - 1);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
