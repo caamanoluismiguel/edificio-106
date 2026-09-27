@@ -930,6 +930,7 @@ function prepararUI() {
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
   $('#rec-salir').addEventListener('click', () => recorrido(null));
+  $('#rec-ver').addEventListener('click', verRespuesta);
   // nitidez
   $('#capa-nitidez').checked = RES.fija;
   $('#capa-nitidez').addEventListener('change', (e) => { RES.fija = e.target.checked; RES.iv = []; RES.techo = 0; try { localStorage.setItem('e106-nitidez', RES.fija ? '1' : '0'); } catch (x) { /* nada */ } escena.sucio = true; pintarResolucion(); });
@@ -1434,16 +1435,24 @@ function pasosRecorrido() {
     { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol está alto, los aleros dejan las paredes y las ventanas en sombra.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto, protege la pared.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
     { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos tres cuartos de lo que recibe la sureste.',
+      pre: 'Son las 3:30 de la tarde del 25 de marzo y el sol ya va bajando hacia el oeste. Mira el edificio desde arriba: ¿cuál de las cuatro paredes crees que lo recibe más de frente?',
+      antes: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(z.h * 60 + z.min)}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: z.h * 60 + z.min, vista: 'aerea', lente: 'foto' }) },
     { t: 'Las sombras de todo un día', txt: 'La forma de ver «Sombras» dibuja la sombra de cada hora sobre el terreno. El 21 de diciembre las sombras son las más largas del año y caen hacia el norte; en la tarde, el jardín noreste queda a la sombra del edificio.', dis: 'Sirve para decidir dónde poner un patio, una terraza o un árbol.',
+      pre: 'Está amaneciendo el 21 de diciembre. En esta época el sol del mediodía viene del sur, y la rosa del suelo te dice dónde queda el norte. ¿Hacia dónde crees que caerán las sombras del edificio a lo largo del día?',
+      antes: () => { S.ayudas = true; $('#capa-ayudas').checked = true; viajarA({ fecha: { y, m: 12, d: 21 }, min: Math.round(saleYPone(y, 12, 21).sale) + 12, vista: 'planta', lente: 'foto' }); },
       ir: () => viajarA({ fecha: { y, m: 12, d: 21 }, min: 15 * 60, vista: 'planta', lente: 'sombras' }) },
     { t: 'La lluvia', txt: 'Aquí llueven unos 2.000 mm al año, casi todo de mayo a noviembre y sobre todo en la tarde. Esta es la hora más lluviosa de 25 años de datos: 19 mm entre las 14:00 y las 15:00 del 1 de julio de 2023. Mira las cortinas de agua que caen de los tres aleros.', dis: 'Por eso los aleros anchos: alejan el agua de los muros y de las ventanas.',
       ir: () => viajarA({ fecha: { y: 2023, m: 7, d: 1 }, min: 14 * 60 + 30, vista: 'esquina', lente: 'foto' }) },
     { t: 'La lluvia con viento', txt: 'La forma de ver «Lluvia» muestra qué fachada se moja más cuando llueve con viento. En un año típico, la noroeste recibe más de cinco veces lo que la fachada lateral noreste.', dis: 'Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados.',
+      pre: 'Cuando llueve con viento, el agua no cae derecha y moja unas paredes más que otras. ¿Cuál de las cuatro crees que se moja más?',
+      antes: () => viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => { S.aguaModo = 'anio'; viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, fachada: 'no', lente: 'lluvia' }); } },
     { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Casi todo el año sopla del norte y el noroeste, y la fachada noroeste lo recibe de frente unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
+      pre: 'Acabas de ver cuál pared se moja más con la lluvia. Con esa pista, ¿de qué lado crees que llega el viento casi todo el año? ¿Y qué pared lo recibe de frente?',
+      antes: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'foto' }); },
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
     { t: 'Las partes del edificio', txt: 'La forma de ver «Partes» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. Toca una etiqueta para saber qué es, cómo es en este edificio y qué hace. La persona de 1,70 m junto a la esquina sirve para comparar tamaños.', dis: 'El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('partes', false); elegirParte('alero'); } },
@@ -1458,10 +1467,25 @@ function recorrido(i) {
   const q = P[i];
   $('#rec-n').textContent = `Paso ${i + 1} de ${P.length}`;
   $('#rec-t').textContent = q.t; $('#rec-txt').textContent = q.txt; $('#rec-dis').textContent = q.dis;
+  // con pregunta: primero la predicción y la escena sin la respuesta pintada; «Ver respuesta» muestra el texto y la forma de ver
+  const conPregunta = !!q.pre, foco = $('#recorrido').contains(document.activeElement);
+  $('#rec-pregunta').hidden = !conPregunta; $('#rec-respuesta').hidden = conPregunta;
+  $('#rec-ver').hidden = false;
+  if (conPregunta) $('#rec-preg').textContent = q.pre;
   $('#rec-prev').disabled = i === 0; $('#rec-sig').textContent = i === P.length - 1 ? 'Terminar' : 'Siguiente';
   $('#rec-puntos').innerHTML = P.map((_, j) => `<i class="${j === i ? 'hoy' : j < i ? 'ya' : ''}"></i>`).join('');
   $('#recorrido').hidden = false; document.documentElement.classList.add('en-recorrido');
   ['#sirve', '#ir-a', '#capas'].forEach((x) => { $(x).hidden = true; }); abrirVoladizo(false);
+  (conPregunta ? q.antes : q.ir)(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
+  if (conPregunta && foco) $('#rec-ver').focus();
+}
+function verRespuesta() {
+  const q = S.pasos?.[S.paso]; if (!q || !$('#rec-respuesta').hidden) return;
+  const rec = $('#recorrido');
+  rec.setAttribute('aria-live', 'off');                 // el foco lee la respuesta; sin esto el lector la diría dos veces
+  $('#rec-ver').hidden = true; $('#rec-respuesta').hidden = false;
+  $('#rec-txt').focus();
+  setTimeout(() => rec.setAttribute('aria-live', 'polite'), 400);
   q.ir(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
 }
 
