@@ -709,7 +709,7 @@ function rotulo(p, c, sp) {
   cerrar.hidden = true;
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y cae hacia el ${rumboTexto(sp.rumbo)}.`
-    : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : 'Es de noche: las ventanas encendidas son una suposición del modelo, no un dato.';
+    : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : 'Es de noche. La escena se aclara para que el edificio se vea, como en una foto de exposición larga, y las ventanas encendidas son una suposición del modelo, no un dato.';
   let clTxt = '';
   if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Está lloviendo (${f1(c.lluvia)} mm/h).` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
   else if (c?.fuente === 'serie' || c?.fuente === 'dia') {
@@ -990,7 +990,7 @@ const LENTES = {
     que: 'El sol está calculado para este minuto exacto. El cielo, las nubes y la lluvia salen del dato del tiempo de esa hora. El suelo y los muros siguen mojados mientras no se seca lo que llovió en las horas anteriores, y la vegetación se mece con el viento de esa hora.',
     prueba: 'Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, el alero de 1,65 m deja las paredes casi todas en sombra.',
     porque: 'Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.',
-    ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. Las ventanas encendidas de noche son una suposición. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
+    ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche la escena se aclara para que el edificio se vea, como en una foto de exposición larga: esa luz de luna no es la real, y las ventanas encendidas son una suposición. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
   sol: { t: 'Sol: cuánto sol le llega a cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
     que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',

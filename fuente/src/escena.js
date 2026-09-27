@@ -6,7 +6,7 @@ import {
   positionWorld, normalWorld, time, hash, shapeCircle, instancedBufferAttribute, mx_noise_float,
   mx_fractal_noise_float, oneMinus, step, length, pass, texture, uv, select, mrt, normalView, velocity, sample,
   packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property,
-  modelWorldMatrix, modelWorldMatrixInverse, output
+  modelWorldMatrix, modelWorldMatrixInverse, output, normalize
 } from 'three/tsl';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -60,6 +60,7 @@ Object.assign(U, {
   brisa: uniform(0),                     // 0..1: viento de esa hora para la vegetación (35 km/h o más = 1)
   vientoDir: uniform(new THREE.Vector2(1, 0)),   // hacia dónde sopla, en el plano de la escena (unitario)
   vaiven: uniform(1),                    // 0 con movimiento reducido: la vegetación solo se inclina, no se mece
+  nocturna: uniform(0),                  // 0..1: visión nocturna (cielo azul noche y relleno frío), sube al ponerse el sol
 });
 // sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol».
 // Ojo con el orden: three.js emite el emisivo ANTES que el código de las luces (la sombra se calcula al usarse la iluminación,
@@ -67,6 +68,20 @@ Object.assign(U, {
 // se suma por eso en outputNode, que se evalúa después de la iluminación.
 const sombraSol = property('float', 'sombraSol');
 
+// Visión nocturna: de noche la escena se aclara como una foto de exposición larga, con una luz fría y tenue de luna y el
+// resplandor del cielo urbano. La luna es fija (no se calcula su posición ni su fase): viene del noreste a 28°, ilumina de lleno
+// la fachada del jardín y deja la de la calle en sombra, para que se lean los volúmenes y la sombra de los aleros. No es un dato.
+// Medido en la vista de la esquina (26/09/2026, 21:30): muro en sombra L* ≈ 40, muro a la luz de la luna L* ≈ 65, cielo L* ≈ 27.
+const NOCHE = {
+  luna: { alt: 28, az: 40 },             // de dónde viene la luz de luna (grados)
+  lunaInt: 2.0,                          // intensidad de la luz de luna (el sol de mediodía llega a 5)
+  lunaColor: [0.55, 0.68, 1.0],
+  relleno: 0.35,                         // luz hemisférica del cielo urbano, además de la de día
+  puente: 0.6,                           // relleno extra del crepúsculo, antes de que entre la luna
+  cielo: [0.5, 0.6, 0.95], suelo: [0.16, 0.15, 0.13],
+  cenit: [0.010, 0.019, 0.052], horizonte: [0.045, 0.05, 0.068],   // bóveda azul noche, un poco más clara cerca del horizonte
+  entorno: [0.10, 0.12, 0.17],           // bóveda que ilumina y se refleja (mapa de entorno)
+};
 const clayColor = vec3(0.74, 0.72, 0.68);
 const TEX_BLANCA = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);   // mientras llega la textura real
 TEX_BLANCA.needsUpdate = true;
@@ -109,7 +124,10 @@ export class Escena {
     sky.turbidity.value = 7; sky.rayleigh.value = 2.0; sky.mieCoefficient.value = 0.006; sky.mieDirectionalG.value = 0.8;
     sky.cloudCoverage.value = 0.35; sky.cloudDensity.value = 0.45; sky.cloudElevation.value = 0.5;
     sky.material.fog = false;
-    sky.material.colorNode = mix(sky.material.colorNode.mul(vec4(vec3(U.cielo), 1)), vec4(U.grisCielo, 1), U.cubierto);
+    // de noche la bóveda pasa a azul noche (visión nocturna), con el resplandor de la ciudad cerca del horizonte
+    const altura = clamp(normalize(positionWorld).y, 0, 1);
+    const cieloNoche = vec4(mix(vec3(...NOCHE.horizonte), vec3(...NOCHE.cenit), pow(altura, 0.45)), 1);
+    sky.material.colorNode = mix(mix(sky.material.colorNode.mul(vec4(vec3(U.cielo), 1)), vec4(U.grisCielo, 1), U.cubierto), cieloNoche, U.nocturna);
     scene.add(sky); this.sky = sky;
     // escena aparte para el mapa de entorno (misma bóveda, sin nubes densas)
     this.skyEnvScene = new THREE.Scene();
@@ -120,7 +138,7 @@ export class Escena {
     // (en las fotos los muros en sombra son blanco neutro, (184, 184, 181) en WA0024)
     const c2 = sky2.material.colorNode.mul(vec4(vec3(U.cielo), 1));
     const l2 = dot(c2.rgb, vec3(0.2126, 0.7152, 0.0722));
-    sky2.material.colorNode = mix(vec4(mix(c2.rgb, vec3(l2), 0.8), 1), vec4(U.grisCielo, 1), U.cubierto);
+    sky2.material.colorNode = mix(mix(vec4(mix(c2.rgb, vec3(l2), 0.8), 1), vec4(U.grisCielo, 1), U.cubierto), vec4(vec3(...NOCHE.entorno), 1), U.nocturna);
     this.skyEnvScene.add(sky2); this.sky2 = sky2;
     this.pmrem = new THREE.PMREMGenerator(r);
 
@@ -267,7 +285,22 @@ export class Escena {
     const cub = 1 - ks;
     // con el sol velado por nubes delgadas o bruma la sombra pierde el borde nítido (el radio va en texeles del mapa, sin recompilar)
     this.sun.shadow.radius = 2 + 3 * cub;
-    const sd = this.solDir.clone().multiplyScalar(600);
+    // visión nocturna: el relleno frío sube desde que el sol está a 4° sobre el horizonte, a la par que se va la luz del día, para
+    // que la escena no pase por un bache oscuro al ponerse el sol; el cielo azul noche llega justo después (de 0,5° sobre el
+    // horizonte a 4° bajo él), para no tapar el arrebol. La misma luz direccional pasa a ser la luna cuando el sol ya se apagó
+    // del todo (k = 0), así que el cambio de dirección no se ve y nada se recompila.
+    const nv = 1 - THREE.MathUtils.smoothstep(alt, -4, 4);
+    U.nocturna.value = 1 - THREE.MathUtils.smoothstep(alt, -4, 0.5);
+    const luna = k === 0;
+    const nl = luna ? 1 - THREE.MathUtils.smoothstep(alt, -5, -1.5) : 0;   // en −1,5° el sol termina de apagarse y la luna empieza
+    let sd;
+    if (luna) {
+      const v = vectorSol(NOCHE.luna.alt, NOCHE.luna.az);
+      sd = new THREE.Vector3(v.x, v.y, v.z).multiplyScalar(600);
+      this.sun.color.setRGB(...NOCHE.lunaColor);
+      this.sun.intensity = NOCHE.lunaInt * nl * (1 - 0.6 * lv);
+      this.sun.shadow.radius = 3;
+    } else sd = this.solDir.clone().multiplyScalar(600);
     if (!this._sd || this._sd.distanceTo(sd) > 0.4) { this._sd = sd.clone(); this.sun.shadow.needsUpdate = true; this.sucio = true; }
     this.sun.position.copy(sd); this.sun.target.position.set(0, 0, 0);
     // castShadow queda siempre encendido: apagarlo al ponerse el sol también obligaba a recompilar los materiales
@@ -283,14 +316,16 @@ export class Escena {
     U.grisCielo.value.setRGB(g * 0.92, g * 0.96, g * 1.0);
     this.sky.showSunDisc.value = ks > 0.35 && lv < 0.3 ? 1 : 0;
     this.sky.mieCoefficient.value = 0.006 * (0.2 + 0.8 * ks) * (1 - 0.8 * lv);
-    this.hemi.intensity = 0.08 + day * (0.22 + 0.95 * cubierto) + 5 * fl;
+    // mientras la luna no ha entrado (crepúsculo), el relleno la reemplaza: así no hay un bache oscuro entre el sol y la luna
+    this.hemi.intensity = 0.08 + day * (0.22 + 0.95 * cubierto) + NOCHE.relleno * nv + NOCHE.puente * nv * (1 - nl) + 5 * fl;
     // relleno del cielo menos azul y rebote del suelo más cálido: con el azul de antes, todo lo que quedaba en sombra se veía pizarra
     const hc = new THREE.Color().setRGB(0.55 + 0.27 * day, 0.62 + 0.21 * day, 0.85 - 0.02 * day).lerp(new THREE.Color(0.88, 0.89, 0.9), cubierto);
-    this.hemi.color.copy(hc);
-    this.hemi.groundColor.setRGB(0.2 + 0.2 * day, 0.2 + 0.17 * day, 0.14 + 0.07 * day);
+    this.hemi.color.copy(hc.lerp(new THREE.Color(...NOCHE.cielo), nv));
+    this.hemi.groundColor.setRGB(0.2 + 0.2 * day, 0.2 + 0.17 * day, 0.14 + 0.07 * day).lerp(new THREE.Color(...NOCHE.suelo), nv);
     this.renderer.toneMappingExposure = 0.95 + 0.5 * (1 - day) + 0.2 * cubierto;
     const fogC = new THREE.Color().setRGB(0.1 + 0.52 * day, 0.13 + 0.55 * day, 0.2 + 0.55 * day);
     fogC.lerp(new THREE.Color(g * 0.88, g * 0.92, g * 0.96), Math.max(lv, cubierto * 0.6));
+    fogC.lerp(new THREE.Color(...NOCHE.horizonte), nv * (1 - lv));  // de noche, la niebla del mismo azul del horizonte
     this.scene.fog.color.copy(fogC);
     this.scene.fog.near = 350 - 310 * lv; this.scene.fog.far = 2600 - 1900 * lv;
     this.sky.cloudCoverage.value = Math.min(1, Math.max(U.nubeCob.value, lv));
@@ -299,7 +334,7 @@ export class Escena {
     this.sky2.cloudCoverage.value = 0.2 + 0.75 * lv;
     U.luzLluvia.value = 0.62 + 0.38 * day + 2 * fl;              // de noche las gotas siguen visibles (reflejan las luces)
     U.noche.value = 1 - THREE.MathUtils.smoothstep(alt, -6, 2);
-    const clave = [Math.round(alt * 4), Math.round(az * 2), Math.round(lv * 20), Math.round(cubierto * 20)].join(',');
+    const clave = [Math.round(alt * 4), Math.round(az * 2), Math.round(lv * 20), Math.round(cubierto * 20), Math.round(nv * 20)].join(',');
     if (clave !== this._envClave) { this._envClave = clave; this.#envTalVez(); }
   }
 
@@ -424,7 +459,8 @@ export class Escena {
       // luces interiores de noche: celdas de 3,8 m × 3,65 m, encendidas al azar (~65 %)
       const cell = floor(vec2(positionWorld.x.add(positionWorld.z).div(3.8), positionWorld.y.div(3.65)));
       const on = step(0.35, hash(cell.x.mul(17.0).add(cell.y.mul(131.0))));
-      m.emissiveNode = vec3(1.0, 0.62, 0.3).mul(on).mul(U.noche).mul(3.2);
+      // más tenues que antes (3,2): con la visión nocturna la escena ya está más clara y a 3,2 las ventanas salían blancas, quemadas
+      m.emissiveNode = vec3(1.0, 0.5, 0.2).mul(on).mul(U.noche).mul(1.5);
     }
     const nmPlaster = (nm.includes('plaster') || nm.includes('cream trim')) && !nm.includes('interior');
     let colorFinal = colBase;
