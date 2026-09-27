@@ -447,6 +447,15 @@
   #panel-fachada p { margin: 0; font-size: 15px; }
   html:not(.en-fachada) #panel-fachada { display: none; }
   html.en-fachada #rotulo { display: none; }
+  #qr { position: fixed; z-index: 8; top: calc(env(safe-area-inset-top, 0px) + 72px); left: var(--gutter); width: min(27rem, calc(100vw - 2 * var(--gutter) - 130px)); box-sizing: border-box;
+    background: var(--panel-2); border: 1px solid var(--sol); border-radius: 16px; padding: 14px 18px 16px; display: grid; gap: 8px; backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  #qr:focus { outline: none; }
+  .qr-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; } #qr-cerrar { padding: 6px 12px; font-size: 12.5px; }
+  #qr h2 { font: 700 21px/1.15 var(--display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  #qr-lugar { margin: 0; font-size: 13px; color: var(--cal-2); }
+  #qr-preg { margin: 2px 0 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; text-wrap: pretty; } #qr-preg li::marker { color: var(--sol); font-weight: 700; }
+  html:has(#qr:not([hidden])) #panel-fachada, html:not(.en-fachada) #qr, html.en-recorrido #qr,
+  html:has(#sirve:not([hidden])) #qr, html:has(#ir-a:not([hidden])) #qr, html:has(#voladizo:not([hidden])) #qr { display: none; }
 
   /* ---------- acerca ---------- */
   #acerca { max-width: 40rem; width: calc(100vw - 2 * var(--gutter)); box-sizing: border-box; background: var(--solido); color: var(--cal); border: 1px solid var(--linea-2); border-radius: 18px; padding: 24px 26px; }
@@ -516,6 +525,8 @@
     #ir-a { background: var(--solido); }
     #abrir-recorrido { display: none; }
     #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 46vh; overflow: auto; }
+    #qr { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 118px); padding: 11px 13px 12px; gap: 5px; max-height: 40vh; overflow: auto; }
+    #qr h2 { font-size: 17px; } #qr-lugar { font-size: 12px; } #qr-preg { font-size: 13px; gap: 6px; line-height: 1.4; }
     #rec-t { font-size: 18px; } #rec-txt { font-size: 13.5px; } .rec-dis { font-size: 12px; } #rec-pregunta p { font-size: 13.5px; padding: 8px 10px; } #rec-pregunta, #rec-respuesta { gap: 7px; }
     #leyenda { max-height: 30vh; min-height: 0; }
     #oferta-recorrido { width: auto; right: 8px; left: 8px; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
@@ -732,6 +743,13 @@
   <p><b class="k2">La regla:</b> si el alero crece al doble, el esfuerzo en su raíz crece cuatro veces y la punta baja dieciséis veces más. Un alero más largo da más horas de sombra, pero pide ménsulas, una losa más gruesa o tensores.</p>
   <p class="vol-nota">Proporciones con la misma sección y la misma carga por metro, no el cálculo de este alero: no se conoce su estructura real. El ángulo de sombra (el del sol visto de perfil) sale de la geometría de las ventanas del modelo.</p>
 </aside>
+
+<section id="qr" hidden role="dialog" aria-modal="false" aria-labelledby="qr-t" aria-describedby="qr-lugar qr-preg" tabindex="-1">
+  <div class="qr-cab"><p class="eyebrow">Mira el edificio real</p><button type="button" id="qr-cerrar" class="boton">Cerrar</button></div>
+  <h2 id="qr-t"></h2>
+  <p id="qr-lugar"></p>
+  <ol id="qr-preg"></ol>
+</section>
 
 <aside id="panel-fachada" aria-live="off">
   <p class="eyebrow">Estás frente al edificio</p>

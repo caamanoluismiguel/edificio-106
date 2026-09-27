@@ -267,7 +267,7 @@ function terminarIntro() {
   irAAhora(false);
   if (!visto && !location.hash) setTimeout(mostrarOferta, 900);
   const h = location.hash.replace('#', '');
-  if (FACHADAS[h]) irAFachada(h);
+  if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); }
   irAMomentoHash();
 }
 
@@ -358,6 +358,7 @@ function llegada(d) {
 
 // ---------------- Cámara ----------------
 function volarA(v, dur = 1.6, clave = null, avisar = true) {
+  cerrarQR(false);                                       // la tarjeta del QR es solo para quien sigue frente a la fachada
   const p0 = escena.camera.position.clone(), t0 = controls.target.clone();
   const p1 = new THREE.Vector3(...v.pos), t1 = new THREE.Vector3(...v.tgt);
   marcarVista(clave);
@@ -1006,6 +1007,7 @@ function prepararUI() {
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
   $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
   document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada); }));
+  $('#qr-cerrar').addEventListener('click', () => cerrarQR(true));
   $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
   addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (intro) return; if (FACHADAS[h]) irAFachada(h); else irAMomentoHash(); });
   addEventListener('keydown', (e) => {
@@ -1015,7 +1017,7 @@ function prepararUI() {
     else if (S.paso != null && e.key === 'ArrowRight') recorrido(S.paso + 1);
     else if (S.paso != null && e.key === 'ArrowLeft') recorrido(S.paso - 1);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
@@ -1041,6 +1043,57 @@ function mostrarFachada(k) {
   $('#fachada-titulo').textContent = `${f.nombre}: ${f.lugar}`;
   $('#panel-fachada').hidden = false;
   lastLect = '';
+}
+// ---------------- Tarjeta del QR en sitio ----------------
+// Solo al abrir la página desde un enlace #fachada-xx (los QR pegados en el edificio). Dos preguntas para responder mirando
+// la pared real; los hechos salen de la orientación (sol.js) y de consultas.json (lluvia con viento, horas de viento de frente).
+const NOMBRE_CORTO = { se: 'sureste', no: 'noroeste', ne: 'lateral noreste', so: 'lateral suroeste' };
+function preguntasQR(c) {
+  const C = consultas, nom = (x) => NOMBRE_CORTO[x];
+  const oLl = C ? Object.keys(C.lluviaViento).sort((a, b) => C.lluviaViento[b].anual - C.lluviaViento[a].anual) : null;
+  const W = C?.viento?.anio.frente, oVi = W ? Object.keys(W).sort((a, b) => W[b] - W[a]) : null;
+  const lluvia = (k) => {
+    if (!oLl) return 'Cuando llueve con viento, unas paredes se mojan más que otras.';
+    const r = oLl.indexOf(k);
+    return r === 0 ? 'Es la pared que más se moja cuando llueve con viento.'
+      : r === 1 ? `Después de la ${nom(oLl[0])}, es la que más se moja cuando llueve con viento.`
+      : r === oLl.length - 1 ? 'Es la pared que menos se moja cuando llueve con viento.'
+      : `Se moja menos que la ${nom(oLl[0])} cuando llueve con viento.`;
+  };
+  const viento = (k) => {
+    if (!oVi) return 'El viento le llega de frente muchas horas al año.';
+    const r = oVi.indexOf(k);
+    return r === 0 ? `Recibe el viento de frente más horas que ninguna otra: ${W[k].toLocaleString('es-PA')} al año.`
+      : `Recibe el viento de frente unas ${W[k].toLocaleString('es-PA')} horas al año; la ${nom(oVi[0])}, unas ${W[oVi[0]].toLocaleString('es-PA')}.`;
+  };
+  const opuesta = oVi ? nom(oVi[0]) : 'noroeste';
+  return {
+    se: ['Le da el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de tocar el vidrio? Compruébalo con la regla del día.',
+      `El viento llega casi siempre por la cara opuesta, la ${opuesta}, así que el aire que cruza el edificio sale por aquí. ¿Qué ventanas o rejillas lo dejarían salir?`],
+    no: [`${lluvia('no')} ¿Ves manchas de humedad o pintura gastada abajo o bajo las ventanas? Compáralo con la forma de ver «Lluvia».`,
+      `${viento('no')} Ponte de espaldas a la pared: ¿sientes la brisa en la cara?`],
+    ne: ['Mira al noreste, del lado por donde sale el sol, y solo le da sol en la mañana. ¿A qué hora crees que queda en sombra? Compruébalo con la regla del día.',
+      `${lluvia('ne')} ¿El zócalo y la pintura se ven más limpios que en la noroeste? Compáralo con la forma de ver «Lluvia».`],
+    so: ['Le da el sol de la tarde. Párate bajo el alero: ¿a qué hora crees que el sol empieza a tocar el vidrio? Búscala con la regla del día.',
+      `${lluvia('so')} ¿Ves marcas de agua bajo las ventanas o en las esquinas? Compáralo con la forma de ver «Lluvia».`],
+  }[c];
+}
+function mostrarQR(k) {
+  const f = FACHADAS[k], c = k.replace('fachada-', ''); if (!f) return;
+  const pintar = () => {
+    $('#qr-t').textContent = `Estás frente a la fachada ${NOMBRE_CORTO[c]}`;
+    $('#qr-lugar').textContent = f.lugar[0].toUpperCase() + f.lugar.slice(1) + '.';
+    $('#qr-preg').innerHTML = preguntasQR(c).map((q) => `<li>${q}</li>`).join('');
+  };
+  pintar();
+  if (!consultas) { const t = setInterval(() => { if (consultas) { clearInterval(t); if (!$('#qr').hidden) pintar(); } }, 400); setTimeout(() => clearInterval(t), 20000); }
+  const el = $('#qr'); el.hidden = false;
+  el.focus({ preventScroll: true });
+}
+function cerrarQR(devolverFoco) {
+  const el = $('#qr'); if (!el || el.hidden) return;
+  el.hidden = true;
+  if (devolverFoco) $('#salir-fachada')?.focus({ preventScroll: true });
 }
 function textoFachada(p) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
@@ -1269,7 +1322,7 @@ function aplicarPartes() {
 }
 const _pp = new THREE.Vector3(), _pv = new THREE.Vector3();
 // paneles de la interfaz que las etiquetas no deben tapar ni quedar debajo
-const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#panel-fachada', '#aviso.ver'];
+const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#panel-fachada', '#qr', '#aviso.ver'];
 /** Coloca las etiquetas sobre la imagen: proyecta cada ancla con la cámara, esquiva los paneles y evita que se encimen. */
 function pintarPartes() {
   const capa = $('#partes-capa'); if (!capa || !escena) return;
