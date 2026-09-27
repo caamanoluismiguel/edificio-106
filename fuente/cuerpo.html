@@ -265,6 +265,21 @@
   .vol-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; }
   .vol-datos small { font-size: 11.5px; color: var(--cal-2); line-height: 1.3; }
   #voladizo .vol-nota { font-size: 12px; color: var(--cal-3); }
+  /* corte del alero con el rayo de sol de esta hora */
+  #corte { display: grid; gap: 8px; border-top: 1px solid var(--linea-2); padding-top: 11px; margin-top: 2px; }
+  #corte h3 { margin: 0; font: 700 17px/1.15 var(--display); color: var(--sol); }
+  .corte-fach { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .corte-fach span { font: 500 11px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; text-transform: uppercase; }
+  .corte-fach button { font: 600 13px/1 var(--datos); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 9px 12px; min-width: 44px; cursor: pointer; }
+  .corte-fach button[aria-pressed="true"] { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  #corte-svg { display: block; width: 100%; height: auto; max-height: 320px; background: #111b20; border: 1px solid var(--linea); border-radius: 12px; }
+  #corte-svg text { font: 600 13.5px var(--texto); fill: var(--cal); } #corte-svg text.m { font: 500 12px var(--datos); fill: var(--cal-2); }
+  #corte-svg text.s { fill: var(--sol-2); }
+  .corte-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .corte-datos div { border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; display: grid; gap: 4px; align-content: start; }
+  .corte-datos span { font: 500 11px/1.2 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
+  .corte-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; color: var(--sol-2); }
+  #corte-txt { font-size: 14px; }
   .c-grupo[data-g="viento"] h4 { color: #5fd3b0; }
   .c-grupo[data-g="viento"] .c-item:hover { box-shadow: inset 2px 0 0 0 #5fd3b0; }
   .c-grupo[data-g="viento"] li.activo > .c-item { border-color: #5fd3b0; background: rgba(63, 197, 156, .12); }
@@ -742,6 +757,23 @@
   </div>
   <p><b class="k2">La regla:</b> si el alero crece al doble, el esfuerzo en su raíz crece cuatro veces y la punta baja dieciséis veces más. Un alero más largo da más horas de sombra, pero pide ménsulas, una losa más gruesa o tensores.</p>
   <p class="vol-nota">Proporciones con la misma sección y la misma carga por metro, no el cálculo de este alero: no se conoce su estructura real. El ángulo de sombra (el del sol visto de perfil) sale de la geometría de las ventanas del modelo.</p>
+  <section id="corte" aria-labelledby="corte-t">
+    <h3 id="corte-t">Corte del piso 2 con el sol de esta hora</h3>
+    <div class="corte-fach" role="group" aria-label="Fachada del corte"><span>Fachada</span>
+      <button type="button" data-corte="se" aria-pressed="true">SE</button>
+      <button type="button" data-corte="no" aria-pressed="false">NO</button>
+      <button type="button" data-corte="ne" aria-pressed="false">NE</button>
+      <button type="button" data-corte="so" aria-pressed="false">SO</button>
+    </div>
+    <svg id="corte-svg" viewBox="0 0 400 312" role="img" aria-labelledby="corte-desc"><desc id="corte-desc">Corte esquemático del alero y el sol de esta hora.</desc></svg>
+    <div class="corte-datos">
+      <div><span>Sol de perfil</span><b id="corte-perfil">–</b></div>
+      <div><span>Sombra bajo el alero</span><b id="corte-sombra">–</b></div>
+      <div><span>El vidrio</span><b id="corte-vidrio">–</b></div>
+    </div>
+    <p id="corte-txt"></p>
+    <p class="vol-nota">Esquema: alero continuo, sin retornos laterales ni ménsulas. Alturas y vidrio medidos en el modelo 3D (las ventanas de los pisos 2 y 3 son inferidas); el vidrio queda 10 cm hacia adentro del muro. El sol de perfil es el ángulo del sol visto de costado, en un plano perpendicular a la fachada. Mueve la hora o cambia la fecha y el rayo se mueve.</p>
+  </section>
 </aside>
 
 <section id="qr" hidden role="dialog" aria-modal="false" aria-labelledby="qr-t" aria-describedby="qr-lugar qr-preg" tabindex="-1">

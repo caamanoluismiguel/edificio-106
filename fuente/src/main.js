@@ -519,6 +519,7 @@ function paso(now) {
     else medirCuadro(now, dtReal);
   } else S.dibujoPrevio = false;
   pintarPartes();
+  if (S.voladizo) pintarCorte(p);
 }
 
 // ---------------- Resolución adaptable ----------------
@@ -1304,6 +1305,7 @@ function prepararPartes() {
   $('#lp-voladizo').addEventListener('click', () => abrirVoladizo(true));
   $('#cerrar-voladizo').addEventListener('click', () => abrirVoladizo(false));
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.addEventListener('click', () => { S.largo = +b.dataset.largo; pintarVoladizo(); }));
+  document.querySelectorAll('#corte [data-corte]').forEach((b) => b.addEventListener('click', () => { S.corteF = b.dataset.corte; pintarCorte(); }));
   pintarVoladizo();
 }
 function elegirParte(k) {
@@ -1399,6 +1401,7 @@ function abrirVoladizo(abrir) {
   S.voladizo = abrir; el.hidden = !abrir; pintarPartes.f = '';
   if (abrir) {
     $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); globalThis.__abrirIr?.(false);
+    if (S.fachada) S.corteF = S.fachada.slice(8);            // el corte arranca en la fachada que se estaba mirando
     S.fachada = null; document.documentElement.classList.remove('en-fachada');
     S.vistaPrevia = { pos: escena.camera.position.toArray(), tgt: controls.target.toArray() };
     volarA(VISTA_ALERO, 1.6, null);
@@ -1444,6 +1447,116 @@ function pintarVoladizo() {
   $('#vol-d').textContent = real ? 'igual' : '×' + coma(d, d < 1 ? 2 : 1);
   $('#vol-a').textContent = Math.round(ang) + '°';
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.largo - L) < 0.01)));
+}
+
+// Corte del alero con el rayo de sol: piso 2 de una fachada, esquema 2D. Alturas medidas en el modelo 3D: alero (su cara
+// de abajo) a 3,74 y 7,40 m; vidrio del piso 2 de 5,62 a 7,12 m, 10 cm hacia adentro del muro. Con el alero real de 1,65 m
+// sale el mismo corte del hallazgo: todo el vidrio al sol por debajo de ~9° de perfil y todo a la sombra por encima de ~45°.
+const CORTE = { alero: 7.4, losa: 3.74, esp: 0.2, vidAbajo: 5.62, vidArriba: 7.12, rehundido: 0.1, muro: 0.25 };
+const SIGLA = { se: 'SE', no: 'NO', ne: 'NE', so: 'SO' };
+const VIDRIO_TXT = { sombra: 'a la sombra', casiSombra: 'casi todo a la sombra', medias: 'a medias', casiSol: 'casi todo al sol', sol: 'al sol' };
+/** Ángulo de perfil (grados) del sol sobre una fachada vertical, o null si el sol está detrás o bajo el horizonte. */
+function perfilSol(alt, az, rumbo) {
+  const c = Math.cos((az - rumbo) * Math.PI / 180);
+  if (alt <= 0 || c <= 0.01) return null;
+  return Math.atan(Math.tan(alt * Math.PI / 180) / c) * 180 / Math.PI;
+}
+function estadoCorte(p, L, k) {
+  const C = CORTE, pf = perfilSol(p.alt, p.az, FACHADAS['fachada-' + k].rumbo);
+  if (pf == null) return { pf, motivo: p.alt <= 0 ? 'noche' : 'detras' };
+  const t = Math.tan(pf * Math.PI / 180);
+  const dw = L * t, dg = (L + C.rehundido) * t;                   // cuánto baja la sombra en el muro y en el vidrio
+  const alto = C.vidArriba - C.vidAbajo, sup = C.alero - C.vidArriba;
+  const frac = Math.min(1, Math.max(0, (dg - sup) / alto));       // parte del vidrio (desde arriba) a la sombra
+  const vidrio = frac >= 0.97 ? 'sombra' : frac >= 0.75 ? 'casiSombra' : frac > 0.25 ? 'medias' : frac > 0.03 ? 'casiSol' : 'sol';
+  return { pf, t, dw, dg, frac, vidrio, hSombra: C.alero - dw, pisoEntero: C.alero - dw <= C.losa + C.esp };
+}
+function pintarCorte(p) {
+  const el = $('#corte-svg'); if (!el) return;
+  p ??= S.solViaje ?? posicionSol({ ...S.fecha, h: 0, min: S.min });
+  const L = S.largo ?? 1.65, k = S.corteF ?? 'se';
+  const clave = [L, k, p.alt.toFixed(2), p.az.toFixed(2)].join('|');
+  if (clave === pintarCorte.f) return; pintarCorte.f = clave;
+  document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
+  $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
+  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => v.toFixed(n).replace('.', ',');
+  const K = 58, XW = 64, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro
+  const tip = X(L), fl = C.losa + C.esp, yv0 = Y(C.vidArriba), yv1 = Y(C.vidAbajo);
+  const r = (x0, y0, x1, y1, extra) => `<rect x="${Math.min(x0, x1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.abs(x1 - x0).toFixed(1)}" height="${Math.abs(y1 - y0).toFixed(1)}" ${extra}></rect>`;
+  let g = '';
+  // losa de abajo (piso) y de arriba (alero), muro con el hueco de la ventana y el vidrio rehundido
+  g += r(0, Y(C.losa), tip, Y(fl), 'fill="#56615f"') + r(0, Y(C.alero), tip, Y(C.alero + C.esp), 'fill="#56615f"');
+  g += r(X(-C.muro), Y(fl), XW, yv1, 'fill="#3a4448"') + r(X(-C.muro), yv0, XW, Y(C.alero), 'fill="#3a4448"');
+  g += r(X(-C.rehundido) - 3, yv0, X(-C.rehundido), yv1, 'fill="#4aa8dc" fill-opacity="0.55"');
+  // cara del muro y del vidrio: ámbar donde pega el sol, gris donde hay sombra
+  const franja = (x, h0, h1, sol) => h1 > h0 ? `<line x1="${x.toFixed(1)}" y1="${Y(h1).toFixed(1)}" x2="${x.toFixed(1)}" y2="${Y(h0).toFixed(1)}" stroke="${sol ? '#f4b545' : '#7f8a86'}" stroke-width="${sol ? 5 : 3}" stroke-linecap="butt"></line>` : '';
+  const partes = [[XW + 2.5, fl, C.vidAbajo, E.dw], [XW + 2.5, C.vidArriba, C.alero, E.dw], [X(-C.rehundido) + 2.5, C.vidAbajo, C.vidArriba, E.dg]];
+  for (const [x, h0, h1, d] of partes) {
+    if (E.pf == null) { g += franja(x, h0, h1, false); continue; }
+    const hs = Math.min(h1, Math.max(h0, C.alero - d));           // por debajo de hs hay sol
+    g += franja(x, h0, hs, true) + franja(x, hs, h1, false);
+  }
+  // rótulos fijos
+  g += `<text x="4" y="${(Y(C.alero) + 15).toFixed(1)}" class="m">${coma(C.alero)} m</text><text x="4" y="${(Y(C.losa) + 15).toFixed(1)}" class="m">${coma(C.losa)} m</text>`;
+  g += `<text x="${(X(-C.muro) - 4).toFixed(1)}" y="${((yv1 + Y(fl)) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">muro</text>`;
+  g += `<text x="${(X(-C.muro) - 4).toFixed(1)}" y="${((yv0 + yv1) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">vidrio</text>`;
+  g += `<text x="${((XW + tip) / 2).toFixed(1)}" y="${(Y(C.alero + C.esp) - 6).toFixed(1)}" text-anchor="middle">alero ${coma(L)} m</text>`;
+  g += `<text x="4" y="16" class="m">esquema · alero continuo, sin retornos laterales</text>`;
+  g += `<text x="396" y="${(Y(fl) - 8).toFixed(1)}" text-anchor="end" class="m">fachada ${SIGLA[k]} · exterior →</text>`;
+  if (E.pf == null) {
+    g += `<text x="${(tip + 12).toFixed(1)}" y="${(Y(6.4)).toFixed(1)}" class="s">${E.motivo === 'noche' ? 'El sol está bajo el horizonte' : 'El sol está detrás de esta fachada'}</text>`;
+    g += `<text x="${(tip + 12).toFixed(1)}" y="${(Y(6.4) + 17).toFixed(1)}" class="m">sin rayo directo a esta hora</text>`;
+  } else {
+    const a = E.pf * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a), ya = Y(C.alero);
+    // hasta dónde llega el rayo que roza la punta del alero
+    let hx = XW, hy = E.hSombra;
+    if (E.hSombra < C.vidArriba && E.hSombra > C.vidAbajo) { const hg = C.alero - E.dg; if (hg >= C.vidAbajo) { hx = X(-C.rehundido); hy = hg; } }
+    if (hy < fl) { hy = fl; hx = tip - (C.alero - fl) / E.t * K; }
+    const rayo = (x1, y1) => {
+      const R = Math.min((396 - x1) / ux, (y1 - 36) / uy);
+      return { x0: x1 + ux * R, y0: y1 - uy * R };
+    };
+    const hxPx = hx, hyPx = Y(hy), o = rayo(tip, ya);
+    // rayos paralelos más abajo: pegan en el muro o el vidrio al sol
+    for (let i = 1; i <= 3; i++) {
+      const hh = hy - i * 0.62; if (hh < fl + 0.05) break;
+      const enVid = hh > C.vidAbajo && hh < C.vidArriba, x1 = enVid ? X(-C.rehundido) : XW, y1 = Y(hh);
+      const q = rayo(x1, y1);
+      g += `<line x1="${q.x0.toFixed(1)}" y1="${q.y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#f4b545" stroke-opacity="0.45" stroke-width="1.5"></line>`;
+    }
+    g += `<line x1="${o.x0.toFixed(1)}" y1="${o.y0.toFixed(1)}" x2="${hxPx.toFixed(1)}" y2="${hyPx.toFixed(1)}" stroke="#ffd27a" stroke-width="2.5"></line>`;
+    g += `<circle cx="${o.x0.toFixed(1)}" cy="${o.y0.toFixed(1)}" r="9" fill="#f4b545"></circle>`;
+    // ángulo de perfil en la punta del alero
+    const ra = 34, ax = tip + ra * ux, ay = ya - ra * uy;
+    g += `<path d="M${(tip + ra).toFixed(1)} ${ya.toFixed(1)} A${ra} ${ra} 0 0 0 ${ax.toFixed(1)} ${ay.toFixed(1)}" fill="none" stroke="#ffd27a" stroke-width="1.5"></path>`;
+    g += `<line x1="${tip.toFixed(1)}" y1="${ya.toFixed(1)}" x2="${(tip + ra + 12).toFixed(1)}" y2="${ya.toFixed(1)}" stroke="#ffd27a" stroke-width="1" stroke-dasharray="3 3"></line>`;
+    const rb = ra + 14, bx = tip + rb * Math.cos(a / 2), by = ya - rb * Math.sin(a / 2) + 5;
+    g += `<text x="${bx.toFixed(1)}" y="${by.toFixed(1)}" class="s">${Math.round(E.pf)}°</text>`;
+    // cota de la sombra sobre el muro
+    const hc = Math.max(fl, E.hSombra), xc = XW + 14;
+    g += `<path d="M${xc} ${ya.toFixed(1)} L${xc} ${Y(hc).toFixed(1)} M${xc - 4} ${ya.toFixed(1)} L${xc + 4} ${ya.toFixed(1)} M${xc - 4} ${Y(hc).toFixed(1)} L${xc + 4} ${Y(hc).toFixed(1)}" stroke="#b6bdb9" stroke-width="1.2"></path>`;
+    if (!E.pisoEntero && E.dw > 0.7) g += `<text x="${xc + 7}" y="${((ya + Y(hc)) / 2 + 4).toFixed(1)}" class="m">sombra ${coma(E.dw)} m</text>`;
+  }
+  const hora = hhmm(S.min), fach = `fachada ${SIGLA[k]}`;
+  let txt, desc = `Corte esquemático del piso 2, ${fach}, con un alero de ${coma(L)} m. `;
+  if (E.pf == null) {
+    txt = E.motivo === 'noche' ? `A las ${hora} el sol está bajo el horizonte: no hay rayo directo en ninguna fachada.`
+      : `A las ${hora} el sol está detrás de la ${fach}: esta cara está a la sombra con o sin alero. Prueba otra fachada o mueve la hora.`;
+    desc += E.motivo === 'noche' ? 'El sol está bajo el horizonte.' : 'El sol está detrás de la fachada, sin rayo directo.';
+    $('#corte-perfil').textContent = '–'; $('#corte-sombra').textContent = '–'; $('#corte-vidrio').textContent = 'sin sol';
+  } else {
+    const pfT = `${coma(E.pf, 1)}°`, somT = E.pisoEntero ? 'todo el piso' : `${coma(E.dw)} m`;
+    $('#corte-perfil').textContent = pfT; $('#corte-sombra').textContent = somT;
+    $('#corte-vidrio').textContent = VIDRIO_TXT[E.vidrio];
+    txt = `A las ${hora} el sol le llega a la ${fach} con ${pfT} de perfil. `;
+    if (E.pisoEntero) txt += 'La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo.';
+    else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo le pega a la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
+    else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero y le da a todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
+    else txt += `La sombra baja ${coma(E.dw)} m: cubre ${E.vidrio === 'casiSol' ? 'solo' : ''} la parte de arriba del vidrio (${Math.round(E.frac * 100)} %) y el resto recibe sol.`.replace('cubre  la', 'cubre la');
+    desc += `Sol de perfil a ${Math.round(E.pf)} grados. ${E.pisoEntero ? 'La sombra del alero cubre todo el piso.' : `La sombra del alero baja ${coma(E.dw)} m por el muro.`} El vidrio queda ${E.vidrio === 'sombra' || E.vidrio === 'sol' ? VIDRIO_TXT[E.vidrio] : `${VIDRIO_TXT[E.vidrio]}, ${Math.round(E.frac * 100)} % a la sombra`}.`;
+  }
+  el.innerHTML = `<desc id="corte-desc">${desc}</desc>${g}`;
+  $('#corte-txt').textContent = txt;
 }
 
 // ---------------- Qué significa cada dato (se toca un dato del dock) ----------------
