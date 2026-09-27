@@ -3,7 +3,7 @@
 // ?prueba (el gancho window.__e106) en Chromium y mide. Uso:  cd fuente && node verificar.mjs  [--webgl] [--visible] [--solo=1,2]
 //   --webgl    fuerza WebGL 2 (?webgl) en lugar de WebGPU
 //   --visible  abre el navegador con ventana (si el modo sin ventana no dibuja)
-//   --solo=…   corre solo esas comprobaciones (1 a 5)
+//   --solo=…   corre solo esas comprobaciones (1 a 6)
 //   --control-sesgo=0.35  prueba de sensibilidad: repone el normalBias viejo en esta página; la comprobación 2 debe fallar
 // Resultado: fuente/verificacion/informe.json (con --webgl, en verificacion/webgl/), capturas al lado y un resumen en la consola.
 // Tarda ~6 min (la comprobación 5 abre dos navegadores más; la 4 recorre ~80 pasos de la interfaz).
@@ -294,10 +294,11 @@ function elegirMomentos(clave) {
   return out;
 }
 
-async function comprobacion2(pg, geo) {
+/** Momentos y columnas de muro para medir la sombra de los aleros (los usan las comprobaciones 2 y 6). Se eligen una vez. */
+let seleccion = null;
+async function seleccionarCasos(pg, geo) {
+  if (seleccion) return seleccion;
   const casos = [], notas = [];
-  const sesgoApp = await pg.evaluate((c) => { const L = __e106.escena.sun.shadow; if (c) { L.normalBias = c; L.needsUpdate = true; } return { normalBias: L.normalBias, bias: L.bias, mapa: L.mapSize.x, radio: L.radius }; }, CONTROL);
-  if (CONTROL) notas.push(`CONTROL: normalBias forzado a ${CONTROL} para probar que la comprobación detecta sombras cortas`);
   // cielo despejado en los datos (DNI ≥ 80 % de la de cielo limpio), para que la sombra tenga contraste
   for (const clave of Object.keys(MARCO)) {
     const alero = medirAlero(geo, clave);
@@ -317,11 +318,24 @@ async function comprobacion2(pg, geo) {
         let nivelUsado = nivelIdx;
         if (!cols.length) { for (const alt of [0, 1, 2]) { if (alt === nivelIdx) continue; cols = buscarColumna(geo, clave, alero, alt, dir.d); if (cols.length) { nivelUsado = alt; break; } } }
         if (!cols.length) { notas.push(`${clave} ${c.fecha.y}-${c.fecha.m}-${c.fecha.d} ${c.min}: sin columna limpia`); continue; }
-        const caso = await medirCaso(pg, geo, clave, alero, nivelUsado, cols[0], c, dir, casos.length);
-        casos.push(caso); hecho = true;
+        casos.push({ clave, alero, nivelIdx: nivelUsado, col: cols[0], mom: c, dir }); hecho = true;
       }
       if (!hecho) notas.push(`${clave}, sombra ${['corta', 'larga'][b]}: no hubo momento despejado con columna limpia`);
     }
+  }
+  return (seleccion = { casos, notas });
+}
+
+async function comprobacion2(pg, geo) {
+  const casos = [], notas = [];
+  const sesgoApp = await pg.evaluate((c) => { const L = __e106.escena.sun.shadow; if (c) { L.normalBias = c; L.needsUpdate = true; } return { normalBias: L.normalBias, bias: L.bias, mapa: L.mapSize.x, radio: L.radius }; }, CONTROL);
+  if (CONTROL) notas.push(`CONTROL: normalBias forzado a ${CONTROL} para probar que la comprobación detecta sombras cortas`);
+  const sel = await seleccionarCasos(pg, geo);
+  notas.push(...sel.notas);
+  for (const s of sel.casos) {
+    // la sombra se mide en la vista «Foto» (la selección pudo haber dejado otra lente si la corrió la comprobación 6)
+    await irA(pg, { fecha: s.mom.fecha, min: s.mom.min, fachada: s.clave.slice(8), lente: 'foto' }, 2200);
+    casos.push(await medirCaso(pg, geo, s.clave, s.alero, s.nivelIdx, s.col, s.mom, s.dir, casos.length));
   }
   // restaurar la vegetación y el bucle
   await pg.evaluate(() => { const E = __e106.escena; if (E.grupos.vegetacion) E.grupos.vegetacion.root.visible = true; E.sun.shadow.needsUpdate = true; __e106.S.pausa = false; });
@@ -333,6 +347,38 @@ async function comprobacion2(pg, geo) {
     esperadoPorNormalBias: r2(-sesgoApp.normalBias / 1.65, 4), casos, notas,
     criterio: 'error ≤ máx(8 cm, 10 % de la profundidad de la sombra), contra el borde trazado con rayos sobre la geometría real',
     metodo: 'dos cuadros con la misma cámara: con sol y con el sol apagado (intensidad 0). Su cociente de luminancia vale 1 en la sombra y >1 al sol, lo que anula el color del pañete, la oclusión falsa bajo el alero, la viñeta y la niebla; el borde es el cruce del 50 % entre las mesetas de sombra y de sol. Vegetación oculta durante la medida (sus sombras tapan el muro).' };
+}
+
+/** Media móvil de 5 muestras (±2), sin salirse de los extremos. */
+const suavizar = (r) => r.map((_, j) => { let s = 0, n = 0; for (let k = -2; k <= 2; k++) if (r[j + k] != null) { s += r[j + k]; n++; } return s / n; });
+/** Mesetas de sombra (lo) y de sol (hi) de un perfil que va de arriba (sombra) hacia abajo (sol), el umbral y sus cruces. */
+function mesetasYCruces(ys, suav) {
+  // mesetas: primero globales (percentiles 5 y 95: la columna se eligió con ≥ 20 cm de sombra y ≥ 30 cm de sol) y luego
+  // locales, a 6–20 cm a cada lado del cruce, para que la variación lenta del muro (oclusión falsa, tonemapping) no corra el umbral
+  const orden = [...suav].sort((x, y) => x - y);
+  let lo = orden[Math.floor(orden.length * 0.05)], hi = orden[Math.floor(orden.length * 0.95)];
+  let umbral = (lo + hi) / 2;
+  const med = (a) => { const b = a.filter((x) => x != null).sort((x, y) => x - y); return b.length ? b[b.length >> 1] : null; };
+  const cruceEn = (thr) => { for (let j = 1; j < suav.length; j++) if (suav[j - 1] <= thr && suav[j] > thr) return ys[j - 1] + (ys[j] - ys[j - 1]) * (thr - suav[j - 1]) / (suav[j] - suav[j - 1]); return null; };
+  for (let it = 0; it < 3; it++) {
+    const yc = cruceEn(umbral); if (yc == null) break;
+    const l = med(ys.map((y, j) => (y > yc + 0.06 && y < yc + 0.2 ? suav[j] : null))), h = med(ys.map((y, j) => (y < yc - 0.06 && y > yc - 0.2 ? suav[j] : null)));
+    if (l == null || h == null || h <= l) break;
+    lo = l; hi = h; umbral = (lo + hi) / 2;
+  }
+  // cruces del umbral (con histéresis del 15 % del salto), de arriba (sombra) hacia abajo (sol)
+  const hist = 0.15 * (hi - lo); let estado = suav[0] > umbral ? 1 : 0; const cruces = [];
+  for (let j = 1; j < suav.length; j++) {
+    if (estado === 0 && suav[j] > umbral + hist) { estado = 1; cruces.push(j); }
+    else if (estado === 1 && suav[j] < umbral - hist) { estado = 0; cruces.push(-j); }
+  }
+  return { lo, hi, umbral, cruces };
+}
+/** Altura exacta (interpolada) donde el perfil pasa el umbral, cerca del cruce j. */
+function alturaDelCruce(ys, suav, umbral, j) {
+  while (j > 0 && suav[j - 1] > umbral) j--;
+  const f = (umbral - suav[j - 1]) / (suav[j] - suav[j - 1]);
+  return ys[j - 1] + (ys[j] - ys[j - 1]) * f;
 }
 
 async function medirCaso(pg, geo, clave, alero, nivelIdx, col, mom, dir, i) {
@@ -362,36 +408,14 @@ async function medirCaso(pg, geo, clave, alero, nivelIdx, col, mom, dir, i) {
   const escala = A.w / ANCHO;
   // cociente de luminancias, promediado en ±4 px a lo ancho (la columna es limpia en ±8 cm ≈ ±14 px)
   const r = px.map(([u, v]) => { let a = 0, b = 0; for (let k = -4; k <= 4; k++) { a += lumBilineal(A, (u + k) * escala, v * escala); b += lumBilineal(B, (u + k) * escala, v * escala); } return a / Math.max(b, 1e-6); });
-  const suav = r.map((_, j) => { let s = 0, n = 0; for (let k = -2; k <= 2; k++) if (r[j + k] != null) { s += r[j + k]; n++; } return s / n; });
-  // mesetas: primero globales (percentiles 5 y 95: la columna se eligió con ≥ 20 cm de sombra y ≥ 30 cm de sol) y luego
-  // locales, a 6–20 cm a cada lado del cruce, para que la variación lenta del muro (oclusión falsa, tonemapping) no corra el umbral
-  const orden = [...suav].sort((x, y) => x - y);
-  let lo = orden[Math.floor(orden.length * 0.05)], hi = orden[Math.floor(orden.length * 0.95)];
-  let umbral = (lo + hi) / 2;
-  const med = (a) => { const b = a.filter((x) => x != null).sort((x, y) => x - y); return b.length ? b[b.length >> 1] : null; };
-  const cruceEn = (thr) => { for (let j = 1; j < suav.length; j++) if (suav[j - 1] <= thr && suav[j] > thr) return ys[j - 1] + (ys[j] - ys[j - 1]) * (thr - suav[j - 1]) / (suav[j] - suav[j - 1]); return null; };
-  for (let it = 0; it < 3; it++) {
-    const yc = cruceEn(umbral); if (yc == null) break;
-    const l = med(ys.map((y, j) => (y > yc + 0.06 && y < yc + 0.2 ? suav[j] : null))), h = med(ys.map((y, j) => (y < yc - 0.06 && y > yc - 0.2 ? suav[j] : null)));
-    if (l == null || h == null || h <= l) break;
-    lo = l; hi = h; umbral = (lo + hi) / 2;
-  }
-  // cruces del umbral (con histéresis del 15 % del salto), de arriba (sombra) hacia abajo (sol)
-  const hist = 0.15 * (hi - lo); let estado = suav[0] > umbral ? 1 : 0, cruces = [];
-  for (let j = 1; j < suav.length; j++) {
-    if (estado === 0 && suav[j] > umbral + hist) { estado = 1; cruces.push(j); }
-    else if (estado === 1 && suav[j] < umbral - hist) { estado = 0; cruces.push(-j); }
-  }
+  const suav = suavizar(r);
+  const { lo, hi, umbral, cruces } = mesetasYCruces(ys, suav);
   let yMedido = null, motivo = null;
   const contraste = hi / lo;
   if (contraste < 1.25) motivo = `poco contraste entre sombra y sol (cociente ${contraste.toFixed(2)})`;
   else if (suav[0] > umbral) motivo = 'la parte alta del muro no está en sombra en la imagen';
   else if (cruces.length !== 1) motivo = `el perfil cruza el umbral ${cruces.length} veces (se esperaba una)`;
-  else {
-    let j = cruces[0]; while (j > 0 && suav[j - 1] > umbral) j--;
-    const f = (umbral - suav[j - 1]) / (suav[j] - suav[j - 1]);
-    yMedido = ys[j - 1] + (ys[j] - ys[j - 1]) * f;
-  }
+  else yMedido = alturaDelCruce(ys, suav, umbral, cruces[0]);
   const profVerdad = canto - col.yS, profApp = col.yApp != null ? canto - col.yApp : null;
   const tanP = Math.tan(dir.alt * rad) / Math.cos((dir.az - FACHADAS[clave].rumbo) * rad);
   const profFormula = N.vuelo * tanP;
@@ -425,6 +449,91 @@ async function medirCaso(pg, geo, clave, alero, nivelIdx, col, mom, dir, i) {
     mmPorPixel: r2(Math.abs((ys[0] - ys[ys.length - 1]) / (v1 - v0)) * 1000, 2), mesetas: [r2(lo, 3), r2(hi, 3)], motivo, captura: nombre,
     perfil: ys.map((y, j) => [r2(y, 3), r2(suav[j], 3)]).filter((_, j) => j % 5 === 0),   // [altura, cociente con sol / sin sol] cada 2 cm
   };
+}
+
+// =====================================================================================================================
+// 6. La sombra de los aleros en la lente «Sol» (solo directo): los mismos momentos y columnas de la comprobación 2
+// =====================================================================================================================
+// La lente pinta cada punto según el sol directo que le llega. Bajo el alero, en sombra, debe salir el color de «nada»
+// (azul noche), y al sol, uno claramente más cálido; el borde entre los dos, donde lo pone la geometría.
+async function comprobacion6(pg, geo) {
+  const sel = await seleccionarCasos(pg, geo);
+  const casos = [], notas = [...sel.notas];
+  for (const s of sel.casos) {
+    await irA(pg, { fecha: s.mom.fecha, min: s.mom.min, fachada: s.clave.slice(8), lente: 'sol', modo: 'directa' }, 2800);
+    casos.push(await medirLenteSol(pg, s, casos.length));
+  }
+  await pg.evaluate(() => { const E = __e106.escena; if (E.grupos.vegetacion) E.grupos.vegetacion.root.visible = true; E.sun.shadow.needsUpdate = true; __e106.S.pausa = false; });
+  const medidos = casos.filter((c) => c.estado !== 'NO MEDIBLE');
+  return { estado: !casos.length ? 'NO MEDIBLE' : casos.some((c) => c.estado !== 'PASA') ? 'FALLA' : 'PASA', casos, notas,
+    criterio: 'en la lente Sol, «Solo directo»: dentro de la sombra del alero el muro sale del color de «nada» (diferencia media ≤ 8 niveles por canal contra el mismo cuadro con la radiación directa en 0); al sol, al menos 40 niveles más cálido (rojo menos azul); y el borde a ≤ máx(8 cm, 10 % de la profundidad) del trazado con rayos. Un caso que no se puede medir cuenta como falla: sin la sombra, la lente no tiene borde.',
+    metodo: 'dos cuadros con la misma cámara y la misma luz: la lente tal cual y la lente con la radiación directa normal puesta en 0 (todo el muro de color «nada»). La diferencia de calidez (R − B, en niveles sRGB) vale 0 en la sombra y crece al sol; el borde es el cruce del 50 % entre las dos mesetas, igual que en la comprobación 2.',
+    medidos: medidos.length };
+}
+
+async function medirLenteSol(pg, s, i) {
+  const { clave, alero, nivelIdx, col, mom, dir } = s;
+  const M = MARCO[clave], N = alero.niveles[nivelIdx], muro = alero.muro, canto = N.canto;
+  const yMid = (col.yS + Math.max(col.yBot, col.yS - 0.6)) / 2 + 0.15;
+  const objetivo = pto(M, col.s, yMid, muro), cam = pto(M, col.s, yMid, muro + 8);
+  const ys = []; for (let y = col.yTop - 0.02; y >= col.yBot + 0.02; y -= 0.004) ys.push(y);
+  const puntos = ys.map((y) => pto(M, col.s, y, muro + 0.001));
+  const prep = (E, a) => {
+    if (E.grupos.vegetacion && E.grupos.vegetacion.root.visible) { E.grupos.vegetacion.root.visible = false; E.sun.shadow.needsUpdate = true; }
+    E.camera.position.set(...a.cam); E.camera.lookAt(...a.objetivo); E.camera.updateMatrixWorld(true);
+    if (a.nada) { E._dniGuardada = __e106.U.dniW.value; __e106.U.dniW.value = 0; } else if (E._dniGuardada != null) { __e106.U.dniW.value = E._dniGuardada; E._dniGuardada = null; }
+  };
+  await capturar(pg, prep, { cam, objetivo, nada: false });
+  const urlA = await capturar(pg, prep, { cam, objetivo, nada: false });
+  const urlB = await capturar(pg, prep, { cam, objetivo, nada: true });
+  await capturar(pg, prep, { cam, objetivo, nada: false });
+  const estadoLente = await pg.evaluate(() => ({ lente: __e106.S.lente, modo: __e106.S.solModo, calor: __e106.U.calor.value, total: __e106.U.total.value, dni: __e106.U.dniW.value }));
+  const px = await pg.evaluate((P) => { const E = __e106.escena, V = E.camera.position.constructor; return P.map((p) => { const v = new V(...p).project(E.camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }); }, puntos);
+  const A = await decodificar(urlA), B = await decodificar(urlB), escala = A.w / ANCHO;
+  // color promedio (sRGB, 0–255) en ±4 px a lo ancho de la columna
+  const rgb = (img, u, v) => { const c = [0, 0, 0]; const y = Math.max(0, Math.min(img.h - 1, Math.round(v * escala - 0.5)));
+    for (let k = -4; k <= 4; k++) { const x = Math.max(0, Math.min(img.w - 1, Math.round((u + k) * escala - 0.5))), o = (y * img.w + x) * 4; c[0] += img.data[o]; c[1] += img.data[o + 1]; c[2] += img.data[o + 2]; }
+    return c.map((x) => x / 9); };
+  const cA = px.map(([u, v]) => rgb(A, u, v)), cB = px.map(([u, v]) => rgb(B, u, v));
+  const calidez = suavizar(cA.map((a, j) => (a[0] - a[2]) - (cB[j][0] - cB[j][2])));
+  const difAbs = cA.map((a, j) => (Math.abs(a[0] - cB[j][0]) + Math.abs(a[1] - cB[j][1]) + Math.abs(a[2] - cB[j][2])) / 3);
+  const med = (a) => { const b = a.filter((x) => x != null).sort((x, y) => x - y); return b.length ? b[b.length >> 1] : null; };
+  // zonas según la verdad (trazado de rayos), con 8 cm de margen al borde
+  const enSombra = med(difAbs.map((d, j) => (ys[j] > col.yS + 0.08 ? d : null)));
+  const alSol = med(calidez.map((d, j) => (ys[j] < col.yS - 0.08 ? d : null)));
+  const zonaS = cA.filter((_, j) => ys[j] > col.yS + 0.08);
+  const colorSombra = zonaS.length ? [0, 1, 2].map((k) => Math.round(zonaS.reduce((t, a) => t + a[k], 0) / zonaS.length)) : null;
+  const { hi, umbral, cruces } = mesetasYCruces(ys, calidez);
+  const profVerdad = canto - col.yS, tol = Math.max(0.08, 0.1 * profVerdad);
+  let yMedido = null, motivo = null;
+  if (enSombra == null || enSombra > 8) motivo = `dentro de la sombra del alero el muro no tiene el color de «nada» (diferencia media ${enSombra?.toFixed(1)} niveles)`;
+  else if (alSol == null || alSol < 40) motivo = `al sol el muro no sale claramente más cálido (${alSol?.toFixed(1)} niveles)`;
+  else if (calidez[0] > umbral) motivo = 'la parte alta del muro no está en sombra en la lente';
+  else if (cruces.length !== 1) motivo = `el perfil cruza el umbral ${cruces.length} veces (se esperaba una)`;
+  else yMedido = alturaDelCruce(ys, calidez, umbral, cruces[0]);
+  const profMedida = yMedido != null ? canto - yMedido : null, err = profMedida != null ? profMedida - profVerdad : null;
+  const estado = motivo ? 'FALLA' : Math.abs(err) <= tol ? 'PASA' : 'FALLA';
+  if (!motivo && estado === 'FALLA') motivo = `borde a ${(err * 100).toFixed(1)} cm del trazado (tolerancia ${(tol * 100).toFixed(1)} cm)`;
+  // captura anotada: borde de verdad (magenta) y medido (verde)
+  const aPix = (y) => px[Math.max(0, Math.min(ys.length - 1, Math.round((col.yTop - 0.02 - y) / 0.004)))];
+  const marca = (y, color, txt, lado) => { const [u, v] = aPix(y); return `<line x1="${u - 60}" y1="${v}" x2="${u + 60}" y2="${v}" stroke="${color}" stroke-width="2"/><text x="${lado > 0 ? u + 66 : u - 66}" y="${v + 5}" fill="${color}" font-size="18" font-family="monospace" text-anchor="${lado > 0 ? 'start' : 'end'}" stroke="black" stroke-width="3" paint-order="stroke">${txt}</text>`; };
+  const f2 = (x) => (x == null ? '—' : x.toFixed(3));
+  const fecha = `${mom.fecha.y}-${String(mom.fecha.m).padStart(2, '0')}-${String(mom.fecha.d).padStart(2, '0')} ${String(Math.floor(mom.min / 60)).padStart(2, '0')}:${String(mom.min % 60).padStart(2, '0')}`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${A.w}" height="${A.h}"><g transform="scale(${escala})">
+    <line x1="${px[0][0]}" y1="${px[0][1]}" x2="${px[px.length - 1][0]}" y2="${px[px.length - 1][1]}" stroke="#39f" stroke-width="1.5" stroke-dasharray="6 4"/>
+    ${marca(col.yS, '#ff3df2', `verdad ${f2(profVerdad)} m`, -1)}
+    ${yMedido != null ? marca(yMedido, '#3dff6a', `medida ${f2(profMedida)} m`, 1) : ''}
+    <rect x="10" y="10" width="1080" height="66" fill="black" opacity="0.6"/>
+    <text x="20" y="38" fill="white" font-size="20" font-family="monospace">lente Sol, solo directo · ${clave} · ${fecha} · alt ${dir.alt.toFixed(1)}° · nivel ${N.nivel} m</text>
+    <text x="20" y="64" fill="${estado === 'PASA' ? '#3dff6a' : '#ff5a5a'}" font-size="20" font-family="monospace">${estado}${err != null ? ` · error ${(err * 100).toFixed(1)} cm (tol. ${(tol * 100).toFixed(1)})` : ''}${motivo ? ' · ' + motivo.slice(0, 70) : ''}</text>
+  </g></svg>`;
+  const nombre = `lente-sol-${String(i + 1).padStart(2, '0')}-${clave}.png`;
+  await sharp(A.png).composite([{ input: Buffer.from(svg) }]).png().toFile(path.join(SALIDA, nombre));
+  return { estado, fachada: clave, momento: fecha, alt: r2(dir.alt, 2), nivelAlero: N.nivel, lente: estadoLente,
+    profundidadVerdad: r2(profVerdad), profundidadMedida: r2(profMedida), errorCm: err != null ? r2(err * 100, 1) : null, toleranciaCm: r2(tol * 100, 1),
+    difSombraNiveles: r2(enSombra, 1), calidezSolNiveles: r2(alSol, 1), mesetaSol: r2(hi, 1), cruces: cruces.length,
+    colorSombraSRGB: colorSombra, motivo, captura: nombre,
+    perfil: ys.map((y, j) => [r2(y, 3), r2(calidez[j], 1)]).filter((_, j) => j % 5 === 0) };
 }
 
 // =====================================================================================================================
@@ -605,10 +714,10 @@ async function comprobacion4(pg) {
 async function main() {
   const srv = await servidor();
   const base = `http://127.0.0.1:${srv.address().port}/index.html?prueba&rapido${FORZAR_GL ? '&webgl' : ''}`;
-  let navegador = null;
+  let navegador = null, geoCache = null;
   try {
     if (corre(1)) { informe.comprobaciones['1'] = { nombre: 'Posición del sol contra un algoritmo independiente', ...comprobacion1() }; }
-    const necesitaNav = [1, 2, 3, 4, 5].some((n) => n !== 1 && corre(n)) || corre(1);
+    const necesitaNav = [1, 2, 3, 4, 5, 6].some((n) => n !== 1 && corre(n)) || corre(1);
     if (!necesitaNav) return;
     navegador = await abrirNavegador();
     // página A: tirones (5) primero, con la página recién cargada; luego las medidas de imagen (2 y 3) y el gancho de (1)
@@ -620,9 +729,14 @@ async function main() {
     if (corre(1)) { informe.comprobaciones['1'].paquete = await comprobacion1Gancho(A.pg); }
     if (corre(2)) {
       pasoActual = 'sombras de aleros';
-      const geo = await prepararGeometria();
+      const geo = geoCache = await prepararGeometria();
       console.log(`Geometría: ${geo.triangulos.toLocaleString('es')} triángulos en ${(geo.ms / 1000).toFixed(1)} s`);
       informe.comprobaciones['2'] = { nombre: 'Sombra de los aleros contra la geometría', backend: A.estado.backend, ...(await comprobacion2(A.pg, geo)) };
+    }
+    if (corre(6)) {
+      pasoActual = 'sombra en la lente Sol';
+      const geo = geoCache ?? await prepararGeometria();
+      informe.comprobaciones['6'] = { nombre: 'Sombra de los aleros en la lente Sol', backend: A.estado.backend, ...(await comprobacion6(A.pg, geo)) };
     }
     if (corre(3)) { pasoActual = 'luces quemadas'; informe.comprobaciones['3'] = { nombre: 'Luces quemadas', backend: A.estado.backend, ...(await comprobacion3(A.pg)) }; }
     await A.ctx.close();
@@ -653,6 +767,9 @@ function resumen() {
     L.push(`         ${c.convencionHora}`); if (c.paquete) L.push(`         paquete js/app.js vs src/sol.js: ${c.paquete.casos} casos, diferencia máx ${c.paquete.maxDiferenciaFuenteVsPaquete}°`); }
   if (C['2']) { const c = C['2']; L.push(`[${est(c.estado)}] 2. Sombra de aleros (${c.backend}) · ${c.criterio}`);
     for (const k of c.casos) L.push(`         ${k.estado.padEnd(10)} ${k.fachada} ${k.momento} alt ${k.alt}° · nivel ${k.nivelAlero} · verdad ${k.profundidadVerdad} m · fórmula ${k.profundidadFormula} · app (sustituto) ${k.profundidadSombraApp} · medida ${k.profundidadMedida ?? '—'} · error ${k.errorCm ?? '—'} cm${k.motivo ? ' · ' + k.motivo : ''}`);
+    for (const n of c.notas) L.push(`         nota: ${n}`); }
+  if (C['6']) { const c = C['6']; L.push(`[${est(c.estado)}] 6. Sombra de aleros en la lente Sol (${c.backend}) · ${c.criterio}`);
+    for (const k of c.casos) L.push(`         ${k.estado.padEnd(6)} ${k.fachada} ${k.momento} alt ${k.alt}° · nivel ${k.nivelAlero} · verdad ${k.profundidadVerdad} m · medida ${k.profundidadMedida ?? '—'} · error ${k.errorCm ?? '—'} cm · sombra vs «nada» ${k.difSombraNiveles} niveles · calidez al sol ${k.calidezSolNiveles}${k.motivo ? ' · ' + k.motivo : ''}`);
     for (const n of c.notas) L.push(`         nota: ${n}`); }
   if (C['3']) { const c = C['3']; L.push(`[${est(c.estado)}] 3. Luces quemadas (${c.backend}) · ${c.umbral}`);
     for (const f of c.filas) L.push(`         ${f.estado.padEnd(6)} ${f.momento.padEnd(34)} ${f.vista.padEnd(11)} ${String(f.pctQuemado).padStart(7)} % · canal máx ${String(f.canalMax).padStart(3)} · p99,9 ${String(f.canalP999).padStart(3)} · bloom ${f.aclaradoBloom >= 0 ? "+" : ""}${f.aclaradoBloom}`); }

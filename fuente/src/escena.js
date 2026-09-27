@@ -6,7 +6,7 @@ import {
   positionWorld, normalWorld, time, hash, shapeCircle, instancedBufferAttribute, mx_noise_float,
   mx_fractal_noise_float, oneMinus, step, length, pass, texture, uv, select, mrt, normalView, velocity, sample,
   packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property,
-  modelWorldMatrix, modelWorldMatrixInverse
+  modelWorldMatrix, modelWorldMatrixInverse, output
 } from 'three/tsl';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -60,7 +60,10 @@ Object.assign(U, {
   vientoDir: uniform(new THREE.Vector2(1, 0)),   // hacia dónde sopla, en el plano de la escena (unitario)
   vaiven: uniform(1),                    // 0 con movimiento reducido: la vegetación solo se inclina, no se mece
 });
-// sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol»
+// sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol».
+// Ojo con el orden: three.js emite el emisivo ANTES que el código de las luces (la sombra se calcula al usarse la iluminación,
+// cuando se asigna la salida), así que un emisivo que lea esta variable ve siempre el 1 de la asignación inicial. La lente
+// se suma por eso en outputNode, que se evalúa después de la iluminación.
 const sombraSol = property('float', 'sombraSol');
 
 const clayColor = vec3(0.74, 0.72, 0.68);
@@ -459,8 +462,10 @@ export class Escena {
     m.colorNode = mix(clayColor, colorFinal, U.mat);
     if (glass) m.colorNode = mix(clayColor.mul(0.35), colorFinal, U.mat);
 
-    // Formas de ver sobre el edificio (muros, cubiertas y vidrio)
-    if (!leaf && grupo !== 'contexto' && grupo !== 'vegetacion' && grupo !== 'sitio') {   // solo el edificio
+    // Formas de ver sobre el edificio (muros, cubiertas y vidrio). El grupo «sitio» trae también partes del edificio (el muro
+    // de la planta baja de la fachada suroeste, rejillas, marcos, pilares del acceso): esas sí se pintan; el suelo, no.
+    const delEdificio = grupo !== 'sitio' || /plaster|trim|louvre|frame|soffit|service access|ventilation|plinth|piers|timber|guardrail|entrance/.test(nm);
+    if (!leaf && grupo !== 'contexto' && grupo !== 'vegetacion' && delEdificio) {   // solo el edificio
       const n = normalWorld;
       // Sol: la radiación que llega a cada punto, con la sombra real (el mismo mapa de sombras de la escena)
       const directa = U.dniW.mul(max(dot(n, U.solDir), 0)).mul(sombraSol);
@@ -480,7 +485,9 @@ export class Escena {
       const rampA = mix(mix(vec3(U.pal0), vec3(U.pal1), smoothstep(0.0, 0.5, wet)), vec3(U.pal2), smoothstep(0.5, 1.0, wet));
       const eA = rampA.mul(U.agua).mul(0.8);
       const prevE = m.emissiveNode;
-      m.emissiveNode = prevE ? prevE.add(e).add(eA) : e.add(eA);
+      m.emissiveNode = prevE ? prevE.add(eA) : eA;
+      // la lente «Sol» se suma después de la iluminación, cuando sombraSol ya trae la sombra (ver arriba, junto a sombraSol)
+      m.outputNode = vec4(output.rgb.add(e), output.a);
       // el material se apaga (color y brillos) para que mande el color de la lente
       const lente = max(U.calor, U.agua);
       m.colorNode = mix(m.colorNode, m.colorNode.mul(0.04), lente);
@@ -533,7 +540,7 @@ export class Escena {
       const glow = vec3(1.0, 0.72, 0.38).mul(band).mul(1.2);
       m.emissiveNode = m.emissiveNode ? m.emissiveNode.add(glow) : glow;
     }
-    if (!/[?&]sinnubes/.test(location.search)) m.receivedShadowNode = sombraNubes;
+    m.receivedShadowNode = /[?&]sinnubes/.test(location.search) ? soloSombraSol : sombraNubes;
     const cn = m.colorNode;
     m.colorNode = Fn(() => { sombraSol.assign(1.0); return cn; })();   // valor por defecto, antes de la iluminación
     if (src.map) m.map = src.map;
@@ -986,6 +993,8 @@ const sombraNubes = Fn(([s]) => {
   const nube = smoothstep(float(1.0).sub(cov), float(1.0).sub(cov).add(0.18), n);
   return s.mul(float(1).sub(nube.mul(U.nubeSombra).mul(0.8)));
 });
+// con ?sinnubes: solo anota la sombra geométrica para la lente «Sol»
+const soloSombraSol = Fn(([s]) => { sombraSol.assign(vec3(s).x); return s; });
 
 export function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
