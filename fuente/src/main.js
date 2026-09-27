@@ -7,6 +7,7 @@ import { Sonido } from './sonido.js';
 import { puntosIntro } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { Clima } from './clima.js';
+import QRCode from 'qrcode';
 
 const $ = (s) => document.querySelector(s);
 export const VERSION = 'v3 · 25 sep 2026';
@@ -519,6 +520,7 @@ function paso(now) {
     else medirCuadro(now, dtReal);
   } else S.dibujoPrevio = false;
   pintarPartes();
+  if (S.voladizo) pintarCorte(p);
 }
 
 // ---------------- Resolución adaptable ----------------
@@ -1009,6 +1011,7 @@ function prepararUI() {
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
   $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; anunciar(); });
+  $('#guardar-img').addEventListener('click', guardarImagen);
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
@@ -1312,6 +1315,7 @@ function prepararPartes() {
   $('#lp-voladizo').addEventListener('click', () => abrirVoladizo(true));
   $('#cerrar-voladizo').addEventListener('click', () => abrirVoladizo(false));
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.addEventListener('click', () => { S.largo = +b.dataset.largo; pintarVoladizo(); }));
+  document.querySelectorAll('#corte [data-corte]').forEach((b) => b.addEventListener('click', () => { S.corteF = b.dataset.corte; pintarCorte(); }));
   pintarVoladizo();
 }
 function elegirParte(k) {
@@ -1407,6 +1411,7 @@ function abrirVoladizo(abrir) {
   S.voladizo = abrir; el.hidden = !abrir; pintarPartes.f = '';
   if (abrir) {
     $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); globalThis.__abrirIr?.(false);
+    if (S.fachada) S.corteF = S.fachada.slice(8);            // el corte arranca en la fachada que se estaba mirando
     S.fachada = null; document.documentElement.classList.remove('en-fachada');
     S.vistaPrevia = { pos: escena.camera.position.toArray(), tgt: controls.target.toArray() };
     volarA(VISTA_ALERO, 1.6, null);
@@ -1452,6 +1457,212 @@ function pintarVoladizo() {
   $('#vol-d').textContent = real ? 'igual' : '×' + coma(d, d < 1 ? 2 : 1);
   $('#vol-a').textContent = Math.round(ang) + '°';
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.largo - L) < 0.01)));
+}
+
+// Corte del alero con el rayo de sol: piso 2 de una fachada, esquema 2D. Alturas medidas en el modelo 3D: alero (su cara
+// de abajo) a 3,74 y 7,40 m; vidrio del piso 2 de 5,62 a 7,12 m, 10 cm hacia adentro del muro. Con el alero real de 1,65 m
+// sale el mismo corte del hallazgo: todo el vidrio al sol por debajo de ~9° de perfil y todo a la sombra por encima de ~45°.
+const CORTE = { alero: 7.4, losa: 3.74, esp: 0.2, vidAbajo: 5.62, vidArriba: 7.12, rehundido: 0.1, muro: 0.25 };
+const SIGLA = { se: 'SE', no: 'NO', ne: 'NE', so: 'SO' };
+const VIDRIO_TXT = { sombra: 'a la sombra', casiSombra: 'casi todo a la sombra', medias: 'a medias', casiSol: 'casi todo al sol', sol: 'al sol' };
+/** Ángulo de perfil (grados) del sol sobre una fachada vertical, o null si el sol está detrás o bajo el horizonte. */
+function perfilSol(alt, az, rumbo) {
+  const c = Math.cos((az - rumbo) * Math.PI / 180);
+  if (alt <= 0 || c <= 0.01) return null;
+  return Math.atan(Math.tan(alt * Math.PI / 180) / c) * 180 / Math.PI;
+}
+function estadoCorte(p, L, k) {
+  const C = CORTE, pf = perfilSol(p.alt, p.az, FACHADAS['fachada-' + k].rumbo);
+  if (pf == null) return { pf, motivo: p.alt <= 0 ? 'noche' : 'detras' };
+  const t = Math.tan(pf * Math.PI / 180);
+  const dw = L * t, dg = (L + C.rehundido) * t;                   // cuánto baja la sombra en el muro y en el vidrio
+  const alto = C.vidArriba - C.vidAbajo, sup = C.alero - C.vidArriba;
+  const frac = Math.min(1, Math.max(0, (dg - sup) / alto));       // parte del vidrio (desde arriba) a la sombra
+  const vidrio = frac >= 0.97 ? 'sombra' : frac >= 0.75 ? 'casiSombra' : frac > 0.25 ? 'medias' : frac > 0.03 ? 'casiSol' : 'sol';
+  return { pf, t, dw, dg, frac, vidrio, hSombra: C.alero - dw, pisoEntero: C.alero - dw <= C.losa + C.esp };
+}
+function pintarCorte(p) {
+  const el = $('#corte-svg'); if (!el) return;
+  p ??= S.solViaje ?? posicionSol({ ...S.fecha, h: 0, min: S.min });
+  const L = S.largo ?? 1.65, k = S.corteF ?? 'se';
+  const clave = [L, k, p.alt.toFixed(2), p.az.toFixed(2)].join('|');
+  if (clave === pintarCorte.f) return; pintarCorte.f = clave;
+  document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
+  $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
+  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => v.toFixed(n).replace('.', ',');
+  const K = 58, XW = 64, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro
+  const tip = X(L), fl = C.losa + C.esp, yv0 = Y(C.vidArriba), yv1 = Y(C.vidAbajo);
+  const r = (x0, y0, x1, y1, extra) => `<rect x="${Math.min(x0, x1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.abs(x1 - x0).toFixed(1)}" height="${Math.abs(y1 - y0).toFixed(1)}" ${extra}></rect>`;
+  let g = '';
+  // losa de abajo (piso) y de arriba (alero), muro con el hueco de la ventana y el vidrio rehundido
+  g += r(0, Y(C.losa), tip, Y(fl), 'fill="#56615f"') + r(0, Y(C.alero), tip, Y(C.alero + C.esp), 'fill="#56615f"');
+  g += r(X(-C.muro), Y(fl), XW, yv1, 'fill="#3a4448"') + r(X(-C.muro), yv0, XW, Y(C.alero), 'fill="#3a4448"');
+  g += r(X(-C.rehundido) - 3, yv0, X(-C.rehundido), yv1, 'fill="#4aa8dc" fill-opacity="0.55"');
+  // cara del muro y del vidrio: ámbar donde pega el sol, gris donde hay sombra
+  const franja = (x, h0, h1, sol) => h1 > h0 ? `<line x1="${x.toFixed(1)}" y1="${Y(h1).toFixed(1)}" x2="${x.toFixed(1)}" y2="${Y(h0).toFixed(1)}" stroke="${sol ? '#f4b545' : '#7f8a86'}" stroke-width="${sol ? 5 : 3}" stroke-linecap="butt"></line>` : '';
+  const partes = [[XW + 2.5, fl, C.vidAbajo, E.dw], [XW + 2.5, C.vidArriba, C.alero, E.dw], [X(-C.rehundido) + 2.5, C.vidAbajo, C.vidArriba, E.dg]];
+  for (const [x, h0, h1, d] of partes) {
+    if (E.pf == null) { g += franja(x, h0, h1, false); continue; }
+    const hs = Math.min(h1, Math.max(h0, C.alero - d));           // por debajo de hs hay sol
+    g += franja(x, h0, hs, true) + franja(x, hs, h1, false);
+  }
+  // rótulos fijos
+  g += `<text x="4" y="${(Y(C.alero) + 15).toFixed(1)}" class="m">${coma(C.alero)} m</text><text x="4" y="${(Y(C.losa) + 15).toFixed(1)}" class="m">${coma(C.losa)} m</text>`;
+  g += `<text x="${(X(-C.muro) - 4).toFixed(1)}" y="${((yv1 + Y(fl)) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">muro</text>`;
+  g += `<text x="${(X(-C.muro) - 4).toFixed(1)}" y="${((yv0 + yv1) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">vidrio</text>`;
+  g += `<text x="${((XW + tip) / 2).toFixed(1)}" y="${(Y(C.alero + C.esp) - 6).toFixed(1)}" text-anchor="middle">alero ${coma(L)} m</text>`;
+  g += `<text x="4" y="16" class="m">esquema · alero continuo, sin retornos laterales</text>`;
+  g += `<text x="396" y="${(Y(fl) - 8).toFixed(1)}" text-anchor="end" class="m">fachada ${SIGLA[k]} · exterior →</text>`;
+  if (E.pf == null) {
+    g += `<text x="${(tip + 12).toFixed(1)}" y="${(Y(6.4)).toFixed(1)}" class="s">${E.motivo === 'noche' ? 'El sol está bajo el horizonte' : 'El sol está detrás de esta fachada'}</text>`;
+    g += `<text x="${(tip + 12).toFixed(1)}" y="${(Y(6.4) + 17).toFixed(1)}" class="m">sin rayo directo a esta hora</text>`;
+  } else {
+    const a = E.pf * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a), ya = Y(C.alero);
+    // hasta dónde llega el rayo que roza la punta del alero
+    let hx = XW, hy = E.hSombra;
+    if (E.hSombra < C.vidArriba && E.hSombra > C.vidAbajo) { const hg = C.alero - E.dg; if (hg >= C.vidAbajo) { hx = X(-C.rehundido); hy = hg; } }
+    if (hy < fl) { hy = fl; hx = tip - (C.alero - fl) / E.t * K; }
+    const rayo = (x1, y1) => {
+      const R = Math.min((396 - x1) / ux, (y1 - 36) / uy);
+      return { x0: x1 + ux * R, y0: y1 - uy * R };
+    };
+    const hxPx = hx, hyPx = Y(hy), o = rayo(tip, ya);
+    // rayos paralelos más abajo: pegan en el muro o el vidrio al sol
+    for (let i = 1; i <= 3; i++) {
+      const hh = hy - i * 0.62; if (hh < fl + 0.05) break;
+      const enVid = hh > C.vidAbajo && hh < C.vidArriba, x1 = enVid ? X(-C.rehundido) : XW, y1 = Y(hh);
+      const q = rayo(x1, y1);
+      g += `<line x1="${q.x0.toFixed(1)}" y1="${q.y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#f4b545" stroke-opacity="0.45" stroke-width="1.5"></line>`;
+    }
+    g += `<line x1="${o.x0.toFixed(1)}" y1="${o.y0.toFixed(1)}" x2="${hxPx.toFixed(1)}" y2="${hyPx.toFixed(1)}" stroke="#ffd27a" stroke-width="2.5"></line>`;
+    g += `<circle cx="${o.x0.toFixed(1)}" cy="${o.y0.toFixed(1)}" r="9" fill="#f4b545"></circle>`;
+    // ángulo de perfil en la punta del alero
+    const ra = 34, ax = tip + ra * ux, ay = ya - ra * uy;
+    g += `<path d="M${(tip + ra).toFixed(1)} ${ya.toFixed(1)} A${ra} ${ra} 0 0 0 ${ax.toFixed(1)} ${ay.toFixed(1)}" fill="none" stroke="#ffd27a" stroke-width="1.5"></path>`;
+    g += `<line x1="${tip.toFixed(1)}" y1="${ya.toFixed(1)}" x2="${(tip + ra + 12).toFixed(1)}" y2="${ya.toFixed(1)}" stroke="#ffd27a" stroke-width="1" stroke-dasharray="3 3"></line>`;
+    const rb = ra + 14, bx = tip + rb * Math.cos(a / 2), by = ya - rb * Math.sin(a / 2) + 5;
+    g += `<text x="${bx.toFixed(1)}" y="${by.toFixed(1)}" class="s">${Math.round(E.pf)}°</text>`;
+    // cota de la sombra sobre el muro
+    const hc = Math.max(fl, E.hSombra), xc = XW + 14;
+    g += `<path d="M${xc} ${ya.toFixed(1)} L${xc} ${Y(hc).toFixed(1)} M${xc - 4} ${ya.toFixed(1)} L${xc + 4} ${ya.toFixed(1)} M${xc - 4} ${Y(hc).toFixed(1)} L${xc + 4} ${Y(hc).toFixed(1)}" stroke="#b6bdb9" stroke-width="1.2"></path>`;
+    if (!E.pisoEntero && E.dw > 0.7) g += `<text x="${xc + 7}" y="${((ya + Y(hc)) / 2 + 4).toFixed(1)}" class="m">sombra ${coma(E.dw)} m</text>`;
+  }
+  const hora = hhmm(S.min), fach = `fachada ${SIGLA[k]}`;
+  let txt, desc = `Corte esquemático del piso 2, ${fach}, con un alero de ${coma(L)} m. `;
+  if (E.pf == null) {
+    txt = E.motivo === 'noche' ? `A las ${hora} el sol está bajo el horizonte: no hay rayo directo en ninguna fachada.`
+      : `A las ${hora} el sol está detrás de la ${fach}: esta cara está a la sombra con o sin alero. Prueba otra fachada o mueve la hora.`;
+    desc += E.motivo === 'noche' ? 'El sol está bajo el horizonte.' : 'El sol está detrás de la fachada, sin rayo directo.';
+    $('#corte-perfil').textContent = '–'; $('#corte-sombra').textContent = '–'; $('#corte-vidrio').textContent = 'sin sol';
+  } else {
+    const pfT = `${coma(E.pf, 1)}°`, somT = E.pisoEntero ? 'todo el piso' : `${coma(E.dw)} m`;
+    $('#corte-perfil').textContent = pfT; $('#corte-sombra').textContent = somT;
+    $('#corte-vidrio').textContent = VIDRIO_TXT[E.vidrio];
+    txt = `A las ${hora} el sol le llega a la ${fach} con ${pfT} de perfil. `;
+    if (E.pisoEntero) txt += 'La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo.';
+    else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo le pega a la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
+    else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero y le da a todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
+    else txt += `La sombra baja ${coma(E.dw)} m: cubre ${E.vidrio === 'casiSol' ? 'solo' : ''} la parte de arriba del vidrio (${Math.round(E.frac * 100)} %) y el resto recibe sol.`.replace('cubre  la', 'cubre la');
+    desc += `Sol de perfil a ${Math.round(E.pf)} grados. ${E.pisoEntero ? 'La sombra del alero cubre todo el piso.' : `La sombra del alero baja ${coma(E.dw)} m por el muro.`} El vidrio queda ${E.vidrio === 'sombra' || E.vidrio === 'sol' ? VIDRIO_TXT[E.vidrio] : `${VIDRIO_TXT[E.vidrio]}, ${Math.round(E.frac * 100)} % a la sombra`}.`;
+  }
+  el.innerHTML = `<desc id="corte-desc">${desc}</desc>${g}`;
+  $('#corte-txt').textContent = txt;
+}
+
+// ---------------- Guardar imagen para la lámina ----------------
+// El lienzo de WebGPU/WebGL solo se puede leer justo después de dibujar: se dibuja y se copia en el mismo tick.
+const SITIO = 'https://caamanoluismiguel.github.io/edificio-106/';
+const dos = (n) => String(n).padStart(2, '0');
+/** Colores de una rampa CSS «linear-gradient(90deg, #a, #b 50%, …)» como [[posición 0–1, color]]. */
+function paradasRampa(css) {
+  const cs = [...css.matchAll(/(#[0-9a-f]{3,8})(?:\s+([\d.]+)%)?/gi)];
+  return cs.map((m, i) => [m[2] != null ? +m[2] / 100 : i / Math.max(1, cs.length - 1), m[1]]);
+}
+async function guardarImagen() {
+  const b = $('#guardar-img'), est = $('#img-estado');
+  if (!escena || b.getAttribute('aria-busy') === 'true') return;
+  const texto0 = b.textContent;
+  b.setAttribute('aria-busy', 'true'); b.disabled = true; b.textContent = 'Generando imagen…'; est.textContent = '';
+  try {
+    const f = S.fecha, m0 = ((Math.round(S.min) % 1440) + 1440) % 1440, hh = Math.floor(m0 / 60), mi = m0 % 60;
+    const enlace = `${SITIO}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(hh)}${dos(mi)}`;
+    const L = LENTES[S.lente], modo = MODOS[S.lente]?.find(([k]) => k === S[MODO_DE[S.lente]])?.[1];
+    const forma = L.t.split(':')[0] + (modo ? ` · ${modo}` : '') + (S.lente === 'partes' ? ` · ${(PARTES[S.parte] ?? PARTES.alero).t}` : '');
+    const vistaB = document.querySelector('.vistas [data-vista][aria-pressed="true"]');
+    const kf = S.fachada ? S.fachada.slice(8) : null;
+    const donde = S.fachada ? FACHADAS[S.fachada].nombre : vistaB ? `Vista ${vistaB.textContent.trim().toLowerCase()}` : 'Vista libre';
+    const p = posicionSol({ ...f, h: 0, min: S.min });
+    const solTxt = p.alt > 0.5 ? `Sol a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}` : 'El sol está bajo el horizonte';
+    const anioSol = S.lente === 'sol' && S.solModo === 'anio';
+    const rampa = anioSol ? { c: 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)', esc: ['0', '900', '1.800 kWh/m² al año'] } : L.rampa ? { c: L.rampa, esc: L.esc } : null;
+    const qr = document.createElement('canvas');
+    await QRCode.toCanvas(qr, enlace, { margin: 2, width: 360, errorCorrectionLevel: 'M', color: { dark: '#0a1216ff', light: '#ffffffff' } });
+    try { await document.fonts.ready; } catch (e) { /* sin fuentes */ }
+    // captura: dibujar y copiar en el mismo tick
+    escena.render();
+    const src = escena.renderer.domElement, W = src.width, H = src.height;
+    const cap = document.createElement('canvas'); cap.width = W; cap.height = H;
+    const cx0 = cap.getContext('2d'); cx0.drawImage(src, 0, 0);
+    // comprobar que no salió vacía (negra o transparente)
+    const muestra = cx0.getImageData(0, 0, W, H).data; let suma = 0;
+    for (let i = 0; i < muestra.length; i += 4 * 997) suma += muestra[i] + muestra[i + 1] + muestra[i + 2];
+    if (suma < 30) throw new Error('captura vacía');
+    // lienzo final: escena y pie
+    const u = Math.min(3, Math.max(0.7, W / 1200)), pad = 26 * u, qrT = 150 * u;
+    const out = document.createElement('canvas'), cx = out.getContext('2d');
+    const fT = (w, px, fam = 'texto') => `${w} ${Math.round(px * u)}px ${fam === 'datos' ? '"IBM Plex Mono", ui-monospace, monospace' : fam === 'display' ? '"Bricolage Grotesque", system-ui, sans-serif' : '"Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif'}`;
+    const anchoTxt = W - 3 * pad - qrT;
+    const partir = (txt, font, ancho) => {           // parte un texto en líneas que quepan
+      cx.font = font; const pal = txt.split(' '), lin = []; let l = '';
+      for (const w of pal) { const t = l ? l + ' ' + w : w; if (cx.measureText(t).width > ancho && l) { lin.push(l); l = w; } else l = t; }
+      if (l) lin.push(l); return lin;
+    };
+    const filas = [
+      { font: fT(760, 30, 'display'), color: '#efe9de', lin: partir(`${fechaTexto(f)}, ${hhmm(S.min)} · hora de Panamá`, fT(760, 30, 'display'), anchoTxt), alto: 36 },
+      { font: fT(600, 20), color: '#f4b545', lin: partir(`${forma} · ${donde}`, fT(600, 20), anchoTxt), alto: 26 },
+      { font: fT(400, 17), color: '#b6bdb9', lin: partir(`${solTxt}. Edificio 106 · Isthmus, Ciudad del Saber, Panamá.`, fT(400, 17), anchoTxt), alto: 23 },
+    ];
+    let hTxt = filas.reduce((a, r) => a + r.lin.length * r.alto * u, 0) + 8 * u;
+    const hRampa = rampa ? 46 * u : 0;
+    const linkLin = partir(enlace, fT(500, 15, 'datos'), anchoTxt);
+    const hLink = (18 + linkLin.length * 20) * u;
+    const altoPie = Math.ceil(Math.max(hTxt + hRampa + hLink, qrT + 24 * u) + 2 * pad);
+    out.width = W; out.height = H + altoPie;
+    cx.drawImage(cap, 0, 0);
+    cx.fillStyle = '#0e171b'; cx.fillRect(0, H, W, altoPie);
+    cx.fillStyle = '#f4b545'; cx.fillRect(0, H, W, Math.max(2, 3 * u));
+    cx.textBaseline = 'alphabetic';
+    let y = H + pad;
+    for (const r of filas) { cx.font = r.font; cx.fillStyle = r.color; for (const l of r.lin) { y += r.alto * u; cx.fillText(l, pad, y - 6 * u); } }
+    y += 8 * u;
+    if (rampa) {
+      const w = Math.min(420 * u, anchoTxt), gr = cx.createLinearGradient(pad, 0, pad + w, 0);
+      for (const [o, c] of paradasRampa(rampa.c)) gr.addColorStop(Math.min(1, Math.max(0, o)), c);
+      cx.fillStyle = gr; cx.fillRect(pad, y, w, 14 * u);
+      cx.strokeStyle = 'rgba(239,233,222,0.35)'; cx.lineWidth = Math.max(1, u); cx.strokeRect(pad, y, w, 14 * u);
+      cx.font = fT(500, 14, 'datos'); cx.fillStyle = '#b6bdb9';
+      rampa.esc.forEach((t, i) => { if (!t) return; cx.textAlign = i === 0 ? 'left' : i === rampa.esc.length - 1 ? 'right' : 'center'; cx.fillText(t, pad + w * i / (rampa.esc.length - 1), y + 34 * u); });
+      cx.textAlign = 'left'; y += hRampa;
+    }
+    cx.font = fT(500, 13, 'datos'); cx.fillStyle = '#7f8a86'; y += 14 * u; cx.fillText('Abre este momento:', pad, y);
+    cx.font = fT(500, 15, 'datos'); cx.fillStyle = '#efe9de';
+    for (const l of linkLin) { y += 20 * u; cx.fillText(l, pad, y); }
+    const qx = W - pad - qrT, qy = H + pad;
+    cx.fillStyle = '#ffffff'; cx.fillRect(qx, qy, qrT, qrT);
+    cx.imageSmoothingEnabled = false; cx.drawImage(qr, qx, qy, qrT, qrT); cx.imageSmoothingEnabled = true;
+    cx.font = fT(500, 12, 'datos'); cx.fillStyle = '#b6bdb9'; cx.textAlign = 'center'; cx.fillText(kf ? `fachada ${kf.toUpperCase()} · QR del momento` : 'QR del momento', qx + qrT / 2, qy + qrT + 17 * u); cx.textAlign = 'left';
+    const nombre = `edificio106_${f.y}-${dos(f.m)}-${dos(f.d)}_${dos(hh)}${dos(mi)}_${S.lente}_${kf ? 'fachada-' + kf : 'vista-' + (vistaB?.dataset.vista ?? 'libre')}.png`;
+    const blob = await new Promise((res, rej) => out.toBlob((bl) => bl ? res(bl) : rej(new Error('toBlob')), 'image/png'));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    guardarImagen.ultima = { nombre, W: out.width, H: out.height };
+    est.textContent = `Listo: se descargó ${nombre}.`;
+  } catch (e) {
+    anotar('aviso', 'guardar imagen: ' + (e?.message ?? e));
+    est.textContent = 'No se pudo generar la imagen en este navegador. Prueba de nuevo o usa una captura de pantalla.';
+  } finally {
+    b.removeAttribute('aria-busy'); b.disabled = false; b.textContent = texto0;
+  }
 }
 
 // ---------------- Qué significa cada dato (se toca un dato del dock) ----------------
