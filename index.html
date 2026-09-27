@@ -22,11 +22,9 @@
   [hidden] { display: none !important; }
   html, body { height: 100%; background: var(--noche); color: var(--cal); overflow: hidden; }
   body { font: 16px/1.5 var(--texto); margin: 0; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
-  #lienzo { position: fixed; inset: 0; z-index: 0; background: radial-gradient(120% 90% at 70% 40%, #14222a 0%, var(--noche) 70%); }
+  #lienzo { position: fixed; inset: 0; z-index: 0; background: #101b21; }
   #lienzo canvas { width: 100% !important; height: 100% !important; display: block; outline: none; }
-  #velo { position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(180deg, rgba(8,14,18,.62) 0%, rgba(8,14,18,0) 16%, rgba(8,14,18,0) 58%, rgba(8,14,18,.7) 100%),
-                linear-gradient(90deg, rgba(8,14,18,.55) 0%, rgba(8,14,18,0) 38%); transition: opacity 1.2s var(--ease); }
+  /* sin velos degradados sobre la escena: cada texto que va encima del edificio lleva su propio panel plano */
   a { color: var(--sol); }
   :focus-visible { outline: 2px solid var(--sol); outline-offset: 3px; border-radius: 8px; }
   button { font: inherit; color: inherit; }
@@ -44,19 +42,21 @@
   .barra { position: fixed; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter) 10px; pointer-events: none; }
   .barra > * { pointer-events: auto; }
-  .marca { display: flex; gap: 11px; align-items: center; color: var(--cal); text-decoration: none; }
+  .marca { display: flex; gap: 11px; align-items: center; color: var(--cal); text-decoration: none; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
+    padding: 7px 14px 7px 11px; backdrop-filter: blur(10px); }
   .marca svg { width: 38px; height: 22px; overflow: visible; }
   .marca .arco { fill: none; stroke: var(--cal-3); stroke-width: 1.5; }
   .marca .horizonte { stroke: var(--cal-3); stroke-width: 1.5; }
   .marca #marca-sol { fill: var(--sol); transition: cx .6s, cy .6s; }
   .marca b { font: 760 19px/1 var(--display); letter-spacing: -0.01em; white-space: nowrap; }
-  .marca small { font: 500 10.5px/1 var(--datos); color: var(--cal-2); letter-spacing: 0.1em; text-transform: uppercase; margin-left: 6px; }
+  .marca small { font: 500 11px/1 var(--datos); color: var(--cal-2); letter-spacing: 0.1em; text-transform: uppercase; margin-left: 6px; }
   .acciones { display: flex; gap: 8px; align-items: center; }
   #estado { display: flex; gap: 9px; align-items: center; font: 500 12px/1 var(--datos); color: var(--cal-2); background: var(--panel); border: 1px solid var(--linea);
     border-radius: 999px; padding: 9px 13px 9px 11px; backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; white-space: nowrap; transition: opacity .8s var(--ease); }
   #estado .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--cal-3); flex: none; }
-  html.vivo #estado .punto { background: #5fd38a; box-shadow: 0 0 0 0 rgba(95, 211, 138, .6); animation: latido 2s infinite; }
-  @keyframes latido { 70% { box-shadow: 0 0 0 8px rgba(95, 211, 138, 0) } 100% { box-shadow: 0 0 0 0 rgba(95, 211, 138, 0) } }
+  /* en vivo: un punto fijo que cada 10 s parpadea una vez (solo opacidad y escala: no repinta) */
+  html.vivo #estado .punto { background: #5fd38a; animation: latido 10s infinite; }
+  @keyframes latido { 0%, 90%, 100% { opacity: 1; transform: none } 95% { opacity: .35; transform: scale(.7) } }
   .boton { font: 600 14px/1 var(--texto); color: var(--cal); background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
     padding: 10px 15px; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, background .2s, transform .2s var(--ease); display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
   .boton:hover { border-color: rgba(239,233,222,.42); }
@@ -67,7 +67,8 @@
   .boton[aria-pressed="true"] .onda i { animation: onda 1s var(--ease) infinite alternate; }
   .boton[aria-pressed="true"] .onda i:nth-child(2) { animation-delay: .2s } .boton[aria-pressed="true"] .onda i:nth-child(3) { animation-delay: .4s }
   @keyframes onda { from { height: 3px } to { height: 12px } }
-  #motor { font: 500 10px/1 var(--datos); color: var(--cal-3); letter-spacing: 0.06em; text-transform: uppercase; }
+  /* la píldora de estado solo cuando la escena sigue el reloj: explorando, la fecha ya está en el dock */
+  html:not(.vivo) #estado { display: none; }
 
   /* ---------- intro ---------- */
   #intro { position: fixed; z-index: 5; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto; padding: calc(env(safe-area-inset-top, 0px) + 84px) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 26px); }
@@ -79,21 +80,23 @@
   h1 { font: 780 clamp(50px, 8.4vw, 128px)/0.86 var(--display); letter-spacing: -0.035em; margin: 0; font-variation-settings: "opsz" 96; text-wrap: balance; }
   h1 .grados { color: var(--sol); }
   .bajada { font-size: clamp(16px, 1.45vw, 19px); max-width: 36rem; margin: 0; color: var(--cal); text-wrap: pretty; }
-  .intro-titulo-caja { display: grid; gap: 18px; transition: opacity 1.1s var(--ease), transform 1.4s var(--ease), filter 1.1s; transform-origin: left center; }
+  /* panel plano detrás del título: la misma legibilidad que daba el velo, sin degradado */
+  .intro-titulo-caja { display: grid; gap: 18px; justify-self: start; background: var(--panel-2); border: 1px solid var(--linea); border-radius: 22px;
+    padding: clamp(18px, 2.4vw, 30px) clamp(18px, 2.6vw, 34px); backdrop-filter: blur(12px); transition: opacity 1.1s var(--ease), transform 1.4s var(--ease), filter 1.1s; transform-origin: left center; }
   html:not(.intro-titulo) .intro-titulo-caja { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); }
   #intro-rotulos { list-style: none; margin: 0; padding: 0; position: relative; height: 1.2em; font: 700 clamp(28px, 4.2vw, 62px)/1.05 var(--display); letter-spacing: -0.02em; font-variation-settings: "opsz" 72; }
-  #intro-rotulos li { position: absolute; left: 0; top: 0; white-space: nowrap; opacity: 0; transform: translateY(60%); filter: blur(8px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s; }
+  #intro-rotulos li { position: absolute; left: 0; top: 0; white-space: nowrap; background: var(--panel-2); border-radius: 16px; padding: .12em .42em .18em; opacity: 0; transform: translateY(60%); filter: blur(8px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s; }
   #intro-rotulos li.activo { opacity: 1; transform: none; filter: none; }
   #intro-rotulos li.pasado { opacity: 0; transform: translateY(-70%); filter: blur(6px); }
   #intro-rotulos li b { color: var(--sol); font-weight: inherit; }
   html.intro-titulo #intro-rotulos { opacity: 0; }
   #intro-rotulos { transition: opacity .6s; }
   .intro-pie { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
-  .carga { display: flex; gap: 10px; align-items: center; font: 500 12px/1.3 var(--datos); color: var(--cal-2); }
+  .carga { display: flex; gap: 10px; align-items: center; font: 500 12px/1.3 var(--datos); color: var(--cal-2); margin: 0; background: var(--panel); border-radius: 999px; padding: 8px 14px 8px 10px; backdrop-filter: blur(10px); }
   .carga i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--linea-2); border-top-color: var(--sol); animation: gira 1s linear infinite; }
   @keyframes gira { to { transform: rotate(360deg) } }
   #intro { transition: opacity 1.2s var(--ease); }
-  html.listo #intro { opacity: 0; pointer-events: none; }
+  html.listo #intro { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity 1.2s var(--ease), visibility 0s 1.2s; }   /* oculta también para el teclado: «Saltar» no queda en el orden de Tab */
   html.listo #intro > * { pointer-events: none; }
 
   /* ---------- lo que aparece al terminar el armado ---------- */
@@ -103,8 +106,9 @@
   html:not(.listo) #estado { opacity: .0; }
 
   /* rótulo: qué estás viendo */
-  #rotulo { position: fixed; z-index: 4; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 30px); max-width: min(34rem, calc(100vw - 2 * var(--gutter) - 130px));
-    display: grid; gap: 8px; text-shadow: 0 1px 16px rgba(6, 12, 15, .7); pointer-events: none; }
+  #rotulo { position: fixed; z-index: 4; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); max-width: min(34rem, calc(100vw - 2 * var(--gutter) - 130px));
+    display: grid; gap: 8px; pointer-events: none; box-sizing: border-box; background: var(--panel); border: 1px solid var(--linea); border-radius: 16px; padding: 12px 16px;
+    backdrop-filter: blur(12px); }
   #rotulo-texto { margin: 0; font-size: 16.5px; text-wrap: pretty; }
 
   /* ---------- brújula y vistas ---------- */
@@ -132,7 +136,7 @@
     transform: scaleX(var(--p, 0)); transform-origin: left; opacity: 0; transition: opacity .3s; }
   .vistas button[aria-pressed="true"]::after { opacity: 1; }
   .lentes { display: flex; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 3px; backdrop-filter: blur(10px); gap: 2px; }
-  .lentes::before { content: 'Ver'; font: 500 10px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--cal-3); align-self: center; padding: 0 6px 0 8px; }
+  .lentes::before { content: 'Ver'; font: 500 11.5px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--cal-2); align-self: center; padding: 0 6px 0 8px; }
   .lentes button { border: 0; background: none; cursor: pointer; font: 600 12.5px/1 var(--texto); color: var(--cal-2); padding: 8px 10px; border-radius: 999px; }
   .lentes button:hover { color: var(--cal); background: rgba(239,233,222,.08); }
   .lentes button[aria-pressed="true"] { color: #1d1405; background: var(--sol); }
@@ -141,9 +145,18 @@
   #leyenda { width: min(19.5rem, calc(100vw - 2 * var(--gutter))); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 14px; padding: 12px 13px;
     backdrop-filter: blur(14px); display: grid; gap: 8px; animation: sube .3s var(--ease); max-height: calc(100vh - var(--dock-h) - 340px); min-height: 120px; overflow: auto; overscroll-behavior: contain; }
   html:has(#leyenda:not([hidden])) .pista { display: none; }
+  .hud-botones { display: contents; }                            /* en el teléfono es una fila con desplazamiento horizontal */
+  /* indicio de que esa fila sigue: una flecha fija en el borde derecho mientras quede algo oculto */
+  .hud-botones.hay-mas::after { content: '›'; content: '›' / ''; position: sticky; right: 0; flex: none; display: grid; place-items: center; width: 30px; margin-left: -30px; border-radius: 999px;
+    background: var(--solido); border: 1px solid var(--linea-2); color: var(--sol); font: 700 20px/1 var(--texto); pointer-events: none; }
+  /* aviso de que la leyenda sigue más abajo (se muestra solo si hay contenido oculto) */
+  .ley-sigue { display: none; position: sticky; bottom: -12px; margin: 0 -13px -12px; padding: 7px 13px 8px; font: 600 12px/1.2 var(--texto); color: var(--sol);
+    background: var(--solido); border-top: 1px solid var(--linea-2); border-radius: 0 0 14px 14px; pointer-events: none; }
+  #leyenda.hay-mas .ley-sigue { display: block; }
   .ley-cab { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
   #ley-t { margin: 0; font: 700 14.5px/1.25 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
-  #ley-cerrar { border: 0; background: none; color: var(--cal-2); font: 400 20px/1 var(--texto); cursor: pointer; padding: 0 2px; }
+  #ley-cerrar { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: none; color: var(--cal-2);
+    font: 400 20px/1 var(--texto); cursor: pointer; padding: 0; }
   #ley-cerrar:hover { color: var(--cal); }
   #ley-que { margin: 0; font-size: 13px; line-height: 1.42; color: var(--cal); text-wrap: pretty; }
   #ley-leer { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
@@ -159,8 +172,8 @@
   .dock-lect [data-explica] { padding: 4px 6px; margin: -4px -6px; }
   [data-explica]:hover { background: rgba(239,233,222,.06); }
   [data-explica][aria-pressed="true"] { background: var(--sol-tenue); }
-  .dock-lect [data-explica] .k::after { content: '?'; display: inline-grid; place-items: center; width: 13px; height: 13px; margin-left: 5px; border: 1px solid var(--cal-3); border-radius: 50%;
-    font-size: 8.5px; line-height: 1; color: var(--cal-2); vertical-align: 1px; }
+  .dock-lect [data-explica] .k::after { content: '?'; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; border: 1px solid var(--cal-2); border-radius: 50%;
+    font-size: 11px; line-height: 1; color: var(--cal); vertical-align: 0; }
   #rotulo-cerrar { justify-self: start; pointer-events: auto; padding: 7px 13px; font-size: 13px; }
   /* recorrido guiado */
   #recorrido { position: fixed; z-index: 8; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); width: min(27rem, calc(100vw - 2 * var(--gutter)));
@@ -168,7 +181,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .3s cubic-bezier(.2, 0, 0, 1); }
   html.en-recorrido #rotulo, html.en-recorrido #panel-fachada { display: none; }
   .rec-cab { display: flex; justify-content: space-between; align-items: center; }
-  #rec-n { font: 500 10.5px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
+  #rec-n { font: 500 11.5px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
   #rec-salir { padding: 6px 12px; font-size: 12.5px; }
   #rec-t { margin: 0; font: 760 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
   #rec-txt { margin: 0; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
@@ -178,16 +191,21 @@
   #rec-puntos i.ya { background: var(--cal-3); } #rec-puntos i.hoy { background: var(--sol); width: 16px; border-radius: 3px; }
   #recorrido .primario, #oferta-recorrido .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); }
   #rec-prev:disabled { opacity: .35; cursor: default; }
+  #rec-pregunta, #rec-respuesta { display: grid; gap: 9px; } #rec-pregunta[hidden], #rec-respuesta[hidden], #rec-ver[hidden] { display: none; }
+  #rec-pregunta p { margin: 0; padding: 10px 12px; border-left: 3px solid var(--sol); background: var(--panel); border-radius: 4px 10px 10px 4px; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
+  #rec-pregunta p b { color: var(--sol); font-weight: 650; }
+  #rec-ver { justify-self: start; }
+  #rec-txt:focus { outline: none; } #rec-txt:focus-visible { outline: 2px solid var(--sol); outline-offset: 3px; border-radius: 4px; }
   #oferta-recorrido { position: fixed; z-index: 8; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 72px); width: min(24rem, calc(100vw - 2 * var(--gutter) - 130px)); box-sizing: border-box;
     background: var(--panel-2); border: 1px solid var(--sol); border-radius: 16px; padding: 14px 16px; backdrop-filter: blur(14px); display: grid; gap: 10px; animation: sube .4s var(--ease); }
   #oferta-recorrido p { margin: 0; font-size: 14.5px; line-height: 1.4; } #oferta-recorrido div { display: flex; gap: 8px; flex-wrap: wrap; }
   #ley-rampa { height: 8px; border-radius: 4px; }
-  #ley-escala { display: flex; justify-content: space-between; font: 500 10.5px/1 var(--datos); color: var(--cal-2); margin-top: -2px; }
+  #ley-escala { display: flex; justify-content: space-between; font: 500 11.5px/1 var(--datos); color: var(--cal-2); margin-top: -2px; }
   #ley-fachadas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
   #ley-fachadas li { display: grid; justify-items: center; gap: 1px; border: 1px solid var(--linea); border-radius: 8px; padding: 5px 2px; }
-  #ley-fachadas span { font: 500 10px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; }
+  #ley-fachadas span { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .06em; }
   #ley-fachadas b { font: 600 15px/1.1 var(--datos); font-variant-numeric: tabular-nums; }
-  #ley-fachadas small { font: 500 9.5px/1 var(--datos); color: var(--cal-3); }
+  #ley-fachadas small { font: 500 11.5px/1.15 var(--datos); color: var(--cal-2); text-align: center; }
   #ley-nota { margin: 0; font-size: 11.5px; line-height: 1.38; color: var(--cal-2); text-wrap: pretty; }
   .segmento { display: flex; border: 1px solid var(--linea-2); border-radius: 999px; padding: 2px; }
   .segmento button { flex: 1; border: 0; background: none; cursor: pointer; font: 600 11.5px/1 var(--texto); color: var(--cal-2); padding: 6px 8px; border-radius: 999px; }
@@ -216,14 +234,14 @@
   #ley-parte p b { color: var(--cal); font-weight: 600; } #ley-parte p b.k2 { color: var(--sol); }
   #lp-tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
   #lp-tabla th, #lp-tabla td { padding: 4px 0; border-top: 1px solid var(--linea); text-align: right; font: 500 11.5px/1.25 var(--datos); color: var(--cal); white-space: nowrap; padding-left: 8px; }
-  #lp-tabla thead th { font: 500 9.5px/1.2 var(--datos); letter-spacing: .06em; text-transform: uppercase; color: var(--cal-3); border-top: 0; white-space: normal; }
+  #lp-tabla thead th { font: 500 11px/1.2 var(--datos); letter-spacing: .06em; text-transform: uppercase; color: var(--cal-3); border-top: 0; white-space: normal; }
   #lp-tabla tbody th { text-align: left; font: 400 12px/1.25 var(--texto); color: var(--cal-2); white-space: normal; padding-left: 0; }
   #lp-tabla td:last-child { color: var(--sol); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .lp-link { justify-self: start; border: 0; background: none; padding: 2px 0; cursor: pointer; font: 600 12.5px/1.3 var(--texto); color: var(--sol); text-align: left; }
   .lp-link:hover { color: var(--sol-2); text-decoration: underline; }
   .lp-mostrar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border-top: 1px solid var(--linea); padding-top: 7px; }
-  .lp-mostrar span { font: 500 10px/1 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--cal-3); }
+  .lp-mostrar span { font: 500 11.5px/1 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--cal-2); }
   .lp-mostrar button, .vol-largos button { font: 600 12px/1 var(--texto); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 7px 11px; cursor: pointer; }
   .lp-mostrar button[aria-pressed="true"], .vol-largos button[aria-pressed="true"] { background: var(--sol); color: #1d1405; border-color: var(--sol); }
   /* el alero como voladizo */
@@ -233,7 +251,7 @@
   html:has(#voladizo:not([hidden])) #rotulo, html:has(#voladizo:not([hidden])) #panel-fachada, html:has(#voladizo:not([hidden])) #leyenda { display: none; }
   html.en-partes:not(.en-recorrido) #rotulo:not(:has(#rotulo-cerrar:not([hidden]))) { display: none; }
   .vol-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .vol-eyebrow { font: 500 10.5px/1.2 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
+  .vol-eyebrow { font: 500 11.5px/1.2 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
   #cerrar-voladizo { padding: 7px 12px; font-size: 12.5px; }
   #voladizo h2 { margin: 0; font: 760 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
   #voladizo p { margin: 0; font-size: 14px; line-height: 1.45; text-wrap: pretty; } #voladizo p b.k2 { color: var(--sol); font-weight: 600; }
@@ -244,10 +262,25 @@
   #vol-svg .vt { font: 600 11px var(--texto); } #vol-svg .vt.m { font: 500 10px var(--datos); fill: var(--cal-3); }
   .vol-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .vol-datos div { border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; display: grid; gap: 4px; align-content: start; }
-  .vol-datos span { font: 500 10px/1.2 var(--datos); color: var(--cal-3); text-transform: uppercase; letter-spacing: .06em; }
+  .vol-datos span { font: 500 11px/1.2 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
   .vol-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; }
   .vol-datos small { font-size: 11.5px; color: var(--cal-2); line-height: 1.3; }
   #voladizo .vol-nota { font-size: 12px; color: var(--cal-3); }
+  /* corte del alero con el rayo de sol de esta hora */
+  #corte { display: grid; gap: 8px; border-top: 1px solid var(--linea-2); padding-top: 11px; margin-top: 2px; }
+  #corte h3 { margin: 0; font: 700 17px/1.15 var(--display); color: var(--sol); }
+  .corte-fach { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .corte-fach span { font: 500 11px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; text-transform: uppercase; }
+  .corte-fach button { font: 600 13px/1 var(--datos); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 9px 12px; min-width: 44px; cursor: pointer; }
+  .corte-fach button[aria-pressed="true"] { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  #corte-svg { display: block; width: 100%; height: auto; max-height: 320px; background: #111b20; border: 1px solid var(--linea); border-radius: 12px; }
+  #corte-svg text { font: 600 13.5px var(--texto); fill: var(--cal); } #corte-svg text.m { font: 500 12px var(--datos); fill: var(--cal-2); }
+  #corte-svg text.s { fill: var(--sol-2); }
+  .corte-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .corte-datos div { border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; display: grid; gap: 4px; align-content: start; }
+  .corte-datos span { font: 500 11px/1.2 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
+  .corte-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; color: var(--sol-2); }
+  #corte-txt { font-size: 14px; }
   .c-grupo[data-g="viento"] h4 { color: #5fd3b0; }
   .c-grupo[data-g="viento"] .c-item:hover { box-shadow: inset 2px 0 0 0 #5fd3b0; }
   .c-grupo[data-g="viento"] li.activo > .c-item { border-color: #5fd3b0; background: rgba(63, 197, 156, .12); }
@@ -261,19 +294,19 @@
   #viaje { position: fixed; z-index: 9; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 68px); transform: translateX(-50%); display: grid; justify-items: center; gap: 5px;
     padding: 10px 20px 12px; border-radius: 16px; background: var(--panel-2); border: 1px solid var(--sol); backdrop-filter: blur(14px); pointer-events: none; min-width: 250px;
     box-shadow: 0 18px 50px rgba(0,0,0,.35); animation: sube .25s cubic-bezier(.2, 0, 0, 1); }
-  #viaje small { font: 500 10.5px/1 var(--datos); letter-spacing: .12em; text-transform: uppercase; color: var(--sol); }
+  #viaje small { font: 500 11.5px/1 var(--datos); letter-spacing: .12em; text-transform: uppercase; color: var(--sol); }
   #viaje b { font: 700 23px/1.1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   #viaje i { display: block; height: 2px; width: 100%; background: var(--sol); transform-origin: left; transform: scaleX(0); border-radius: 1px; }
   #viaje .v2, #viaje.llego .v1 { display: none; } #viaje.llego .v2 { display: inline; }
   #viaje.llego { transition: opacity .6s .9s; opacity: 0; }
   html.viajando #l-hora, html.viajando #l-fecha { color: var(--sol-2); }
   html.viajando .dock-lect { opacity: .55; transition: opacity .2s; }
-  .pista { margin: 0; font: 500 10.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; max-width: 13rem; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
+  .pista { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; max-width: 13rem; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
   html.girado .pista { opacity: 0; }
 
   /* ---------- máquina del tiempo ---------- */
   #dia .gota { fill: var(--lluvia); } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
-  .dia-ley { margin: 2px 0 0; font: 500 10px/1.2 var(--datos); color: var(--cal-3); text-align: right; min-height: 12px; }
+  .dia-ley { margin: 2px 0 0; font: 500 11.5px/1.2 var(--datos); color: var(--cal-2); text-align: right; min-height: 14px; }
   #dock { position: fixed; z-index: 6; left: var(--gutter); right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
     display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "hora centro lect botones"; gap: 10px 26px; align-items: center; padding: 14px 18px;
     border-radius: 18px; background: var(--panel-2); border: 1px solid var(--linea); backdrop-filter: blur(18px); box-shadow: 0 24px 70px rgba(0,0,0,.4); box-sizing: border-box; }
@@ -281,6 +314,9 @@
   .dock-hora { grid-area: hora; display: grid; gap: 5px; justify-items: start; min-width: 8.2em; }
   #l-hora { font: 720 46px/0.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; }
   #l-fecha { font: 500 12px/1.2 var(--datos); color: var(--cal-2); white-space: nowrap; }
+  #l-fecha .corta { display: none; }
+  /* resumen de las lecturas en una línea (solo en el teléfono): se toca y se despliega el detalle */
+  #lect-resumen { display: none; }
   #ahora { font: 600 12px/1 var(--texto); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 6px 10px 6px 9px; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; margin-top: 3px; }
   #ahora::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cal-3); }
   html.vivo #ahora { border-color: rgba(95, 211, 138, .5); cursor: default; }
@@ -303,10 +339,10 @@
   .regla .mes { stroke: var(--linea-2); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .regla .cenit { fill: var(--sol); }
   #dec-barras rect { fill: var(--lluvia); opacity: .8; }
-  .regla .etiquetas { position: relative; height: 14px; pointer-events: none; margin-top: 4px; }
-  .regla .etiquetas span { position: absolute; top: 0; font: 500 10px/1 var(--datos); color: var(--cal-3); transform: translateX(-50%); white-space: nowrap; }
+  .regla .etiquetas { position: relative; height: 16px; pointer-events: none; margin-top: 4px; }
+  .regla .etiquetas span { position: absolute; top: 0; font: 500 11.5px/1 var(--datos); color: var(--cal-2); transform: translateX(-50%); white-space: nowrap; }
   .regla .etiquetas span.arriba { top: -54px; color: var(--sol); }
-  #dec-leyenda { margin: 2px 0 0; font: 500 10.5px/1.2 var(--datos); color: var(--cal-3); }
+  #dec-leyenda { margin: 2px 0 0; font: 500 11.5px/1.2 var(--datos); color: var(--cal-2); }
   #momentos-caja { display: grid; gap: 6px; }
   #momentos { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
   #momentos button { display: grid; gap: 3px; text-align: left; border: 1px solid var(--linea); background: rgba(239,233,222,.04); border-radius: 10px; padding: 7px 10px; cursor: pointer; white-space: nowrap; transition: border-color .2s; }
@@ -314,10 +350,10 @@
   #momentos span { font: 600 12px/1 var(--texto); } #momentos b { font: 500 11px/1 var(--datos); color: var(--lluvia); }
   .dock-lect { grid-area: lect; display: grid; grid-template-columns: repeat(3, minmax(0, auto)); gap: 4px 22px; align-content: center; }
   .dock-lect div { display: grid; gap: 4px; min-width: 0; }
-  .dock-lect .k { font: 500 10px/1.1 var(--datos); color: var(--cal-3); text-transform: uppercase; letter-spacing: .09em; white-space: nowrap; }
+  .dock-lect .k { font: 500 11.5px/1.1 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .09em; white-space: nowrap; }
   .dock-lect b { font: 500 21px/1 var(--datos); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .dock-lect small { font: 500 11px/1.3 var(--datos); color: var(--cal-2); max-width: 17em; white-space: pre-line; }
-  #l-fuente { grid-column: 1 / -1; margin: 6px 0 0; font: 500 10.5px/1.3 var(--datos); color: var(--cal-3); max-width: 46em; }
+  #l-fuente { grid-column: 1 / -1; margin: 6px 0 0; font: 500 11.5px/1.3 var(--datos); color: var(--cal-2); max-width: 46em; }
   .dock-botones { grid-area: botones; display: flex; gap: 8px; }
   #reproducir { width: 48px; height: 48px; justify-content: center; padding: 0; background: var(--sol); color: #1d1405; border-color: var(--sol); }
   #reproducir::before { content: ""; width: 0; height: 0; border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; margin-left: 3px; }
@@ -380,7 +416,7 @@
   #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
   .consultas { display: grid; gap: 14px; }
   html:has(#ir-a:not([hidden])) #rotulo, html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
-  .c-grupo h4 { font: 500 10.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
+  .c-grupo h4 { font: 500 11.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
   .c-grupo[data-g="lluvia"] h4 { color: var(--lluvia); }
   .c-grupo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
   .c-grupo li { display: grid; gap: 3px; animation: sube .24s cubic-bezier(.2, 0, 0, 1) both; }
@@ -391,12 +427,12 @@
   li.activo > .c-item { border-color: var(--sol); background: var(--sol-tenue); }
   .c-grupo[data-g="lluvia"] li.activo > .c-item { border-color: var(--lluvia); background: rgba(74, 168, 220, .14); }
   .c-t { grid-column: 1 / -1; font: 600 14px/1.2 var(--texto); color: var(--cal); }
-  .c-d { font: 500 10.5px/1.2 var(--datos); color: var(--cal-3); }
+  .c-d { font: 500 11.5px/1.2 var(--datos); color: var(--cal-2); }
   .c-v { font: 500 11.5px/1.2 var(--datos); color: var(--cal-2); text-align: right; white-space: nowrap; }
   .c-txt { display: none; grid-column: 1 / -1; margin: 4px 0 0; font: 400 12.5px/1.42 var(--texto); color: var(--cal-2); text-wrap: pretty; }
   li.activo .c-txt { display: block; }
   .rank { display: flex; gap: 4px; padding-left: 4px; align-items: center; }
-  .rank::before { content: 'otros:'; font: 500 10px/1 var(--datos); color: var(--cal-3); margin-right: 2px; }
+  .rank::before { content: 'otros:'; font: 500 11px/1 var(--datos); color: var(--cal-2); margin-right: 2px; }
   .rank button { font: 600 11px/1 var(--datos); color: var(--cal-2); background: none; border: 1px solid var(--linea); border-radius: 6px; width: 24px; height: 22px; cursor: pointer; padding: 0; }
   .rank button:hover { border-color: var(--cal-2); color: var(--cal); }
   .rank button[aria-pressed="true"] { border-color: var(--sol); color: var(--sol); }
@@ -406,7 +442,14 @@
     background: var(--panel-2); border: 1px solid var(--linea); border-radius: 16px; padding: 16px; backdrop-filter: blur(16px); display: grid; gap: 14px; box-sizing: border-box;
     box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); max-height: calc(100vh - var(--dock-h) - 150px); overflow: auto; }
   @keyframes sube { from { opacity: 0; transform: translateY(10px) } }
-  #capas h3 { font: 500 10.5px/1 var(--datos); color: var(--cal-3); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
+  .capas-pie { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
+  #motor { color: var(--cal); letter-spacing: 0.04em; }
+  .lamina { display: grid; gap: 8px; justify-items: start; }
+  #guardar-img { min-height: 44px; padding: 10px 16px; border-color: var(--sol); color: var(--sol); }
+  #guardar-img[aria-busy="true"] { opacity: .7; cursor: progress; }
+  .lamina-nota { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--cal-2); }
+  #img-estado:empty { display: none; } #img-estado { color: var(--cal); }
+  #capas h3 { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
   .interruptores { display: grid; gap: 6px; }
   .interruptores label { display: grid; grid-template-columns: 18px 1fr; gap: 3px 10px; align-items: start; cursor: pointer; border: 1px solid var(--linea); border-radius: 12px; padding: 10px 11px; transition: border-color .2s, background .2s; }
   .interruptores label:has(input:checked) { border-color: var(--sol); background: var(--sol-tenue); }
@@ -425,6 +468,15 @@
   #panel-fachada p { margin: 0; font-size: 15px; }
   html:not(.en-fachada) #panel-fachada { display: none; }
   html.en-fachada #rotulo { display: none; }
+  #qr { position: fixed; z-index: 8; top: calc(env(safe-area-inset-top, 0px) + 72px); left: var(--gutter); width: min(27rem, calc(100vw - 2 * var(--gutter) - 130px)); box-sizing: border-box;
+    background: var(--panel-2); border: 1px solid var(--sol); border-radius: 16px; padding: 14px 18px 16px; display: grid; gap: 8px; backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  #qr:focus { outline: none; }
+  .qr-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; } #qr-cerrar { padding: 6px 12px; font-size: 12.5px; }
+  #qr h2 { font: 700 21px/1.15 var(--display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  #qr-lugar { margin: 0; font-size: 13px; color: var(--cal-2); }
+  #qr-preg { margin: 2px 0 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.45; text-wrap: pretty; } #qr-preg li::marker { color: var(--sol); font-weight: 700; }
+  html:has(#qr:not([hidden])) #panel-fachada, html:not(.en-fachada) #qr, html.en-recorrido #qr,
+  html:has(#sirve:not([hidden])) #qr, html:has(#ir-a:not([hidden])) #qr, html:has(#voladizo:not([hidden])) #qr { display: none; }
 
   /* ---------- acerca ---------- */
   #acerca { max-width: 40rem; width: calc(100vw - 2 * var(--gutter)); box-sizing: border-box; background: var(--solido); color: var(--cal); border: 1px solid var(--linea-2); border-radius: 18px; padding: 24px 26px; }
@@ -439,56 +491,124 @@
   /* ---------- teléfono ---------- */
   @media (max-width: 760px) {
     :root { --dock-h: 206px; }
-    .marca small, #motor, #estado .largo { display: none; }
+    .marca small, #estado .largo { display: none; }
     #estado { padding: 8px 10px; font-size: 11px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
     #estado-txt { overflow: hidden; text-overflow: ellipsis; }
     #info .t, #sonido .t { display: none; }
     .boton { padding: 10px 12px; }
     #rotulo-texto { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    #hud { top: calc(env(safe-area-inset-top, 0px) + 64px); gap: 6px; }
-    #brujula { width: 76px; height: 76px; }
-    .vistas button { padding: 7px 8px; font-size: 11.5px; }
-    .pista { display: none; }
-    #rotulo { max-width: calc(100vw - 2 * var(--gutter) - 90px); }
+    /* la explicación de un dato se lee entera: sin recorte y con desplazamiento si hace falta */
+    #rotulo:has(#rotulo-cerrar:not([hidden])) #rotulo-texto { display: block; max-height: 32vh; overflow: auto; pointer-events: auto; overscroll-behavior: contain; }
+    /* orientación en una sola franja: formas de ver y vistas en una fila que se desliza, y la brújula al lado */
+    #hud { left: 8px; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 60px); grid-template-columns: minmax(0, 1fr) auto; justify-items: stretch; align-items: center; gap: 8px; pointer-events: none; }
+    #hud > * { pointer-events: auto; }                               /* el hueco entre paneles deja arrastrar la escena */
+    #mirando, .pista { display: none; }
+    #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
+    #brujula text { font-size: 13px; } #brujula text.n { font-size: 15px; }
+    .hud-botones { display: flex; grid-column: 1; grid-row: 1; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+    .hud-botones::-webkit-scrollbar { display: none; }
+    .vistas, .lentes { flex: none; scroll-snap-align: start; }
+    .vistas button { padding: 7px 10px; font-size: 12.5px; }
+    #leyenda { grid-column: 1 / -1; grid-row: 2; width: auto; }
+    html.en-recorrido #leyenda { display: none; }                    /* en el recorrido, la tarjeta del paso ya lo explica */
+    #rotulo { max-width: none; right: 8px; left: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); padding: 9px 12px; gap: 5px; }
     #rotulo-texto { font-size: 13.5px; }
-    #dock { left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 12px; gap: 10px 12px;
-      grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "hora botones" "centro centro" "lect lect"; }
-    #l-hora { font-size: 34px; }
-    .dock-botones { justify-self: end; }
-    .dock-lect { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+    /* dock compacto: hora y fecha corta · pestañas y «Ahora» · la regla · las lecturas en una línea que se despliega */
+    #dock { left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 12px; gap: 5px 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: "hora botones" "fecha botones" "tabs ahora" "regla regla" "momentos momentos" "resumen resumen" "lect lect"; }
+    .dock-hora, .dock-centro { display: contents; }
+    #l-hora { grid-area: hora; justify-self: start; font-size: 30px; }
+    #elegir { grid-area: fecha; justify-self: start; }
+    #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
+    #ahora { grid-area: ahora; justify-self: end; align-self: center; margin: 0; }
+    .pestanas { grid-area: tabs; align-self: center; } .pestanas button { white-space: nowrap; padding: 7px 10px; }
+    .regla { grid-area: regla; } #regla-dia { margin-top: 12px; }
+    #momentos-caja { grid-area: momentos; }
+    .dock-botones { grid-area: botones; justify-self: end; align-self: center; }
+    #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
+    #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-height: 40px; box-sizing: border-box; min-width: 0; padding: 8px 12px; margin-top: 2px;
+      border: 1px solid var(--linea-2); border-radius: 12px; background: rgba(239,233,222,.04); cursor: pointer; font: 500 12.5px/1.2 var(--datos); color: var(--cal); text-align: left; }
+    #lect-resumen-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #lect-resumen i { font-style: normal; color: var(--sol); transition: transform .2s; }
+    html.lect-abiertas #lect-resumen i { transform: rotate(180deg); }
+    .dock-lect { grid-area: lect; display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; padding-top: 4px; }
+    html.lect-abiertas .dock-lect { display: grid; }
     .dock-lect b { font-size: 15px; white-space: normal; }
-    .dock-lect small { font-size: 10.5px; }
+    .dock-lect small { font-size: 11.5px; }
     #l-fuente { display: none; }
     #capas, #ir-a { left: 8px; right: 8px; width: auto; }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px 18px 14px 14px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
-    .lentes::before { display: none; } .lentes button { padding: 7px 8px; font-size: 11.5px; }
-    #leyenda { padding: 9px 10px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .lentes::before { display: none; } .lentes button { padding: 7px 10px; font-size: 12.5px; }
+    #leyenda { padding: 9px 10px; } .ley-sigue { bottom: -9px; margin: 0 -10px -9px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
     #ir-a { background: var(--solido); }
     #abrir-recorrido { display: none; }
     #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 46vh; overflow: auto; }
-    #rec-t { font-size: 18px; } #rec-txt { font-size: 13.5px; } .rec-dis { font-size: 12px; }
-    #leyenda { max-height: 38vh; min-height: 0; }
+    #qr { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 118px); padding: 11px 13px 12px; gap: 5px; max-height: 40vh; overflow: auto; }
+    #qr h2 { font-size: 17px; } #qr-lugar { font-size: 12px; } #qr-preg { font-size: 13px; gap: 6px; line-height: 1.4; }
+    #rec-t { font-size: 18px; } #rec-txt { font-size: 13.5px; } .rec-dis { font-size: 12px; } #rec-pregunta p { font-size: 13.5px; padding: 8px 10px; } #rec-pregunta, #rec-respuesta { gap: 7px; }
+    #leyenda { max-height: 30vh; min-height: 0; }
     #oferta-recorrido { width: auto; right: 8px; left: 8px; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
     .dock-lect [data-explica] .k::after { display: none; }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
     #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
-    #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 10.5px; }
-    .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 10.5px; padding: 4px 7px; }
+    #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 11.5px; }
+    .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 11.5px; padding: 4px 7px; }
   }
+  /* teléfonos bajos: la leyenda de la regla del día se explica al tocar «Día» */
+  @media (max-width: 760px) and (max-height: 800px) { #dia-ley { display: none; } }
+  @media (max-width: 400px) { .marca svg { display: none; } .marca { padding: 7px 12px; } .acciones { gap: 5px; } }
   @media (max-width: 480px) { #estado { display: none; } #abrir-sirve { padding: 9px 11px; font-size: 12.5px; } .acciones { gap: 6px; } .marca b { font-size: 17px; } }
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
+  /* ---------- teléfono en horizontal (y ventanas muy bajas) ---------- */
+  @media (max-height: 500px) and (min-width: 761px) {
+    .barra { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); padding-bottom: 6px; }
+    .barra .boton { padding: 8px 12px; } .marca small, #estado { display: none; }
+    #hud { left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 52px); grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; pointer-events: none; }
+    #hud > * { pointer-events: auto; }
+    #mirando, .pista { display: none; }
+    #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
+    .hud-botones { display: flex; grid-column: 1; grid-row: 1; justify-self: end; gap: 6px; max-width: 100%; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .hud-botones::-webkit-scrollbar { display: none; }
+    .vistas, .lentes { flex: none; } .lentes::before { display: none; }
+    #leyenda { grid-column: 1 / -1; grid-row: 2; justify-self: end; max-height: calc(100vh - var(--dock-h) - 124px); min-height: 0; }
+    #rotulo { max-width: 46vw; padding: 8px 12px; gap: 4px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
+    #rotulo-texto { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #rotulo:has(#rotulo-cerrar:not([hidden])) #rotulo-texto { display: block; max-height: 26vh; overflow: auto; pointer-events: auto; }
+    #dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 14px; gap: 4px 18px; grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
+      grid-template-areas: "hora centro botones" "fecha centro resumen" "ahora centro resumen" "lect lect lect"; }
+    .dock-hora, .dock-centro { display: contents; }
+    #l-hora { grid-area: hora; font-size: 28px; } #elegir { grid-area: fecha; justify-self: start; } #ahora { grid-area: ahora; justify-self: start; margin: 0; }
+    #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
+    .pestanas { grid-area: centro; align-self: start; } .regla { grid-area: centro; align-self: end; margin-top: 60px; } #momentos-caja { display: none !important; }
+    .dia-ley, #dec-leyenda, #l-fuente { display: none; }
+    .dock-botones { grid-area: botones; justify-self: end; } #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
+    #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 10px; border: 1px solid var(--linea-2); border-radius: 12px;
+      background: rgba(239,233,222,.04); cursor: pointer; font: 500 12px/1.3 var(--datos); color: var(--cal); text-align: left; align-self: stretch; }
+    #lect-resumen-t { flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #lect-resumen i { font-style: normal; color: var(--sol); } html.lect-abiertas #lect-resumen i { transform: rotate(180deg); }
+    .dock-lect { grid-area: lect; display: none; } html.lect-abiertas .dock-lect { display: grid; }
+    /* los paneles grandes usan todo el alto, por encima del dock (se cierran con su botón o con Escape) */
+    #sirve, #ir-a, #capas, #voladizo, #recorrido { top: calc(env(safe-area-inset-top, 0px) + 52px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: none; z-index: 11; overflow: auto; }
+    #recorrido { width: min(27rem, 50vw); } #capas { width: min(360px, 50vw); }
+    #oferta-recorrido { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
+  }
   @media (max-width: 1400px) and (min-width: 761px) { .marca small { display: none; } }
   @media (max-width: 1100px) and (min-width: 761px) { #abrir-recorrido { padding: 10px 12px; } #sonido .t { display: none; } }
+  /* en pantallas táctiles, los grupos de botones de arriba y las pestañas se tocan con el dedo: al menos 40 px de alto */
+  @media (pointer: coarse) {
+    .vistas, .lentes, .pestanas { min-height: 40px; box-sizing: border-box; }
+    .vistas button, .lentes button, .pestanas button { min-height: 40px; }
+  }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head><body>
 
 <div id="lienzo"></div>
-<div id="velo"></div>
 <div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
 <header class="barra">
@@ -496,9 +616,8 @@
     <svg viewBox="0 0 38 22" aria-hidden="true"><path class="arco" d="M3 20 A16 16 0 0 1 35 20"></path><line class="horizonte" x1="0" y1="20" x2="38" y2="20"></line><circle id="marca-sol" cx="19" cy="4" r="3"></circle></svg>
     <span><b>Edificio 106</b><small>Isthmus · Ciudad del Saber</small></span>
   </a>
-  <div id="estado" role="status"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
+  <div id="estado"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
   <div class="acciones">
-    <span id="motor" title="Motor de dibujo en este navegador"></span>
     <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
     <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado</button>
     <button class="boton destacado" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
@@ -527,7 +646,7 @@
   </div>
 </section>
 
-<div id="rotulo" class="tras-intro" aria-live="polite">
+<div id="rotulo" class="tras-intro" aria-live="off">
   <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
   <p id="rotulo-texto"></p>
   <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
@@ -536,12 +655,18 @@
 <aside id="recorrido" hidden aria-labelledby="rec-t" aria-live="polite">
   <div class="rec-cab"><span id="rec-n" class="num"></span><button type="button" id="rec-salir" class="boton">Salir</button></div>
   <h2 id="rec-t"></h2>
-  <p id="rec-txt"></p>
-  <p class="rec-dis"><b>Para el diseño:</b> <span id="rec-dis"></span></p>
+  <div id="rec-pregunta" hidden>
+    <p><b>Antes de seguir:</b> <span id="rec-preg"></span></p>
+    <button type="button" id="rec-ver" class="boton primario">Ver respuesta</button>
+  </div>
+  <div id="rec-respuesta">
+    <p id="rec-txt" tabindex="-1"></p>
+    <p class="rec-dis"><b>Para el diseño:</b> <span id="rec-dis"></span></p>
+  </div>
   <div class="rec-pie"><div id="rec-puntos" aria-hidden="true"></div><button type="button" id="rec-prev" class="boton">Anterior</button><button type="button" id="rec-sig" class="boton primario">Siguiente</button></div>
 </aside>
 
-<div id="oferta-recorrido" hidden role="dialog" aria-label="Recorrido guiado">
+<div id="oferta-recorrido" hidden role="region" aria-label="Bienvenida">
   <p><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo le pegan el sol, la lluvia y el viento al Edificio 106. En 2 minutos, el recorrido guiado te enseña a usarla.</p>
   <div><button type="button" id="oferta-si" class="boton primario">Empezar el recorrido</button><button type="button" id="oferta-sirve" class="boton">¿Para qué sirve?</button><button type="button" id="oferta-no" class="boton">Ahora no</button></div>
 </div>
@@ -566,6 +691,7 @@
     </svg>
   </button>
   <p id="mirando">Miras hacia el suroeste</p>
+  <div class="hud-botones">
   <div class="vistas" role="group" aria-label="Vistas">
     <button type="button" data-vista="esquina">Esquina</button>
     <button type="button" data-vista="aerea">Aérea</button>
@@ -580,7 +706,8 @@
     <button type="button" data-lente="partes" aria-pressed="false" title="Cómo se llama cada parte del edificio y qué hace">Partes</button>
     <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
   </div>
-  <div id="leyenda" hidden aria-live="polite">
+  </div>
+  <div id="leyenda" hidden aria-live="off">
     <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
     <p id="ley-que"></p>
     <div id="ley-parte" hidden>
@@ -614,6 +741,7 @@
       <p><b>Ojo:</b> <span id="ley-ojo"></span></p>
       <p class="tec"><b>Cómo se calcula:</b> <span id="ley-tec"></span></p>
     </details>
+    <p class="ley-sigue" aria-hidden="true">Hay más abajo ▾</p>
   </div>
   <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
 </aside>
@@ -636,9 +764,33 @@
   </div>
   <p><b class="k2">La regla:</b> si el alero crece al doble, el esfuerzo en su raíz crece cuatro veces y la punta baja dieciséis veces más. Un alero más largo da más horas de sombra, pero pide ménsulas, una losa más gruesa o tensores.</p>
   <p class="vol-nota">Proporciones con la misma sección y la misma carga por metro, no el cálculo de este alero: no se conoce su estructura real. El ángulo de sombra (el del sol visto de perfil) sale de la geometría de las ventanas del modelo.</p>
+  <section id="corte" aria-labelledby="corte-t">
+    <h3 id="corte-t">Corte del piso 2 con el sol de esta hora</h3>
+    <div class="corte-fach" role="group" aria-label="Fachada del corte"><span>Fachada</span>
+      <button type="button" data-corte="se" aria-pressed="true">SE</button>
+      <button type="button" data-corte="no" aria-pressed="false">NO</button>
+      <button type="button" data-corte="ne" aria-pressed="false">NE</button>
+      <button type="button" data-corte="so" aria-pressed="false">SO</button>
+    </div>
+    <svg id="corte-svg" viewBox="0 0 400 312" role="img" aria-labelledby="corte-desc"><desc id="corte-desc">Corte esquemático del alero y el sol de esta hora.</desc></svg>
+    <div class="corte-datos">
+      <div><span>Sol de perfil</span><b id="corte-perfil">–</b></div>
+      <div><span>Sombra bajo el alero</span><b id="corte-sombra">–</b></div>
+      <div><span>El vidrio</span><b id="corte-vidrio">–</b></div>
+    </div>
+    <p id="corte-txt"></p>
+    <p class="vol-nota">Esquema: alero continuo, sin retornos laterales ni ménsulas. Alturas y vidrio medidos en el modelo 3D (las ventanas de los pisos 2 y 3 son inferidas); el vidrio queda 10 cm hacia adentro del muro. El sol de perfil es el ángulo del sol visto de costado, en un plano perpendicular a la fachada. Mueve la hora o cambia la fecha y el rayo se mueve.</p>
+  </section>
 </aside>
 
-<aside id="panel-fachada" aria-live="polite">
+<section id="qr" hidden role="dialog" aria-modal="false" aria-labelledby="qr-t" aria-describedby="qr-lugar qr-preg" tabindex="-1">
+  <div class="qr-cab"><p class="eyebrow">Mira el edificio real</p><button type="button" id="qr-cerrar" class="boton">Cerrar</button></div>
+  <h2 id="qr-t"></h2>
+  <p id="qr-lugar"></p>
+  <ol id="qr-preg"></ol>
+</section>
+
+<aside id="panel-fachada" aria-live="off">
   <p class="eyebrow">Estás frente al edificio</p>
   <h2 id="fachada-titulo"></h2>
   <p id="fachada-texto"></p>
@@ -653,11 +805,11 @@
   </div>
   <div class="dock-centro">
     <div class="pestanas" role="tablist" aria-label="Escala de tiempo">
-      <button type="button" role="tab" data-tab="dia" aria-selected="true">Día</button>
-      <button type="button" role="tab" data-tab="anio" aria-selected="false">Año</button>
-      <button type="button" role="tab" data-tab="decadas" aria-selected="false">25 años</button>
+      <button type="button" role="tab" id="tab-dia" data-tab="dia" aria-selected="true" aria-controls="regla-dia">Día</button>
+      <button type="button" role="tab" id="tab-anio" data-tab="anio" aria-selected="false" aria-controls="regla-anio" tabindex="-1">Año</button>
+      <button type="button" role="tab" id="tab-decadas" data-tab="decadas" aria-selected="false" aria-controls="regla-decadas" tabindex="-1">25 años</button>
     </div>
-    <div class="regla" id="regla-dia">
+    <div class="regla" id="regla-dia" role="tabpanel" aria-labelledby="tab-dia">
       <svg id="dia" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="grad-dia" x1="0" x2="1" y1="0" y2="0"></linearGradient></defs>
         <rect x="0" y="6" width="1000" height="16" rx="8" fill="url(#grad-dia)"></rect>
@@ -669,7 +821,7 @@
       <input id="hora" type="range" min="0" max="1439" step="1" aria-label="Hora del día">
       <p class="dia-ley" id="dia-ley"></p>
     </div>
-    <div class="regla" id="regla-anio" hidden>
+    <div class="regla" id="regla-anio" role="tabpanel" aria-labelledby="tab-anio" hidden>
       <svg id="anio" viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
         <g id="anio-marcas"></g>
         <line id="anio-aguja" class="aguja" x1="0" x2="0" y1="0" y2="20"></line>
@@ -678,7 +830,7 @@
       <input id="dia-anio" type="range" min="0" max="364" step="1" aria-label="Día del año">
       <p class="dia-ley">▮ temporada de lluvias · ┃ solsticios · ● días sin sombra</p>
     </div>
-    <div class="regla" id="regla-decadas" hidden>
+    <div class="regla" id="regla-decadas" role="tabpanel" aria-labelledby="tab-decadas" hidden>
       <svg id="decadas" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true">
         <rect x="0" y="32" width="1000" height="1" fill="var(--linea-2)"></rect>
         <g id="dec-barras"></g>
@@ -692,7 +844,8 @@
       <ul id="momentos" aria-label="Extremos de la serie"></ul>
     </div>
   </div>
-  <div class="dock-lect">
+  <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>
+  <div class="dock-lect" id="dock-lect">
     <div data-explica="sol" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
     <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
     <div data-explica="clima" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
@@ -768,9 +921,9 @@
     </article>
     <article class="hallazgo" data-fecha="2024-03-05" data-hora="09:30" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Sol directo: SE y SO reciben más del doble que la NO. Con la luz difusa, la diferencia se achica</h3>
-      <p>En una pared sin alero, el sol directo de un año es de unos <span data-rad="se.directa">374</span> kWh/m² en la SE, <span data-rad="so.directa">362</span> en la SO, <span data-rad="ne.directa">302</span> en la NE y <span data-rad="no.directa">144</span> en la NO. Pero el sol directo es solo el <span data-rad-pct>21–41 %</span> del total: sumando la luz difusa del cielo (~<span data-rad="se.difusa">356</span>) y la que refleja el suelo (~<span data-rad="se.reflejada">177</span>), los totales son de unos <span data-rad="se.total">907</span> kWh/m² en la SE, <span data-rad="so.total">895</span> en la SO, <span data-rad="ne.total">835</span> en la NE y <span data-rad="no.total">677</span> en la NO. Un techo horizontal recibe unos <span data-rad="techo.total">1.770</span>, de los que <span data-rad="techo.difusa">712</span> son difusa. En «Ver → Sol → Año típico» están estas mismas cifras.</p>
-      <p class="uso"><b>Para el diseño:</b> Ordena dónde proteger primero: el techo, luego SE y SO. Pero la NO no está libre: recibe unos tres cuartos de lo que recibe la SE, así que su vidrio también necesita control solar, aunque menos.</p>
-      <p class="limite"><b>Límite:</b> ERA5 para una celda de ~28 km. La difusa y la reflejada se estiman con un modelo simple (cielo que brilla parejo y suelo que devuelve el 20 %), que no descuenta vecinos, árboles ni el pedazo de cielo que tapa el alero.</p>
+      <p>En una pared sin alero, el sol directo de un año es de unos <span data-rad="se.directa">374</span> kWh/m² en la SE, <span data-rad="so.directa">362</span> en la SO, <span data-rad="ne.directa">302</span> en la NE y <span data-rad="no.directa">144</span> en la NO. Pero el sol directo es solo el <span data-rad-pct>24–43 %</span> del total: sumando la luz difusa del cielo (entre <span data-rad="no.difusa">287</span> en la NO y <span data-rad="se.difusa">325</span> en la SE, porque el cielo brilla más cerca del sol) y la que refleja el suelo (~<span data-rad="se.reflejada">177</span>), los totales son de unos <span data-rad="se.total">876</span> kWh/m² en la SE, <span data-rad="so.total">863</span> en la SO, <span data-rad="ne.total">795</span> en la NE y <span data-rad="no.total">608</span> en la NO. Un techo horizontal recibe unos <span data-rad="techo.total">1.770</span>, de los que <span data-rad="techo.difusa">712</span> son difusa. En «Ver → Sol → Año típico» están estas mismas cifras.</p>
+      <p class="uso"><b>Para el diseño:</b> Ordena dónde proteger primero: el techo, luego SE y SO. Pero la NO no está libre: recibe unos siete décimos de lo que recibe la SE, así que su vidrio también necesita control solar, aunque menos.</p>
+      <p class="limite"><b>Límite:</b> ERA5 para una celda de ~28 km. La difusa y la reflejada se estiman con modelos sencillos: el cielo de Hay-Davies, que brilla más alrededor del sol, y un suelo que devuelve el 20 %. No descuentan vecinos, árboles ni el pedazo de cielo que tapa el alero.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>05/03/2024 09:30 · vista aérea · Sol, solo directo: la SE marca el valor más alto; NO y SO, cero. Cambia a «Total» para ver la difusa.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2026-01-15" data-hora="07:30" data-vista="" data-fachada="se" data-capa="">
@@ -806,7 +959,7 @@
     <h3 id="limites-t">Qué no hace esta herramienta y qué usar después</h3>
     <p>Sirve para leer el sitio y discutir orientación, aleros, sol, lluvia y viento. Para diseñar y comprobar un edificio hace falta más. Cuatro límites, con lo que conviene usar en cada caso:</p>
     <ol>
-      <li><b>Radiación difusa y reflejada.</b> La forma de ver «Sol» las suma con la opción «Total», pero con un modelo simple (cielo parejo, suelo al 20 %) que no descuenta el cielo que tapan el alero y los vecinos.
+      <li><b>Radiación difusa y reflejada.</b> La forma de ver «Sol» las suma con la opción «Total», pero con un modelo sencillo (cielo de Hay-Davies, suelo al 20 %) que no descuenta el cielo que tapan el alero y los vecinos.
         <span class="usar">Para dimensionar vidrios y protecciones: simulación de radiación, por ejemplo con <a href="https://www.ladybug.tools/" target="_blank" rel="noopener">Ladybug Tools</a> (Radiance).</span></li>
       <li><b>Temperatura interior y confort.</b> No calcula cuánto calor entra, cómo lo guarda y lo suelta la masa del concreto ni si adentro se está cómodo.
         <span class="usar">Para eso: <a href="https://energyplus.net/" target="_blank" rel="noopener">EnergyPlus</a> (o Honeybee, de Ladybug Tools, que lo usa) con el archivo de clima típico (EPW) de la estación de Albrook, 2011–2025, en <a href="https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/PAN_Panama/index.html" target="_blank" rel="noopener">OneBuilding</a>.</span></li>
@@ -849,6 +1002,13 @@
       <a href="#fachada-so" data-ir-fachada="fachada-so" data-fachada="fachada-so"><span>Suroeste</span><i></i><b>0 W/m²</b></a>
     </div>
   </div>
+  <div class="lamina">
+    <h3>Para la lámina</h3>
+    <button class="boton" id="guardar-img" type="button">Guardar imagen (PNG)</button>
+    <p class="lamina-nota">Descarga lo que ves en la escena con un pie: fecha y hora, forma de ver, fachada o vista, la leyenda de color y un código QR que abre este mismo momento.</p>
+    <p id="img-estado" class="lamina-nota" role="status"></p>
+  </div>
+  <p class="capas-pie">Motor de dibujo en este navegador: <span id="motor">…</span></p>
 </div>
 
 <dialog id="acerca" aria-labelledby="acerca-t">
@@ -873,7 +1033,7 @@
     <li>No es un levantamiento: es un modelo paramétrico, con escala aproximada (±12 %) y ventanas regularizadas a partir de fotos.</li>
     <li>El tiempo es dato de modelo, no una medición en el sitio: ERA5 representa una celda de 0,25° (unos 28 km), con su punto central a 9 km al este.</li>
     <li>No sirve para dimensionar canales, bajantes ni desagües: ERA5 suaviza los aguaceros.</li>
-    <li>No calcula la ventilación interior, la temperatura de superficies ni el confort; la radiación difusa y reflejada se estima con un modelo simple. En «Para qué sirve» → «Qué no hace esta herramienta» está qué usar para cada cosa. Las ventanas encendidas de noche son una suposición, no un dato de uso.</li>
+    <li>No calcula la ventilación interior, la temperatura de superficies ni el confort; la radiación difusa y reflejada se estima con un modelo simple. En «Para qué sirve» → «Qué no hace esta herramienta» está qué usar para cada cosa. De noche la escena se aclara para que el edificio se vea, como en una foto de exposición larga, y las ventanas encendidas son una suposición, no un dato de uso.</li>
   </ul>
   <h3>Contexto</h3>
   <p>Isthmus, que abrió en 2000, se presenta como el primer programa en operar en Ciudad del Saber, en la antigua base militar de Clayton; hoy tiene su sede en el Edificio 106. El proyecto de Fort Clayton se aprobó en 1919 y sus primeros 36 edificios estaban listos en agosto de 1920; la ampliación empezó en junio de 1939. La base pasó a Panamá el 30 de noviembre de 1999, y de 243 edificios recibidos se conservan más de 130.</p>
