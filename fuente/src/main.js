@@ -7,6 +7,7 @@ import { Sonido } from './sonido.js';
 import { puntosIntro } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { Clima } from './clima.js';
+import QRCode from 'qrcode';
 
 const $ = (s) => document.querySelector(s);
 export const VERSION = 'v3 · 25 sep 2026';
@@ -1002,6 +1003,7 @@ function prepararUI() {
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
   $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; anunciar(); });
+  $('#guardar-img').addEventListener('click', guardarImagen);
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
@@ -1557,6 +1559,102 @@ function pintarCorte(p) {
   }
   el.innerHTML = `<desc id="corte-desc">${desc}</desc>${g}`;
   $('#corte-txt').textContent = txt;
+}
+
+// ---------------- Guardar imagen para la lámina ----------------
+// El lienzo de WebGPU/WebGL solo se puede leer justo después de dibujar: se dibuja y se copia en el mismo tick.
+const SITIO = 'https://caamanoluismiguel.github.io/edificio-106/';
+const dos = (n) => String(n).padStart(2, '0');
+/** Colores de una rampa CSS «linear-gradient(90deg, #a, #b 50%, …)» como [[posición 0–1, color]]. */
+function paradasRampa(css) {
+  const cs = [...css.matchAll(/(#[0-9a-f]{3,8})(?:\s+([\d.]+)%)?/gi)];
+  return cs.map((m, i) => [m[2] != null ? +m[2] / 100 : i / Math.max(1, cs.length - 1), m[1]]);
+}
+async function guardarImagen() {
+  const b = $('#guardar-img'), est = $('#img-estado');
+  if (!escena || b.getAttribute('aria-busy') === 'true') return;
+  const texto0 = b.textContent;
+  b.setAttribute('aria-busy', 'true'); b.disabled = true; b.textContent = 'Generando imagen…'; est.textContent = '';
+  try {
+    const f = S.fecha, m0 = ((Math.round(S.min) % 1440) + 1440) % 1440, hh = Math.floor(m0 / 60), mi = m0 % 60;
+    const enlace = `${SITIO}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(hh)}${dos(mi)}`;
+    const L = LENTES[S.lente], modo = MODOS[S.lente]?.find(([k]) => k === S[MODO_DE[S.lente]])?.[1];
+    const forma = L.t.split(':')[0] + (modo ? ` · ${modo}` : '') + (S.lente === 'partes' ? ` · ${(PARTES[S.parte] ?? PARTES.alero).t}` : '');
+    const vistaB = document.querySelector('.vistas [data-vista][aria-pressed="true"]');
+    const kf = S.fachada ? S.fachada.slice(8) : null;
+    const donde = S.fachada ? FACHADAS[S.fachada].nombre : vistaB ? `Vista ${vistaB.textContent.trim().toLowerCase()}` : 'Vista libre';
+    const p = posicionSol({ ...f, h: 0, min: S.min });
+    const solTxt = p.alt > 0.5 ? `Sol a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}` : 'El sol está bajo el horizonte';
+    const anioSol = S.lente === 'sol' && S.solModo === 'anio';
+    const rampa = anioSol ? { c: 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)', esc: ['0', '900', '1.800 kWh/m² al año'] } : L.rampa ? { c: L.rampa, esc: L.esc } : null;
+    const qr = document.createElement('canvas');
+    await QRCode.toCanvas(qr, enlace, { margin: 2, width: 360, errorCorrectionLevel: 'M', color: { dark: '#0a1216ff', light: '#ffffffff' } });
+    try { await document.fonts.ready; } catch (e) { /* sin fuentes */ }
+    // captura: dibujar y copiar en el mismo tick
+    escena.render();
+    const src = escena.renderer.domElement, W = src.width, H = src.height;
+    const cap = document.createElement('canvas'); cap.width = W; cap.height = H;
+    const cx0 = cap.getContext('2d'); cx0.drawImage(src, 0, 0);
+    // comprobar que no salió vacía (negra o transparente)
+    const muestra = cx0.getImageData(0, 0, W, H).data; let suma = 0;
+    for (let i = 0; i < muestra.length; i += 4 * 997) suma += muestra[i] + muestra[i + 1] + muestra[i + 2];
+    if (suma < 30) throw new Error('captura vacía');
+    // lienzo final: escena y pie
+    const u = Math.min(3, Math.max(0.7, W / 1200)), pad = 26 * u, qrT = 150 * u;
+    const out = document.createElement('canvas'), cx = out.getContext('2d');
+    const fT = (w, px, fam = 'texto') => `${w} ${Math.round(px * u)}px ${fam === 'datos' ? '"IBM Plex Mono", ui-monospace, monospace' : fam === 'display' ? '"Bricolage Grotesque", system-ui, sans-serif' : '"Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif'}`;
+    const anchoTxt = W - 3 * pad - qrT;
+    const partir = (txt, font, ancho) => {           // parte un texto en líneas que quepan
+      cx.font = font; const pal = txt.split(' '), lin = []; let l = '';
+      for (const w of pal) { const t = l ? l + ' ' + w : w; if (cx.measureText(t).width > ancho && l) { lin.push(l); l = w; } else l = t; }
+      if (l) lin.push(l); return lin;
+    };
+    const filas = [
+      { font: fT(760, 30, 'display'), color: '#efe9de', lin: partir(`${fechaTexto(f)}, ${hhmm(S.min)} · hora de Panamá`, fT(760, 30, 'display'), anchoTxt), alto: 36 },
+      { font: fT(600, 20), color: '#f4b545', lin: partir(`${forma} · ${donde}`, fT(600, 20), anchoTxt), alto: 26 },
+      { font: fT(400, 17), color: '#b6bdb9', lin: partir(`${solTxt}. Edificio 106 · Isthmus, Ciudad del Saber, Panamá.`, fT(400, 17), anchoTxt), alto: 23 },
+    ];
+    let hTxt = filas.reduce((a, r) => a + r.lin.length * r.alto * u, 0) + 8 * u;
+    const hRampa = rampa ? 46 * u : 0;
+    const linkLin = partir(enlace, fT(500, 15, 'datos'), anchoTxt);
+    const hLink = (18 + linkLin.length * 20) * u;
+    const altoPie = Math.ceil(Math.max(hTxt + hRampa + hLink, qrT + 24 * u) + 2 * pad);
+    out.width = W; out.height = H + altoPie;
+    cx.drawImage(cap, 0, 0);
+    cx.fillStyle = '#0e171b'; cx.fillRect(0, H, W, altoPie);
+    cx.fillStyle = '#f4b545'; cx.fillRect(0, H, W, Math.max(2, 3 * u));
+    cx.textBaseline = 'alphabetic';
+    let y = H + pad;
+    for (const r of filas) { cx.font = r.font; cx.fillStyle = r.color; for (const l of r.lin) { y += r.alto * u; cx.fillText(l, pad, y - 6 * u); } }
+    y += 8 * u;
+    if (rampa) {
+      const w = Math.min(420 * u, anchoTxt), gr = cx.createLinearGradient(pad, 0, pad + w, 0);
+      for (const [o, c] of paradasRampa(rampa.c)) gr.addColorStop(Math.min(1, Math.max(0, o)), c);
+      cx.fillStyle = gr; cx.fillRect(pad, y, w, 14 * u);
+      cx.strokeStyle = 'rgba(239,233,222,0.35)'; cx.lineWidth = Math.max(1, u); cx.strokeRect(pad, y, w, 14 * u);
+      cx.font = fT(500, 14, 'datos'); cx.fillStyle = '#b6bdb9';
+      rampa.esc.forEach((t, i) => { if (!t) return; cx.textAlign = i === 0 ? 'left' : i === rampa.esc.length - 1 ? 'right' : 'center'; cx.fillText(t, pad + w * i / (rampa.esc.length - 1), y + 34 * u); });
+      cx.textAlign = 'left'; y += hRampa;
+    }
+    cx.font = fT(500, 13, 'datos'); cx.fillStyle = '#7f8a86'; y += 14 * u; cx.fillText('Abre este momento:', pad, y);
+    cx.font = fT(500, 15, 'datos'); cx.fillStyle = '#efe9de';
+    for (const l of linkLin) { y += 20 * u; cx.fillText(l, pad, y); }
+    const qx = W - pad - qrT, qy = H + pad;
+    cx.fillStyle = '#ffffff'; cx.fillRect(qx, qy, qrT, qrT);
+    cx.imageSmoothingEnabled = false; cx.drawImage(qr, qx, qy, qrT, qrT); cx.imageSmoothingEnabled = true;
+    cx.font = fT(500, 12, 'datos'); cx.fillStyle = '#b6bdb9'; cx.textAlign = 'center'; cx.fillText(kf ? `fachada ${kf.toUpperCase()} · QR del momento` : 'QR del momento', qx + qrT / 2, qy + qrT + 17 * u); cx.textAlign = 'left';
+    const nombre = `edificio106_${f.y}-${dos(f.m)}-${dos(f.d)}_${dos(hh)}${dos(mi)}_${S.lente}_${kf ? 'fachada-' + kf : 'vista-' + (vistaB?.dataset.vista ?? 'libre')}.png`;
+    const blob = await new Promise((res, rej) => out.toBlob((bl) => bl ? res(bl) : rej(new Error('toBlob')), 'image/png'));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    guardarImagen.ultima = { nombre, W: out.width, H: out.height };
+    est.textContent = `Listo: se descargó ${nombre}.`;
+  } catch (e) {
+    anotar('aviso', 'guardar imagen: ' + (e?.message ?? e));
+    est.textContent = 'No se pudo generar la imagen en este navegador. Prueba de nuevo o usa una captura de pantalla.';
+  } finally {
+    b.removeAttribute('aria-busy'); b.disabled = false; b.textContent = texto0;
+  }
 }
 
 // ---------------- Qué significa cada dato (se toca un dato del dock) ----------------

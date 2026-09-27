@@ -443,6 +443,11 @@
   @keyframes sube { from { opacity: 0; transform: translateY(10px) } }
   .capas-pie { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
   #motor { color: var(--cal); letter-spacing: 0.04em; }
+  .lamina { display: grid; gap: 8px; justify-items: start; }
+  #guardar-img { min-height: 44px; padding: 10px 16px; border-color: var(--sol); color: var(--sol); }
+  #guardar-img[aria-busy="true"] { opacity: .7; cursor: progress; }
+  .lamina-nota { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--cal-2); }
+  #img-estado:empty { display: none; } #img-estado { color: var(--cal); }
   #capas h3 { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
   .interruptores { display: grid; gap: 6px; }
   .interruptores label { display: grid; grid-template-columns: 18px 1fr; gap: 3px 10px; align-items: start; cursor: pointer; border: 1px solid var(--linea); border-radius: 12px; padding: 10px 11px; transition: border-color .2s, background .2s; }
@@ -994,6 +999,12 @@
       <a href="#fachada-ne" data-ir-fachada="fachada-ne" data-fachada="fachada-ne"><span>Noreste</span><i></i><b>0 W/m²</b></a>
       <a href="#fachada-so" data-ir-fachada="fachada-so" data-fachada="fachada-so"><span>Suroeste</span><i></i><b>0 W/m²</b></a>
     </div>
+  </div>
+  <div class="lamina">
+    <h3>Para la lámina</h3>
+    <button class="boton" id="guardar-img" type="button">Guardar imagen (PNG)</button>
+    <p class="lamina-nota">Descarga lo que ves en la escena con un pie: fecha y hora, forma de ver, fachada o vista, la leyenda de color y un código QR que abre este mismo momento.</p>
+    <p id="img-estado" class="lamina-nota" role="status"></p>
   </div>
   <p class="capas-pie">Motor de dibujo en este navegador: <span id="motor">…</span></p>
 </div>
