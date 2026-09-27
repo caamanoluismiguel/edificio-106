@@ -29,7 +29,9 @@ export class Clima {
   enSerie(f) { return f.y >= 2001 && f.y <= 2025; }
   valor(k, i) { const [e, o] = ESC[k]; return this.horario[k][i] / e + o; }
 
-  /** Registro de reanálisis a una fecha y minuto del día (interpolado entre horas; la lluvia es el total de esa hora). */
+  /** Registro de reanálisis a una fecha y minuto del día (interpolado entre horas; la lluvia es el total de esa hora).
+   *  El viento y su dirección van con la lluvia: son los de la marca que cierra la hora en curso (la misma de la lluvia), como
+   *  en consultas.py, para que la lluvia batiente (lluvia × viento × coseno) no mezcle horas distintas. */
   registro(f, min) {
     if (!this.horario || !this.enSerie(f)) return null;
     const h = Math.floor(min / 60), a = this.indice(f, h); if (a < 0) return null;
@@ -38,7 +40,7 @@ export class Clima {
     const x = a + t + 0.5, i0 = Math.min(this.n - 1, Math.floor(x)), i1 = Math.min(this.n - 1, i0 + 1), u = x - Math.floor(x);
     const R = (k) => this.valor(k, i0) * (1 - u) + this.valor(k, i1) * u;
     return { fuente: 'serie', nubes: L('nubes'), lluvia: this.valor('lluvia', b), temp: L('temp'), humedad: L('humedad'),
-      dni: R('dni'), difusa: R('difusa'), viento: L('viento'), dir: this.valor('dir', a) };
+      dni: R('dni'), difusa: R('difusa'), viento: this.valor('viento', b), dir: this.valor('dir', b) };
   }
 
   /** Qué tan mojadas siguen las superficies (0..1) a una fecha y minuto: la lluvia de las 12 horas anteriores menos lo que
@@ -109,7 +111,7 @@ export class Clima {
     return this.dias[k];
   }
 
-  /** Registro de un día pedido en línea (mismo formato que registro()). */
+  /** Registro de un día pedido en línea (mismo formato que registro(): el viento y su dirección, de la hora de la lluvia). */
   registroDia(f, min) {
     const k = `${f.y}-${String(f.m).padStart(2, '0')}-${String(f.d).padStart(2, '0')}`, D = this.dias[k];
     if (!D || D instanceof Promise) return null;
@@ -118,7 +120,7 @@ export class Clima {
     const x = h + t + 0.5, i0 = Math.min(23, Math.floor(x)), i1 = Math.min(23, i0 + 1), u = x - Math.floor(x);
     return { fuente: 'dia', modelo: D.modelo, nubes: L('cloud_cover'), lluvia: v('precipitation', b), temp: L('temperature_2m'), humedad: L('relative_humidity_2m'),
       dni: v('direct_normal_irradiance', i0) * (1 - u) + v('direct_normal_irradiance', i1) * u,
-      difusa: D.h.diffuse_radiation ? v('diffuse_radiation', i0) * (1 - u) + v('diffuse_radiation', i1) * u : null, viento: L('wind_speed_10m'), dir: v('wind_direction_10m', h) };
+      difusa: D.h.diffuse_radiation ? v('diffuse_radiation', i0) * (1 - u) + v('diffuse_radiation', i1) * u : null, viento: v('wind_speed_10m', b), dir: v('wind_direction_10m', b) };
   }
 
   /** Tiempo real: pronóstico de modelo de Open-Meteo para las coordenadas del edificio. */
