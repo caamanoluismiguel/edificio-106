@@ -549,10 +549,18 @@ function actualizarCalor(p, c) {
   const sa = Math.max(0, Math.sin(p.alt * Math.PI / 180));
   const dhi = p.alt > 0 ? c?.difusa ?? null : 0, ghi = dni * sa + (dhi ?? 0);
   S.hayDifusa = dhi != null;
-  U.dniW.value = dni; U.dhiW.value = dhi ?? 0; U.ghiW.value = ghi;
+  // cielo anisótropo (Hay-Davies): la parte de la difusa que viene de alrededor del sol (Ai) es la DNI frente a la de fuera de
+  // la atmósfera ese día (1.367 W/m² con la excentricidad de la órbita); la misma cuenta que la lente y consultas.py
+  const dia = (Date.UTC(S.fecha.y, S.fecha.m - 1, S.fecha.d) - Date.UTC(S.fecha.y, 0, 0)) / 864e5;
+  const ai = Math.min(1, Math.max(0, dni / (1367 * (1 + 0.033 * Math.cos(2 * Math.PI * dia / 365)))));
+  U.dniW.value = dni; U.dhiW.value = dhi ?? 0; U.ghiW.value = ghi; U.ai.value = ai;
   // números por orientación: una pared sin alero de cada fachada (la escena, en cambio, cuenta la sombra real punto por punto)
+  // difusa de una pared vertical: DHI · [Ai · Rb + (1 − Ai) / 2], con Rb = cos(incidencia) / cos(cenit), cenit acotado a 85°
   const tot = S.solModo === 'total' && dhi != null;
-  S.irr = Object.keys(FACHADAS).map((k) => incidencia(p.alt, p.az, FACHADAS[k].rumbo) * dni + (tot ? 0.5 * dhi + 0.1 * ghi : 0));
+  S.irr = Object.keys(FACHADAS).map((k) => {
+    const ci = incidencia(p.alt, p.az, FACHADAS[k].rumbo), rb = sa > 0 ? ci / Math.max(sa, 0.087) : 0;
+    return ci * dni + (tot ? dhi * (ai * rb + (1 - ai) * 0.5) + 0.1 * ghi : 0);
+  });
   S.irrTecho = dni * sa + (tot ? dhi : 0);
 }
 

@@ -88,15 +88,22 @@ for kk, ms in TEMP.items():
     vien[kk] = dict(frec=[round(float(x), 1) for x in frec], vel=[round(float(x), 1) for x in vel], calma=round(float((sel & (Vk < 3.6)).sum() / tot * 100), 1),
                     media=round(float(Vk[sel].mean()), 1), frente=fr)
 out['viento'] = vien
-# radiación anual sobre cada fachada (muro sin alero): directa, difusa (cielo isotrópico) y reflejada (suelo al 20 %)
+# radiación anual sobre cada fachada (muro sin alero): directa, difusa (cielo anisótropo de Hay-Davies) y reflejada (suelo al 20 %)
 den = np.cos(LAT * rad) * np.sqrt(1 - np.clip(cz, -1, 1) ** 2)
 aa = np.clip((np.sin(LAT * rad) * np.clip(cz, -1, 1) - np.sin(dec)) / np.where(np.abs(den) < 1e-6, 1e-6, den), -1, 1)
 az = np.where(ha > 0, (np.arccos(aa) / rad + 180) % 360, (540 - np.arccos(aa) / rad) % 360)
 calt = np.sqrt(1 - sinalt ** 2)
+# Hay-Davies: Id = DHI · [Ai · Rb + (1 − Ai) · (1 + cos β) / 2]; en un muro vertical, cos β = 0.
+# Ai = DNI / DNI fuera de la atmósfera ese día (1.367 W/m² con la excentricidad de la órbita), la parte de la difusa que viene
+# de alrededor del sol; Rb = cos(incidencia) / cos(cenit), con el cenit acotado a 85° (0,087) y 0 con el sol detrás del muro.
+dia_h = np.datetime64('2001-01-01') + np.floor((np.arange(n) - 0.5) / 24).astype(int)          # fecha local del centro de la hora
+doy = (dia_h - dia_h.astype('datetime64[Y]')).astype(int) + 1
+Ai = np.clip(DNI / (1367 * (1 + 0.033 * np.cos(2 * np.pi * doy / 365))), 0, 1)
 rad_f = {}
 for f, th in FAC.items():
     inc = calt * np.cos((az - th) * rad); inc = np.where((sinalt > 0) & (inc > 0), inc, 0)
-    d_ = (DNI * inc).sum() / anios / 1000; f_ = 0.5 * DIF.sum() / anios / 1000; r_ = 0.5 * 0.2 * GHI.sum() / anios / 1000
+    Rb = inc / np.maximum(sinalt, 0.087)
+    d_ = (DNI * inc).sum() / anios / 1000; f_ = (DIF * (Ai * Rb + (1 - Ai) * 0.5)).sum() / anios / 1000; r_ = 0.5 * 0.2 * GHI.sum() / anios / 1000
     rad_f[f] = dict(directa=round(float(d_)), difusa=round(float(f_)), reflejada=round(float(r_)), total=round(float(d_ + f_ + r_)))
 out['radiacion'] = dict(fachadas=rad_f, techo=dict(total=round(float(GHI.sum() / anios / 1000)), directa=round(float((DNI * sinalt).sum() / anios / 1000)), difusa=round(float(DIF.sum() / anios / 1000))))
 json.dump(out, open(sys.argv[2], 'w'), ensure_ascii=False, separators=(',', ':'))

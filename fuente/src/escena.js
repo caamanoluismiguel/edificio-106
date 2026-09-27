@@ -52,6 +52,7 @@ Object.assign(U, {
   dhiW: uniform(0),                      // difusa horizontal, W/m²
   ghiW: uniform(0),                      // global horizontal, W/m²
   total: uniform(0),                     // 0 = solo directa, 1 = directa + difusa + reflejada
+  ai: uniform(0),                        // índice de anisotropía de Hay-Davies: DNI / DNI fuera de la atmósfera (0..1)
   pal0: uniform(new THREE.Color(0.05, 0.07, 0.1)),   // paleta de la lente de fachadas (lluvia o viento)
   pal1: uniform(new THREE.Color(0.08, 0.42, 0.9)),
   pal2: uniform(new THREE.Color(0.6, 0.9, 1.0)),
@@ -468,9 +469,14 @@ export class Escena {
     if (!leaf && grupo !== 'contexto' && grupo !== 'vegetacion' && delEdificio) {   // solo el edificio
       const n = normalWorld;
       // Sol: la radiación que llega a cada punto, con la sombra real (el mismo mapa de sombras de la escena)
-      const directa = U.dniW.mul(max(dot(n, U.solDir), 0)).mul(sombraSol);
-      // difusa de un cielo parejo (isotrópico) y reflejada por un suelo que devuelve el 20 %
-      const difusa = U.dhiW.mul(n.y.add(1).mul(0.5)).add(U.ghiW.mul(0.1).mul(float(1).sub(n.y)));
+      const cosInc = max(dot(n, U.solDir), 0);
+      const directa = U.dniW.mul(cosInc).mul(sombraSol);
+      // difusa de cielo anisótropo (Hay-Davies): una parte viene de alrededor del sol y se comporta como la directa (con su
+      // coseno y su sombra); el resto es un cielo parejo. Rb acota el coseno del cenit a 0,087 (sol a 5°) para que el sol bajo
+      // no la dispare. Más la reflejada por un suelo que devuelve el 20 %.
+      const rb = cosInc.div(max(U.solDir.y, 0.087));
+      const difusa = U.dhiW.mul(U.ai.mul(rb).mul(sombraSol).add(float(1).sub(U.ai).mul(n.y.add(1).mul(0.5))))
+        .add(U.ghiW.mul(0.1).mul(float(1).sub(n.y)));
       const irr = directa.add(difusa.mul(U.total)).div(800);
       // escala de calor ordenada (azul noche → morado → rojo → naranja → amarillo), con colores puros para que el tonemapping no la lave
       const s4 = (a, b) => smoothstep(a, b, irr);
