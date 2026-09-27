@@ -66,7 +66,8 @@
   .boton[aria-pressed="true"] .onda i { animation: onda 1s var(--ease) infinite alternate; }
   .boton[aria-pressed="true"] .onda i:nth-child(2) { animation-delay: .2s } .boton[aria-pressed="true"] .onda i:nth-child(3) { animation-delay: .4s }
   @keyframes onda { from { height: 3px } to { height: 12px } }
-  #motor { font: 500 10px/1 var(--datos); color: var(--cal-3); letter-spacing: 0.06em; text-transform: uppercase; }
+  /* la píldora de estado solo cuando la escena sigue el reloj: explorando, la fecha ya está en el dock */
+  html:not(.vivo) #estado { display: none; }
 
   /* ---------- intro ---------- */
   #intro { position: fixed; z-index: 5; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto; padding: calc(env(safe-area-inset-top, 0px) + 84px) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 26px); }
@@ -409,6 +410,8 @@
     background: var(--panel-2); border: 1px solid var(--linea); border-radius: 16px; padding: 16px; backdrop-filter: blur(16px); display: grid; gap: 14px; box-sizing: border-box;
     box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); max-height: calc(100vh - var(--dock-h) - 150px); overflow: auto; }
   @keyframes sube { from { opacity: 0; transform: translateY(10px) } }
+  .capas-pie { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
+  #motor { color: var(--cal); letter-spacing: 0.04em; }
   #capas h3 { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
   .interruptores { display: grid; gap: 6px; }
   .interruptores label { display: grid; grid-template-columns: 18px 1fr; gap: 3px 10px; align-items: start; cursor: pointer; border: 1px solid var(--linea); border-radius: 12px; padding: 10px 11px; transition: border-color .2s, background .2s; }
@@ -442,7 +445,7 @@
   /* ---------- teléfono ---------- */
   @media (max-width: 760px) {
     :root { --dock-h: 206px; }
-    .marca small, #motor, #estado .largo { display: none; }
+    .marca small, #estado .largo { display: none; }
     #estado { padding: 8px 10px; font-size: 11px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
     #estado-txt { overflow: hidden; text-overflow: ellipsis; }
     #info .t, #sonido .t { display: none; }
@@ -502,9 +505,8 @@
     <svg viewBox="0 0 38 22" aria-hidden="true"><path class="arco" d="M3 20 A16 16 0 0 1 35 20"></path><line class="horizonte" x1="0" y1="20" x2="38" y2="20"></line><circle id="marca-sol" cx="19" cy="4" r="3"></circle></svg>
     <span><b>Edificio 106</b><small>Isthmus · Ciudad del Saber</small></span>
   </a>
-  <div id="estado" role="status"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
+  <div id="estado"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
   <div class="acciones">
-    <span id="motor" title="Motor de dibujo en este navegador"></span>
     <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
     <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado</button>
     <button class="boton destacado" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
@@ -855,6 +857,7 @@
       <a href="#fachada-so" data-ir-fachada="fachada-so" data-fachada="fachada-so"><span>Suroeste</span><i></i><b>0 W/m²</b></a>
     </div>
   </div>
+  <p class="capas-pie">Motor de dibujo en este navegador: <span id="motor">…</span></p>
 </div>
 
 <dialog id="acerca" aria-labelledby="acerca-t">
