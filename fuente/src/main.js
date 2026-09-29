@@ -1616,6 +1616,35 @@ function paradasRampa(css) {
   const cs = [...css.matchAll(/(#[0-9a-f]{3,8})(?:\s+([\d.]+)%)?/gi)];
   return cs.map((m, i) => [m[2] != null ? +m[2] / 100 : i / Math.max(1, cs.length - 1), m[1]]);
 }
+// La escena de la lámina sale a resolución fija, no a la del lienzo (en un teléfono serían ~600 px): 2.400 px en el lado
+// largo, con el mismo encuadre. Solo cambia la relación de píxeles del renderizador (el tamaño CSS del lienzo y la cámara
+// quedan igual), se dibuja, se copia en el mismo tick y se devuelve todo como estaba. 2.400 px de lado largo son a lo sumo
+// ~5,8 MP en pantallas cuadradas (unos 2,7 MP en un teléfono vertical): cabe en el límite de texturas de WebGPU (8.192) y
+// de WebGL 2 en teléfonos (4.096). Si esa captura sale vacía (sin memoria, contexto perdido), se prueba a 1.600 px y
+// luego a la resolución de pantalla.
+const LADO_LAMINA = 2400;
+function capturarAlta() {
+  const r = escena.renderer, pr0 = r.getPixelRatio(), cw = escena._w, ch = escena._h, largo = Math.max(cw, ch);
+  const lim = r.backend?.device?.limits?.maxTextureDimension2D ?? (r.backend?.gl?.getParameter?.(r.backend.gl.MAX_RENDERBUFFER_SIZE)) ?? 4096;
+  const intentos = [...new Set([...[LADO_LAMINA, 1600].map((l) => Math.min(l, lim) / largo), pr0])];
+  try {
+    for (const pr of intentos) {
+      r.setPixelRatio(pr);
+      escena.render();                                          // dibujar y copiar en el mismo tick
+      const src = r.domElement, W = src.width, H = src.height;
+      const cap = document.createElement('canvas'); cap.width = W; cap.height = H;
+      const cx = cap.getContext('2d'); cx.drawImage(src, 0, 0);
+      // comprobar que no salió vacía (negra o transparente)
+      const muestra = cx.getImageData(0, 0, W, H).data; let suma = 0;
+      for (let i = 0; i < muestra.length; i += 4 * 997) suma += muestra[i] + muestra[i + 1] + muestra[i + 2];
+      if (suma >= 30) return { cap, W, H };
+      anotar('aviso', `guardar imagen: captura vacía a ${W}×${H}`);
+    }
+    throw new Error('captura vacía');
+  } finally {
+    r.setPixelRatio(pr0); escena.sucio = true; escena.render();   // la vista del usuario vuelve a su resolución en este mismo tick
+  }
+}
 async function guardarImagen() {
   const b = $('#guardar-img'), est = $('#img-estado');
   if (!escena || b.getAttribute('aria-busy') === 'true') return;
@@ -1636,15 +1665,7 @@ async function guardarImagen() {
     const qr = document.createElement('canvas');
     await QRCode.toCanvas(qr, enlace, { margin: 2, width: 360, errorCorrectionLevel: 'M', color: { dark: '#0a1216ff', light: '#ffffffff' } });
     try { await document.fonts.ready; } catch (e) { /* sin fuentes */ }
-    // captura: dibujar y copiar en el mismo tick
-    escena.render();
-    const src = escena.renderer.domElement, W = src.width, H = src.height;
-    const cap = document.createElement('canvas'); cap.width = W; cap.height = H;
-    const cx0 = cap.getContext('2d'); cx0.drawImage(src, 0, 0);
-    // comprobar que no salió vacía (negra o transparente)
-    const muestra = cx0.getImageData(0, 0, W, H).data; let suma = 0;
-    for (let i = 0; i < muestra.length; i += 4 * 997) suma += muestra[i] + muestra[i + 1] + muestra[i + 2];
-    if (suma < 30) throw new Error('captura vacía');
+    const { cap, W, H } = capturarAlta();
     // lienzo final: escena y pie
     const u = Math.min(3, Math.max(0.7, W / 1200)), pad = 26 * u, qrT = 150 * u;
     const out = document.createElement('canvas'), cx = out.getContext('2d');
@@ -1694,7 +1715,7 @@ async function guardarImagen() {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     guardarImagen.ultima = { nombre, W: out.width, H: out.height };
-    est.textContent = `Listo: se descargó ${nombre}.`;
+    est.textContent = `Listo: se descargó ${nombre} (${miles(out.width)} × ${miles(out.height)} px).`;
   } catch (e) {
     anotar('aviso', 'guardar imagen: ' + (e?.message ?? e));
     est.textContent = 'No se pudo generar la imagen en este navegador. Prueba de nuevo o usa una captura de pantalla.';
