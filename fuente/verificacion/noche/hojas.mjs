@@ -31,6 +31,8 @@ const ESCENAS = {
   e4: { t: '26 sep 2026 · 21:30 · fachada sureste (QR y calle)', fecha: F1, min: 21 * 60 + 30, fachada: 'se' },
   e5: { t: '22 feb 2024 · 21:30 · vista aérea · despejado, luna llena', fecha: { y: 2024, m: 2, d: 22 }, min: 21 * 60 + 30, vista: 'aerea' },
   e6: { t: '24 jul 2021 · 21:30 · esquina · lluvia de 13,6 mm/h', fecha: { y: 2021, m: 7, d: 24 }, min: 21 * 60 + 30, vista: 'esquina' },
+  // la luna fija de antes (NOCHE.luna.az) dejaba la fachada SE siempre en sombra; con la luna real la recibe cuando sale por el este
+  e7: { t: '16 mar 2014 · 20:30 · fachada sureste · despejado, luna llena saliendo por el este', fecha: { y: 2014, m: 3, d: 16 }, min: 20 * 60 + 30, fachada: 'se', rotulo: true },
   c3: { t: 'Sol a −3°', fecha: F1, min: minutoSol(F1, -3), vista: 'esquina' },
   c8: { t: 'Sol a −8°', fecha: F1, min: minutoSol(F1, -8), vista: 'esquina' },
   c15: { t: 'Sol a −15°', fecha: F1, min: minutoSol(F1, -15), vista: 'esquina' },
@@ -211,7 +213,7 @@ try {
 // hojas con lo que haya
 const J = (s, k) => path.join(CAP, `${s}_${k}.jpg`), hay = (s, k) => fs.existsSync(J(s, k));
 const hechas = [];
-for (const k of ['e1', 'e2', 'e3', 'e4', 'e5', 'e6']) if (hay('actual', k) && hay('nueva', k)) hechas.push(await hoja(k, ESCENAS[k].t, [{ rotulo: 'Actual (main)', jpg: J('actual', k) }, { rotulo: 'Nueva', jpg: J('nueva', k) }]));
+for (const k of ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7']) if (hay('actual', k) && hay('nueva', k)) hechas.push(await hoja(k, ESCENAS[k].t, [{ rotulo: 'Actual (main)', jpg: J('actual', k) }, { rotulo: 'Nueva', jpg: J('nueva', k) }]));
 if (['c3', 'c8', 'c15'].every((k) => hay('nueva', k))) {
   const filas = [['c3', 'c8', 'c15'].map((k) => ({ rotulo: 'Nueva · ' + ESCENAS[k].t, jpg: J('nueva', k) }))];
   if (['c3', 'c8', 'c15'].every((k) => hay('actual', k))) filas.unshift(['c3', 'c8', 'c15'].map((k) => ({ rotulo: 'Actual · ' + ESCENAS[k].t, jpg: J('actual', k) })));
