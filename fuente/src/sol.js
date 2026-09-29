@@ -99,7 +99,7 @@ export function rumboTexto(b) {
 
 // Fachadas: rumbo de su normal hacia afuera (derivado del eje largo a 56°; coincide con el catálogo).
 export const FACHADAS = {
-  'fachada-se': { nombre: 'Fachada sureste', lugar: 'calle Graig, con la entrada 106', rumbo: 146 },
+  'fachada-se': { nombre: 'Fachada sureste', lugar: 'hacia la calle, con la entrada 106', rumbo: 146 },
   'fachada-no': { nombre: 'Fachada noroeste', lugar: 'hacia el cuadrángulo', rumbo: 326 },
   'fachada-ne': { nombre: 'Fachada lateral noreste', lugar: 'el jardín de la esquina', rumbo: 56 },
   'fachada-so': { nombre: 'Fachada lateral suroeste', lugar: 'el extremo opuesto al jardín', rumbo: 236 },

@@ -48,7 +48,17 @@ const BASE = new URL('../', import.meta.url).href;              // js/app.js -> 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const MES3 = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-const f1 = (x, d = 1) => x.toLocaleString('es-PA', { minimumFractionDigits: d, maximumFractionDigits: d });
+// Formato de números en todo el sitio (textos a mano incluidos): coma decimal y punto de miles desde las cuatro cifras,
+// como se escribe en Colombia y en buena parte de Latinoamérica: 0,69 · 5,62 m · 2.000 mm · 5.880 h · 1.770 kWh/m².
+// Los años (2001–2025) y los rangos de horas van sin punto. No se usa toLocaleString: en es-PA (y es-419) da el formato
+// de EE. UU. (5,880.69), que choca con los decimales escritos a mano, y cambia según el navegador.
+const num = (x, d = 0) => {
+  const [e, f] = Math.abs(x).toFixed(d).split('.');
+  const s = x < 0 && /[1-9]/.test(e + (f ?? '')) ? '-' : '';
+  return s + e.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '');
+};
+const f1 = (x, d = 1) => num(x, d);
+const miles = (v) => num(v, 0);
 const hhmm = (min) => { const m = ((Math.round(min) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const eio = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -89,6 +99,8 @@ const VISTAS = {
   aerea: { pos: [92, 78, 104], tgt: [0, 3, 0] },
   planta: { pos: [CENTRO[0] - NORTE.x * 3.8, 215, CENTRO[2] - NORTE.z * 3.8], tgt: [CENTRO[0], 0, CENTRO[2]] },
 };
+// en pantallas verticales la planta, más alta: el hueco libre entre los botones y la tarjeta del recorrido es bajo (ver encuadreMovil)
+if (innerWidth / innerHeight < 0.8) VISTAS.planta.pos = [CENTRO[0] - NORTE.x * 5.1, 290, CENTRO[2] - NORTE.z * 5.1];
 const VISTA_FACHADA = {
   'fachada-se': { pos: [9, 1.65, 30], tgt: [4, 6.2, 11.5] },
   'fachada-no': { pos: [-2, 1.65, -32], tgt: [0, 6.2, -11.5] },
@@ -179,7 +191,7 @@ async function arrancar() {
   prepararUI();
   const d = await pIntro;
   const n = d ? escena.construirParticulas(d, q.particulas) : 0;
-  estadoCarga(n ? `${n.toLocaleString('es-PA')} puntos` : 'Cargando el modelo…');
+  estadoCarga(n ? `${miles(n)} puntos` : 'Cargando el modelo…');
   empezarIntro();
   requestAnimationFrame(bucle);
   escena.cargaCompleta.then(async () => {
@@ -189,7 +201,7 @@ async function arrancar() {
     // la silueta del diagrama de sombras recorre toda la geometría (~120 ms): se calcula en un rato libre y no al primer clic
     escena.prepararSilueta();                    // en pedazos, en ratos libres
   });
-  escena.cargaCompleta.then(() => { if (n) estadoCarga(`${n.toLocaleString('es-PA')} puntos · modelo completo`); });
+  escena.cargaCompleta.then(() => { if (n) estadoCarga(`${miles(n)} puntos · modelo completo`); });
   escena.cargaCompleta.then(() => clima.cargarHorario(BASE).then(() => { dibujarDecadas(); refrescar(); }).catch((e) => console.warn('clima horario', e)));
   pVivo.then(() => refrescar());
   if (location.hash === '#depurar') depurar();
@@ -509,11 +521,12 @@ function paso(now) {
   const hr = Math.floor(S.min / 60); if (hr !== lastHour) { if (lastHour >= 0 && S.reproduce) sonido.clic(); lastHour = hr; }
   brujula(p);
   lecturas(p, c);
+  encuadreMovil(dtReal);
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
     [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.total.value * 100, escena.uViento.value * 100, U.viaje.value * 100, U.mojado.value * 200, U.brisa.value * 100, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
-    `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}`;
+    `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}|${Math.round(ENC.dy)}`;
   const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo || !!S.viaje;
   if (firma !== S.firma || anima || escena.sucio || now - (S.ultimoCambio || 0) < 500) {
     if (firma !== S.firma) { S.firma = firma; S.ultimoCambio = now; }
@@ -523,6 +536,31 @@ function paso(now) {
   } else S.dibujoPrevio = false;
   pintarPartes();
   if (S.voladizo) pintarCorte(p);
+}
+
+// ---------------- Encuadre en el teléfono ----------------
+// En pantallas angostas los paneles de abajo (la barra del tiempo, el rótulo, la tarjeta del recorrido) tapan casi la mitad
+// de la imagen y el edificio quedaba debajo, sobre todo en planta. La vista se corre en vertical (desplazamiento de lente con
+// setViewOffset: la cámara no se mueve y las etiquetas, que proyectan con la misma cámara, siguen en su lugar) para que el
+// punto que se mira quede en el centro del hueco libre entre los botones de arriba y el panel más alto de abajo.
+// En escritorio no cambia nada.
+const ENC = { dy: 0, aplicado: 0 };
+const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje'];
+function encuadreMovil(dt) {
+  const W = innerWidth, H = innerHeight;
+  let obj = 0;
+  if (W <= 760 && !intro) {
+    const arriba = $('#hud')?.getBoundingClientRect().bottom ?? 0;
+    let abajo = H;
+    for (const q of PANELES_ABAJO) { const r = $(q)?.getBoundingClientRect(); if (r && r.height > 0 && r.top > H * 0.3) abajo = Math.min(abajo, r.top); }
+    if (abajo - arriba > 60) obj = (arriba + abajo) / 2 - H / 2;
+  }
+  ENC.dy += (obj - ENC.dy) * (reduce ? 1 : Math.min(1, dt * 5));
+  if (Math.abs(obj - ENC.dy) < 0.5) ENC.dy = obj;
+  if (Math.abs(ENC.dy - ENC.aplicado) < 0.25 && ENC.W === W && ENC.H === H) return;
+  ENC.aplicado = ENC.dy; ENC.W = W; ENC.H = H;
+  const cam = escena.camera;
+  if (Math.abs(ENC.dy) < 0.5) cam.clearViewOffset(); else cam.setViewOffset(W, H, 0, -ENC.dy, W, H);
 }
 
 // ---------------- Resolución adaptable ----------------
@@ -689,7 +727,7 @@ function lecturas(p, c) {
     $('#l-alt').textContent = p.alt > -0.5 ? f1(p.alt) + '°' : 'bajo el horizonte';
     $('#l-az').textContent = p.alt > -0.5 ? `hacia el ${rumboTexto(p.az)} · ${Math.round(p.az)}°` : `${f1(-p.alt)}° bajo el horizonte`;
     $('#l-sombra').textContent = sp ? (sp.largo > 99 ? '> 99 m' : f1(sp.largo, 2) + ' m') : 'sin sol';
-    $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
+    $('#l-sombra-r').textContent = sp ? `se proyecta hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
   }
   // clima
   let temp = '—', det = '', fuente = '';
@@ -699,7 +737,7 @@ function lecturas(p, c) {
     // línea 1: cielo · línea 2: lluvia (o la diferencia con lo típico)
     const cielo = [];
     if (c.nubes != null) cielo.push(`${Math.round(c.nubes)} % nubes`);
-    if (c.dni != null && p.alt > 2) cielo.push(`sol ${Math.round(c.dni / 10) * 10} W/m²`);
+    if (c.dni != null && p.alt > 2) cielo.push(`sol ${miles(Math.round(c.dni / 10) * 10)} W/m²`);
     let agua = '';
     if (c.fuente === 'mes') { temp = `${Math.round(c.lluviaMes)} mm`; agua = 'de lluvia en el mes'; }
     else if (c.fuente === 'tipico') agua = `llueve en ${Math.round(c.probLluvia)} % de estas horas`;
@@ -744,7 +782,7 @@ function lecturas(p, c) {
   // fachadas: irradiancia
   Object.keys(FACHADAS).forEach((k, i) => {
     const el = document.querySelector(`[data-fachada="${k}"]`); if (!el) return;
-    const v = S.irr?.[i] ?? 0; el.querySelector('i').style.setProperty('--v', Math.min(1, v / 800)); el.querySelector('b').textContent = Math.round(v) + ' W/m²';
+    const v = S.irr?.[i] ?? 0; el.querySelector('i').style.setProperty('--v', Math.min(1, v / 800)); el.querySelector('b').textContent = miles(v) + ' W/m²';
   });
 }
 
@@ -784,7 +822,7 @@ function rotulo(p, c, sp) {
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
   // de noche el rótulo queda en dos frases cortas y los dos atajos; el dato del tiempo sigue en el dock
   if (noche) { tipo.textContent = S.modo === 'ahora' ? 'Ahora en Ciudad del Saber' : `${fechaTexto(S.fecha)} · ${hhmm(S.min)}`; txt.textContent = textoNoche(c); return; }
-  const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y cae hacia el ${rumboTexto(sp.rumbo)}.`
+  const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y se proyecta hacia el ${rumboTexto(sp.rumbo)}.`
     : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : textoNoche(c);
   let clTxt = '';
   if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Está lloviendo (${f1(c.lluvia)} mm/h).` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
@@ -964,6 +1002,7 @@ function prepararUI() {
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
   $('#rec-salir').addEventListener('click', () => recorrido(null));
+  $('#rec-plegar').addEventListener('click', () => plegarRecorrido(!document.documentElement.classList.contains('rec-plegado')));
   $('#rec-ver').addEventListener('click', verRespuesta);
   // nitidez
   $('#capa-nitidez').checked = RES.fija;
@@ -1104,18 +1143,18 @@ function preguntasQR(c) {
   const viento = (k) => {
     if (!oVi) return 'El viento le llega de frente muchas horas al año.';
     const r = oVi.indexOf(k);
-    return r === 0 ? `Recibe el viento de frente más horas que ninguna otra: ${W[k].toLocaleString('es-PA')} al año.`
-      : `Recibe el viento de frente unas ${W[k].toLocaleString('es-PA')} horas al año; la ${nom(oVi[0])}, unas ${W[oVi[0]].toLocaleString('es-PA')}.`;
+    return r === 0 ? `Recibe el viento de frente más horas que ninguna otra: ${miles(W[k])} al año.`
+      : `Recibe el viento de frente unas ${miles(W[k])} horas al año; la ${nom(oVi[0])}, unas ${miles(W[oVi[0]])}.`;
   };
   const opuesta = oVi ? nom(oVi[0]) : 'noroeste';
   return {
-    se: ['Le da el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de tocar el vidrio? Compruébalo con la regla del día.',
+    se: ['Recibe el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de incidir sobre el vidrio? Compruébalo con la regla del día.',
       `El viento llega casi siempre por la cara opuesta, la ${opuesta}, así que el aire que cruza el edificio sale por aquí. ¿Qué ventanas o rejillas lo dejarían salir?`],
     no: [`${lluvia('no')} ¿Ves manchas de humedad o pintura gastada abajo o bajo las ventanas? Compáralo con la forma de ver «Lluvia».`,
       `${viento('no')} Ponte de espaldas a la pared: ¿sientes la brisa en la cara?`],
-    ne: ['Mira al noreste, del lado por donde sale el sol, y solo le da sol en la mañana. ¿A qué hora crees que queda en sombra? Compruébalo con la regla del día.',
+    ne: ['Mira al noreste, del lado por donde sale el sol, y solo recibe sol en la mañana. ¿A qué hora crees que queda en sombra? Compruébalo con la regla del día.',
       `${lluvia('ne')} ¿El zócalo y la pintura se ven más limpios que en la noroeste? Compáralo con la forma de ver «Lluvia».`],
-    so: ['Le da el sol de la tarde. Párate bajo el alero: ¿a qué hora crees que el sol empieza a tocar el vidrio? Búscala con la regla del día.',
+    so: ['Recibe el sol de la tarde. Párate bajo el alero: ¿a qué hora crees que el sol empieza a incidir sobre el vidrio? Búscala con la regla del día.',
       `${lluvia('so')} ¿Ves marcas de agua bajo las ventanas o en las esquinas? Compáralo con la forma de ver «Lluvia».`],
   }[c];
 }
@@ -1140,7 +1179,7 @@ function textoFachada(p) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
   $('#fachada-texto').textContent = p.alt <= 0
     ? `Son las ${hhmm(S.min)} en Panamá y el sol está bajo el horizonte.`
-    : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería caer hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
+    : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería proyectarse hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
 }
 
 function refrescar() { lastLect = ''; S.kClimaDia = ''; }
@@ -1155,11 +1194,11 @@ const LENTES = {
     porque: 'Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.',
     ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche se ve solo la luz que hay: la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: las ventanas encendidas (y la luz que derraman) son inventadas, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
-  sol: { t: 'Sol: cuánto sol le llega a cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
-    que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
+  sol: { t: 'Sol: cuánta radiación solar incide en cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
+    que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
     leer: '«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo, en W/m².',
     prueba: 'Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.',
-    porque: 'Muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.',
+    porque: 'Es el asoleamiento del edificio: muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.',
     ojo: 'La difusa usa un cielo que brilla más alrededor del sol (Hay-Davies); esa parte cercana al sol se tapa con la sombra del alero, pero el resto del cielo que tapan el alero o los vecinos no se descuenta: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.',
     tec: 'Directa: radiación directa normal (DNI) de ERA5 × coseno del ángulo entre el sol y la superficie × sombra, con el mismo mapa de sombras de la escena. Difusa: modelo de Hay-Davies con la difusa horizontal de ERA5: la parte circunsolar (según cuánto sol directo llega frente al que llega fuera de la atmósfera) va con el ángulo del sol y con la sombra; el resto, × (1 + cos de la inclinación) / 2. Reflejada: global horizontal × 0,2 × (1 − cos de la inclinación) / 2.' },
   lluvia: { t: 'Lluvia: qué fachada se moja cuando llueve con viento', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['nada', '', 'mucha'],
@@ -1176,9 +1215,9 @@ const LENTES = {
     porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD).',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; calma, menos de 3,6 km/h. Viento de frente: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h.' },
-  sombras: { t: 'Sombras: la sombra del edificio en cada hora del día', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
+  sombras: { t: 'Sombras: la proyección de sombra del edificio en cada hora', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
     que: 'Sobre el terreno se dibuja el contorno de la sombra del edificio en cada hora en punto, de 6 a 18 h: turquesa en la mañana, blanco al mediodía y naranja en la tarde. Donde se enciman más contornos, ese pedazo de suelo pasa más horas a la sombra.',
-    prueba: 'Cambia la fecha con la regla del año: en diciembre las sombras son largas y caen hacia el norte; en junio son cortas y caen hacia el sur. En los días sin sombra (abril y agosto), la del mediodía casi desaparece.',
+    prueba: 'Cambia la fecha con la regla del año: en diciembre las sombras son largas y se proyectan hacia el norte; en junio son cortas y se proyectan hacia el sur. En los días sin sombra (abril y agosto), la del mediodía casi desaparece.',
     porque: 'Sirve para decidir dónde poner un patio, una terraza, una banca o un árbol: qué partes del jardín tienen sombra en la mañana y cuáles en la tarde.',
     ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos.',
     tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior. Es exacto para el volumen; los detalles pequeños quedan dentro del contorno.' },
@@ -1191,7 +1230,6 @@ const LENTES = {
 const MODOS = { sol: [['directa', 'Solo directo'], ['total', 'Total'], ['anio', 'Año típico']], lluvia: [['hora', 'Esta hora'], ['anio', 'Año típico']],
   viento: [['hora', 'Esta hora'], ['seca', 'Seca'], ['lluvias', 'Lluvias'], ['anio', 'Año']] };
 const MODO_DE = { sol: 'solModo', lluvia: 'aguaModo', viento: 'vientoModo' };
-const miles = (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 /** Cifras de radiación anual por fachada (consultas.json → radiacion) en los textos que las citan. */
 function textoRad(t) {
   const R = consultas?.radiacion?.fachadas;
@@ -1232,7 +1270,7 @@ function leyenda(c) {
     $('#ley-rampa').hidden = $('#ley-escala').hidden = !L.rampa;
     if (L.rampa) {
       $('#ley-rampa').style.background = anioSol ? 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)' : L.rampa;
-      $('#ley-escala').innerHTML = (anioSol ? ['0', '900', '1.800 kWh/m² al año'] : L.esc).map((x) => `<span>${x}</span>`).join('');
+      $('#ley-escala').innerHTML = (anioSol ? ['0', '900', `${miles(1800)} kWh/m² al año`] : L.esc).map((x) => `<span>${x}</span>`).join('');
     }
     $('#ley-leer').textContent = L.leer ?? ''; $('#ley-leer').hidden = !L.leer;
     $('#ley-prueba').textContent = L.prueba; $('#ley-porque').textContent = textoRad(L.porque); $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
@@ -1248,14 +1286,14 @@ function leyenda(c) {
   if (anioSol && consultas?.radiacion) {
     const R = consultas.radiacion;
     filas = ks.map((k) => `<li><span>${nom[k]}</span><b>${miles(R.fachadas[k.slice(8)].total)}</b><small>kWh/m² año</small></li>`).join('') + `<li><span>TECHO</span><b>${miles(R.techo.total)}</b><small>kWh/m² año</small></li>`;
-  } else if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${Math.round(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
+  } else if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${miles(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${miles(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
   else if (S.lente === 'viento') {
     const hora = S.vientoModo === 'hora';
-    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
+    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${miles(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
   }
   else if (S.lente === 'lluvia') {
     const anual = S.aguaModo === 'anio';
-    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? Math.round(S.agua?.[i] ?? 0) : f1(S.agua?.[i] ?? 0)}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small></li>`).join('');
+    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? miles(S.agua?.[i] ?? 0) : f1(S.agua?.[i] ?? 0)}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small></li>`).join('');
   }
   $('#ley-fachadas').innerHTML = filas; $('#ley-fachadas').hidden = !filas; $('#ley-fachadas').classList.toggle('cinco', S.lente === 'sol');
   // nota de la situación: qué pasa en este momento
@@ -1449,7 +1487,7 @@ function abrirVoladizo(abrir) {
   else S.vistaPrevia = null;
 }
 function pintarVoladizo() {
-  const L = S.largo ?? 1.65, coma = (v, n) => v.toFixed(n).replace('.', ',');
+  const L = S.largo ?? 1.65, coma = num;
   const K = 150, x0 = 46, y0 = 70, th = 14, Lp = L * K;
   const tip = 14 * Math.pow(L / 1.65, 4);
   const baja = (s) => tip * (s * s * (6 - 4 * s + s * s) / 3);          // forma de la deformada de una viga en voladizo con carga repartida
@@ -1519,7 +1557,7 @@ function pintarCorte(p) {
   if (clave === pintarCorte.f) return; pintarCorte.f = clave;
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
   $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
-  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => v.toFixed(n).replace('.', ',');
+  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => num(v, n);
   const K = 58, XW = 64, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro
   const tip = X(L), fl = C.losa + C.esp, yv0 = Y(C.vidArriba), yv1 = Y(C.vidAbajo);
   const r = (x0, y0, x1, y1, extra) => `<rect x="${Math.min(x0, x1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.abs(x1 - x0).toFixed(1)}" height="${Math.abs(y1 - y0).toFixed(1)}" ${extra}></rect>`;
@@ -1528,7 +1566,7 @@ function pintarCorte(p) {
   g += r(0, Y(C.losa), tip, Y(fl), 'fill="#56615f"') + r(0, Y(C.alero), tip, Y(C.alero + C.esp), 'fill="#56615f"');
   g += r(X(-C.muro), Y(fl), XW, yv1, 'fill="#3a4448"') + r(X(-C.muro), yv0, XW, Y(C.alero), 'fill="#3a4448"');
   g += r(X(-C.rehundido) - 3, yv0, X(-C.rehundido), yv1, 'fill="#4aa8dc" fill-opacity="0.55"');
-  // cara del muro y del vidrio: ámbar donde pega el sol, gris donde hay sombra
+  // cara del muro y del vidrio: ámbar donde incide el sol, gris donde hay sombra
   const franja = (x, h0, h1, sol) => h1 > h0 ? `<line x1="${x.toFixed(1)}" y1="${Y(h1).toFixed(1)}" x2="${x.toFixed(1)}" y2="${Y(h0).toFixed(1)}" stroke="${sol ? '#f4b545' : '#7f8a86'}" stroke-width="${sol ? 5 : 3}" stroke-linecap="butt"></line>` : '';
   const partes = [[XW + 2.5, fl, C.vidAbajo, E.dw], [XW + 2.5, C.vidArriba, C.alero, E.dw], [X(-C.rehundido) + 2.5, C.vidAbajo, C.vidArriba, E.dg]];
   for (const [x, h0, h1, d] of partes) {
@@ -1557,7 +1595,7 @@ function pintarCorte(p) {
       return { x0: x1 + ux * R, y0: y1 - uy * R };
     };
     const hxPx = hx, hyPx = Y(hy), o = rayo(tip, ya);
-    // rayos paralelos más abajo: pegan en el muro o el vidrio al sol
+    // rayos paralelos más abajo: inciden en el muro o el vidrio al sol
     for (let i = 1; i <= 3; i++) {
       const hh = hy - i * 0.62; if (hh < fl + 0.05) break;
       const enVid = hh > C.vidAbajo && hh < C.vidArriba, x1 = enVid ? X(-C.rehundido) : XW, y1 = Y(hh);
@@ -1588,10 +1626,10 @@ function pintarCorte(p) {
     const pfT = `${coma(E.pf, 1)}°`, somT = E.pisoEntero ? 'todo el piso' : `${coma(E.dw)} m`;
     $('#corte-perfil').textContent = pfT; $('#corte-sombra').textContent = somT;
     $('#corte-vidrio').textContent = VIDRIO_TXT[E.vidrio];
-    txt = `A las ${hora} el sol le llega a la ${fach} con ${pfT} de perfil. `;
+    txt = `A las ${hora} el sol incide sobre la ${fach} con un ángulo de perfil de ${pfT}. `;
     if (E.pisoEntero) txt += 'La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo.';
-    else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo le pega a la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
-    else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero y le da a todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
+    else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo incide en la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
+    else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero e incide en todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
     else txt += `La sombra baja ${coma(E.dw)} m: cubre ${E.vidrio === 'casiSol' ? 'solo' : ''} la parte de arriba del vidrio (${Math.round(E.frac * 100)} %) y el resto recibe sol.`.replace('cubre  la', 'cubre la');
     desc += `Sol de perfil a ${Math.round(E.pf)} grados. ${E.pisoEntero ? 'La sombra del alero cubre todo el piso.' : `La sombra del alero baja ${coma(E.dw)} m por el muro.`} El vidrio queda ${E.vidrio === 'sombra' || E.vidrio === 'sol' ? VIDRIO_TXT[E.vidrio] : `${VIDRIO_TXT[E.vidrio]}, ${Math.round(E.frac * 100)} % a la sombra`}.`;
   }
@@ -1607,6 +1645,35 @@ const dos = (n) => String(n).padStart(2, '0');
 function paradasRampa(css) {
   const cs = [...css.matchAll(/(#[0-9a-f]{3,8})(?:\s+([\d.]+)%)?/gi)];
   return cs.map((m, i) => [m[2] != null ? +m[2] / 100 : i / Math.max(1, cs.length - 1), m[1]]);
+}
+// La escena de la lámina sale a resolución fija, no a la del lienzo (en un teléfono serían ~600 px): 2.400 px en el lado
+// largo, con el mismo encuadre. Solo cambia la relación de píxeles del renderizador (el tamaño CSS del lienzo y la cámara
+// quedan igual), se dibuja, se copia en el mismo tick y se devuelve todo como estaba. 2.400 px de lado largo son a lo sumo
+// ~5,8 MP en pantallas cuadradas (unos 2,7 MP en un teléfono vertical): cabe en el límite de texturas de WebGPU (8.192) y
+// de WebGL 2 en teléfonos (4.096). Si esa captura sale vacía (sin memoria, contexto perdido), se prueba a 1.600 px y
+// luego a la resolución de pantalla.
+const LADO_LAMINA = 2400;
+function capturarAlta() {
+  const r = escena.renderer, pr0 = r.getPixelRatio(), cw = escena._w, ch = escena._h, largo = Math.max(cw, ch);
+  const lim = r.backend?.device?.limits?.maxTextureDimension2D ?? (r.backend?.gl?.getParameter?.(r.backend.gl.MAX_RENDERBUFFER_SIZE)) ?? 4096;
+  const intentos = [...new Set([...[LADO_LAMINA, 1600].map((l) => Math.min(l, lim) / largo), pr0])];
+  try {
+    for (const pr of intentos) {
+      r.setPixelRatio(pr);
+      escena.render();                                          // dibujar y copiar en el mismo tick
+      const src = r.domElement, W = src.width, H = src.height;
+      const cap = document.createElement('canvas'); cap.width = W; cap.height = H;
+      const cx = cap.getContext('2d'); cx.drawImage(src, 0, 0);
+      // comprobar que no salió vacía (negra o transparente)
+      const muestra = cx.getImageData(0, 0, W, H).data; let suma = 0;
+      for (let i = 0; i < muestra.length; i += 4 * 997) suma += muestra[i] + muestra[i + 1] + muestra[i + 2];
+      if (suma >= 30) return { cap, W, H };
+      anotar('aviso', `guardar imagen: captura vacía a ${W}×${H}`);
+    }
+    throw new Error('captura vacía');
+  } finally {
+    r.setPixelRatio(pr0); escena.sucio = true; escena.render();   // la vista del usuario vuelve a su resolución en este mismo tick
+  }
 }
 async function guardarImagen() {
   const b = $('#guardar-img'), est = $('#img-estado');
@@ -1624,19 +1691,11 @@ async function guardarImagen() {
     const p = posicionSol({ ...f, h: 0, min: S.min });
     const solTxt = p.alt > 0.5 ? `Sol a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}` : 'El sol está bajo el horizonte';
     const anioSol = S.lente === 'sol' && S.solModo === 'anio';
-    const rampa = anioSol ? { c: 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)', esc: ['0', '900', '1.800 kWh/m² al año'] } : L.rampa ? { c: L.rampa, esc: L.esc } : null;
+    const rampa = anioSol ? { c: 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)', esc: ['0', '900', `${miles(1800)} kWh/m² al año`] } : L.rampa ? { c: L.rampa, esc: L.esc } : null;
     const qr = document.createElement('canvas');
     await QRCode.toCanvas(qr, enlace, { margin: 2, width: 360, errorCorrectionLevel: 'M', color: { dark: '#0a1216ff', light: '#ffffffff' } });
     try { await document.fonts.ready; } catch (e) { /* sin fuentes */ }
-    // captura: dibujar y copiar en el mismo tick
-    escena.render();
-    const src = escena.renderer.domElement, W = src.width, H = src.height;
-    const cap = document.createElement('canvas'); cap.width = W; cap.height = H;
-    const cx0 = cap.getContext('2d'); cx0.drawImage(src, 0, 0);
-    // comprobar que no salió vacía (negra o transparente)
-    const muestra = cx0.getImageData(0, 0, W, H).data; let suma = 0;
-    for (let i = 0; i < muestra.length; i += 4 * 997) suma += muestra[i] + muestra[i + 1] + muestra[i + 2];
-    if (suma < 30) throw new Error('captura vacía');
+    const { cap, W, H } = capturarAlta();
     // lienzo final: escena y pie
     const u = Math.min(3, Math.max(0.7, W / 1200)), pad = 26 * u, qrT = 150 * u;
     const out = document.createElement('canvas'), cx = out.getContext('2d');
@@ -1686,7 +1745,7 @@ async function guardarImagen() {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     guardarImagen.ultima = { nombre, W: out.width, H: out.height };
-    est.textContent = `Listo: se descargó ${nombre}.`;
+    est.textContent = `Listo: se descargó ${nombre} (${miles(out.width)} × ${miles(out.height)} px).`;
   } catch (e) {
     anotar('aviso', 'guardar imagen: ' + (e?.message ?? e));
     est.textContent = 'No se pudo generar la imagen en este navegador. Prueba de nuevo o usa una captura de pantalla.';
@@ -1709,7 +1768,7 @@ function explicacion(k, p, c) {
     if (c.fuente === 'mes') return ['La lluvia del mes', `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(c.lluviaMes)} mm, es decir, ${Math.round(c.lluviaMes)} litros por metro cuadrado. Un ${MESES[S.fecha.m - 1]} típico tiene ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm.`];
     const dc = dniDespejado(p.alt);
     const partes = [`${f1(c.temp)} °C de temperatura del aire`, `${Math.round(c.nubes)} % del cielo cubierto de nubes`];
-    if (c.dni != null && p.alt > 2) partes.push(`${Math.round(c.dni)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${Math.round(dc)} W/m²)`);
+    if (c.dni != null && p.alt > 2) partes.push(`${miles(c.dni)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${miles(dc)} W/m²)`);
     const ll = c.lluvia ?? 0;
     const txtLl = ll >= 0.1 ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte.` : 'No llueve a esa hora.';
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? 'Es el pronóstico de modelo de Open-Meteo para ahora.' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer.'}`];
@@ -1736,14 +1795,14 @@ function pasosRecorrido() {
       ir: () => { volarA(VISTAS.aerea, 1.8, 'aerea', false); S.ayudas = true; $('#capa-ayudas').checked = true; } },
     { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol está alto, los aleros dejan las paredes y las ventanas en sombra.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto, protege la pared.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
-    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos siete décimos de lo que recibe la sureste.',
+    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según la radiación solar que incide sobre él, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos siete décimos de lo que recibe la sureste.',
       pre: 'Son las 3:30 de la tarde del 25 de marzo y el sol ya va bajando hacia el oeste. Mira el edificio desde arriba: ¿cuál de las cuatro paredes crees que lo recibe más de frente?',
       antes: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(z.h * 60 + z.min)}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: z.h * 60 + z.min, vista: 'aerea', lente: 'foto' }) },
-    { t: 'Las sombras de todo un día', txt: 'La forma de ver «Sombras» dibuja la sombra de cada hora sobre el terreno. El 21 de diciembre las sombras son las más largas del año y caen hacia el norte; en la tarde, el jardín noreste queda a la sombra del edificio.', dis: 'Sirve para decidir dónde poner un patio, una terraza o un árbol.',
-      pre: 'Está amaneciendo el 21 de diciembre. En esta época el sol del mediodía viene del sur, y la rosa del suelo te dice dónde queda el norte. ¿Hacia dónde crees que caerán las sombras del edificio a lo largo del día?',
+    { t: 'Las sombras de todo un día', txt: 'La forma de ver «Sombras» dibuja la sombra de cada hora sobre el terreno. El 21 de diciembre las sombras son las más largas del año y se proyectan hacia el norte; en la tarde, el jardín noreste queda a la sombra del edificio.', dis: 'Sirve para decidir dónde poner un patio, una terraza o un árbol.',
+      pre: 'Está amaneciendo el 21 de diciembre. En esta época el sol del mediodía viene del sur, y la rosa del suelo te dice dónde queda el norte. ¿Hacia dónde crees que se proyectarán las sombras del edificio a lo largo del día?',
       antes: () => { S.ayudas = true; $('#capa-ayudas').checked = true; viajarA({ fecha: { y, m: 12, d: 21 }, min: Math.round(saleYPone(y, 12, 21).sale) + 12, vista: 'planta', lente: 'foto' }); },
       ir: () => viajarA({ fecha: { y, m: 12, d: 21 }, min: 15 * 60, vista: 'planta', lente: 'sombras' }) },
     { t: 'La lluvia', txt: 'Aquí llueven unos 2.000 mm al año, casi todo de mayo a noviembre y sobre todo en la tarde. Esta es la hora más lluviosa de 25 años de datos: 19 mm entre las 14:00 y las 15:00 del 1 de julio de 2023. Mira las cortinas de agua que caen de los tres aleros.', dis: 'Por eso los aleros anchos: alejan el agua de los muros y de las ventanas.',
@@ -1765,7 +1824,7 @@ function pasosRecorrido() {
 function recorrido(i) {
   const P = S.pasos ?? (S.pasos = pasosRecorrido());
   if (i == null || i < 0 || i >= P.length) { S.paso = null; S.pasos = null; $('#recorrido').hidden = true; document.documentElement.classList.remove('en-recorrido'); if (S.reproduce) parar(); lastLect = ''; return; }
-  S.paso = i; S.explica = null; parar();
+  S.paso = i; S.explica = null; parar(); plegarRecorrido(false);
   const q = P[i];
   $('#rec-n').textContent = `Paso ${i + 1} de ${P.length}`;
   $('#rec-t').textContent = q.t; $('#rec-txt').textContent = q.txt; $('#rec-dis').textContent = q.dis;
@@ -1780,6 +1839,11 @@ function recorrido(i) {
   ['#sirve', '#ir-a', '#capas'].forEach((x) => { $(x).hidden = true; }); abrirVoladizo(false);
   (conPregunta ? q.antes : q.ir)(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
   if (conPregunta && foco) $('#rec-ver').focus();
+}
+/** En el teléfono la tarjeta del paso se pliega a su título para ver la escena entera. */
+function plegarRecorrido(plegar) {
+  document.documentElement.classList.toggle('rec-plegado', plegar);
+  const b = $('#rec-plegar'); b.textContent = plegar ? 'Leer el paso' : 'Ver el edificio'; b.setAttribute('aria-expanded', String(!plegar));
 }
 function verRespuesta() {
   const q = S.pasos?.[S.paso]; if (!q || !$('#rec-respuesta').hidden) return;
@@ -1823,22 +1887,22 @@ function listaConsultas() {
   const sol = g('Sol y sombra');
   z.forEach((q, i) => sol({ t: `Día sin sombra de ${i ? 'agosto' : 'abril'}`, f: { y, m: q.m, d: q.d }, min: q.h * 60 + q.min, vista: 'aerea', lente: 'sombras',
     v: `sol a ${f1(q.alt, 1)}°`, txt: `El sol pasa a ${f1(90 - q.alt, 1)}° del cenit: a mediodía la sombra queda casi toda bajo los aleros. Geometría solar exacta (NOAA).` }));
-  sol({ t: 'Solsticio de junio', f: { y, m: 6, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 6, 21).alt, 1)}° al N`, txt: 'El sol del mediodía pasa al norte del cenit: las sombras de la tarde caen hacia el sureste y el sur. Diagrama con el volumen del edificio, sin árboles ni vecinos.' });
+  sol({ t: 'Solsticio de junio', f: { y, m: 6, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 6, 21).alt, 1)}° al N`, txt: 'El sol del mediodía pasa al norte del cenit: las sombras de la tarde se proyectan hacia el sureste y el sur. Diagrama con el volumen del edificio, sin árboles ni vecinos.' });
   sol({ t: 'Solsticio de diciembre', f: { y, m: 12, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 12, 21).alt, 1)}° al S`, txt: 'Las sombras más largas del año, hacia el norte: el jardín noreste recibe la sombra del edificio en la tarde.' });
   sol({ t: 'Equinoccio de marzo', f: { y, m: 3, d: 20 }, min: md({ y, m: 3, d: 20 }), vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 3, 20).alt, 1)}°`, txt: 'El sol sale por el este y se pone por el oeste: la punta de las sombras recorre una línea recta.' });
   const fa = g('Sol en fachadas');
   if (C) {
     const ds = C.diasSol[1] ?? C.diasSol[0], tE = C.tipicos[0], tJ = C.tipicos[5];
-    fa({ t: 'Sol de la tarde en la fachada lateral SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol da casi de frente a la fachada lateral SO; el alero deja las ventanas a la sombra y el sol solo pega en la franja de muro que queda debajo de ellas.` });
+    fa({ t: 'Sol de la tarde en la fachada lateral SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol incide casi de frente sobre la fachada lateral SO; el alero deja las ventanas a la sombra y el sol solo incide en la franja de muro que queda debajo de ellas.` });
     fa({ t: 'Sol de la mañana en la entrada SE', f: deISO(tE.fecha), min: 7 * 60 + 45, fachada: 'se', lente: 'sol', v: 'día típico', txt: 'Un día típico de enero: el sol bajo de la mañana entra bajo el alero de la fachada principal. Pasa la regla a las 10:00 para ver el ángulo de corte.' });
     fa({ t: 'Sol del poniente en la NO (junio)', f: deISO(tJ.fecha), min: 17 * 60, fachada: 'no', lente: 'sol', v: 'día típico', txt: 'En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, que casi todo el año queda a la sombra. Suele estar nublado: mira el valor en W/m².' });
     const lv = g('Lluvia');
     const H = C.horasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${f1(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)}: ${f1(q.mm)} mm. Es el promedio de una celda de ~28 km: en el sitio pudo llover más.` }));
     lv({ t: 'La hora más lluviosa', ...H[0], vista: 'esquina', lente: 'foto', rank: H });
-    const D = C.diasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${q.mm} mm`, txt: `${fechaTexto(deISO(q.fecha))}: ${q.mm} mm en el día; la hora más fuerte, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)} (${f1(q.pico)} mm).` }));
+    const D = C.diasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${miles(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}: ${miles(q.mm)} mm en el día; la hora más fuerte, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)} (${f1(q.pico)} mm).` }));
     lv({ t: 'El día más lluvioso', ...D[0], vista: 'esquina', lente: 'foto', rank: D });
-    const W = C.lluviaViento.no.max, orden = Object.entries(C.lluviaViento).sort((a, b) => b[1].anual - a[1].anual).map(([k, v]) => `${k.toUpperCase()} ${v.anual}`).join(' · ');
-    lv({ t: 'La fachada que más se moja', f: deISO(W.fecha), min: W.hora * 60 - 30, fachada: 'no', lente: 'lluvia', v: `NO · ${Math.round(C.lluviaViento.no.anual)} L/m²·año`,
+    const W = C.lluviaViento.no.max, orden = Object.entries(C.lluviaViento).sort((a, b) => b[1].anual - a[1].anual).map(([k, v]) => `${k.toUpperCase()} ${miles(v.anual)}`).join(' · ');
+    lv({ t: 'La fachada que más se moja', f: deISO(W.fecha), min: W.hora * 60 - 30, fachada: 'no', lente: 'lluvia', v: `NO · ${miles(C.lluviaViento.no.anual)} L/m²·año`,
       txt: `Índice anual de lluvia con viento (L/m²): ${orden}. Aquí, su hora más fuerte: ${f1(W.mm)} mm con viento de ${W.viento} km/h que llega casi de frente. Ordena fachadas; no mide el agua sobre el muro.` });
     const R = C.rachaSeca;
     lv({ t: 'La sequía más larga', f: deISO(R.hasta), min: 15 * 60, vista: 'aerea', lente: 'foto', v: `${R.dias} días`, txt: `${R.dias} días seguidos con menos de 1 mm, del ${fechaTexto(deISO(R.desde))} al ${fechaTexto(deISO(R.hasta))}. Referencia para el riego del jardín o una cisterna de agua lluvia.` });
@@ -1849,8 +1913,8 @@ function listaConsultas() {
         txt: `De diciembre a abril el viento llega casi siempre del norte y el noroeste (${Math.round(C.viento.seca.frec[0] + C.viento.seca.frec[15] + C.viento.seca.frec[14])} % de las horas), a unos ${Math.round(C.viento.seca.media)} km/h de media: la fachada noroeste lo recibe de frente la mayor parte del tiempo.` });
       vi({ t: 'El viento de la temporada de lluvias', f: deISO(tL.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'lluvias', v: `${f1(C.viento.lluvias.media)} km/h de media`,
         txt: `De mayo a noviembre el viento es más flojo (unos ${Math.round(C.viento.lluvias.media)} km/h de media) y más variable: sigue mandando el noroeste, pero también llega del sur y del oeste; en calma el ${Math.round(C.viento.lluvias.calma)} % del tiempo.` });
-      vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${C.viento.anio.frente.no.toLocaleString('es-PA')} h al año`,
-        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${C.viento.anio.frente.no.toLocaleString('es-PA')}, NE ${C.viento.anio.frente.ne.toLocaleString('es-PA')}, SO ${C.viento.anio.frente.so.toLocaleString('es-PA')}, SE ${C.viento.anio.frente.se.toLocaleString('es-PA')}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
+      vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${miles(C.viento.anio.frente.no)} h al año`,
+        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${miles(C.viento.anio.frente.no)}, NE ${miles(C.viento.anio.frente.ne)}, SO ${miles(C.viento.anio.frente.so)}, SE ${miles(C.viento.anio.frente.se)}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
     }
     const lz = g('Luz y cielo');
     const S5 = C.diasSol.map((q) => ({ f: deISO(q.fecha), min: md(deISO(q.fecha)), v: `${f1(q.kwh, 2)} kWh/m²`, txt: `${fechaTexto(deISO(q.fecha))}: ${f1(q.kwh, 2)} kWh/m² de radiación global sobre el plano horizontal; un día medio recibe ${f1(C.solMedio, 2)}.` }));
