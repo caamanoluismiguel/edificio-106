@@ -282,7 +282,12 @@ export class Escena {
     this.pipeline.outputColorTransform = false;
     const aa = this.calidad.nivel !== 'bajo';
     this.salidas = { sinBloom: acabar(col, aa), sinAA: acabar(col, false) };
-    this.salidas.conBloom = acabar(col.add(bloom(scenePass.getTextureNode('output'), 0.12, 0.4, 2.4)), aa);
+    // bloom = destello de la lente: parte de la luz de lo que pasa del umbral se esparce por la imagen. El filtro deja pasar el
+    // valor entero de cada píxel sobre el umbral y las cinco escalas del desenfoque suman 3 veces su energía (con radio 0,4), así
+    // que la fuerza 0,12 le agregaba a toda la imagen el 36 % de la luz del halo del sol: a contraluz el muro en sombra quedaba
+    // casi tan claro como el cielo. Una lente real esparce del 1 al 5 % (velo de ISO 9358); 0,015 da el 4,5 %. De noche no cambia
+    // nada visible: lo único sobre el umbral es la cabeza del poste, que es pequeña.
+    this.salidas.conBloom = acabar(col.add(bloom(scenePass.getTextureNode('output'), 0.015, 0.4, 2.4)), aa);
     this.bloomOn = !!this.calidad.bloom;
     this.pipeline.outputNode = this.bloomOn ? this.salidas.conBloom : this.salidas.sinBloom;
 
