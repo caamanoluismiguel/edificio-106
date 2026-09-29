@@ -727,7 +727,7 @@ function lecturas(p, c) {
     $('#l-alt').textContent = p.alt > -0.5 ? f1(p.alt) + '°' : 'bajo el horizonte';
     $('#l-az').textContent = p.alt > -0.5 ? `hacia el ${rumboTexto(p.az)} · ${Math.round(p.az)}°` : `${f1(-p.alt)}° bajo el horizonte`;
     $('#l-sombra').textContent = sp ? (sp.largo > 99 ? '> 99 m' : f1(sp.largo, 2) + ' m') : 'sin sol';
-    $('#l-sombra-r').textContent = sp ? `cae hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
+    $('#l-sombra-r').textContent = sp ? `se proyecta hacia el ${rumboTexto(sp.rumbo)}` : 'no hay sombra solar';
   }
   // clima
   let temp = '—', det = '', fuente = '';
@@ -817,7 +817,7 @@ function rotulo(p, c, sp) {
   if (S.explica) { const e = explicacion(S.explica, p, c); if (e) { cerrar.hidden = false; tipo.textContent = 'Qué significa · ' + e[0]; txt.textContent = e[1]; return; } }
   cerrar.hidden = true;
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
-  const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y cae hacia el ${rumboTexto(sp.rumbo)}.`
+  const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y se proyecta hacia el ${rumboTexto(sp.rumbo)}.`
     : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : textoNoche(c);
   let clTxt = '';
   if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Está lloviendo (${f1(c.lluvia)} mm/h).` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
@@ -1147,13 +1147,13 @@ function preguntasQR(c) {
   };
   const opuesta = oVi ? nom(oVi[0]) : 'noroeste';
   return {
-    se: ['Le da el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de tocar el vidrio? Compruébalo con la regla del día.',
+    se: ['Recibe el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de incidir sobre el vidrio? Compruébalo con la regla del día.',
       `El viento llega casi siempre por la cara opuesta, la ${opuesta}, así que el aire que cruza el edificio sale por aquí. ¿Qué ventanas o rejillas lo dejarían salir?`],
     no: [`${lluvia('no')} ¿Ves manchas de humedad o pintura gastada abajo o bajo las ventanas? Compáralo con la forma de ver «Lluvia».`,
       `${viento('no')} Ponte de espaldas a la pared: ¿sientes la brisa en la cara?`],
-    ne: ['Mira al noreste, del lado por donde sale el sol, y solo le da sol en la mañana. ¿A qué hora crees que queda en sombra? Compruébalo con la regla del día.',
+    ne: ['Mira al noreste, del lado por donde sale el sol, y solo recibe sol en la mañana. ¿A qué hora crees que queda en sombra? Compruébalo con la regla del día.',
       `${lluvia('ne')} ¿El zócalo y la pintura se ven más limpios que en la noroeste? Compáralo con la forma de ver «Lluvia».`],
-    so: ['Le da el sol de la tarde. Párate bajo el alero: ¿a qué hora crees que el sol empieza a tocar el vidrio? Búscala con la regla del día.',
+    so: ['Recibe el sol de la tarde. Párate bajo el alero: ¿a qué hora crees que el sol empieza a incidir sobre el vidrio? Búscala con la regla del día.',
       `${lluvia('so')} ¿Ves marcas de agua bajo las ventanas o en las esquinas? Compáralo con la forma de ver «Lluvia».`],
   }[c];
 }
@@ -1178,7 +1178,7 @@ function textoFachada(p) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
   $('#fachada-texto').textContent = p.alt <= 0
     ? `Son las ${hhmm(S.min)} en Panamá y el sol está bajo el horizonte.`
-    : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería caer hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
+    : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería proyectarse hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
 }
 
 function refrescar() { lastLect = ''; S.kClimaDia = ''; }
@@ -1193,11 +1193,11 @@ const LENTES = {
     porque: 'Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.',
     ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el poste de la esquina es la única lámpara del modelo, y cuál lámpara tiene (LED o sodio) es una suposición, igual que las ventanas encendidas. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
-  sol: { t: 'Sol: cuánto sol le llega a cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
-    que: 'Cada punto del edificio, vidrio incluido, se pinta según el sol que le llega en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
+  sol: { t: 'Sol: cuánta radiación solar incide en cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
+    que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
     leer: '«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo, en W/m².',
     prueba: 'Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.',
-    porque: 'Muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.',
+    porque: 'Es el asoleamiento del edificio: muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.',
     ojo: 'La difusa usa un cielo que brilla más alrededor del sol (Hay-Davies); esa parte cercana al sol se tapa con la sombra del alero, pero el resto del cielo que tapan el alero o los vecinos no se descuenta: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.',
     tec: 'Directa: radiación directa normal (DNI) de ERA5 × coseno del ángulo entre el sol y la superficie × sombra, con el mismo mapa de sombras de la escena. Difusa: modelo de Hay-Davies con la difusa horizontal de ERA5: la parte circunsolar (según cuánto sol directo llega frente al que llega fuera de la atmósfera) va con el ángulo del sol y con la sombra; el resto, × (1 + cos de la inclinación) / 2. Reflejada: global horizontal × 0,2 × (1 − cos de la inclinación) / 2.' },
   lluvia: { t: 'Lluvia: qué fachada se moja cuando llueve con viento', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['nada', '', 'mucha'],
@@ -1214,9 +1214,9 @@ const LENTES = {
     porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD).',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; calma, menos de 3,6 km/h. Viento de frente: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h.' },
-  sombras: { t: 'Sombras: la sombra del edificio en cada hora del día', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
+  sombras: { t: 'Sombras: la proyección de sombra del edificio en cada hora', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
     que: 'Sobre el terreno se dibuja el contorno de la sombra del edificio en cada hora en punto, de 6 a 18 h: turquesa en la mañana, blanco al mediodía y naranja en la tarde. Donde se enciman más contornos, ese pedazo de suelo pasa más horas a la sombra.',
-    prueba: 'Cambia la fecha con la regla del año: en diciembre las sombras son largas y caen hacia el norte; en junio son cortas y caen hacia el sur. En los días sin sombra (abril y agosto), la del mediodía casi desaparece.',
+    prueba: 'Cambia la fecha con la regla del año: en diciembre las sombras son largas y se proyectan hacia el norte; en junio son cortas y se proyectan hacia el sur. En los días sin sombra (abril y agosto), la del mediodía casi desaparece.',
     porque: 'Sirve para decidir dónde poner un patio, una terraza, una banca o un árbol: qué partes del jardín tienen sombra en la mañana y cuáles en la tarde.',
     ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos.',
     tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior. Es exacto para el volumen; los detalles pequeños quedan dentro del contorno.' },
@@ -1565,7 +1565,7 @@ function pintarCorte(p) {
   g += r(0, Y(C.losa), tip, Y(fl), 'fill="#56615f"') + r(0, Y(C.alero), tip, Y(C.alero + C.esp), 'fill="#56615f"');
   g += r(X(-C.muro), Y(fl), XW, yv1, 'fill="#3a4448"') + r(X(-C.muro), yv0, XW, Y(C.alero), 'fill="#3a4448"');
   g += r(X(-C.rehundido) - 3, yv0, X(-C.rehundido), yv1, 'fill="#4aa8dc" fill-opacity="0.55"');
-  // cara del muro y del vidrio: ámbar donde pega el sol, gris donde hay sombra
+  // cara del muro y del vidrio: ámbar donde incide el sol, gris donde hay sombra
   const franja = (x, h0, h1, sol) => h1 > h0 ? `<line x1="${x.toFixed(1)}" y1="${Y(h1).toFixed(1)}" x2="${x.toFixed(1)}" y2="${Y(h0).toFixed(1)}" stroke="${sol ? '#f4b545' : '#7f8a86'}" stroke-width="${sol ? 5 : 3}" stroke-linecap="butt"></line>` : '';
   const partes = [[XW + 2.5, fl, C.vidAbajo, E.dw], [XW + 2.5, C.vidArriba, C.alero, E.dw], [X(-C.rehundido) + 2.5, C.vidAbajo, C.vidArriba, E.dg]];
   for (const [x, h0, h1, d] of partes) {
@@ -1594,7 +1594,7 @@ function pintarCorte(p) {
       return { x0: x1 + ux * R, y0: y1 - uy * R };
     };
     const hxPx = hx, hyPx = Y(hy), o = rayo(tip, ya);
-    // rayos paralelos más abajo: pegan en el muro o el vidrio al sol
+    // rayos paralelos más abajo: inciden en el muro o el vidrio al sol
     for (let i = 1; i <= 3; i++) {
       const hh = hy - i * 0.62; if (hh < fl + 0.05) break;
       const enVid = hh > C.vidAbajo && hh < C.vidArriba, x1 = enVid ? X(-C.rehundido) : XW, y1 = Y(hh);
@@ -1625,10 +1625,10 @@ function pintarCorte(p) {
     const pfT = `${coma(E.pf, 1)}°`, somT = E.pisoEntero ? 'todo el piso' : `${coma(E.dw)} m`;
     $('#corte-perfil').textContent = pfT; $('#corte-sombra').textContent = somT;
     $('#corte-vidrio').textContent = VIDRIO_TXT[E.vidrio];
-    txt = `A las ${hora} el sol le llega a la ${fach} con ${pfT} de perfil. `;
+    txt = `A las ${hora} el sol incide sobre la ${fach} con un ángulo de perfil de ${pfT}. `;
     if (E.pisoEntero) txt += 'La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo.';
-    else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo le pega a la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
-    else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero y le da a todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
+    else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo incide en la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
+    else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero e incide en todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
     else txt += `La sombra baja ${coma(E.dw)} m: cubre ${E.vidrio === 'casiSol' ? 'solo' : ''} la parte de arriba del vidrio (${Math.round(E.frac * 100)} %) y el resto recibe sol.`.replace('cubre  la', 'cubre la');
     desc += `Sol de perfil a ${Math.round(E.pf)} grados. ${E.pisoEntero ? 'La sombra del alero cubre todo el piso.' : `La sombra del alero baja ${coma(E.dw)} m por el muro.`} El vidrio queda ${E.vidrio === 'sombra' || E.vidrio === 'sol' ? VIDRIO_TXT[E.vidrio] : `${VIDRIO_TXT[E.vidrio]}, ${Math.round(E.frac * 100)} % a la sombra`}.`;
   }
@@ -1794,14 +1794,14 @@ function pasosRecorrido() {
       ir: () => { volarA(VISTAS.aerea, 1.8, 'aerea', false); S.ayudas = true; $('#capa-ayudas').checked = true; } },
     { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol está alto, los aleros dejan las paredes y las ventanas en sombra.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto, protege la pared.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
-    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según el sol que le llega, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos siete décimos de lo que recibe la sureste.',
+    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol», cada punto del edificio se pinta según la radiación solar que incide sobre él, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos siete décimos de lo que recibe la sureste.',
       pre: 'Son las 3:30 de la tarde del 25 de marzo y el sol ya va bajando hacia el oeste. Mira el edificio desde arriba: ¿cuál de las cuatro paredes crees que lo recibe más de frente?',
       antes: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(z.h * 60 + z.min)}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: z.h * 60 + z.min, vista: 'aerea', lente: 'foto' }) },
-    { t: 'Las sombras de todo un día', txt: 'La forma de ver «Sombras» dibuja la sombra de cada hora sobre el terreno. El 21 de diciembre las sombras son las más largas del año y caen hacia el norte; en la tarde, el jardín noreste queda a la sombra del edificio.', dis: 'Sirve para decidir dónde poner un patio, una terraza o un árbol.',
-      pre: 'Está amaneciendo el 21 de diciembre. En esta época el sol del mediodía viene del sur, y la rosa del suelo te dice dónde queda el norte. ¿Hacia dónde crees que caerán las sombras del edificio a lo largo del día?',
+    { t: 'Las sombras de todo un día', txt: 'La forma de ver «Sombras» dibuja la sombra de cada hora sobre el terreno. El 21 de diciembre las sombras son las más largas del año y se proyectan hacia el norte; en la tarde, el jardín noreste queda a la sombra del edificio.', dis: 'Sirve para decidir dónde poner un patio, una terraza o un árbol.',
+      pre: 'Está amaneciendo el 21 de diciembre. En esta época el sol del mediodía viene del sur, y la rosa del suelo te dice dónde queda el norte. ¿Hacia dónde crees que se proyectarán las sombras del edificio a lo largo del día?',
       antes: () => { S.ayudas = true; $('#capa-ayudas').checked = true; viajarA({ fecha: { y, m: 12, d: 21 }, min: Math.round(saleYPone(y, 12, 21).sale) + 12, vista: 'planta', lente: 'foto' }); },
       ir: () => viajarA({ fecha: { y, m: 12, d: 21 }, min: 15 * 60, vista: 'planta', lente: 'sombras' }) },
     { t: 'La lluvia', txt: 'Aquí llueven unos 2.000 mm al año, casi todo de mayo a noviembre y sobre todo en la tarde. Esta es la hora más lluviosa de 25 años de datos: 19 mm entre las 14:00 y las 15:00 del 1 de julio de 2023. Mira las cortinas de agua que caen de los tres aleros.', dis: 'Por eso los aleros anchos: alejan el agua de los muros y de las ventanas.',
@@ -1886,13 +1886,13 @@ function listaConsultas() {
   const sol = g('Sol y sombra');
   z.forEach((q, i) => sol({ t: `Día sin sombra de ${i ? 'agosto' : 'abril'}`, f: { y, m: q.m, d: q.d }, min: q.h * 60 + q.min, vista: 'aerea', lente: 'sombras',
     v: `sol a ${f1(q.alt, 1)}°`, txt: `El sol pasa a ${f1(90 - q.alt, 1)}° del cenit: a mediodía la sombra queda casi toda bajo los aleros. Geometría solar exacta (NOAA).` }));
-  sol({ t: 'Solsticio de junio', f: { y, m: 6, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 6, 21).alt, 1)}° al N`, txt: 'El sol del mediodía pasa al norte del cenit: las sombras de la tarde caen hacia el sureste y el sur. Diagrama con el volumen del edificio, sin árboles ni vecinos.' });
+  sol({ t: 'Solsticio de junio', f: { y, m: 6, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 6, 21).alt, 1)}° al N`, txt: 'El sol del mediodía pasa al norte del cenit: las sombras de la tarde se proyectan hacia el sureste y el sur. Diagrama con el volumen del edificio, sin árboles ni vecinos.' });
   sol({ t: 'Solsticio de diciembre', f: { y, m: 12, d: 21 }, min: 9 * 60, vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 12, 21).alt, 1)}° al S`, txt: 'Las sombras más largas del año, hacia el norte: el jardín noreste recibe la sombra del edificio en la tarde.' });
   sol({ t: 'Equinoccio de marzo', f: { y, m: 3, d: 20 }, min: md({ y, m: 3, d: 20 }), vista: 'planta', lente: 'sombras', v: `mediodía ${f1(mediodiaSolar(y, 3, 20).alt, 1)}°`, txt: 'El sol sale por el este y se pone por el oeste: la punta de las sombras recorre una línea recta.' });
   const fa = g('Sol en fachadas');
   if (C) {
     const ds = C.diasSol[1] ?? C.diasSol[0], tE = C.tipicos[0], tJ = C.tipicos[5];
-    fa({ t: 'Sol de la tarde en la fachada lateral SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol da casi de frente a la fachada lateral SO; el alero deja las ventanas a la sombra y el sol solo pega en la franja de muro que queda debajo de ellas.` });
+    fa({ t: 'Sol de la tarde en la fachada lateral SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol incide casi de frente sobre la fachada lateral SO; el alero deja las ventanas a la sombra y el sol solo incide en la franja de muro que queda debajo de ellas.` });
     fa({ t: 'Sol de la mañana en la entrada SE', f: deISO(tE.fecha), min: 7 * 60 + 45, fachada: 'se', lente: 'sol', v: 'día típico', txt: 'Un día típico de enero: el sol bajo de la mañana entra bajo el alero de la fachada principal. Pasa la regla a las 10:00 para ver el ángulo de corte.' });
     fa({ t: 'Sol del poniente en la NO (junio)', f: deISO(tJ.fecha), min: 17 * 60, fachada: 'no', lente: 'sol', v: 'día típico', txt: 'En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, que casi todo el año queda a la sombra. Suele estar nublado: mira el valor en W/m².' });
     const lv = g('Lluvia');
