@@ -174,7 +174,7 @@
   .dock-lect [data-explica] .k::after { content: '?'; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; border: 1px solid var(--cal-2); border-radius: 50%;
     font-size: 11px; line-height: 1; color: var(--cal); vertical-align: 0; }
   #rotulo-cerrar { justify-self: start; pointer-events: auto; padding: 7px 13px; font-size: 13px; }
-  /* noche: botones para ir al día o al atardecer, interruptores que solo aparecen de noche y rótulo del modo activo */
+  /* noche: botones para ir al día o al atardecer, el interruptor que solo aparece de noche y el rótulo de la exposición larga */
   #rotulo-noche { display: flex; flex-wrap: wrap; gap: 8px; }
   #rotulo-noche[hidden] { display: none; }
   #rotulo-noche .boton { pointer-events: auto; padding: 7px 13px; font-size: 13px; }
@@ -1000,7 +1000,6 @@
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
       <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez (para presentar)</b><small>Deja la resolución al máximo aunque el movimiento sea menos fluido. Sin marcar, la página la baja si el equipo va justo y la sube cuando va fluido. <span id="res-actual"></span></small></label>
       <label class="solo-noche"><input type="checkbox" id="capa-larga"><b>Exposición larga</b><small>Aclara la noche como una foto de 20 segundos en trípode. No agrega luz: todo sube lo mismo, así que lo claro y lo oscuro siguen en su lugar.</small></label>
-      <label class="solo-noche"><input type="checkbox" id="capa-maqueta"><b>Maqueta aclarada</b><small>Pinta el edificio como una maqueta de arcilla con una luz pareja que no existe, para ver la forma de noche.</small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa.</small></label>
     </div>
   </div>

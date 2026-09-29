@@ -37,7 +37,6 @@ const ESCENAS = {
   // variantes de la nueva (solo en la rama)
   e1sodio: { t: 'Nueva · poste de sodio 2100 K', base: 'e1', prep: (E) => E.setLampara('sodio'), soloNueva: true },
   e1larga: { t: 'Nueva · Exposición larga', base: 'e1', prep: () => document.querySelector('#capa-larga').click(), soloNueva: true, rotulo: true },
-  e1maqueta: { t: 'Nueva · Maqueta aclarada', base: 'e1', prep: () => document.querySelector('#capa-maqueta').click(), soloNueva: true, rotulo: true },
 };
 for (const e of Object.values(ESCENAS)) if (e.base) Object.assign(e, { ...ESCENAS[e.base], ...e, t: e.t });
 
@@ -165,7 +164,7 @@ async function capturar(pg, clave, esc, sitio) {
   const jpg = path.join(CAP, `${sitio}_${clave}.jpg`);
   await pg.screenshot({ path: jpg, type: 'jpeg', quality: 90 });
   await pg.evaluate(() => { document.querySelectorAll('style').forEach((s) => { if (/#leyenda\{display:none/.test(s.textContent)) s.remove(); }); });
-  if (esc.prep && sitio === 'nueva') await pg.evaluate(() => { const E = __e106.escena; E.setLampara?.('led'); for (const id of ['#capa-larga', '#capa-maqueta']) { const b = document.querySelector(id); if (b?.checked) b.click(); } });
+  if (esc.prep && sitio === 'nueva') await pg.evaluate(() => { const E = __e106.escena; E.setLampara?.('led'); for (const id of ['#capa-larga']) { const b = document.querySelector(id); if (b?.checked) b.click(); } });
   const m = await medir(pg, esc, png);
   return { jpg, ...info, medida: m };
 }
@@ -219,5 +218,5 @@ if (['c3', 'c8', 'c15'].every((k) => hay('nueva', k))) {
   hechas.push(await hoja('crepusculo', '26 sep 2026 · crepúsculo en la esquina', null, filas));
 }
 if (hay('nueva', 'e1') && hay('nueva', 'e1sodio')) hechas.push(await hoja('lamparas', ESCENAS.e1.t, [{ rotulo: 'Nueva · poste LED 4000 K', jpg: J('nueva', 'e1') }, { rotulo: 'Nueva · poste de sodio 2100 K', jpg: J('nueva', 'e1sodio') }]));
-if (['e1', 'e1larga', 'e1maqueta'].every((k) => hay('nueva', k))) hechas.push(await hoja('modos', ESCENAS.e1.t, [{ rotulo: 'Nueva', jpg: J('nueva', 'e1') }, { rotulo: 'Exposición larga', jpg: J('nueva', 'e1larga') }, { rotulo: 'Maqueta aclarada', jpg: J('nueva', 'e1maqueta') }]));
+if (['e1', 'e1larga'].every((k) => hay('nueva', k))) hechas.push(await hoja('modos', ESCENAS.e1.t, [{ rotulo: 'Nueva · honesta', jpg: J('nueva', 'e1') }, { rotulo: 'Nueva · exposición larga', jpg: J('nueva', 'e1larga') }]));
 console.log(hechas.join('\n'));

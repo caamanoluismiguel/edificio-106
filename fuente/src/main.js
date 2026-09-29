@@ -1032,15 +1032,11 @@ function prepararUI() {
   $('#guardar-img').addEventListener('click', guardarImagen);
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
-  // modos de la noche para comparar: uno a la vez; cada uno se rotula en la escena mientras está activo
-  const modoNoche = (m) => {
-    $('#capa-larga').checked = m === 'larga'; $('#capa-maqueta').checked = m === 'maqueta';
-    escena.setModoNoche(m); const a = $('#aviso-noche');
-    a.textContent = m === 'larga' ? 'Exposición larga: la escena se aclara como una foto de 20 segundos en trípode' : m === 'maqueta' ? 'Maqueta aclarada: esta luz no existe, sirve para ver la forma de noche' : '';
-    a.hidden = m === 'honesta';
-  };
-  $('#capa-larga').addEventListener('change', (e) => modoNoche(e.target.checked ? 'larga' : 'honesta'));
-  $('#capa-maqueta').addEventListener('change', (e) => modoNoche(e.target.checked ? 'maqueta' : 'honesta'));
+  // exposición larga: la alternativa a la noche honesta; se rotula en la escena mientras está activa
+  $('#capa-larga').addEventListener('change', (e) => {
+    escena.setModoNoche(e.target.checked ? 'larga' : 'honesta');
+    const a = $('#aviso-noche'); a.textContent = 'Exposición larga: la escena se aclara como una foto de 20 segundos en trípode'; a.hidden = !e.target.checked;
+  });
   $('#noche-dia').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: 9 * 60, vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
   $('#noche-atardecer').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: Math.round(saleYPone(S.fecha.y, S.fecha.m, S.fecha.d).pone), vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
