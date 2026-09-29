@@ -97,6 +97,7 @@ const NOCHE = {
   exposicion: 1.1,
   pasosLarga: 3,                         // «Exposición larga»: pasos de exposición sobre la noche honesta
   ventanas: 3.0,                         // emisivo de una ventana encendida
+  ventanaLum: 0.52,                      // luminancia del vidrio encendido por unidad de U.ventanasN (la misma del naranja de antes)
   poste: 330,                            // intensidad del poste (el charco llega a ~2,5 en el centro)
   lamparas: { led: [1.0, 0.617, 0.381], sodio: [1.0, 0.42, 0.07] },  // 4000 K y sodio de alta presión (~2100 K), lineales
 };
@@ -556,8 +557,9 @@ export class Escena {
       const cell = floor(vec2(positionWorld.x.add(positionWorld.z).div(3.8), positionWorld.y.div(3.65)));
       // en los edificios vecinos (paños de vidrio grandes) se encienden menos y más tenues, para que no aparezcan bloques de luz
       const on = step(grupo === 'contexto' ? 0.6 : 0.35, hash(cell.x.mul(17.0).add(cell.y.mul(131.0)))).mul(grupo === 'contexto' ? 0.45 : 1);
-      // con la noche honesta la escena es oscura y las ventanas vuelven a ser lo más claro (U.ventanasN, ~3,6)
-      m.emissiveNode = vec3(1.0, 0.42, 0.13).mul(on).mul(U.ventanasN);
+      // con la noche honesta la escena es oscura y las ventanas vuelven a ser lo más claro (U.ventanasN). Luz blanca de ~4000 K:
+      // en las fotos de los salones hay paneles LED en cielorraso de placas, paredes blancas y piso claro (antes era naranja)
+      m.emissiveNode = vec3(...NOCHE.lamparas.led).mul(NOCHE.ventanaLum).mul(on).mul(U.ventanasN);
     }
     const nmPlaster = (nm.includes('plaster') || nm.includes('cream trim')) && !nm.includes('interior');
     let colorFinal = colBase;
@@ -650,7 +652,7 @@ export class Escena {
 
     // luz de las fuentes de la noche, sin luces nuevas (una luz de three.js más obligaría a recompilar todo): se suma como
     // emisivo, multiplicada por el color del material. El poste de la esquina es un punto que alumbra hacia abajo y cae con
-    // la distancia al cuadrado (el charco mide unos 20 m); las ventanas encendidas derraman un poco de luz cálida en el suelo
+    // la distancia al cuadrado (el charco mide unos 20 m); las ventanas encendidas derraman un poco de su luz blanca en el suelo
     // y los pasillos que tienen al frente y en el sofito que tienen encima (misma celda al azar que el vidrio).
     if (!glass) {
       const dL = vec3(...POSTE.toArray()).sub(positionWorld), d2 = dot(dL, dL), l = dL.div(d2.sqrt());
@@ -664,7 +666,7 @@ export class Escena {
       const cel = floor(q.x.add(q.y).div(3.8));
       const enc = step(0.35, hash(cel.mul(17.0).add(piso.mul(131.0)))).mul(step(piso, 2.5));
       const cerca = arriba.mul(pow(float(0.5), dq.div(0.9))).mul(0.3).add(abajo.mul(smoothstep(2.4, 0.8, dq)).mul(0.18));
-      const eVent = vec3(1.0, 0.55, 0.25).mul(enc).mul(cerca).mul(U.ventanasN).mul(0.28);
+      const eVent = vec3(...NOCHE.lamparas.led).mul(enc).mul(cerca).mul(U.ventanasN).mul(0.175);   // la misma luz blanca del salón
       // la bóveda completa sobre lo que mira al cielo sin nada encima: las tejas (siempre son techo) y el suelo fuera de los
       // aleros. Se suma aparte para no tocar el muro ni el piso de los pasillos, que tienen el alero encima
       const teja = /terracotta/.test(nm);
