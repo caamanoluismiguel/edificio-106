@@ -1177,8 +1177,9 @@ function cerrarQR(devolverFoco) {
 }
 function textoFachada(p) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
-  $('#fachada-texto').textContent = p.alt <= 0
-    ? `Son las ${hhmm(S.min)} en Panamá y el sol está bajo el horizonte.`
+  // con el sol a menos de 0,5° no hay sombra del poste que comparar (sombraPoste da null): se dice solo la hora
+  $('#fachada-texto').textContent = !sp
+    ? `Son las ${hhmm(S.min)} en Panamá y el sol está ${p.alt <= 0 ? 'bajo el horizonte' : 'en el horizonte'}.`
     : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería proyectarse hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
 }
 
