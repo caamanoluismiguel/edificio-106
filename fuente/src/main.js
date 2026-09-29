@@ -99,6 +99,8 @@ const VISTAS = {
   aerea: { pos: [92, 78, 104], tgt: [0, 3, 0] },
   planta: { pos: [CENTRO[0] - NORTE.x * 3.8, 215, CENTRO[2] - NORTE.z * 3.8], tgt: [CENTRO[0], 0, CENTRO[2]] },
 };
+// en pantallas verticales la planta, más alta: el hueco libre entre los botones y la tarjeta del recorrido es bajo (ver encuadreMovil)
+if (innerWidth / innerHeight < 0.8) VISTAS.planta.pos = [CENTRO[0] - NORTE.x * 5.1, 290, CENTRO[2] - NORTE.z * 5.1];
 const VISTA_FACHADA = {
   'fachada-se': { pos: [9, 1.65, 30], tgt: [4, 6.2, 11.5] },
   'fachada-no': { pos: [-2, 1.65, -32], tgt: [0, 6.2, -11.5] },
@@ -519,11 +521,12 @@ function paso(now) {
   const hr = Math.floor(S.min / 60); if (hr !== lastHour) { if (lastHour >= 0 && S.reproduce) sonido.clic(); lastHour = hr; }
   brujula(p);
   lecturas(p, c);
+  encuadreMovil(dtReal);
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
     [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.total.value * 100, escena.uViento.value * 100, U.viaje.value * 100, U.mojado.value * 200, U.brisa.value * 100, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
-    `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}`;
+    `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}|${Math.round(ENC.dy)}`;
   const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo || !!S.viaje;
   if (firma !== S.firma || anima || escena.sucio || now - (S.ultimoCambio || 0) < 500) {
     if (firma !== S.firma) { S.firma = firma; S.ultimoCambio = now; }
@@ -533,6 +536,31 @@ function paso(now) {
   } else S.dibujoPrevio = false;
   pintarPartes();
   if (S.voladizo) pintarCorte(p);
+}
+
+// ---------------- Encuadre en el teléfono ----------------
+// En pantallas angostas los paneles de abajo (la barra del tiempo, el rótulo, la tarjeta del recorrido) tapan casi la mitad
+// de la imagen y el edificio quedaba debajo, sobre todo en planta. La vista se corre en vertical (desplazamiento de lente con
+// setViewOffset: la cámara no se mueve y las etiquetas, que proyectan con la misma cámara, siguen en su lugar) para que el
+// punto que se mira quede en el centro del hueco libre entre los botones de arriba y el panel más alto de abajo.
+// En escritorio no cambia nada.
+const ENC = { dy: 0, aplicado: 0 };
+const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje'];
+function encuadreMovil(dt) {
+  const W = innerWidth, H = innerHeight;
+  let obj = 0;
+  if (W <= 760 && !intro) {
+    const arriba = $('#hud')?.getBoundingClientRect().bottom ?? 0;
+    let abajo = H;
+    for (const q of PANELES_ABAJO) { const r = $(q)?.getBoundingClientRect(); if (r && r.height > 0 && r.top > H * 0.3) abajo = Math.min(abajo, r.top); }
+    if (abajo - arriba > 60) obj = (arriba + abajo) / 2 - H / 2;
+  }
+  ENC.dy += (obj - ENC.dy) * (reduce ? 1 : Math.min(1, dt * 5));
+  if (Math.abs(obj - ENC.dy) < 0.5) ENC.dy = obj;
+  if (Math.abs(ENC.dy - ENC.aplicado) < 0.25 && ENC.W === W && ENC.H === H) return;
+  ENC.aplicado = ENC.dy; ENC.W = W; ENC.H = H;
+  const cam = escena.camera;
+  if (Math.abs(ENC.dy) < 0.5) cam.clearViewOffset(); else cam.setViewOffset(W, H, 0, -ENC.dy, W, H);
 }
 
 // ---------------- Resolución adaptable ----------------
@@ -969,6 +997,7 @@ function prepararUI() {
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
   $('#rec-salir').addEventListener('click', () => recorrido(null));
+  $('#rec-plegar').addEventListener('click', () => plegarRecorrido(!document.documentElement.classList.contains('rec-plegado')));
   $('#rec-ver').addEventListener('click', verRespuesta);
   // nitidez
   $('#capa-nitidez').checked = RES.fija;
@@ -1794,7 +1823,7 @@ function pasosRecorrido() {
 function recorrido(i) {
   const P = S.pasos ?? (S.pasos = pasosRecorrido());
   if (i == null || i < 0 || i >= P.length) { S.paso = null; S.pasos = null; $('#recorrido').hidden = true; document.documentElement.classList.remove('en-recorrido'); if (S.reproduce) parar(); lastLect = ''; return; }
-  S.paso = i; S.explica = null; parar();
+  S.paso = i; S.explica = null; parar(); plegarRecorrido(false);
   const q = P[i];
   $('#rec-n').textContent = `Paso ${i + 1} de ${P.length}`;
   $('#rec-t').textContent = q.t; $('#rec-txt').textContent = q.txt; $('#rec-dis').textContent = q.dis;
@@ -1809,6 +1838,11 @@ function recorrido(i) {
   ['#sirve', '#ir-a', '#capas'].forEach((x) => { $(x).hidden = true; }); abrirVoladizo(false);
   (conPregunta ? q.antes : q.ir)(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
   if (conPregunta && foco) $('#rec-ver').focus();
+}
+/** En el teléfono la tarjeta del paso se pliega a su título para ver la escena entera. */
+function plegarRecorrido(plegar) {
+  document.documentElement.classList.toggle('rec-plegado', plegar);
+  const b = $('#rec-plegar'); b.textContent = plegar ? 'Leer el paso' : 'Ver el edificio'; b.setAttribute('aria-expanded', String(!plegar));
 }
 function verRespuesta() {
   const q = S.pasos?.[S.paso]; if (!q || !$('#rec-respuesta').hidden) return;

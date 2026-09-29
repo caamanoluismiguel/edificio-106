@@ -190,7 +190,9 @@
   html.en-recorrido #rotulo, html.en-recorrido #panel-fachada { display: none; }
   .rec-cab { display: flex; justify-content: space-between; align-items: center; }
   #rec-n { font: 500 11.5px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
-  #rec-salir { padding: 6px 12px; font-size: 12.5px; }
+  #rec-salir, #rec-plegar { padding: 6px 12px; font-size: 12.5px; }
+  #rec-plegar { display: none; margin-left: auto; margin-right: 6px; }
+  #rec-cuerpo { display: grid; gap: 9px; }
   #rec-t { margin: 0; font: 760 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
   #rec-txt { margin: 0; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
   .rec-dis { margin: 0; font-size: 13px; line-height: 1.45; color: var(--cal-2); } .rec-dis b { color: var(--sol); font-weight: 600; }
@@ -553,7 +555,12 @@
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
     #ir-a { background: var(--solido); }
     #abrir-recorrido { display: none; }
-    #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 46vh; overflow: auto; }
+    /* en el teléfono la tarjeta no pasa de un tercio de la pantalla: el texto se desplaza por dentro, los botones quedan a la vista,
+       y «Ver el edificio» la pliega al título para mirar la escena (la cámara centra lo que se mira en el hueco que queda libre) */
+    #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 36vh; display: flex; flex-direction: column; }
+    #rec-cuerpo { flex: 0 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; gap: 7px; }
+    #rec-plegar { display: inline-flex; }
+    html.rec-plegado #rec-cuerpo { display: none; }
     #qr { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 118px); padding: 11px 13px 12px; gap: 5px; max-height: 40vh; overflow: auto; }
     #qr h2 { font-size: 17px; } #qr-lugar { font-size: 12px; } #qr-preg { font-size: 13px; gap: 6px; line-height: 1.4; }
     #rec-t { font-size: 18px; } #rec-txt { font-size: 13.5px; } .rec-dis { font-size: 12px; } #rec-pregunta p { font-size: 13.5px; padding: 8px 10px; } #rec-pregunta, #rec-respuesta { gap: 7px; }
@@ -662,8 +669,9 @@
 </div>
 
 <aside id="recorrido" hidden aria-labelledby="rec-t" aria-live="polite">
-  <div class="rec-cab"><span id="rec-n" class="num"></span><button type="button" id="rec-salir" class="boton">Salir</button></div>
+  <div class="rec-cab"><span id="rec-n" class="num"></span><button type="button" id="rec-plegar" class="boton" aria-expanded="true" aria-controls="rec-cuerpo">Ver el edificio</button><button type="button" id="rec-salir" class="boton">Salir</button></div>
   <h2 id="rec-t"></h2>
+  <div id="rec-cuerpo">
   <div id="rec-pregunta" hidden>
     <p><b>Antes de seguir:</b> <span id="rec-preg"></span></p>
     <button type="button" id="rec-ver" class="boton primario">Ver respuesta</button>
@@ -671,6 +679,7 @@
   <div id="rec-respuesta">
     <p id="rec-txt" tabindex="-1"></p>
     <p class="rec-dis"><b>Para el diseño:</b> <span id="rec-dis"></span></p>
+  </div>
   </div>
   <div class="rec-pie"><div id="rec-puntos" aria-hidden="true"></div><button type="button" id="rec-prev" class="boton">Anterior</button><button type="button" id="rec-sig" class="boton primario">Siguiente</button></div>
 </aside>
