@@ -68,6 +68,7 @@ Object.assign(U, {
   poste: uniform(0),                     // intensidad del poste de la esquina (0 de día)
   posteCol: uniform(new THREE.Color(1, 1, 1)),          // color de su lámpara, con luminancia 1
   ventanasN: uniform(0),                 // encendido de las ventanas y su derrame (0 de día)
+  cieloArriba: uniform(new THREE.Color(0, 0, 0)),       // de noche, lo que suma la bóveda completa a techos y suelo abiertos
 });
 // sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol».
 // Ojo con el orden: three.js emite el emisivo ANTES que el código de las luces (la sombra se calcula al usarse la iluminación,
@@ -181,6 +182,7 @@ export class Escena {
     const gm = new THREE.MeshStandardNodeMaterial({ color: new THREE.Color(0.05, 0.085, 0.03), roughness: 0.95 });
     gm.colorNode = mix(clayColor.mul(0.55), vec3(0.05, 0.085, 0.03), U.mat);
     gm.receivedShadowNode = sombraNubes;
+    gm.emissiveNode = gm.colorNode.mul(vec3(U.cieloArriba));   // de noche, la bóveda completa sobre el terreno abierto
     const suelo = new THREE.Mesh(g, gm); suelo.position.y = -0.05; suelo.receiveShadow = true; scene.add(suelo);
     this.suelo = suelo;
 
@@ -362,6 +364,9 @@ export class Escena {
     const Iday = 0.08 + day * (0.22 + 0.95 * cubierto);
     const hc = new THREE.Color().setRGB(0.55 + 0.27 * day, 0.62 + 0.21 * day, 0.85 - 0.02 * day).lerp(new THREE.Color(0.88, 0.89, 0.9), cubierto).multiplyScalar(Iday);
     const hn = new THREE.Color().setRGB(...H.map((x, i) => (x * 0.4 + Z[i] * 0.6) * NOCHE.relleno * 10));
+    // techos y suelo abiertos ven la bóveda entera: reciben el 100 % de su luz, no el 35 % del relleno (lo que le llega al muro
+    // en sombra, que ve media bóveda y el resto es suelo oscuro y edificios). Se suma la diferencia; el muro no cambia.
+    U.cieloArriba.value.copy(hn).multiplyScalar((1 / NOCHE.relleno - 1) * nv / Math.PI);
     this.hemi.intensity = 1;
     this.hemi.color.copy(hc.lerp(hn, nv)).addScalar(5 * fl);
     const gd = new THREE.Color().setRGB(0.2 + 0.2 * day, 0.2 + 0.17 * day, 0.14 + 0.07 * day).multiplyScalar(Iday);
@@ -628,7 +633,12 @@ export class Escena {
       const enc = step(0.35, hash(cel.mul(17.0).add(piso.mul(131.0)))).mul(step(piso, 2.5));
       const cerca = arriba.mul(pow(float(0.5), dq.div(0.9))).mul(0.3).add(abajo.mul(smoothstep(2.4, 0.8, dq)).mul(0.18));
       const eVent = vec3(1.0, 0.55, 0.25).mul(enc).mul(cerca).mul(U.ventanasN).mul(0.28);
-      const eArt = m.colorNode.mul(ePoste.add(eVent));
+      // la bóveda completa sobre lo que mira al cielo sin nada encima: las tejas (siempre son techo) y el suelo fuera de los
+      // aleros. Se suma aparte para no tocar el muro ni el piso de los pasillos, que tienen el alero encima
+      const teja = /terracotta/.test(nm);
+      const abierto = teja ? float(1) : grupo === 'sitio' ? step(y, 1.2).mul(step(1.9, dq)) : grupo === 'contexto' && /turf/.test(nm) ? float(1) : float(0);
+      const eCielo = vec3(U.cieloArriba).mul(max(normalWorld.y, 0)).mul(abierto);
+      const eArt = m.colorNode.mul(ePoste.add(eVent).add(eCielo));
       m.emissiveNode = m.emissiveNode ? m.emissiveNode.add(eArt) : eArt;
       // la cabeza del poste: la lámpara misma, que satura y hace bloom
       if (grupo === 'sitio' && nm.includes('soffit')) {
