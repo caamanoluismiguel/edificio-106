@@ -68,6 +68,10 @@ Object.assign(U, {
   poste: uniform(0),                     // intensidad del poste de la esquina (0 de día)
   posteCol: uniform(new THREE.Color(1, 1, 1)),          // color de su lámpara, con luminancia 1
   ventanasN: uniform(0),                 // encendido de las ventanas y su derrame (0 de día)
+  lunaDir: uniform(new THREE.Vector3(0, -1, 0)),        // hacia dónde está la luna (escena)
+  lunaLuz: uniform(new THREE.Vector3(0, 1, 0)),         // hacia dónde está el sol visto desde la luna (da el terminador)
+  lunaDisco: uniform(0),                 // brillo del disco de la luna (0 sin luna, de día o tapada por nubes densas)
+  lunaNube: uniform(0),                  // 0..1: nubes delante de la luna (el borde del disco se difumina)
   cieloArriba: uniform(new THREE.Color(0, 0, 0)),       // de noche, lo que suma la bóveda completa a techos y suelo abiertos
 });
 // sombra geométrica del sol en cada punto (0 = en sombra, 1 = al sol): la escribe el mapa de sombras y la lee la lente «Sol».
@@ -83,6 +87,7 @@ const sombraSol = property('float', 'sombraSol');
 const NOCHE = {
   lunaMax: 0.42,                         // luna llena en el cenit con cielo despejado (el sol de mediodía llega a 5)
   lunaColor: [1.0, 0.96, 0.9],           // es luz del sol reflejada, apenas más cálida
+  lunaDisco: 1.4,                        // brillo del disco en el cielo (sale casi blanco, sin encandilar)
   nubladoH: [0.09, 0.08, 0.075], nubladoZ: [0.05, 0.045, 0.042],      // resplandor urbano en nubes bajas
   despejadoH: [0.05, 0.05, 0.056], despejadoZ: [0.009, 0.0105, 0.016],
   lunaCielo: [0.012, 0.017, 0.028],      // lo que suma la luna llena alta al cielo despejado
@@ -146,7 +151,20 @@ export class Escena {
     // de noche la bóveda pasa a la de noche (U.cieloH y U.cieloZ, según las nubes, la luna y el crepúsculo; ver setSol)
     const altura = clamp(normalize(positionWorld).y, 0, 1);
     const cieloNoche = vec4(mix(vec3(U.cieloH), vec3(U.cieloZ), pow(altura, 0.45)), 1);
-    sky.material.colorNode = mix(mix(sky.material.colorNode.mul(vec4(vec3(U.cielo), 1)), vec4(U.grisCielo, 1), U.cubierto), cieloNoche, U.nocturna);
+    // disco de la luna en su lugar y con su fase: cada punto del disco es un punto de una esfera vista de lejos, iluminado si
+    // su normal mira hacia el sol visto desde la luna (U.lunaLuz, armado con la fracción iluminada de luna.js y el lado del sol).
+    // Radio aparente de 0,55° (el real es 0,26°: al doble se lee sin dominar el cielo). Las nubes difuminan el borde.
+    const dirV = normalize(positionWorld.sub(cameraPosition));
+    const rL = Math.sin(0.55 * Math.PI / 180);
+    const cosL = dot(dirV, U.lunaDir);
+    const off = dirV.sub(vec3(U.lunaDir).mul(cosL)).div(rL);            // posición en el disco, en radios (0 en el centro)
+    const r2 = dot(off, off);
+    const nLuna = off.sub(vec3(U.lunaDir).mul(max(float(1).sub(r2), 0).sqrt()));   // normal de la cara que vemos
+    const borde = mix(float(0.08), float(0.6), U.lunaNube);
+    const dentro = smoothstep(float(1).add(borde), float(1).sub(borde), r2.sqrt()).mul(step(0, cosL));
+    const lit = smoothstep(-0.06, 0.06, dot(nLuna, U.lunaLuz));
+    const disco = vec3(...NOCHE.lunaColor).mul(dentro.mul(lit).mul(U.lunaDisco));
+    sky.material.colorNode = mix(mix(sky.material.colorNode.mul(vec4(vec3(U.cielo), 1)), vec4(U.grisCielo, 1), U.cubierto), cieloNoche, U.nocturna).add(vec4(disco, 0));
     scene.add(sky); this.sky = sky;
     // escena aparte para el mapa de entorno (misma bóveda, sin nubes densas)
     this.skyEnvScene = new THREE.Scene();
@@ -327,6 +345,20 @@ export class Escena {
       bl = 10 ** (-0.4 * (0.026 * phi + 4e-9 * phi ** 4)) * Math.exp(-0.2 * (masa - 1)) * S_(L.alt, -0.5, 3);
     }
     this.brilloLuna = bl;
+    // el disco: su brillo de superficie no depende de la fase (la fase cambia cuánto disco está iluminado), sí de la extinción
+    // cerca del horizonte y de las nubes, que lo apagan casi del todo cuando cubren el cielo
+    if (L && L.alt > -1) {
+      const v = vectorSol(L.alt, L.az), ld = U.lunaDir.value.set(v.x, v.y, v.z).normalize();
+      const h = Math.max(L.alt, 0), masa = 1 / (Math.sin(h * Math.PI / 180) + 0.50572 * (h + 6.07995) ** -1.6364);
+      // sol visto desde la luna: forma con la dirección hacia la Tierra el ángulo de fase i (cos i = 2·frac − 1), del lado del sol
+      const t = this.solDir.clone().addScaledVector(ld, -this.solDir.dot(ld));
+      if (t.lengthSq() < 1e-8) t.set(0, 1, 0).addScaledVector(ld, -ld.y);
+      t.normalize();
+      const ci = Math.min(1, Math.max(-1, 2 * L.frac - 1)), si = Math.sqrt(1 - ci * ci);
+      U.lunaLuz.value.copy(ld).multiplyScalar(-ci).addScaledVector(t, si).normalize();
+      U.lunaDisco.value = NOCHE.lunaDisco * Math.exp(-0.2 * (masa - 1)) * S_(L.alt, -0.5, 1.5) * (1 - 0.93 * nb) * (1 - S_(alt, -6, 2));
+      U.lunaNube.value = nb;
+    } else U.lunaDisco.value = 0;
     const nl = k === 0 ? 1 - S_(alt, -5, -1.5) : 0;   // en −1,5° el sol termina de apagarse y la luna empieza
     let sd;
     if (k === 0) {
