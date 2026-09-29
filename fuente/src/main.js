@@ -48,7 +48,17 @@ const BASE = new URL('../', import.meta.url).href;              // js/app.js -> 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const MES3 = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-const f1 = (x, d = 1) => x.toLocaleString('es-PA', { minimumFractionDigits: d, maximumFractionDigits: d });
+// Formato de números en todo el sitio (textos a mano incluidos): coma decimal y punto de miles desde las cuatro cifras,
+// como se escribe en Colombia y en buena parte de Latinoamérica: 0,69 · 5,62 m · 2.000 mm · 5.880 h · 1.770 kWh/m².
+// Los años (2001–2025) y los rangos de horas van sin punto. No se usa toLocaleString: en es-PA (y es-419) da el formato
+// de EE. UU. (5,880.69), que choca con los decimales escritos a mano, y cambia según el navegador.
+const num = (x, d = 0) => {
+  const [e, f] = Math.abs(x).toFixed(d).split('.');
+  const s = x < 0 && /[1-9]/.test(e + (f ?? '')) ? '-' : '';
+  return s + e.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '');
+};
+const f1 = (x, d = 1) => num(x, d);
+const miles = (v) => num(v, 0);
 const hhmm = (min) => { const m = ((Math.round(min) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const eio = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -179,7 +189,7 @@ async function arrancar() {
   prepararUI();
   const d = await pIntro;
   const n = d ? escena.construirParticulas(d, q.particulas) : 0;
-  estadoCarga(n ? `${n.toLocaleString('es-PA')} puntos` : 'Cargando el modelo…');
+  estadoCarga(n ? `${miles(n)} puntos` : 'Cargando el modelo…');
   empezarIntro();
   requestAnimationFrame(bucle);
   escena.cargaCompleta.then(async () => {
@@ -189,7 +199,7 @@ async function arrancar() {
     // la silueta del diagrama de sombras recorre toda la geometría (~120 ms): se calcula en un rato libre y no al primer clic
     escena.prepararSilueta();                    // en pedazos, en ratos libres
   });
-  escena.cargaCompleta.then(() => { if (n) estadoCarga(`${n.toLocaleString('es-PA')} puntos · modelo completo`); });
+  escena.cargaCompleta.then(() => { if (n) estadoCarga(`${miles(n)} puntos · modelo completo`); });
   escena.cargaCompleta.then(() => clima.cargarHorario(BASE).then(() => { dibujarDecadas(); refrescar(); }).catch((e) => console.warn('clima horario', e)));
   pVivo.then(() => refrescar());
   if (location.hash === '#depurar') depurar();
@@ -699,7 +709,7 @@ function lecturas(p, c) {
     // línea 1: cielo · línea 2: lluvia (o la diferencia con lo típico)
     const cielo = [];
     if (c.nubes != null) cielo.push(`${Math.round(c.nubes)} % nubes`);
-    if (c.dni != null && p.alt > 2) cielo.push(`sol ${Math.round(c.dni / 10) * 10} W/m²`);
+    if (c.dni != null && p.alt > 2) cielo.push(`sol ${miles(Math.round(c.dni / 10) * 10)} W/m²`);
     let agua = '';
     if (c.fuente === 'mes') { temp = `${Math.round(c.lluviaMes)} mm`; agua = 'de lluvia en el mes'; }
     else if (c.fuente === 'tipico') agua = `llueve en ${Math.round(c.probLluvia)} % de estas horas`;
@@ -744,7 +754,7 @@ function lecturas(p, c) {
   // fachadas: irradiancia
   Object.keys(FACHADAS).forEach((k, i) => {
     const el = document.querySelector(`[data-fachada="${k}"]`); if (!el) return;
-    const v = S.irr?.[i] ?? 0; el.querySelector('i').style.setProperty('--v', Math.min(1, v / 800)); el.querySelector('b').textContent = Math.round(v) + ' W/m²';
+    const v = S.irr?.[i] ?? 0; el.querySelector('i').style.setProperty('--v', Math.min(1, v / 800)); el.querySelector('b').textContent = miles(v) + ' W/m²';
   });
 }
 
@@ -1103,8 +1113,8 @@ function preguntasQR(c) {
   const viento = (k) => {
     if (!oVi) return 'El viento le llega de frente muchas horas al año.';
     const r = oVi.indexOf(k);
-    return r === 0 ? `Recibe el viento de frente más horas que ninguna otra: ${W[k].toLocaleString('es-PA')} al año.`
-      : `Recibe el viento de frente unas ${W[k].toLocaleString('es-PA')} horas al año; la ${nom(oVi[0])}, unas ${W[oVi[0]].toLocaleString('es-PA')}.`;
+    return r === 0 ? `Recibe el viento de frente más horas que ninguna otra: ${miles(W[k])} al año.`
+      : `Recibe el viento de frente unas ${miles(W[k])} horas al año; la ${nom(oVi[0])}, unas ${miles(W[oVi[0]])}.`;
   };
   const opuesta = oVi ? nom(oVi[0]) : 'noroeste';
   return {
@@ -1190,7 +1200,6 @@ const LENTES = {
 const MODOS = { sol: [['directa', 'Solo directo'], ['total', 'Total'], ['anio', 'Año típico']], lluvia: [['hora', 'Esta hora'], ['anio', 'Año típico']],
   viento: [['hora', 'Esta hora'], ['seca', 'Seca'], ['lluvias', 'Lluvias'], ['anio', 'Año']] };
 const MODO_DE = { sol: 'solModo', lluvia: 'aguaModo', viento: 'vientoModo' };
-const miles = (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 /** Cifras de radiación anual por fachada (consultas.json → radiacion) en los textos que las citan. */
 function textoRad(t) {
   const R = consultas?.radiacion?.fachadas;
@@ -1231,7 +1240,7 @@ function leyenda(c) {
     $('#ley-rampa').hidden = $('#ley-escala').hidden = !L.rampa;
     if (L.rampa) {
       $('#ley-rampa').style.background = anioSol ? 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)' : L.rampa;
-      $('#ley-escala').innerHTML = (anioSol ? ['0', '900', '1.800 kWh/m² al año'] : L.esc).map((x) => `<span>${x}</span>`).join('');
+      $('#ley-escala').innerHTML = (anioSol ? ['0', '900', `${miles(1800)} kWh/m² al año`] : L.esc).map((x) => `<span>${x}</span>`).join('');
     }
     $('#ley-leer').textContent = L.leer ?? ''; $('#ley-leer').hidden = !L.leer;
     $('#ley-prueba').textContent = L.prueba; $('#ley-porque').textContent = textoRad(L.porque); $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
@@ -1247,14 +1256,14 @@ function leyenda(c) {
   if (anioSol && consultas?.radiacion) {
     const R = consultas.radiacion;
     filas = ks.map((k) => `<li><span>${nom[k]}</span><b>${miles(R.fachadas[k.slice(8)].total)}</b><small>kWh/m² año</small></li>`).join('') + `<li><span>TECHO</span><b>${miles(R.techo.total)}</b><small>kWh/m² año</small></li>`;
-  } else if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${Math.round(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
+  } else if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${miles(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${miles(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
   else if (S.lente === 'viento') {
     const hora = S.vientoModo === 'hora';
-    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${Math.round(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
+    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${miles(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
   }
   else if (S.lente === 'lluvia') {
     const anual = S.aguaModo === 'anio';
-    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? Math.round(S.agua?.[i] ?? 0) : f1(S.agua?.[i] ?? 0)}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small></li>`).join('');
+    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? miles(S.agua?.[i] ?? 0) : f1(S.agua?.[i] ?? 0)}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small></li>`).join('');
   }
   $('#ley-fachadas').innerHTML = filas; $('#ley-fachadas').hidden = !filas; $('#ley-fachadas').classList.toggle('cinco', S.lente === 'sol');
   // nota de la situación: qué pasa en este momento
@@ -1448,7 +1457,7 @@ function abrirVoladizo(abrir) {
   else S.vistaPrevia = null;
 }
 function pintarVoladizo() {
-  const L = S.largo ?? 1.65, coma = (v, n) => v.toFixed(n).replace('.', ',');
+  const L = S.largo ?? 1.65, coma = num;
   const K = 150, x0 = 46, y0 = 70, th = 14, Lp = L * K;
   const tip = 14 * Math.pow(L / 1.65, 4);
   const baja = (s) => tip * (s * s * (6 - 4 * s + s * s) / 3);          // forma de la deformada de una viga en voladizo con carga repartida
@@ -1518,7 +1527,7 @@ function pintarCorte(p) {
   if (clave === pintarCorte.f) return; pintarCorte.f = clave;
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
   $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
-  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => v.toFixed(n).replace('.', ',');
+  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => num(v, n);
   const K = 58, XW = 64, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro
   const tip = X(L), fl = C.losa + C.esp, yv0 = Y(C.vidArriba), yv1 = Y(C.vidAbajo);
   const r = (x0, y0, x1, y1, extra) => `<rect x="${Math.min(x0, x1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.abs(x1 - x0).toFixed(1)}" height="${Math.abs(y1 - y0).toFixed(1)}" ${extra}></rect>`;
@@ -1623,7 +1632,7 @@ async function guardarImagen() {
     const p = posicionSol({ ...f, h: 0, min: S.min });
     const solTxt = p.alt > 0.5 ? `Sol a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}` : 'El sol está bajo el horizonte';
     const anioSol = S.lente === 'sol' && S.solModo === 'anio';
-    const rampa = anioSol ? { c: 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)', esc: ['0', '900', '1.800 kWh/m² al año'] } : L.rampa ? { c: L.rampa, esc: L.esc } : null;
+    const rampa = anioSol ? { c: 'linear-gradient(90deg, #07113d, #e2320b 50%, #ffe46a)', esc: ['0', '900', `${miles(1800)} kWh/m² al año`] } : L.rampa ? { c: L.rampa, esc: L.esc } : null;
     const qr = document.createElement('canvas');
     await QRCode.toCanvas(qr, enlace, { margin: 2, width: 360, errorCorrectionLevel: 'M', color: { dark: '#0a1216ff', light: '#ffffffff' } });
     try { await document.fonts.ready; } catch (e) { /* sin fuentes */ }
@@ -1708,7 +1717,7 @@ function explicacion(k, p, c) {
     if (c.fuente === 'mes') return ['La lluvia del mes', `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(c.lluviaMes)} mm, es decir, ${Math.round(c.lluviaMes)} litros por metro cuadrado. Un ${MESES[S.fecha.m - 1]} típico tiene ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm.`];
     const dc = dniDespejado(p.alt);
     const partes = [`${f1(c.temp)} °C de temperatura del aire`, `${Math.round(c.nubes)} % del cielo cubierto de nubes`];
-    if (c.dni != null && p.alt > 2) partes.push(`${Math.round(c.dni)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${Math.round(dc)} W/m²)`);
+    if (c.dni != null && p.alt > 2) partes.push(`${miles(c.dni)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${miles(dc)} W/m²)`);
     const ll = c.lluvia ?? 0;
     const txtLl = ll >= 0.1 ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte.` : 'No llueve a esa hora.';
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? 'Es el pronóstico de modelo de Open-Meteo para ahora.' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer.'}`];
@@ -1834,10 +1843,10 @@ function listaConsultas() {
     const lv = g('Lluvia');
     const H = C.horasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${f1(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)}: ${f1(q.mm)} mm. Es el promedio de una celda de ~28 km: en el sitio pudo llover más.` }));
     lv({ t: 'La hora más lluviosa', ...H[0], vista: 'esquina', lente: 'foto', rank: H });
-    const D = C.diasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${q.mm} mm`, txt: `${fechaTexto(deISO(q.fecha))}: ${q.mm} mm en el día; la hora más fuerte, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)} (${f1(q.pico)} mm).` }));
+    const D = C.diasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${miles(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}: ${miles(q.mm)} mm en el día; la hora más fuerte, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)} (${f1(q.pico)} mm).` }));
     lv({ t: 'El día más lluvioso', ...D[0], vista: 'esquina', lente: 'foto', rank: D });
-    const W = C.lluviaViento.no.max, orden = Object.entries(C.lluviaViento).sort((a, b) => b[1].anual - a[1].anual).map(([k, v]) => `${k.toUpperCase()} ${v.anual}`).join(' · ');
-    lv({ t: 'La fachada que más se moja', f: deISO(W.fecha), min: W.hora * 60 - 30, fachada: 'no', lente: 'lluvia', v: `NO · ${Math.round(C.lluviaViento.no.anual)} L/m²·año`,
+    const W = C.lluviaViento.no.max, orden = Object.entries(C.lluviaViento).sort((a, b) => b[1].anual - a[1].anual).map(([k, v]) => `${k.toUpperCase()} ${miles(v.anual)}`).join(' · ');
+    lv({ t: 'La fachada que más se moja', f: deISO(W.fecha), min: W.hora * 60 - 30, fachada: 'no', lente: 'lluvia', v: `NO · ${miles(C.lluviaViento.no.anual)} L/m²·año`,
       txt: `Índice anual de lluvia con viento (L/m²): ${orden}. Aquí, su hora más fuerte: ${f1(W.mm)} mm con viento de ${W.viento} km/h que llega casi de frente. Ordena fachadas; no mide el agua sobre el muro.` });
     const R = C.rachaSeca;
     lv({ t: 'La sequía más larga', f: deISO(R.hasta), min: 15 * 60, vista: 'aerea', lente: 'foto', v: `${R.dias} días`, txt: `${R.dias} días seguidos con menos de 1 mm, del ${fechaTexto(deISO(R.desde))} al ${fechaTexto(deISO(R.hasta))}. Referencia para el riego del jardín o una cisterna de agua lluvia.` });
@@ -1848,8 +1857,8 @@ function listaConsultas() {
         txt: `De diciembre a abril el viento llega casi siempre del norte y el noroeste (${Math.round(C.viento.seca.frec[0] + C.viento.seca.frec[15] + C.viento.seca.frec[14])} % de las horas), a unos ${Math.round(C.viento.seca.media)} km/h de media: la fachada noroeste lo recibe de frente la mayor parte del tiempo.` });
       vi({ t: 'El viento de la temporada de lluvias', f: deISO(tL.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'lluvias', v: `${f1(C.viento.lluvias.media)} km/h de media`,
         txt: `De mayo a noviembre el viento es más flojo (unos ${Math.round(C.viento.lluvias.media)} km/h de media) y más variable: sigue mandando el noroeste, pero también llega del sur y del oeste; en calma el ${Math.round(C.viento.lluvias.calma)} % del tiempo.` });
-      vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${C.viento.anio.frente.no.toLocaleString('es-PA')} h al año`,
-        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${C.viento.anio.frente.no.toLocaleString('es-PA')}, NE ${C.viento.anio.frente.ne.toLocaleString('es-PA')}, SO ${C.viento.anio.frente.so.toLocaleString('es-PA')}, SE ${C.viento.anio.frente.se.toLocaleString('es-PA')}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
+      vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${miles(C.viento.anio.frente.no)} h al año`,
+        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${miles(C.viento.anio.frente.no)}, NE ${miles(C.viento.anio.frente.ne)}, SO ${miles(C.viento.anio.frente.so)}, SE ${miles(C.viento.anio.frente.se)}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
     }
     const lz = g('Luz y cielo');
     const S5 = C.diasSol.map((q) => ({ f: deISO(q.fecha), min: md(deISO(q.fecha)), v: `${f1(q.kwh, 2)} kWh/m²`, txt: `${fechaTexto(deISO(q.fecha))}: ${f1(q.kwh, 2)} kWh/m² de radiación global sobre el plano horizontal; un día medio recibe ${f1(C.solMedio, 2)}.` }));
