@@ -493,9 +493,11 @@ export class Escena {
       const materiales = [];
       root.traverse((o) => {
         if (!o.isMesh) return;
-        // proyectan sombra: todo menos el contexto lejano y las tejas (estas usan un sustituto liviano)
+        // proyectan sombra: todo menos las tejas (usan un sustituto liviano) y, del contexto, solo los vecinos a menos de ~60 m
+        // del 106 (contexto.mjs los marca con extras.sombra; los lejanos no llegan al edificio)
         const tejas = nombre === 'cubiertas' && /terracotta/i.test(o.material?.name || '');
-        o.castShadow = nombre !== 'contexto' && !tejas; o.receiveShadow = true;
+        let vecino = false; for (let p = o; p && !vecino; p = p.parent) vecino = !!p.userData?.sombra;
+        o.castShadow = (nombre !== 'contexto' || vecino) && !tejas; o.receiveShadow = true;
         if (o.castShadow) o.layers.enable(1);
         o.material = this.#material(o.material, nombre, idx, uMin, uMax, cargaTex);
         materiales.push(o.material);

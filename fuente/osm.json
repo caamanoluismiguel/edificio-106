@@ -1,0 +1,1283 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-05-06T03:25:00Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 85686842,
+  "bounds": {
+    "minlat": 8.9987457,
+    "minlon": -79.5819181,
+    "maxlat": 8.9997413,
+    "maxlon": -79.5811992
+  },
+  "geometry": [
+    { "lat": 8.9997413, "lon": -79.5819181 },
+    { "lat": 8.9990189, "lon": -79.5814018 },
+    { "lat": 8.9988860, "lon": -79.5813043 },
+    { "lat": 8.9987457, "lon": -79.5811992 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "alt_name": "Calle Caples",
+    "highway": "residential",
+    "name": "Calle Estanslao Orobio"
+  }
+},
+{
+  "type": "way",
+  "id": 85687068,
+  "bounds": {
+    "minlat": 8.9982705,
+    "minlon": -79.5839518,
+    "maxlat": 8.9997413,
+    "maxlon": -79.5819181
+  },
+  "geometry": [
+    { "lat": 8.9997413, "lon": -79.5819181 },
+    { "lat": 8.9994308, "lon": -79.5823057 },
+    { "lat": 8.9993822, "lon": -79.5823682 },
+    { "lat": 8.9993485, "lon": -79.5824247 },
+    { "lat": 8.9990057, "lon": -79.5829058 },
+    { "lat": 8.9989612, "lon": -79.5829688 },
+    { "lat": 8.9986128, "lon": -79.5834513 },
+    { "lat": 8.9985777, "lon": -79.5835031 },
+    { "lat": 8.9982705, "lon": -79.5839518 }
+  ],
+  "tags": {
+    "alt_name": "Avenida Craig",
+    "highway": "residential",
+    "name": "Calle Jorge Gil",
+    "sidewalk": "right",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 85687352,
+  "bounds": {
+    "minlat": 8.9993822,
+    "minlon": -79.5833441,
+    "maxlat": 9.0007362,
+    "maxlon": -79.5823682
+  },
+  "geometry": [
+    { "lat": 9.0007362, "lon": -79.5833441 },
+    { "lat": 9.0006281, "lon": -79.5832704 },
+    { "lat": 9.0004569, "lon": -79.5831514 },
+    { "lat": 8.9996744, "lon": -79.5825852 },
+    { "lat": 8.9994440, "lon": -79.5824177 },
+    { "lat": 8.9993822, "lon": -79.5823682 }
+  ],
+  "tags": {
+    "NOM_CALLES": "Ave. Hawkins",
+    "alt_name": "Avenida Hawkins",
+    "highway": "residential",
+    "name": "Calle Carlos Lara",
+    "sidewalk:both": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 183921947,
+  "bounds": {
+    "minlat": 9.0001225,
+    "minlon": -79.5838321,
+    "maxlat": 9.0005359,
+    "maxlon": -79.5833632
+  },
+  "geometry": [
+    { "lat": 9.0002941, "lon": -79.5838321 },
+    { "lat": 9.0001225, "lon": -79.5837092 },
+    { "lat": 9.0003643, "lon": -79.5833632 },
+    { "lat": 9.0005359, "lon": -79.5834862 },
+    { "lat": 9.0002941, "lon": -79.5838321 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "102",
+    "addr:street": "Calle Alberto Tejada",
+    "building": "yes",
+    "building:levels": "3",
+    "name": "UNICEF Regional Office",
+    "office": "ngo",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 242667845,
+  "bounds": {
+    "minlat": 8.9997728,
+    "minlon": -79.5843206,
+    "maxlat": 9.0001878,
+    "maxlon": -79.5838490
+  },
+  "geometry": [
+    { "lat": 9.0001878, "lon": -79.5839701 },
+    { "lat": 8.9999393, "lon": -79.5843206 },
+    { "lat": 8.9997728, "lon": -79.5841996 },
+    { "lat": 9.0000213, "lon": -79.5838490 },
+    { "lat": 9.0001878, "lon": -79.5839701 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "103",
+    "addr:street": "Calle Alberto Tejada",
+    "building": "yes",
+    "building:levels": "3",
+    "name": "UNOPS and UNEP Regional Offices",
+    "office": "ngo",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 300885890,
+  "bounds": {
+    "minlat": 8.9987692,
+    "minlon": -79.5835828,
+    "maxlat": 8.9991736,
+    "maxlon": -79.5831207
+  },
+  "geometry": [
+    { "lat": 8.9989343, "lon": -79.5835828 },
+    { "lat": 8.9987692, "lon": -79.5834654 },
+    { "lat": 8.9990084, "lon": -79.5831207 },
+    { "lat": 8.9991736, "lon": -79.5832381 },
+    { "lat": 8.9989343, "lon": -79.5835828 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "105",
+    "building": "yes",
+    "building:levels": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 300885891,
+  "bounds": {
+    "minlat": 8.9991109,
+    "minlon": -79.5830942,
+    "maxlat": 8.9995142,
+    "maxlon": -79.5826337
+  },
+  "geometry": [
+    { "lat": 8.9995142, "lon": -79.5827516 },
+    { "lat": 8.9992773, "lon": -79.5830942 },
+    { "lat": 8.9991109, "lon": -79.5829763 },
+    { "lat": 8.9993477, "lon": -79.5826337 },
+    { "lat": 8.9995142, "lon": -79.5827516 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "106",
+    "building": "yes",
+    "building:levels": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 300885892,
+  "bounds": {
+    "minlat": 8.9984773,
+    "minlon": -79.5846599,
+    "maxlat": 8.9997807,
+    "maxlon": -79.5835978
+  },
+  "geometry": [
+    { "lat": 8.9997807, "lon": -79.5844534 },
+    { "lat": 8.9996350, "lon": -79.5846599 },
+    { "lat": 8.9994390, "lon": -79.5845070 },
+    { "lat": 8.9993913, "lon": -79.5845687 },
+    { "lat": 8.9992748, "lon": -79.5844856 },
+    { "lat": 8.9993357, "lon": -79.5844024 },
+    { "lat": 8.9988482, "lon": -79.5840323 },
+    { "lat": 8.9987794, "lon": -79.5841235 },
+    { "lat": 8.9987098, "lon": -79.5840658 },
+    { "lat": 8.9986760, "lon": -79.5841047 },
+    { "lat": 8.9985489, "lon": -79.5839974 },
+    { "lat": 8.9986019, "lon": -79.5839223 },
+    { "lat": 8.9984773, "lon": -79.5838338 },
+    { "lat": 8.9986310, "lon": -79.5835978 },
+    { "lat": 8.9997807, "lon": -79.5844534 }
+  ],
+  "tags": {
+    "addr:city": "Panama",
+    "addr:housenumber": "104",
+    "addr:neighbourhood": "Ciudad del Saber",
+    "addr:street": "Calle Luis Bonilla",
+    "building": "yes",
+    "building:levels": "3",
+    "name": "Ciudad del Saber",
+    "office": "company"
+  }
+},
+{
+  "type": "way",
+  "id": 300885894,
+  "bounds": {
+    "minlat": 9.0005567,
+    "minlon": -79.5839353,
+    "maxlat": 9.0009184,
+    "maxlon": -79.5835141
+  },
+  "geometry": [
+    { "lat": 9.0006909, "lon": -79.5839353 },
+    { "lat": 9.0005567, "lon": -79.5838390 },
+    { "lat": 9.0007843, "lon": -79.5835141 },
+    { "lat": 9.0009184, "lon": -79.5836104 },
+    { "lat": 9.0006909, "lon": -79.5839353 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "building": "yes",
+    "building:levels": "1",
+    "leisure": "sports_centre",
+    "name": "Clayton Bowling",
+    "opening_hours": "Tu-Su 15:00-22:00"
+  }
+},
+{
+  "type": "way",
+  "id": 300885895,
+  "bounds": {
+    "minlat": 8.9981634,
+    "minlon": -79.5828131,
+    "maxlat": 8.9985568,
+    "maxlon": -79.5824523
+  },
+  "geometry": [
+    { "lat": 8.9984323, "lon": -79.5828131 },
+    { "lat": 8.9981634, "lon": -79.5826293 },
+    { "lat": 8.9982853, "lon": -79.5824523 },
+    { "lat": 8.9985568, "lon": -79.5826521 },
+    { "lat": 8.9985244, "lon": -79.5826951 },
+    { "lat": 8.9985548, "lon": -79.5827165 },
+    { "lat": 8.9984966, "lon": -79.5828024 },
+    { "lat": 8.9984581, "lon": -79.5827729 },
+    { "lat": 8.9984323, "lon": -79.5828131 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "182",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 300885896,
+  "bounds": {
+    "minlat": 8.9989072,
+    "minlon": -79.5826797,
+    "maxlat": 8.9993046,
+    "maxlon": -79.5822532
+  },
+  "geometry": [
+    { "lat": 8.9990980, "lon": -79.5826797 },
+    { "lat": 8.9989072, "lon": -79.5825402 },
+    { "lat": 8.9991112, "lon": -79.5822532 },
+    { "lat": 8.9993009, "lon": -79.5823874 },
+    { "lat": 8.9993046, "lon": -79.5823900 },
+    { "lat": 8.9990980, "lon": -79.5826797 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "108",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 300885897,
+  "bounds": {
+    "minlat": 8.9978972,
+    "minlon": -79.5835708,
+    "maxlat": 8.9984465,
+    "maxlon": -79.5830746
+  },
+  "geometry": [
+    { "lat": 8.9984465, "lon": -79.5833106 },
+    { "lat": 8.9983555, "lon": -79.5834367 },
+    { "lat": 8.9981962, "lon": -79.5833147 },
+    { "lat": 8.9980906, "lon": -79.5834609 },
+    { "lat": 8.9981171, "lon": -79.5834796 },
+    { "lat": 8.9980482, "lon": -79.5835708 },
+    { "lat": 8.9978972, "lon": -79.5834555 },
+    { "lat": 8.9979677, "lon": -79.5833609 },
+    { "lat": 8.9980058, "lon": -79.5833911 },
+    { "lat": 8.9980969, "lon": -79.5832664 },
+    { "lat": 8.9980300, "lon": -79.5832141 },
+    { "lat": 8.9981382, "lon": -79.5830746 },
+    { "lat": 8.9984465, "lon": -79.5833106 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "109",
+    "addr:street": "Calle Luis Bonilla",
+    "building": "yes",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 353044725,
+  "bounds": {
+    "minlat": 9.0009636,
+    "minlon": -79.5835954,
+    "maxlat": 9.0014325,
+    "maxlon": -79.5829118
+  },
+  "geometry": [
+    { "lat": 9.0010500, "lon": -79.5834215 },
+    { "lat": 9.0010711, "lon": -79.5833915 },
+    { "lat": 9.0013539, "lon": -79.5835954 },
+    { "lat": 9.0014325, "lon": -79.5834837 },
+    { "lat": 9.0011497, "lon": -79.5832798 },
+    { "lat": 9.0012602, "lon": -79.5831227 },
+    { "lat": 9.0013466, "lon": -79.5829998 },
+    { "lat": 9.0012245, "lon": -79.5829118 },
+    { "lat": 9.0011381, "lon": -79.5830347 },
+    { "lat": 9.0009970, "lon": -79.5832354 },
+    { "lat": 9.0010326, "lon": -79.5832611 },
+    { "lat": 9.0009636, "lon": -79.5833592 },
+    { "lat": 9.0010500, "lon": -79.5834215 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "201",
+    "amenity": "fire_station",
+    "building": "yes",
+    "building:levels": "2",
+    "name": "Estación de Bomberos No. 14 - Christian Arnheiter Jr.",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 354865113,
+  "bounds": {
+    "minlat": 9.0004040,
+    "minlon": -79.5815454,
+    "maxlat": 9.0009505,
+    "maxlon": -79.5810419
+  },
+  "geometry": [
+    { "lat": 9.0005650, "lon": -79.5815454 },
+    { "lat": 9.0006448, "lon": -79.5814296 },
+    { "lat": 9.0007615, "lon": -79.5815122 },
+    { "lat": 9.0009505, "lon": -79.5812383 },
+    { "lat": 9.0006729, "lon": -79.5810419 },
+    { "lat": 9.0004040, "lon": -79.5814315 },
+    { "lat": 9.0005650, "lon": -79.5815454 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "185B",
+    "amenity": "college",
+    "building": "yes",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 354960990,
+  "bounds": {
+    "minlat": 8.9978511,
+    "minlon": -79.5840871,
+    "maxlat": 8.9981172,
+    "maxlon": -79.5838389
+  },
+  "geometry": [
+    { "lat": 8.9980388, "lon": -79.5840871 },
+    { "lat": 8.9981172, "lon": -79.5839807 },
+    { "lat": 8.9979296, "lon": -79.5838389 },
+    { "lat": 8.9978511, "lon": -79.5839453 },
+    { "lat": 8.9980388, "lon": -79.5840871 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "110",
+    "addr:street": "Calle Luis Bonilla",
+    "building": "yes",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 386353666,
+  "bounds": {
+    "minlat": 9.0006421,
+    "minlon": -79.5830978,
+    "maxlat": 9.0010385,
+    "maxlon": -79.5826262
+  },
+  "geometry": [
+    { "lat": 9.0007798, "lon": -79.5830978 },
+    { "lat": 9.0010385, "lon": -79.5827237 },
+    { "lat": 9.0009008, "lon": -79.5826262 },
+    { "lat": 9.0006421, "lon": -79.5830002 },
+    { "lat": 9.0007798, "lon": -79.5830978 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "101",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 387400206,
+  "bounds": {
+    "minlat": 8.9996055,
+    "minlon": -79.5824049,
+    "maxlat": 9.0000223,
+    "maxlon": -79.5819322
+  },
+  "geometry": [
+    { "lat": 9.0000223, "lon": -79.5820540 },
+    { "lat": 8.9998555, "lon": -79.5819322 },
+    { "lat": 8.9996055, "lon": -79.5822832 },
+    { "lat": 8.9997723, "lon": -79.5824049 },
+    { "lat": 9.0000223, "lon": -79.5820540 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "107",
+    "addr:street": "Calle Jorge Gil",
+    "building": "school",
+    "building:levels": "3",
+    "name": "Balboa Academy",
+    "source": "KG Ground Survey 2015",
+    "wikidata": "Q4850199",
+    "wikipedia": "en:Balboa Academy"
+  }
+},
+{
+  "type": "way",
+  "id": 443410768,
+  "bounds": {
+    "minlat": 8.9974208,
+    "minlon": -79.5821752,
+    "maxlat": 8.9977577,
+    "maxlon": -79.5818956
+  },
+  "geometry": [
+    { "lat": 8.9974831, "lon": -79.5818956 },
+    { "lat": 8.9977577, "lon": -79.5820803 },
+    { "lat": 8.9976954, "lon": -79.5821752 },
+    { "lat": 8.9974208, "lon": -79.5819905 },
+    { "lat": 8.9974831, "lon": -79.5818956 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "151",
+    "addr:street": "Calle Luis Bonilla",
+    "building": "yes",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 608482547,
+  "bounds": {
+    "minlat": 8.9978175,
+    "minlon": -79.5818859,
+    "maxlat": 8.9981486,
+    "maxlon": -79.5815944
+  },
+  "geometry": [
+    { "lat": 8.9978175, "lon": -79.5817948 },
+    { "lat": 8.9980811, "lon": -79.5815944 },
+    { "lat": 8.9981486, "lon": -79.5816855 },
+    { "lat": 8.9978850, "lon": -79.5818859 },
+    { "lat": 8.9978175, "lon": -79.5817948 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "155",
+    "addr:street": "Calle Luis Bonilla",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 608482548,
+  "bounds": {
+    "minlat": 8.9982936,
+    "minlon": -79.5813289,
+    "maxlat": 8.9985059,
+    "maxlon": -79.5810615
+  },
+  "geometry": [
+    { "lat": 8.9984072, "lon": -79.5813289 },
+    { "lat": 8.9982936, "lon": -79.5812750 },
+    { "lat": 8.9983924, "lon": -79.5810615 },
+    { "lat": 8.9985059, "lon": -79.5811153 },
+    { "lat": 8.9984072, "lon": -79.5813289 }
+  ],
+  "tags": {
+    "addr:housenumber": "180",
+    "building": "house"
+  }
+},
+{
+  "type": "way",
+  "id": 608482549,
+  "bounds": {
+    "minlat": 8.9985861,
+    "minlon": -79.5819165,
+    "maxlat": 8.9991069,
+    "maxlon": -79.5813959
+  },
+  "geometry": [
+    { "lat": 8.9988986, "lon": -79.5819165 },
+    { "lat": 8.9991069, "lon": -79.5816246 },
+    { "lat": 8.9987945, "lon": -79.5813959 },
+    { "lat": 8.9985861, "lon": -79.5816878 },
+    { "lat": 8.9988986, "lon": -79.5819165 }
+  ],
+  "tags": {
+    "addr:housenumber": "183",
+    "addr:street": "Calle Stewart",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 608482550,
+  "bounds": {
+    "minlat": 9.0001474,
+    "minlon": -79.5814197,
+    "maxlat": 9.0004631,
+    "maxlon": -79.5811268
+  },
+  "geometry": [
+    { "lat": 9.0001474, "lon": -79.5812634 },
+    { "lat": 9.0002413, "lon": -79.5811268 },
+    { "lat": 9.0004631, "lon": -79.5812830 },
+    { "lat": 9.0003692, "lon": -79.5814197 },
+    { "lat": 9.0001474, "lon": -79.5812634 }
+  ],
+  "tags": {
+    "addr:housenumber": "185A",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 620719275,
+  "bounds": {
+    "minlat": 8.9974589,
+    "minlon": -79.5833578,
+    "maxlat": 8.9982036,
+    "maxlon": -79.5819555
+  },
+  "geometry": [
+    { "lat": 8.9974589, "lon": -79.5833578 },
+    { "lat": 8.9975677, "lon": -79.5832014 },
+    { "lat": 8.9977301, "lon": -79.5829760 },
+    { "lat": 8.9978398, "lon": -79.5828227 },
+    { "lat": 8.9979010, "lon": -79.5827386 },
+    { "lat": 8.9979395, "lon": -79.5826834 },
+    { "lat": 8.9981592, "lon": -79.5823685 },
+    { "lat": 8.9981918, "lon": -79.5822948 },
+    { "lat": 8.9982036, "lon": -79.5822339 },
+    { "lat": 8.9982022, "lon": -79.5821875 },
+    { "lat": 8.9981897, "lon": -79.5821425 },
+    { "lat": 8.9981672, "lon": -79.5820989 },
+    { "lat": 8.9981425, "lon": -79.5820524 },
+    { "lat": 8.9980897, "lon": -79.5819555 }
+  ],
+  "tags": {
+    "NOM_CALLES": "Calle Hamilton",
+    "addr:city": "Ciudad del Saber",
+    "highway": "residential",
+    "name": "Calle Martiza Alabarca",
+    "oneway": "no",
+    "source": "KG Ground Survey 2015",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 678917548,
+  "bounds": {
+    "minlat": 8.9992743,
+    "minlon": -79.5816889,
+    "maxlat": 8.9997974,
+    "maxlon": -79.5811192
+  },
+  "geometry": [
+    { "lat": 8.9992743, "lon": -79.5814336 },
+    { "lat": 8.9996197, "lon": -79.5816889 },
+    { "lat": 8.9997436, "lon": -79.5815170 },
+    { "lat": 8.9996946, "lon": -79.5814808 },
+    { "lat": 8.9997974, "lon": -79.5813383 },
+    { "lat": 8.9995010, "lon": -79.5811192 },
+    { "lat": 8.9992743, "lon": -79.5814336 }
+  ],
+  "tags": {
+    "addr:housenumber": "184",
+    "amenity": "conference_centre",
+    "building": "yes",
+    "name": "Centro de Convenciones"
+  }
+},
+{
+  "type": "way",
+  "id": 678917549,
+  "bounds": {
+    "minlat": 9.0003560,
+    "minlon": -79.5822998,
+    "maxlat": 9.0009335,
+    "maxlon": -79.5817856
+  },
+  "geometry": [
+    { "lat": 9.0009335, "lon": -79.5821285 },
+    { "lat": 9.0004831, "lon": -79.5817856 },
+    { "lat": 9.0003560, "lon": -79.5819569 },
+    { "lat": 9.0008063, "lon": -79.5822998 },
+    { "lat": 9.0009335, "lon": -79.5821285 }
+  ],
+  "tags": {
+    "addr:housenumber": "100",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1029161547,
+  "bounds": {
+    "minlat": 8.9990189,
+    "minlon": -79.5814018,
+    "maxlat": 8.9995897,
+    "maxlon": -79.5806395
+  },
+  "geometry": [
+    { "lat": 8.9995897, "lon": -79.5806395 },
+    { "lat": 8.9994796, "lon": -79.5807865 },
+    { "lat": 8.9992873, "lon": -79.5810361 },
+    { "lat": 8.9990189, "lon": -79.5814018 }
+  ],
+  "tags": {
+    "highway": "service",
+    "oneway": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1032410468,
+  "bounds": {
+    "minlat": 8.9988649,
+    "minlon": -79.5837141,
+    "maxlat": 9.0003672,
+    "maxlon": -79.5815973
+  },
+  "geometry": [
+    { "lat": 9.0003672, "lon": -79.5815973 },
+    { "lat": 9.0001477, "lon": -79.5819343 },
+    { "lat": 8.9997078, "lon": -79.5825377 },
+    { "lat": 8.9996744, "lon": -79.5825852 },
+    { "lat": 8.9996367, "lon": -79.5826363 },
+    { "lat": 8.9988649, "lon": -79.5837141 }
+  ],
+  "tags": {
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1032410469,
+  "bounds": {
+    "minlat": 9.0001477,
+    "minlon": -79.5826753,
+    "maxlat": 9.0011711,
+    "maxlon": -79.5819343
+  },
+  "geometry": [
+    { "lat": 9.0011711, "lon": -79.5826753 },
+    { "lat": 9.0011517, "lon": -79.5826620 },
+    { "lat": 9.0009203, "lon": -79.5825031 },
+    { "lat": 9.0001477, "lon": -79.5819343 }
+  ],
+  "tags": {
+    "highway": "footway"
+  }
+},
+{
+  "type": "way",
+  "id": 1032410470,
+  "bounds": {
+    "minlat": 8.9996478,
+    "minlon": -79.5842821,
+    "maxlat": 9.0011379,
+    "maxlon": -79.5821717
+  },
+  "geometry": [
+    { "lat": 8.9996478, "lon": -79.5842821 },
+    { "lat": 9.0004206, "lon": -79.5832022 },
+    { "lat": 9.0004569, "lon": -79.5831514 },
+    { "lat": 9.0004915, "lon": -79.5831031 },
+    { "lat": 9.0009203, "lon": -79.5825031 },
+    { "lat": 9.0011088, "lon": -79.5822160 },
+    { "lat": 9.0011379, "lon": -79.5821717 }
+  ],
+  "tags": {
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1032410471,
+  "bounds": {
+    "minlat": 8.9985777,
+    "minlon": -79.5844701,
+    "maxlat": 8.9998976,
+    "maxlon": -79.5835031
+  },
+  "geometry": [
+    { "lat": 8.9985777, "lon": -79.5835031 },
+    { "lat": 8.9988649, "lon": -79.5837141 },
+    { "lat": 8.9996478, "lon": -79.5842821 },
+    { "lat": 8.9998745, "lon": -79.5844527 },
+    { "lat": 8.9998976, "lon": -79.5844701 }
+  ],
+  "tags": {
+    "highway": "footway"
+  }
+},
+{
+  "type": "way",
+  "id": 1202019313,
+  "bounds": {
+    "minlat": 8.9971531,
+    "minlon": -79.5823682,
+    "maxlat": 8.9993822,
+    "maxlon": -79.5807879
+  },
+  "geometry": [
+    { "lat": 8.9993822, "lon": -79.5823682 },
+    { "lat": 8.9993367, "lon": -79.5823372 },
+    { "lat": 8.9991430, "lon": -79.5822020 },
+    { "lat": 8.9990864, "lon": -79.5821610 },
+    { "lat": 8.9988399, "lon": -79.5819850 },
+    { "lat": 8.9985056, "lon": -79.5817463 },
+    { "lat": 8.9983371, "lon": -79.5816261 },
+    { "lat": 8.9982768, "lon": -79.5815808 },
+    { "lat": 8.9981923, "lon": -79.5815201 },
+    { "lat": 8.9971531, "lon": -79.5807879 }
+  ],
+  "tags": {
+    "NOM_CALLES": "Ave. Hawkins",
+    "alt_name": "Avenida Hawkins",
+    "highway": "residential",
+    "name": "Calle Carlos Lara",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1203393924,
+  "bounds": {
+    "minlat": 8.9973085,
+    "minlon": -79.5813609,
+    "maxlat": 8.9982465,
+    "maxlon": -79.5805815
+  },
+  "geometry": [
+    { "lat": 8.9981069, "lon": -79.5813609 },
+    { "lat": 8.9981314, "lon": -79.5813258 },
+    { "lat": 8.9981017, "lon": -79.5813046 },
+    { "lat": 8.9981100, "lon": -79.5812927 },
+    { "lat": 8.9981302, "lon": -79.5813071 },
+    { "lat": 8.9981993, "lon": -79.5812083 },
+    { "lat": 8.9982465, "lon": -79.5811407 },
+    { "lat": 8.9981309, "lon": -79.5810579 },
+    { "lat": 8.9980146, "lon": -79.5812243 },
+    { "lat": 8.9980349, "lon": -79.5812389 },
+    { "lat": 8.9980266, "lon": -79.5812509 },
+    { "lat": 8.9979459, "lon": -79.5811935 },
+    { "lat": 8.9979569, "lon": -79.5811771 },
+    { "lat": 8.9979384, "lon": -79.5811644 },
+    { "lat": 8.9979274, "lon": -79.5811807 },
+    { "lat": 8.9978411, "lon": -79.5811185 },
+    { "lat": 8.9978497, "lon": -79.5811062 },
+    { "lat": 8.9978761, "lon": -79.5811250 },
+    { "lat": 8.9979924, "lon": -79.5809587 },
+    { "lat": 8.9978721, "lon": -79.5808725 },
+    { "lat": 8.9977558, "lon": -79.5810389 },
+    { "lat": 8.9977778, "lon": -79.5810546 },
+    { "lat": 8.9977691, "lon": -79.5810670 },
+    { "lat": 8.9976407, "lon": -79.5809753 },
+    { "lat": 8.9976495, "lon": -79.5809627 },
+    { "lat": 8.9976690, "lon": -79.5809766 },
+    { "lat": 8.9977853, "lon": -79.5808102 },
+    { "lat": 8.9976720, "lon": -79.5807290 },
+    { "lat": 8.9975556, "lon": -79.5808954 },
+    { "lat": 8.9975793, "lon": -79.5809124 },
+    { "lat": 8.9975704, "lon": -79.5809251 },
+    { "lat": 8.9974367, "lon": -79.5808296 },
+    { "lat": 8.9974457, "lon": -79.5808166 },
+    { "lat": 8.9974729, "lon": -79.5808361 },
+    { "lat": 8.9975892, "lon": -79.5806697 },
+    { "lat": 8.9974661, "lon": -79.5805815 },
+    { "lat": 8.9974188, "lon": -79.5806492 },
+    { "lat": 8.9973498, "lon": -79.5807479 },
+    { "lat": 8.9973727, "lon": -79.5807643 },
+    { "lat": 8.9973636, "lon": -79.5807773 },
+    { "lat": 8.9973354, "lon": -79.5807572 },
+    { "lat": 8.9973085, "lon": -79.5807961 },
+    { "lat": 8.9981069, "lon": -79.5813609 }
+  ],
+  "tags": {
+    "addr:housenumber": "157-158",
+    "addr:street": "Calle Carlos Lara",
+    "building": "dormitory",
+    "building:levels": "3",
+    "name": "Dormitorios",
+    "name:en": "Dormitories",
+    "smoking": "no",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395288,
+  "bounds": {
+    "minlat": 8.9994657,
+    "minlon": -79.5832680,
+    "maxlat": 9.0007200,
+    "maxlon": -79.5823342
+  },
+  "geometry": [
+    { "lat": 9.0007200, "lon": -79.5832680 },
+    { "lat": 9.0006589, "lon": -79.5832239 },
+    { "lat": 9.0004915, "lon": -79.5831031 },
+    { "lat": 8.9997078, "lon": -79.5825377 },
+    { "lat": 8.9994855, "lon": -79.5823706 },
+    { "lat": 8.9994679, "lon": -79.5823516 },
+    { "lat": 8.9994657, "lon": -79.5823450 },
+    { "lat": 8.9994692, "lon": -79.5823342 }
+  ],
+  "tags": {
+    "footway": "sidewalk",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395289,
+  "bounds": {
+    "minlat": 8.9991676,
+    "minlon": -79.5822844,
+    "maxlat": 8.9993846,
+    "maxlon": -79.5821690
+  },
+  "geometry": [
+    { "lat": 8.9993846, "lon": -79.5822711 },
+    { "lat": 8.9993687, "lon": -79.5822822 },
+    { "lat": 8.9993477, "lon": -79.5822844 },
+    { "lat": 8.9991676, "lon": -79.5821690 }
+  ],
+  "tags": {
+    "footway": "sidewalk",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395291,
+  "bounds": {
+    "minlat": 8.9993846,
+    "minlon": -79.5823342,
+    "maxlat": 8.9994692,
+    "maxlon": -79.5822711
+  },
+  "geometry": [
+    { "lat": 8.9994692, "lon": -79.5823342 },
+    { "lat": 8.9994308, "lon": -79.5823057 },
+    { "lat": 8.9993846, "lon": -79.5822711 }
+  ],
+  "tags": {
+    "crossing": "uncontrolled",
+    "crossing:markings": "yes",
+    "footway": "crossing",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395295,
+  "bounds": {
+    "minlat": 8.9993951,
+    "minlon": -79.5833673,
+    "maxlat": 9.0006492,
+    "maxlon": -79.5824619
+  },
+  "geometry": [
+    { "lat": 9.0006492, "lon": -79.5833673 },
+    { "lat": 9.0005915, "lon": -79.5833256 },
+    { "lat": 9.0004206, "lon": -79.5832022 },
+    { "lat": 8.9996367, "lon": -79.5826363 },
+    { "lat": 8.9994076, "lon": -79.5824710 },
+    { "lat": 8.9993951, "lon": -79.5824619 }
+  ],
+  "tags": {
+    "footway": "sidewalk",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395300,
+  "bounds": {
+    "minlat": 8.9991194,
+    "minlon": -79.5822337,
+    "maxlat": 8.9991676,
+    "maxlon": -79.5821690
+  },
+  "geometry": [
+    { "lat": 8.9991194, "lon": -79.5822337 },
+    { "lat": 8.9991430, "lon": -79.5822020 },
+    { "lat": 8.9991676, "lon": -79.5821690 }
+  ],
+  "tags": {
+    "crossing": "uncontrolled",
+    "crossing:markings": "yes",
+    "footway": "crossing",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395301,
+  "bounds": {
+    "minlat": 8.9993009,
+    "minlon": -79.5823874,
+    "maxlat": 8.9993846,
+    "maxlon": -79.5822711
+  },
+  "geometry": [
+    { "lat": 8.9993846, "lon": -79.5822711 },
+    { "lat": 8.9993367, "lon": -79.5823372 },
+    { "lat": 8.9993009, "lon": -79.5823874 }
+  ],
+  "tags": {
+    "crossing": "uncontrolled",
+    "crossing:markings": "yes",
+    "footway": "crossing",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395302,
+  "bounds": {
+    "minlat": 8.9994076,
+    "minlon": -79.5824710,
+    "maxlat": 8.9994855,
+    "maxlon": -79.5823706
+  },
+  "geometry": [
+    { "lat": 8.9994855, "lon": -79.5823706 },
+    { "lat": 8.9994440, "lon": -79.5824177 },
+    { "lat": 8.9994076, "lon": -79.5824710 }
+  ],
+  "tags": {
+    "crossing": "uncontrolled",
+    "crossing:markings": "yes",
+    "footway": "crossing",
+    "highway": "footway",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1203395303,
+  "bounds": {
+    "minlat": 8.9993046,
+    "minlon": -79.5824619,
+    "maxlat": 8.9993951,
+    "maxlon": -79.5823900
+  },
+  "geometry": [
+    { "lat": 8.9993951, "lon": -79.5824619 },
+    { "lat": 8.9993485, "lon": -79.5824247 },
+    { "lat": 8.9993046, "lon": -79.5823900 }
+  ],
+  "tags": {
+    "crossing": "uncontrolled",
+    "crossing:markings": "yes",
+    "footway": "crossing",
+    "highway": "footway",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1234790791,
+  "bounds": {
+    "minlat": 8.9979518,
+    "minlon": -79.5831459,
+    "maxlat": 8.9981632,
+    "maxlon": -79.5828506
+  },
+  "geometry": [
+    { "lat": 8.9981632, "lon": -79.5828506 },
+    { "lat": 8.9981233, "lon": -79.5829066 },
+    { "lat": 8.9981069, "lon": -79.5829283 },
+    { "lat": 8.9979518, "lon": -79.5831459 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1251012795,
+  "bounds": {
+    "minlat": 8.9989612,
+    "minlon": -79.5831317,
+    "maxlat": 8.9991592,
+    "maxlon": -79.5829688
+  },
+  "geometry": [
+    { "lat": 8.9991592, "lon": -79.5831317 },
+    { "lat": 8.9989612, "lon": -79.5829688 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1251012796,
+  "bounds": {
+    "minlat": 8.9988763,
+    "minlon": -79.5829058,
+    "maxlat": 8.9990057,
+    "maxlon": -79.5828002
+  },
+  "geometry": [
+    { "lat": 8.9988763, "lon": -79.5828002 },
+    { "lat": 8.9990057, "lon": -79.5829058 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1251012797,
+  "bounds": {
+    "minlat": 8.9984454,
+    "minlon": -79.5822124,
+    "maxlat": 8.9990864,
+    "maxlon": -79.5817463
+  },
+  "geometry": [
+    { "lat": 8.9990864, "lon": -79.5821610 },
+    { "lat": 8.9990386, "lon": -79.5822052 },
+    { "lat": 8.9990129, "lon": -79.5822124 },
+    { "lat": 8.9989850, "lon": -79.5822048 },
+    { "lat": 8.9989408, "lon": -79.5821735 },
+    { "lat": 8.9987806, "lon": -79.5820632 },
+    { "lat": 8.9984831, "lon": -79.5818747 },
+    { "lat": 8.9984564, "lon": -79.5818507 },
+    { "lat": 8.9984454, "lon": -79.5818310 },
+    { "lat": 8.9985056, "lon": -79.5817463 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1307793408,
+  "bounds": {
+    "minlat": 8.9997413,
+    "minlon": -79.5824137,
+    "maxlat": 9.0014681,
+    "maxlon": -79.5815230
+  },
+  "geometry": [
+    { "lat": 9.0014681, "lon": -79.5824137 },
+    { "lat": 9.0012070, "lon": -79.5822234 },
+    { "lat": 9.0011379, "lon": -79.5821717 },
+    { "lat": 9.0003672, "lon": -79.5815973 },
+    { "lat": 9.0002942, "lon": -79.5815475 },
+    { "lat": 9.0002625, "lon": -79.5815323 },
+    { "lat": 9.0002216, "lon": -79.5815230 },
+    { "lat": 9.0001590, "lon": -79.5815230 },
+    { "lat": 9.0000922, "lon": -79.5815323 },
+    { "lat": 9.0000372, "lon": -79.5815509 },
+    { "lat": 8.9999854, "lon": -79.5815880 },
+    { "lat": 8.9997413, "lon": -79.5819181 }
+  ],
+  "tags": {
+    "alt_name": "Avenida Craig",
+    "highway": "residential",
+    "name": "Calle Jorge Gil",
+    "oneway": "yes",
+    "sidewalk": "right",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 1387587469,
+  "bounds": {
+    "minlat": 8.9983124,
+    "minlon": -79.5821690,
+    "maxlat": 8.9991676,
+    "maxlon": -79.5815310
+  },
+  "geometry": [
+    { "lat": 8.9983124, "lon": -79.5815310 },
+    { "lat": 8.9983751, "lon": -79.5815763 },
+    { "lat": 8.9991676, "lon": -79.5821690 }
+  ],
+  "tags": {
+    "footway": "sidewalk",
+    "highway": "footway"
+  }
+},
+{
+  "type": "way",
+  "id": 1387876288,
+  "bounds": {
+    "minlat": 8.9977699,
+    "minlon": -79.5823310,
+    "maxlat": 8.9981183,
+    "maxlon": -79.5821164
+  },
+  "geometry": [
+    { "lat": 8.9980823, "lon": -79.5823310 },
+    { "lat": 8.9977699, "lon": -79.5822243 },
+    { "lat": 8.9978059, "lon": -79.5821164 },
+    { "lat": 8.9981183, "lon": -79.5822231 },
+    { "lat": 8.9980823, "lon": -79.5823310 }
+  ],
+  "tags": {
+    "addr:city": "Ciudad del Saber",
+    "addr:housenumber": "140",
+    "addr:street": "Calle Luis Bonilla",
+    "building": "yes",
+    "source": "KG Ground Survey 2015"
+  }
+},
+{
+  "type": "way",
+  "id": 1387876289,
+  "bounds": {
+    "minlat": 8.9979010,
+    "minlon": -79.5829066,
+    "maxlat": 8.9981233,
+    "maxlon": -79.5827386
+  },
+  "geometry": [
+    { "lat": 8.9981233, "lon": -79.5829066 },
+    { "lat": 8.9979010, "lon": -79.5827386 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1387876290,
+  "bounds": {
+    "minlat": 8.9979395,
+    "minlon": -79.5828506,
+    "maxlat": 8.9981632,
+    "maxlon": -79.5826834
+  },
+  "geometry": [
+    { "lat": 8.9981632, "lon": -79.5828506 },
+    { "lat": 8.9979395, "lon": -79.5826834 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1387876292,
+  "bounds": {
+    "minlat": 8.9987806,
+    "minlon": -79.5820632,
+    "maxlat": 8.9988399,
+    "maxlon": -79.5819850
+  },
+  "geometry": [
+    { "lat": 8.9987806, "lon": -79.5820632 },
+    { "lat": 8.9988399, "lon": -79.5819850 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1387876293,
+  "bounds": {
+    "minlat": 8.9983399,
+    "minlon": -79.5819396,
+    "maxlat": 8.9984454,
+    "maxlon": -79.5818310
+  },
+  "geometry": [
+    { "lat": 8.9983399, "lon": -79.5819396 },
+    { "lat": 8.9983844, "lon": -79.5818610 },
+    { "lat": 8.9984179, "lon": -79.5818403 },
+    { "lat": 8.9984454, "lon": -79.5818310 }
+  ],
+  "tags": {
+    "highway": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 1387876295,
+  "bounds": {
+    "minlat": 8.9981069,
+    "minlon": -79.5834513,
+    "maxlat": 8.9988763,
+    "maxlon": -79.5826746
+  },
+  "geometry": [
+    { "lat": 8.9981069, "lon": -79.5829283 },
+    { "lat": 8.9984245, "lon": -79.5831849 },
+    { "lat": 8.9984810, "lon": -79.5831706 },
+    { "lat": 8.9984581, "lon": -79.5830309 },
+    { "lat": 8.9987160, "lon": -79.5826746 },
+    { "lat": 8.9988763, "lon": -79.5828002 },
+    { "lat": 8.9985397, "lon": -79.5832796 },
+    { "lat": 8.9986128, "lon": -79.5834513 }
+  ],
+  "tags": {
+    "highway": "service",
+    "service": "parking_aisle"
+  }
+}
+
+  ]
+}

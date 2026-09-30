@@ -1,0 +1,302 @@
+// Genera modelo/contexto.glb (los vecinos del Edificio 106) a partir de las huellas de OpenStreetMap (osm.json) y de la
+// geometría del propio 106 (modelo/*.glb). Reproducible: no lee el contexto.glb anterior ni nada de Blender.
+//
+//   cd fuente && node contexto.mjs            escribe ../modelo/contexto.glb y un resumen en la consola
+//
+// Qué se modela (coordenadas de la escena: +X noreste, +Z sureste, Y arriba; OSM registrado al 106, ver contexto-osm.mjs):
+//  · Cuarteles del cuadrángulo (105 al suroeste del 106; 102 y 103, al otro lado del cuadrángulo): son de la misma tipología
+//    que el 106 (3 pisos, alero de teja en cada piso, ménsulas, techo de teja a cuatro aguas). Se usa una versión reducida del
+//    propio 106 (muro exterior, vidrio, tejas simplificadas, cabios, ménsulas; sin interiores, sin vegetación, sin la entrada
+//    ni el sitio) guardada una sola vez y colocada en cada huella con su giro: los tres nodos comparten la misma malla.
+//  · La Fundación Ciudad del Saber (OSM 104, «Ciudad del Saber», 3 niveles): volumen propio sobre su huella, muros a la altura
+//    del alero del 106 (3 pisos), techo de teja a cuatro aguas sobre el cuerpo principal y las alas, y tres grandes entradas
+//    sugeridas en la fachada que da al cuadrángulo (su posición exacta no se conoce: son una indicación).
+//  · El salón de Innova (OSM 108), frente a la fachada sureste del 106: un piso de doble altura, blanco, cubierta plana, con un
+//    gran paño de celosía de ladrillo y la entrada con su visera. Altura ESTIMADA en 11 m (10–12 m comparando con los carros
+//    en Street View). El paño va en la cara suroeste, la del estacionamiento (lectura de Street View, no medida).
+//  · El estacionamiento de asfalto junto al salón, frente al 105 (de los pasillos de estacionamiento de OSM).
+//  · La estructura pequeña del cuadrángulo (no está en OSM; medida en el mapa de Google del usuario): un piso, 3,5 m ESTIMADOS.
+//  · Balboa Academy (OSM 107, 3 niveles) y el resto de edificios de OSM: volúmenes de maqueta, techo plano, con la altura de sus
+//    niveles de OSM (3,65 m por nivel + 0,65 m de base) o 2 niveles si OSM no la trae. Todas las alturas son ESTIMADAS.
+// Sombras: los nodos a menos de ~60 m del 106 llevan extras.sombra = true y escena.js los pone en la capa 1 (proyectan sombra
+// en el mapa de sombras); los lejanos no.
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Document, NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
+import { dedup, prune, quantize, meshopt, weld } from '@gltf-transform/functions';
+import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
+import { ShapeUtils, Vector2 } from 'three';
+import { osmRegistrado, distanciaPoligonos } from './contexto-osm.mjs';
+
+const AQUI = path.dirname(fileURLToPath(import.meta.url));
+const MODELO = path.join(AQUI, '..', 'modelo');
+const SALIDA = process.argv[2] ?? path.join(MODELO, 'contexto.glb');
+const rad = Math.PI / 180;
+
+// ---------------- parámetros ----------------
+const PISO = 3.65, BASE = 0.65;                   // altura de piso y base del 106 (main.js, «Partes»)
+const ALERO_106 = 11.6;                           // altura del muro del 106 bajo el alero del techo (arquitectura.glb)
+const H_INNOVA = +(process.env.H_INNOVA ?? 11);   // ESTIMADA: 10–12 m comparando con los carros en Street View (H_INNOVA=… para probar)
+const H_ESTRUCTURA = 3.5;                         // ESTIMADA: la estructura pequeña del cuadrángulo, un piso
+const NIVELES_SIN_DATO = 2;                       // si OSM no trae building:levels
+const RADIO_SOMBRA = 60;                          // m: a menos de esto del 106 (huella a huella) proyectan sombra
+const TIPOLOGIA_106 = new Set(['105', '102', '103']);   // cuarteles del cuadrángulo iguales al 106 (el usuario y Street View)
+const ID_FUNDACION = 300885892, ID_INNOVA = 300885896, ID_106 = 300885891;
+// la estructura pequeña del cuadrángulo, leída en el mapa de Google (captura del 29 sep 2026, ~3,7 px/m): 9,7 × 6,0 m,
+// paralela al 106, con centro a (−28,7; −24,0) m del centro del 106 en la escena
+const ESTRUCTURA = { c: [-28.7, -24.0], largo: 9.7, ancho: 6.0 };
+// estacionamiento frente al 105 (junto al salón de Innova): la envolvente de los pasillos de OSM (vías 1387876295 y
+// 1251012796) con 7 m a cada lado para los puestos, recortada a 3 m del salón; la entrada desde la calle es la vía 1251012796
+const ESTACIONAMIENTO = { x: [-91, -16], z: [37, 73], entrada: { x: [-26.5, -18.5], z: [29.5, 37] } };
+
+// materiales: los nombres deciden cómo los pinta escena.js (#material): «plaster» (pañete con manchas), «terracotta» (teja),
+// «glass» (vidrio, con luces de noche más tenues en el contexto), «turf» (suelo abierto de noche)
+const MAT = {
+  muro: { n: 'Warm lime-painted plaster', c: [0.73, 0.75, 0.70], r: 0.84 },
+  vidrio: { n: 'V016 context reflective glass 0', c: [0.06, 0.09, 0.10], r: 0.2, m: 0.18, glass: true },
+  teja: { n: 'Clay terracotta 00', c: [0.125, 0.03, 0.015], r: 0.75 },
+  madera: { n: 'Dark stained roof timber', c: [0.10, 0.06, 0.04], r: 0.74 },
+  faja: { n: 'Clay-colored vertical attic fascia', c: [0.27, 0.10, 0.05], r: 0.8 },
+  hueco: { n: 'Dark ventilation recess', c: [0.01, 0.02, 0.01], r: 0.95 },
+  blanco: { n: 'V016 white painted render', c: [0.80, 0.80, 0.77], r: 0.85 },
+  ladrillo: { n: 'V016 brick lattice', c: [0.30, 0.10, 0.05], r: 0.9 },
+  maqueta: { n: 'V016 massing model (estimated height)', c: [0.62, 0.61, 0.57], r: 0.9 },
+  asfalto: { n: 'Weathered asphalt 02 — photographic 3m', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
+  pasto: { n: 'V016 distant park turf', c: [0.09, 0.16, 0.05], r: 0.96 },
+};
+
+// ---------------- geometría ----------------
+/** Acumulador de triángulos por material (posiciones y normales planas, en coordenadas de la escena). */
+class Malla {
+  constructor() { this.m = {}; }
+  /** Un triángulo; si se da `quiere`, se le da la vuelta para que su normal apunte hacia ese lado. */
+  tri(mat, a, b, c, quiere = null) {
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    const L = Math.hypot(...n);
+    if (L < 1e-9) return;
+    if (quiere && n[0] * quiere[0] + n[1] * quiere[1] + n[2] * quiere[2] < 0) { [b, c] = [c, b]; n = n.map((x) => -x); }
+    const e = (this.m[mat] ??= { p: [], n: [] });
+    e.p.push(...a, ...b, ...c); for (let k = 0; k < 3; k++) e.n.push(n[0] / L, n[1] / L, n[2] / L);
+  }
+  quad(mat, a, b, c, d, quiere = null) { this.tri(mat, a, b, c, quiere); this.tri(mat, a, c, d, quiere); }
+  /** Caja orientada: centro (x, z), medidas a lo largo (l) y a lo ancho (w), de y0 a y1, girada ang grados (atan2(dz, dx)). */
+  caja(mat, cx, cz, l, w, y0, y1, ang, { sinFondo = true, matTapa = null } = {}) {
+    const P = rectangulo(cx, cz, l, w, ang);
+    this.prisma(mat, P, y0, y1, { sinFondo, matTapa });
+  }
+  /** Prisma recto sobre un polígono (x, z): muros hacia afuera, tapa arriba y, si se pide, fondo. */
+  prisma(mat, P, y0, y1, { sinFondo = true, matTapa = null } = {}) {
+    P = orientar(P);
+    const n = P.length;
+    for (let i = 0; i < n; i++) {
+      const [x1, z1] = P[i], [x2, z2] = P[(i + 1) % n];
+      this.quad(mat, [x1, y0, z1], [x1, y1, z1], [x2, y1, z2], [x2, y0, z2], [z2 - z1, 0, x1 - x2]);
+    }
+    const T = ShapeUtils.triangulateShape(P.map(([x, z]) => new Vector2(x, z)), []);
+    for (const [a, b, c] of T) {
+      this.tri(matTapa ?? mat, [P[a][0], y1, P[a][1]], [P[b][0], y1, P[b][1]], [P[c][0], y1, P[c][1]], [0, 1, 0]);
+      if (!sinFondo) this.tri(mat, [P[a][0], y0, P[a][1]], [P[b][0], y0, P[b][1]], [P[c][0], y0, P[c][1]], [0, -1, 0]);
+    }
+  }
+  /** Techo a cuatro aguas sobre un rectángulo (con vuelo), alero a yA y pendiente de 17° como el 106. */
+  cuatroAguas(cx, cz, l, w, ang, yA, vuelo = 1.2, pend = 17) {
+    const L = l + 2 * vuelo, W = w + 2 * vuelo, h = (W / 2) * Math.tan(pend * rad);
+    const ca = Math.cos(ang * rad), sa = Math.sin(ang * rad);
+    const q = (u, v, y) => [cx + u * ca - v * sa, y, cz + u * sa + v * ca];
+    const r = Math.max(0, L / 2 - W / 2);                 // media cumbrera
+    const a = q(-L / 2, -W / 2, yA), b = q(L / 2, -W / 2, yA), c = q(L / 2, W / 2, yA), d = q(-L / 2, W / 2, yA);
+    const e = q(-r, 0, yA + h), f = q(r, 0, yA + h);
+    // caras hacia afuera (antihorario visto desde fuera)
+    const arriba = [0, 1, 0];
+    this.quad('teja', a, e, f, b, arriba); this.quad('teja', c, f, e, d, arriba); this.tri('teja', b, f, c, arriba); this.tri('teja', d, e, a, arriba);
+    this.quad('madera', a, b, c, d, [0, -1, 0]);          // sofito (mira hacia abajo)
+    return yA + h;
+  }
+}
+function rectangulo(cx, cz, l, w, ang) {
+  const ca = Math.cos(ang * rad), sa = Math.sin(ang * rad), q = (u, v) => [cx + u * ca - v * sa, cz + u * sa + v * ca];
+  return [q(-l / 2, -w / 2), q(-l / 2, w / 2), q(l / 2, w / 2), q(l / 2, -w / 2)];   // antihorario visto desde +Y
+}
+/** Polígono con área positiva en el plano (x, z) (x1·z2 − x2·z1 > 0): así (dz, −dx) de cada lado apunta hacia afuera. */
+function orientar(P) { let A = 0; for (let i = 0; i < P.length; i++) { const [x1, z1] = P[i], [x2, z2] = P[(i + 1) % P.length]; A += x1 * z2 - x2 * z1; } return A < 0 ? [...P].reverse() : [...P]; }
+
+/** Descompone un polígono casi ortogonal (en su marco local) en franjas rectangulares a lo largo de su eje largo. */
+function franjas(P, ang) {
+  const ca = Math.cos(-ang * rad), sa = Math.sin(-ang * rad);
+  const L = P.map(([x, z]) => [x * ca - z * sa, x * sa + z * ca]);
+  const zs = [...new Set(L.map((p) => Math.round(p[1] * 2) / 2))].sort((a, b) => a - b);
+  const out = [];
+  for (let i = 0; i + 1 < zs.length; i++) {
+    const zm = (zs[i] + zs[i + 1]) / 2, xs = [];
+    for (let k = 0; k < L.length; k++) { const [x1, z1] = L[k], [x2, z2] = L[(k + 1) % L.length]; if ((z1 <= zm) !== (z2 <= zm)) xs.push(x1 + (zm - z1) / (z2 - z1) * (x2 - x1)); }
+    xs.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < xs.length; k += 2) out.push({ z0: zs[i], z1: zs[i + 1], x0: xs[k], x1: xs[k + 1] });
+  }
+  return { franjas: out, aMundo: (u, v) => [u * Math.cos(ang * rad) - v * Math.sin(ang * rad), u * Math.sin(ang * rad) + v * Math.cos(ang * rad)] };
+}
+
+// ---------------- el 106 reducido ----------------
+await MeshoptDecoder.ready; await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder, 'meshopt.encoder': MeshoptEncoder });
+
+/** Triángulos (mundo) de las mallas de un GLB cuyo material cumple `re`: { p: Float32Array, n: Float32Array, i: Uint32Array }. */
+async function extraer(grupo, re) {
+  const doc = await io.read(path.join(MODELO, grupo + '.glb'));
+  const p = [], n = [], idx = [];
+  for (const nodo of doc.getRoot().listNodes()) {
+    const malla = nodo.getMesh(); if (!malla) continue;
+    const M = nodo.getWorldMatrix();
+    for (const pr of malla.listPrimitives()) {
+      if (!re.test(pr.getMaterial()?.getName() ?? '')) continue;
+      const A = pr.getAttribute('POSITION'), N = pr.getAttribute('NORMAL'), I = pr.getIndices(), base = p.length / 3, v = [0, 0, 0], w = [0, 0, 0];
+      for (let k = 0; k < A.getCount(); k++) {
+        A.getElement(k, v); p.push(M[0] * v[0] + M[4] * v[1] + M[8] * v[2] + M[12], M[1] * v[0] + M[5] * v[1] + M[9] * v[2] + M[13], M[2] * v[0] + M[6] * v[1] + M[10] * v[2] + M[14]);
+        N.getElement(k, w); const x = M[0] * w[0] + M[4] * w[1] + M[8] * w[2], y = M[1] * w[0] + M[5] * w[1] + M[9] * w[2], z = M[2] * w[0] + M[6] * w[1] + M[10] * w[2], L = Math.hypot(x, y, z) || 1;
+        n.push(x / L, y / L, z / L);
+      }
+      const cnt = I ? I.getCount() : A.getCount();
+      for (let k = 0; k < cnt; k++) idx.push(base + (I ? I.getScalar(k) : k));
+    }
+  }
+  return { p: Float32Array.from(p), n: Float32Array.from(n), i: Uint32Array.from(idx) };
+}
+/** Simplificación sloppy (fusiona piezas sueltas, como las tejas). */
+function reducir(g, fraccion, error) {
+  const target = Math.max(3, Math.floor(g.i.length * fraccion / 3) * 3);
+  const [out] = MeshoptSimplifier.simplifySloppy(g.i, g.p, 3, null, target, error);
+  return { ...g, i: out };
+}
+
+const tipo = {
+  muro: await extraer('arquitectura', /^Warm lime-painted plaster$/),
+  vidrio: await extraer('arquitectura', /physical clear glass/),
+  teja: reducir(await extraer('cubiertas', /terracotta/i), 0.045, 0.01),
+  madera: await extraer('cubiertas_sombra', /roof timber/),
+  mensulas: reducir(await extraer('detalles', /roof timber/), 0.35, 0.004),
+  faja: await extraer('cubiertas_sombra', /attic fascia/),
+  hueco: await extraer('cubiertas_sombra', /ventilation recess/),
+};
+tipo.madera = unir(tipo.madera, tipo.mensulas); delete tipo.mensulas;
+function unir(a, b) { const k = a.p.length / 3; return { p: Float32Array.from([...a.p, ...b.p]), n: Float32Array.from([...a.n, ...b.n]), i: Uint32Array.from([...a.i, ...Array.from(b.i, (x) => x + k)]) }; }
+
+// ---------------- documento ----------------
+const doc = new Document();
+const buf = doc.createBuffer();
+const mats = {};
+for (const [k, d] of Object.entries(MAT)) {
+  const m = doc.createMaterial(d.n).setBaseColorFactor([...d.c, 1]).setRoughnessFactor(d.r).setMetallicFactor(d.m ?? 0);
+  m.setExtras({ leaf: false, glass: !!d.glass, image: d.image ?? null, ground_uv: d.ground_uv ?? null });
+  mats[k] = m;
+}
+function primitiva(mat, p, n, i = null) {
+  const pr = doc.createPrimitive().setMaterial(mats[mat])
+    .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(p instanceof Float32Array ? p : Float32Array.from(p)).setBuffer(buf))
+    .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(n instanceof Float32Array ? n : Float32Array.from(n)).setBuffer(buf));
+  if (i) pr.setIndices(doc.createAccessor().setType('SCALAR').setArray(Uint32Array.from(i)).setBuffer(buf));
+  return pr;
+}
+function mallaDe(nombre, malla) {
+  const m = doc.createMesh(nombre);
+  for (const [mat, e] of Object.entries(malla.m)) m.addPrimitive(primitiva(mat, e.p, e.n));
+  return m;
+}
+const raiz = doc.createNode('contexto').setExtras({ orden: 7 });
+doc.createScene().addChild(raiz);
+
+const osm = osmRegistrado();
+const P106 = rectangulo(0, 0, 45.5, 23, 0);
+const cerca = (P) => distanciaPoligonos(P, P106) < RADIO_SOMBRA;
+const resumen = { cuarteles: [], volumenes: [], sombra: [] };
+
+// cuarteles: la malla del 106 reducido, compartida
+const mTipo = doc.createMesh('tipologia 106 reducida');
+for (const [mat, g] of Object.entries(tipo)) mTipo.addPrimitive(primitiva(mat, g.p, g.n, g.i));
+for (const b of osm.edificios.filter((e) => TIPOLOGIA_106.has(e.num))) {
+  const s = cerca(b.poly);
+  const nodo = doc.createNode(`cuartel ${b.num}${b.nombre ? ' · ' + b.nombre : ''} (OSM ${b.id})`).setMesh(mTipo)
+    .setTranslation([b.centro[0], 0, b.centro[1]]).setRotation([0, Math.sin(-b.ang * rad / 2), 0, Math.cos(-b.ang * rad / 2)]);
+  if (s) nodo.setExtras({ sombra: true });
+  raiz.addChild(nodo);
+  resumen.cuarteles.push(`${b.num} (${b.centro.map((v) => v.toFixed(1)).join(', ')}) giro ${b.ang.toFixed(2)}°${s ? ', proyecta sombra' : ''}`);
+}
+
+// volúmenes propios: cerca (proyectan sombra) y lejos
+const MC = new Malla(), ML = new Malla();
+for (const b of osm.edificios) {
+  if (b.id === ID_106 || TIPOLOGIA_106.has(b.num)) continue;
+  const s = cerca(b.poly), M = s ? MC : ML, P = b.poly;
+  if (b.id === ID_FUNDACION) {
+    // muros de 3 pisos a la altura del alero del 106; techo de teja sobre el cuerpo principal (la franja común a todo el
+    // largo) y sobre cada ala; tres entradas grandes en la cara que mira al cuadrángulo (+X)
+    M.prisma('muro', P, 0, ALERO_106, { matTapa: 'madera' });
+    const { franjas: todas, aMundo } = franjas(b.poly, b.ang);
+    const F = todas.filter((f) => f.z1 - f.z0 >= 1.5);        // sin las franjas de medio metro que deja el giro en los extremos
+    const x0 = Math.max(...F.map((f) => f.x0)), x1 = Math.min(...F.map((f) => f.x1)), z0 = Math.min(...F.map((f) => f.z0)), z1 = Math.max(...F.map((f) => f.z1));
+    const cM = aMundo((x0 + x1) / 2, (z0 + z1) / 2);
+    const cumbrera = M.cuatroAguas(cM[0], cM[1], z1 - z0, x1 - x0, b.ang + 90, ALERO_106);
+    // alas: lo que sobra de cada franja fuera del cuerpo principal (más de 3 m de ancho)
+    for (const f of F) for (const [a, c] of [[f.x0, x0], [x1, f.x1]]) {
+      if (c - a < 3) continue;
+      const cA = aMundo((a + c) / 2, (f.z0 + f.z1) / 2);
+      M.cuatroAguas(cA[0], cA[1], f.z1 - f.z0, c - a, b.ang + 90, ALERO_106 - 0.3, 0.6);
+    }
+    // entradas: pórticos de 10 m de ancho y 2,5 m de fondo, un poco más altos que el alero, con un vano oscuro de 5 × 7,5 m
+    for (const zc of [z0 + (z1 - z0) / 6, (z0 + z1) / 2, z1 - (z1 - z0) / 6]) {
+      const u = x1 + 1.25, c = aMundo(u, zc);
+      M.caja('muro', c[0], c[1], 2.5, 10, 0, ALERO_106 + 0.8, b.ang, { matTapa: 'teja' });
+      const v = aMundo(x1 + 2.52, zc);
+      M.caja('hueco', v[0], v[1], 0.04, 5, 0, 7.5, b.ang);
+    }
+    resumen.volumenes.push(`Fundación Ciudad del Saber (OSM ${b.id}): muros de ${ALERO_106} m, cumbrera ${cumbrera.toFixed(1)} m, 3 entradas sugeridas`);
+  } else if (b.id === ID_INNOVA) {
+    M.prisma('blanco', P, 0, H_INNOVA);
+    M.prisma('blanco', (rectangulo(b.centro[0], b.centro[1], b.largo - 1.2, b.ancho - 1.2, b.ang)), H_INNOVA, H_INNOVA + 0.6);   // pretil
+    // cara suroeste (−X local): paño de celosía de ladrillo, entrada vidriada y visera
+    const ca = Math.cos(b.ang * rad), sa = Math.sin(b.ang * rad), q = (u, v) => [b.centro[0] + u * ca - v * sa, b.centro[1] + u * sa + v * ca];
+    const xf = b.caja[0];                                 // la cara suroeste en el marco local
+    const c1 = q(xf - 0.12, -3); M.caja('ladrillo', c1[0], c1[1], 0.24, 9, 4.2, 10.3, b.ang);
+    // la celosía: una rejilla de huecos oscuros de 0,3 m sobre el paño (se lee como ladrillo calado de lejos)
+    for (let v = -7.2; v <= 1.21; v += 0.6) for (let y = 4.5; y <= 9.91; y += 0.6) { const h = q(xf - 0.245, v); M.caja('hueco', h[0], h[1], 0.01, 0.3, y, y + 0.3, b.ang); }
+    // pilastras verticales en las dos caras largas, cada 3,2 m (como en Street View)
+    for (let u = b.caja[0] + 2; u < b.caja[1] - 1; u += 3.2) for (const [v, dv] of [[b.caja[2], -0.2], [b.caja[3], 0.2]]) { const p = q(u, v + dv); M.caja('blanco', p[0], p[1], 0.3, 0.4, 0, H_INNOVA, b.ang); }
+    const c2 = q(xf - 0.03, -3); M.caja('vidrio', c2[0], c2[1], 0.06, 5, 0, 3.0, b.ang);
+    const c3 = q(xf - 1.6, -3); M.caja('blanco', c3[0], c3[1], 3.2, 7, 3.1, 3.5, b.ang, { sinFondo: false });
+    resumen.volumenes.push(`Innova (OSM ${b.id}): ${b.largo.toFixed(1)} × ${b.ancho.toFixed(1)} m, ${H_INNOVA} m ESTIMADOS, cubierta plana, celosía en la cara suroeste`);
+  } else {
+    const niv = b.niveles ?? NIVELES_SIN_DATO, h = niv * PISO + BASE;
+    M.prisma('maqueta', P, 0, h);
+    resumen.volumenes.push(`${b.num || '—'} ${b.nombre || ''} (OSM ${b.id}): maqueta de ${h.toFixed(2)} m (${niv} niveles${b.niveles ? ' de OSM' : ', sin dato'}; ESTIMADA)`);
+  }
+  if (s) resumen.sombra.push(`${b.num || b.id} ${b.nombre || ''} (a ${distanciaPoligonos(b.poly, P106).toFixed(1)} m)`);
+}
+// estructura pequeña del cuadrángulo (proyecta sombra: está a ~10 m del 106)
+MC.caja('muro', ESTRUCTURA.c[0], ESTRUCTURA.c[1], ESTRUCTURA.largo, ESTRUCTURA.ancho, 0, H_ESTRUCTURA, 0, { matTapa: 'madera' });
+resumen.sombra.push(`estructura pequeña del cuadrángulo (a ${distanciaPoligonos(rectangulo(ESTRUCTURA.c[0], ESTRUCTURA.c[1], ESTRUCTURA.largo, ESTRUCTURA.ancho, 0), P106).toFixed(1)} m)`);
+// estacionamiento (plano, a 1,5 cm sobre el pasto; no proyecta sombra)
+{
+  const { x, z, entrada: e } = ESTACIONAMIENTO, y = 0.015;
+  ML.quad('asfalto', [x[0], y, z[0]], [x[0], y, z[1]], [x[1], y, z[1]], [x[1], y, z[0]], [0, 1, 0]);
+  ML.quad('asfalto', [e.x[0], y, e.z[0]], [e.x[0], y, e.z[1]], [e.x[1], y, e.z[1]], [e.x[1], y, e.z[0]], [0, 1, 0]);
+}
+// pasto lejano al noroeste (más allá del terreno del sitio, como el contexto anterior)
+ML.quad('pasto', [-180, -0.12, -260], [-180, -0.12, -120], [180, -0.12, -120], [180, -0.12, -260], [0, 1, 0]);
+
+const nC = doc.createNode('vecinos cercanos (proyectan sombra)').setMesh(mallaDe('vecinos cercanos', MC)).setExtras({ sombra: true });
+const nL = doc.createNode('vecinos lejanos').setMesh(mallaDe('vecinos lejanos', ML));
+raiz.addChild(nC); raiz.addChild(nL);
+
+// ---------------- compresión (como optimize2.mjs) ----------------
+await doc.transform(weld({ tolerance: 0.0001 }), dedup(), prune(), quantize({ quantizePosition: 16, quantizeNormal: 10 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
+doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
+await io.write(SALIDA, doc);
+
+let tris = 0;
+for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) tris += (p.getIndices()?.getCount() ?? p.getAttribute('POSITION').getCount()) / 3;
+console.log('cuarteles (106 reducido, malla compartida):\n  ' + resumen.cuarteles.join('\n  '));
+console.log('volúmenes:\n  ' + resumen.volumenes.join('\n  '));
+console.log('proyectan sombra (< ' + RADIO_SOMBRA + ' m del 106):\n  ' + resumen.sombra.join('\n  '));
+console.log('triángulos guardados', Math.round(tris), '· 106 reducido:', Object.entries(tipo).map(([k, g]) => `${k} ${g.i.length / 3}`).join(', '));
+console.log('escrito', SALIDA, (fs.statSync(SALIDA).size / 1024).toFixed(0), 'KB');

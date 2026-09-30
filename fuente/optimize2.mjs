@@ -1,4 +1,5 @@
 // v2: modelo liviano para la web. Parte de ../raw (exportación de Blender) y escribe public/modelo/*.glb.
+//  · El contexto (contexto.glb) ya no sale de ../raw: lo genera contexto.mjs desde osm.json y la geometría del 106.
 //  · Follaje: poda estocástica (Cook, Halstead, Planck y Ryu, "Stochastic Simplification of Aggregate
 //    Detail", SIGGRAPH 2007): se conserva una fracción k de las hojas y cada hoja conservada se agranda
 //    1/sqrt(k) en área alrededor de su centro, para que la copa tape lo mismo y la sombra no se aclare.
@@ -10,9 +11,10 @@ import { weld, simplify, meshopt, dedup, prune, quantize, compactPrimitive } fro
 import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import fs from 'fs';
 import { corregirArbustos } from './arbustos.mjs';   // setos que atravesaban la escalera y la galería traseras (ver arbustos.mjs)
+import { reducirArboles } from './arboles.mjs';      // árboles del anillo de relleno que caían en edificios, calles o el estacionamiento (ver arboles.mjs)
 await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
-const groups = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto'];
+const groups = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion'];   // contexto: contexto.mjs
 const SIMPL = { cubiertas: [0.25, 0.0004], contexto: [0.2, 0.001], vegetacion: [0.6, 0.002], detalles: [0.5, 0.0005] };
 const HOJA = /leaf|leaflet|broadleaf|flower/i;         // mallas de follaje a podar
 const PODA = { broadleaf: 0.3, default: 0.45 };        // fracción de hojas que se conserva
@@ -81,7 +83,7 @@ for (const g of groups) {
   } else if (SIMPL[g]) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: SIMPL[g][0], error: SIMPL[g][1], lockBorder: false }));
   const t1 = cnt();
   await doc.transform(dedup(), prune(), quantize({ quantizePosition: 16, quantizeNormal: 10 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
-  if (g === 'vegetacion') console.log(corregirArbustos(doc).join('\n'));
+  if (g === 'vegetacion') console.log([...corregirArbustos(doc), ...reducirArboles(doc)].join('\n'));
   await io.write(`public/modelo/${g}.glb`, doc);
   const b = fs.readFileSync(`public/modelo/${g}.glb`);
   resumen[g] = { tris0: t0, tris: t1, MB: +(b.length / 1e6).toFixed(2) };
