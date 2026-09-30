@@ -10,6 +10,7 @@ import { weld, simplify, meshopt, dedup, prune, quantize, compactPrimitive } fro
 import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import fs from 'fs';
 import { corregirArbustos } from './arbustos.mjs';   // setos que atravesaban la escalera y la galería traseras (ver arbustos.mjs)
+import { corregirBarandas } from './barandas.mjs';   // barandas de los accesos cortadas en el aire (ver barandas.mjs)
 await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
 const groups = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto'];
@@ -82,6 +83,7 @@ for (const g of groups) {
   const t1 = cnt();
   await doc.transform(dedup(), prune(), quantize({ quantizePosition: 16, quantizeNormal: 10 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
   if (g === 'vegetacion') console.log(corregirArbustos(doc).join('\n'));
+  if (g === 'entrada' || g === 'sitio') console.log(corregirBarandas(doc, g).join('\n'));
   await io.write(`public/modelo/${g}.glb`, doc);
   const b = fs.readFileSync(`public/modelo/${g}.glb`);
   resumen[g] = { tris0: t0, tris: t1, MB: +(b.length / 1e6).toFixed(2) };
