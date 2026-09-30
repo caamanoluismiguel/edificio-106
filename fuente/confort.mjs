@@ -20,8 +20,11 @@ import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const b = zlib.gunzipSync(fs.readFileSync(path.join(AQUI, '../datos/clima_horario.bin.gz')));
 const n = b.readUInt32LE(4);
-const COLS = ['nubes', 'lluvia', 'temp', 'humedad', 'dni', 'difusa', 'viento', 'dir'];
-const col = (k) => b.subarray(8 + COLS.indexOf(k) * n, 8 + (COLS.indexOf(k) + 1) * n);
+// formato C107 (fuente/clima_bin.py): columnas de n bytes, salvo la lluvia, uint16 (2n bytes); aquí no se usa la lluvia
+if (b.toString('latin1', 0, 4) !== 'C107') throw new Error('clima_horario.bin: se esperaba el formato C107');
+const COLS = ['nubes', 'lluvia', 'temp', 'humedad', 'dni', 'difusa', 'viento', 'dir'], ANCHO = { lluvia: 2 };
+const INICIO = {}; { let o = 8; for (const k of COLS) { INICIO[k] = o; o += (ANCHO[k] ?? 1) * n; } }
+const col = (k) => b.subarray(INICIO[k], INICIO[k] + (ANCHO[k] ?? 1) * n);
 const Tc = col('temp'), Hc = col('humedad'), DNIc = col('dni'), DIFc = col('difusa'), Vc = col('viento');
 const T0 = Date.UTC(2001, 0, 1, 0);          // primera hora de la serie (hora de Panamá tratada como UTC, como en clima.js)
 
