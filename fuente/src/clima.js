@@ -1,12 +1,17 @@
-// Clima del Edificio 106: 25 años hora por hora (2001–2025, Open-Meteo), valores típicos por mes y hora,
-// y el tiempo real (pronóstico de modelo de Open-Meteo, que se actualiza cada 15 min).
+// Clima del Edificio 106: 25 años hora por hora (2001–2025, ERA5 vía Open-Meteo), valores típicos por mes y hora,
+// y el tiempo real: pronóstico «best_match» de Open-Meteo (combina modelos solo); da valores cada 15 min interpolados,
+// pero el modelo corre varias veces al día, no cada 15 min.
 import { binario } from './datos.js';
 import { LAT, LON } from './sol.js';
 const LLUVIA_VIVO_MIN = 1;   // mm/h: umbral para que el pronóstico en vivo cuente como lluvia (ver cargarVivo)
 
 const T0 = Date.UTC(2001, 0, 1, 0);            // primera hora de la serie (hora de Panamá tratada como UTC)
+// datos/clima_horario.bin, formato 'C107' (fuente/clima_bin.py): firma, n (uint32) y columnas de n horas seguidas;
+// la lluvia en uint16 a 0,1 mm, el resto en uint8. ESC: valor = entero / escala + desplazamiento
+const FIRMA = 'C107';
 const COLS = ['nubes', 'lluvia', 'temp', 'humedad', 'dni', 'difusa', 'viento', 'dir'];
-const ESC = { nubes: [1, 0], lluvia: [5, 0], temp: [6, 10], humedad: [1, 0], dni: [0.25, 0], difusa: [0.25, 0], viento: [1, 0], dir: [0.5, 0] };
+const ANCHO = { lluvia: 2 };                  // bytes por hora (1 si no está)
+const ESC = { nubes: [1, 0], lluvia: [10, 0], temp: [6, 10], humedad: [1, 0], dni: [0.25, 0], difusa: [0.25, 0], viento: [1, 0], dir: [0.5, 0] };
 
 export class Clima {
   constructor() { this.ok = false; this.horario = null; this.vivo = null; this.dias = {}; }
@@ -18,8 +23,16 @@ export class Clima {
 
   async cargarHorario(base) {
     const b = await binario(base + 'datos/clima_horario.bin');
+    const firma = String.fromCharCode(...b.subarray(0, 4));
+    if (firma !== FIRMA) throw new Error(`clima_horario.bin: formato «${firma}», se esperaba «${FIRMA}» (rehazlo con fuente/clima_bin.py)`);
     const n = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(4, true);
-    const c = {}; COLS.forEach((k, i) => { c[k] = b.subarray(8 + i * n, 8 + (i + 1) * n); });
+    const c = {}; let o = 8;
+    for (const k of COLS) {
+      const w = ANCHO[k] ?? 1, s = b.subarray(o, o + w * n);
+      // uint16 little-endian; se copia para alinear el búfer a 2 bytes
+      c[k] = w === 2 ? new Uint16Array(s.slice().buffer) : s; o += w * n;
+    }
+    if (o !== b.byteLength) throw new Error(`clima_horario.bin: ${b.byteLength} bytes, se esperaban ${o}`);
     this.horario = c; this.n = n;
     this.#mensualNubes();
     return true;

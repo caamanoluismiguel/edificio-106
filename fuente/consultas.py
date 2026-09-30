@@ -3,8 +3,12 @@ Lee el binario horario del sitio; escribe datos/consultas.json. Todo sale de los
 import gzip, json, sys, datetime as dt
 import numpy as np
 b = gzip.decompress(open(sys.argv[1], 'rb').read()); n = int(np.frombuffer(b[4:8], np.uint32)[0])
-C = {k: np.frombuffer(b[8 + i * n: 8 + (i + 1) * n], np.uint8).astype(float) for i, k in enumerate(['nubes', 'lluvia', 'temp', 'hum', 'dni', 'dif', 'viento', 'dir'])}
-P = C['lluvia'] / 5; DNI = C['dni'] * 4; DIF = C['dif'] * 4; V = C['viento'] / 3.6; D = C['dir'] * 2; T = C['temp'] / 6 + 10; NUB = C['nubes']
+assert b[:4] == b'C107', 'formato %r: se esperaba C107 (rehazlo con clima_bin.py)' % b[:4]
+C, o = {}, 8   # formato 'C107' (ver clima_bin.py): la lluvia es uint16, el resto uint8
+for k in ['nubes', 'lluvia', 'temp', 'hum', 'dni', 'dif', 'viento', 'dir']:
+    t = np.dtype('<u2' if k == 'lluvia' else np.uint8); C[k] = np.frombuffer(b[o:o + n * t.itemsize], t).astype(float); o += n * t.itemsize
+assert o == len(b)
+P = C['lluvia'] / 10; DNI = C['dni'] * 4; DIF = C['dif'] * 4; V = C['viento'] / 3.6; D = C['dir'] * 2; T = C['temp'] / 6 + 10; NUB = C['nubes']
 t0 = dt.datetime(2001, 1, 1)
 # altitud del sol al centro de cada hora de radiación (H−0,5), NOAA vectorizado, hora de Panamá = UTC−5
 LAT, LON = 8.9993, -79.5827; rad = np.pi / 180
