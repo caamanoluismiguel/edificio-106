@@ -341,6 +341,10 @@ function viajarA(d) {
   lastLect = '';
 }
 const _vs = new THREE.Vector3();
+const _vd = new THREE.Vector3(), _vt = new THREE.Vector3();
+// profundidad de campo (prototipo): ?dof=0 la apaga; ?banda=, ?rampa=, ?bokeh= para afinar (fracción de la distancia al foco, px)
+const DOF = (() => { const q = new URLSearchParams(location.search), n = (k, v) => (q.has(k) ? Number(q.get(k)) : v);
+  return { on: q.get('dof') !== '0', banda: n('banda', 0.35), rampa: n('rampa', 0.8), bokeh: n('bokeh', 4) }; })();
 function pasoViaje(now) {
   const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T);
   const kA = V.tramo ? Math.min(1, k / V.tramo) : 1, kB = clamp01((k - V.tramo) / (1 - V.tramo));
@@ -499,6 +503,11 @@ function paso(now) {
   U.total.value += ((S.solModo === 'total' && S.hayDifusa ? 1 : 0) - U.total.value) * Math.min(1, dt * 4);
   escena.uViento.value += ((S.lente === 'viento' && !S.viaje ? 1 : 0) - escena.uViento.value) * Math.min(1, dt * 4);
   U.sombras.value += ((S.lente === 'sombras' && !S.viaje ? 1 : 0) - U.sombras.value) * Math.min(1, dt * 4);
+  // profundidad de campo: el foco es la distancia al punto que se mira (a lo largo de la mirada); la franja nítida crece con ella
+  const dirCam = escena.camera.getWorldDirection(_vd), foco = Math.max(2, _vt.subVectors(controls.target, escena.camera.position).dot(dirCam));
+  escena.uFoco.value = foco; escena.uBanda.value = Math.max(14, foco * DOF.banda); escena.uRampa.value = Math.max(20, foco * DOF.rampa); escena.uBokeh.value = DOF.bokeh;
+  const desenfoque = DOF.on && S.lente !== 'sombras' && !S.fachada && dirCam.y > -0.8 ? 1 : 0;      // en planta, sombras o fachada: nítido
+  escena.uDesenfoque.value += (desenfoque - escena.uDesenfoque.value) * Math.min(1, dt * 3);
   if (S.lente === 'sombras' && !S.viaje) escena.setDiagrama(S.fecha);
   actualizarCalor(p, c);
   actualizarAgua(c);

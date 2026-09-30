@@ -15,6 +15,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { SkyMesh } from 'three/addons/objects/SkyMesh.js';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
+import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
 import { vectorSol, FACHADAS, posicionSol, saleYPone } from './sol.js';
 import { binario } from './datos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
@@ -273,6 +274,15 @@ export class Escena {
       const t = traa(scenePass, preDepth, preVel, cam); t.useSubpixelCorrection = false;
       col = t;
       this.aoPass = aoPass;
+    }
+    // profundidad de campo (idea de sael.net/internet): nítido en una franja alrededor del punto que se mira y suave fuera de
+    // ella, lo lejano más que lo cercano. main.js mueve el foco con la cámara y apaga el efecto donde el suelo o la fachada son
+    // lo que se lee (planta, diagrama de sombras, tarjeta de fachada). Con uDesenfoque = 0 la imagen sale idéntica (CoC = 0).
+    this.uFoco = uniform(60); this.uBanda = uniform(20); this.uRampa = uniform(40); this.uDesenfoque = uniform(0); this.uBokeh = uniform(4);
+    if (this.calidad.nivel === 'alto') {
+      const d = scenePass.getViewZNode().negate().sub(this.uFoco);                 // + detrás del foco, − delante
+      const fuera = max(abs(d).sub(this.uBanda), 0).mul(select(d.lessThan(0), float(0.6), float(1))).mul(this.uDesenfoque);
+      col = dof(col, this.uFoco.add(select(d.lessThan(0), fuera.negate(), fuera)).negate(), this.uFoco, this.uRampa, this.uBokeh);
     }
     const vig = smoothstep(float(1.25), float(0.35), length(screenUV.sub(0.5).mul(vec2(1.35, 1.0))));
     const grano = hash(screenUV.mul(viewportSize).add(fract(time.mul(13.7)).mul(517.0))).sub(0.5).mul(0.035);
