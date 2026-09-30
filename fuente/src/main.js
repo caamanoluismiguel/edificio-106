@@ -196,8 +196,7 @@ async function arrancar() {
   requestAnimationFrame(bucle);
   escena.cargaCompleta.then(async () => {
     // compilar de antemano la lluvia y el diagrama de sombras, para que el primer aguacero o el primer clic en «Sombras» no congelen la imagen
-    const o = [escena.lluviaSpr, escena.aleros, escena.salpicaduras, escena.diagramaGrupo].filter(Boolean); o.forEach((x) => { x.visible = true; });
-    try { await escena.renderer.compileAsync(escena.scene, escena.camera); } catch (e) { /* se compila al dibujar */ }
+    try { await escena.precompilar(); } catch (e) { /* se compila al dibujar */ }
     // la silueta del diagrama de sombras recorre toda la geometría (~120 ms): se calcula en un rato libre y no al primer clic
     escena.prepararSilueta();                    // en pedazos, en ratos libres
   });
@@ -215,7 +214,7 @@ async function arrancar() {
 let compilando = 0;
 function compilarPronto() {
   clearTimeout(compilando);
-  compilando = setTimeout(() => { escena.renderer.compileAsync(escena.scene, escena.camera).catch(() => {}); }, 60);
+  compilando = setTimeout(() => { escena.precompilar().catch(() => {}); }, 60);
 }
 
 function estadoCarga(t) { const el = $('#carga-estado'); if (el) el.textContent = t; }

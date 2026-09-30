@@ -31838,10 +31838,12 @@ var cV = class {
 	#t() {
 		let e = this.renderer, t = this.scene, n = this.camera;
 		this.pipeline = new OI(e);
-		let r = eR(t, n), i = r.getTextureNode("output");
+		let r = eR(t, n);
+		this.pasadas = [r];
+		let i = r.getTextureNode("output");
 		if (this.calidad.ao) {
 			let e = eR(t, n);
-			e.transparent = !1, e.setMRT(UL({
+			e.transparent = !1, this.pasadas.push(e), e.setMRT(UL({
 				output: $L(JL),
 				velocity: OR
 			}));
@@ -31868,6 +31870,24 @@ var cV = class {
 	}
 	setSalida(e) {
 		this.pipeline.outputNode = this.salidas[e], this.pipeline.needsUpdate = !0, this.sucio = !0;
+	}
+	async precompilar() {
+		let e = this.renderer, t = e._renderContexts, n = t.get, r = e.getRenderTarget(), i = e.getMRT(), a = [];
+		this.scene.traverse((e) => {
+			(!e.visible || e.frustumCulled) && (a.push([
+				e,
+				e.visible,
+				e.frustumCulled
+			]), e.visible = !0, e.frustumCulled = !1);
+		});
+		let o = [];
+		try {
+			for (let r of this.pasadas ?? []) e.setRenderTarget(r.renderTarget), e.setMRT(r._mrt ?? null), t.get = (e, r) => n.call(t, e, r, 1), o.push(e.compileAsync(this.scene, this.camera)), t.get = n;
+		} finally {
+			t.get = n, e.setRenderTarget(r), e.setMRT(i);
+			for (let [e, t, n] of a) e.visible = t, e.frustumCulled = n;
+		}
+		await Promise.all(o);
 	}
 	dprMax() {
 		let e = window.innerWidth * window.innerHeight, t = this.calidad.px ?? 37e5;
@@ -32326,7 +32346,7 @@ var cV = class {
 	}
 	#c() {
 		let e = document.createElement("canvas");
-		e.width = e.height = 1024, this._vc = e;
+		e.width = e.height = 1024, this._vc = e, e.getContext("2d");
 		let t = new lo(e);
 		t.colorSpace = ut, t.anisotropy = 8, this._vtex = t;
 		let n = new Wo(200, 200);
@@ -34518,16 +34538,8 @@ async function VH() {
 	}, 6e5), tW();
 	let s = await a, c = s ? $.construirParticulas(s, e.particulas) : 0;
 	WH(c ? `${uH(c)} puntos` : "Cargando el modelo…"), GH(), requestAnimationFrame(vU), $.cargaCompleta.then(async () => {
-		[
-			$.lluviaSpr,
-			$.aleros,
-			$.salpicaduras,
-			$.diagramaGrupo
-		].filter(Boolean).forEach((e) => {
-			e.visible = !0;
-		});
 		try {
-			await $.renderer.compileAsync($.scene, $.camera);
+			await $.precompilar();
 		} catch {}
 		$.prepararSilueta();
 	}), $.cargaCompleta.then(() => {
@@ -34542,7 +34554,7 @@ async function VH() {
 var HH = 0;
 function UH() {
 	clearTimeout(HH), HH = setTimeout(() => {
-		$.renderer.compileAsync($.scene, $.camera).catch(() => {});
+		$.precompilar().catch(() => {});
 	}, 60);
 }
 function WH(e) {

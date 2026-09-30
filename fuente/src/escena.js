@@ -260,9 +260,10 @@ export class Escena {
     const r = this.renderer, scene = this.scene, cam = this.camera;
     this.pipeline = new THREE.RenderPipeline(r);
     const scenePass = pass(scene, cam);
+    this.pasadas = [scenePass];                   // para precompilar() en el mismo contexto en que se dibuja
     let col = scenePass.getTextureNode('output');
     if (this.calidad.ao) {
-      const pre = pass(scene, cam); pre.transparent = false;
+      const pre = pass(scene, cam); pre.transparent = false; this.pasadas.push(pre);
       pre.setMRT(mrt({ output: packNormalToRGB(normalView), velocity }));
       const nTex = pre.getTexture('output'); nTex.type = THREE.UnsignedByteType;
       const preNormal = sample((u) => unpackRGBToNormal(pre.getTextureNode().sample(u)));
@@ -300,6 +301,33 @@ export class Escena {
 
   /** Cambia la salida del postproceso (para medir o para bajar costo). */
   setSalida(k) { this.pipeline.outputNode = this.salidas[k]; this.pipeline.needsUpdate = true; this.sucio = true; }
+
+  /** Compila de antemano los sombreadores de todo lo que puede llegar a verse (lentes, partes, diagrama, lluvia…), para que
+   *  el primer clic no congele la imagen. renderer.compileAsync(scene, camera) a secas compila para la pantalla, pero cada
+   *  cuadro se dibuja dentro de las pasadas del postproceso: otro destino (render target, MRT) y otra profundidad de llamada,
+   *  y three.js les da un contexto distinto, así que esa compilación no servía (la lente «Sombras» compilaba 9 pipelines al
+   *  primer clic). Aquí se compila con el destino y la profundidad de cada pasada, y con todo visible y sin descarte por
+   *  cámara solo mientras se recorre la escena (esa parte de compileAsync es sincrónica). Idea tomada de boring-forest.
+   *  Si algo no coincide, three.js rehace el objeto al dibujarlo: en el peor caso se compila de más, nunca se ve mal.
+   *  Quedan fuera (se compilan al primer uso, son pocos y chicos): las mallas transparentes de dos caras, que compileAsync
+   *  compila de dos caras y el render dibuja en dos pasadas (atrás y adelante), y la pasada del mapa de sombras. */
+  async precompilar() {
+    const r = this.renderer, rc = r._renderContexts, get = rc.get, rt0 = r.getRenderTarget(), mrt0 = r.getMRT(), cambiados = [];
+    this.scene.traverse((o) => { if (!o.visible || o.frustumCulled) { cambiados.push([o, o.visible, o.frustumCulled]); o.visible = true; o.frustumCulled = false; } });
+    const promesas = [];
+    try {
+      for (const p of this.pasadas ?? []) {
+        r.setRenderTarget(p.renderTarget); r.setMRT(p._mrt ?? null);
+        rc.get = (t, m) => get.call(rc, t, m, 1);        // las pasadas se dibujan dentro del render del postproceso (profundidad 1)
+        promesas.push(r.compileAsync(this.scene, this.camera));
+        rc.get = get;
+      }
+    } finally {
+      rc.get = get; r.setRenderTarget(rt0); r.setMRT(mrt0);
+      for (const [o, v, f] of cambiados) { o.visible = v; o.frustumCulled = f; }
+    }
+    await Promise.all(promesas);
+  }
 
   /** Resolución máxima: nunca más de ~3,7 millones de píxeles dibujados, ni más que el nivel de calidad. */
   dprMax() {
@@ -917,6 +945,7 @@ export class Escena {
   // ---------- Viento: rosa de vientos en el suelo o flechas del viento de esa hora ----------
   #vientoRosa() {
     const c = document.createElement('canvas'); c.width = c.height = 1024; this._vc = c;
+    c.getContext('2d');                               // lienzo vacío pero válido: precompilar() sube la textura antes del primer dibujo
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; this._vtex = tex;
     const geo = new THREE.PlaneGeometry(200, 200); geo.rotateX(-Math.PI / 2);      // la rosa empieza fuera del anillo N·E·S·O (46 m)
     this.uViento = uniform(0);
