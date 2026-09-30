@@ -4,7 +4,7 @@
 //   2. modelo: cada modelo/*.glb byte a byte y, si cambia, nodo a nodo y pieza a pieza (verificacion/entrada/comparar.mjs)
 //   3. imagen: el mismo cuadro en las dos versiones, píxel a píxel, en ~20 casos (vistas, fachadas, lentes, noche, lluvia),
 //      con el reloj de los sombreadores congelado (grano, vegetación, lluvia) y Math.random con semilla fija
-// Uso:  cd fuente && node guardia.mjs [revisión] [--webgl] [--solo=git,modelo,imagen] [--casos=esquina,lente-sol]
+// Uso:  cd fuente && node guardia.mjs [revisión] [--webgl] [--solo=git,modelo,imagen] [--casos=esquina,lente-sol] [--url=dof=0]
 // Resultado en fuente/verificacion/guardia/ (ignorado por git): informe.json y, en cada caso que difiere, antes, después
 // y un mapa de las diferencias. Código de salida: 0 si no cambia nada, 1 si algo cambia, 2 si el script no pudo correr.
 import http from 'node:http';
@@ -23,6 +23,8 @@ const REV = ARGS.find((a) => !a.startsWith('--')) ?? 'origin/main';
 const GL = ARGS.includes('--webgl');
 const SOLO = (ARGS.find((a) => a.startsWith('--solo=')) ?? '--solo=git,modelo,imagen').slice(7).split(',');
 const FILTRO = (ARGS.find((a) => a.startsWith('--casos=')) ?? '').slice(8).split(',').filter(Boolean);
+// --url=dof=0: parámetros extra en la URL de las dos versiones (p. ej. apagar un efecto nuevo para probar que, sin él, todo queda igual)
+const EXTRA = (ARGS.find((a) => a.startsWith('--url=')) ?? '').slice(6);
 const SALIDA = path.join(AQUI, 'verificacion', 'guardia', GL ? 'webgl' : 'webgpu');
 const ANCHO = 1600, ALTO = 1000;
 // umbrales de la imagen: un píxel «cambia» si algún canal se mueve más de UMBRAL niveles (0–255); un caso falla si cambian
@@ -168,10 +170,10 @@ async function comparar(a, b) {
 }
 
 if (SOLO.includes('imagen')) {
-  titulo(`3. imagen: ${CASOS.length} casos, ${informe.backend}, ${ANCHO}×${ALTO}`);
+  titulo(`3. imagen: ${CASOS.length} casos, ${informe.backend}, ${ANCHO}×${ALTO}${EXTRA ? ` · URL con &${EXTRA}` : ''}`);
   const viejo = exportar(REV);
   const [sA, sB] = await Promise.all([servidor(viejo), servidor(RAIZ)]);
-  const q = `index.html?prueba&rapido${GL ? '&webgl' : ''}`;
+  const q = `index.html?prueba&rapido${GL ? '&webgl' : ''}${EXTRA ? '&' + EXTRA : ''}`;
   const nav = await chromium.launch({ headless: true, args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan,WebGPU', '--use-angle=metal', '--ignore-gpu-blocklist', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'] });
   const filas = [];
   try {
