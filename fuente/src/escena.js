@@ -17,6 +17,7 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { vectorSol, FACHADAS, posicionSol, saleYPone } from './sol.js';
 import { binario } from './datos.js';
+import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
 
 export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto'];
 // Reparto de partículas por grupo (fracción del total)
@@ -566,7 +567,17 @@ export class Escena {
       const on = step(grupo === 'contexto' ? 0.6 : 0.35, hash(cell.x.mul(17.0).add(cell.y.mul(131.0)))).mul(grupo === 'contexto' ? 0.45 : 1);
       // con la noche honesta la escena es oscura y las ventanas vuelven a ser lo más claro (U.ventanasN). Luz blanca de ~4000 K:
       // en las fotos de los salones hay paneles LED en cielorraso de placas, paredes blancas y piso claro (antes era naranja)
-      m.emissiveNode = vec3(...NOCHE.lamparas.led).mul(NOCHE.ventanaLum).mul(on).mul(U.ventanasN);
+      const plano = vec3(...NOCHE.lamparas.led).mul(NOCHE.ventanaLum).mul(U.ventanasN);
+      m.emissiveNode = plano.mul(on);
+      // en el edificio 106, detrás del vidrio hay cuartos (interiores.js): la luz sale de los paneles del cielorraso y de lo que
+      // alumbran, no del vidrio entero; el vidrio mismo queda casi negro (no tiene color difuso) y conserva su reflejo
+      if (grupo !== 'contexto') {
+        colBase = materialColor.mul(mix(float(1), float(0.25), conCuarto()));   // el desfogue conserva el vidrio de antes
+        this._cieloLuz ??= uniform(this.hemi.color);                    // el relleno del cielo (setSol lo actualiza en su lugar)
+        this.interiorK = K_INTERIOR;                                    // ganancias del interior (para ajustarlas desde las pruebas)
+        m.emissiveNode = luzInterior({ lampara: vec3(...NOCHE.lamparas.led), ventanasN: U.ventanasN, noche: U.noche, cieloLuz: this._cieloLuz,
+          lente: max(U.calor, U.agua), mat: U.mat, simple: this.calidad.nivel === 'bajo', plano });
+      }
     }
     const nmPlaster = (nm.includes('plaster') || nm.includes('cream trim')) && !nm.includes('interior');
     let colorFinal = colBase;
@@ -670,8 +681,8 @@ export class Escena {
       const arriba = smoothstep(0.5, 0.9, normalWorld.y), abajo = smoothstep(-0.5, -0.9, normalWorld.y);
       // piso cuya ventana alumbra: la de su mismo piso si la cara mira arriba, la de abajo si mira abajo (sofito)
       const piso = max(floor(mix(y.add(0.3), y.sub(0.2), abajo).div(3.65)), 0);
-      const cel = floor(q.x.add(q.y).div(3.8));
-      const enc = step(0.35, hash(cel.mul(17.0).add(piso.mul(131.0)))).mul(step(piso, 2.5));
+      // el cuarto de la ventana más cercana, con la misma luz encendida o apagada que se ve por el vidrio (interiores.js)
+      const enc = encendida(semillaFachada(q, piso)).mul(step(piso, 2.5));
       const cerca = arriba.mul(pow(float(0.5), dq.div(0.9))).mul(0.3).add(abajo.mul(smoothstep(2.4, 0.8, dq)).mul(0.18));
       const eVent = vec3(...NOCHE.lamparas.led).mul(enc).mul(cerca).mul(U.ventanasN).mul(0.175);   // la misma luz blanca del salón
       // la bóveda completa sobre lo que mira al cielo sin nada encima: las tejas (siempre son techo) y el suelo fuera de los
