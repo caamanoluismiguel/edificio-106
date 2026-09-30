@@ -197,13 +197,17 @@ export class Escena {
     this.hemi = new THREE.HemisphereLight(0xbfd4e6, 0x5b5a3e, 0.6);
     scene.add(this.hemi);
 
-    // Suelo lejano para que el terreno llegue al horizonte
+    // Suelo lejano para que el terreno llegue al horizonte. Va 0,5 m bajo cero, por debajo de todo el suelo del sitio: el pasto
+    // de sitio.glb es una losa con la cara de arriba a −0,032 m (fondo a −0,428) y el asfalto llega a −0,047. A −0,05 m quedaba
+    // a 1,8 cm del pasto y a 3 mm del asfalto, menos de lo que distingue el búfer de profundidad desde la planta (~1 cm a 215 m
+    // con near 0,3): los dos suelos se peleaban el píxel y se veía una franja de pantalla completa, más clara sobre el pasto y
+    // granulada sobre la calle, a cualquier hora. A 0,5 m el sitio siempre gana y el borde de la losa tapa el escalón.
     const g = new THREE.CircleGeometry(3200, 64); g.rotateX(-Math.PI / 2);
     const gm = new THREE.MeshStandardNodeMaterial({ color: new THREE.Color(0.05, 0.085, 0.03), roughness: 0.95 });
     gm.colorNode = mix(clayColor.mul(0.55), vec3(0.05, 0.085, 0.03), U.mat);
     gm.receivedShadowNode = sombraNubes;
     gm.emissiveNode = gm.colorNode.mul(vec3(U.cieloArriba));   // de noche, la bóveda completa sobre el terreno abierto
-    const suelo = new THREE.Mesh(g, gm); suelo.position.y = -0.05; suelo.receiveShadow = true; scene.add(suelo);
+    const suelo = new THREE.Mesh(g, gm); suelo.position.y = -0.5; suelo.receiveShadow = true; scene.add(suelo);
     this.suelo = suelo;
 
     this.#reticula();
