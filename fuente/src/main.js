@@ -8,6 +8,7 @@ import { puntosIntro } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { posicionLuna } from './luna.js';
 import { Clima } from './clima.js';
+import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI } from './confort.js';
 import QRCode from 'qrcode';
 
 const $ = (s) => document.querySelector(s);
@@ -294,7 +295,7 @@ function terminarIntro() {
 // Sale una vez, al terminar la intro de quien llega por primera vez. Se va con la primera interacción real (una forma de ver,
 // una vista, arrastrar la escena, la regla, Escape) o a los 30 s, pero no mientras tenga el foco dentro.
 function mostrarOferta() {
-  if (S.paso != null || !$('#sirve').hidden || !$('#ir-a').hidden || S.interactuo) return;
+  if (S.paso != null || !$('#sirve').hidden || !$('#ir-a').hidden || !$('#confort').hidden || S.interactuo) return;
   const el = $('#oferta-recorrido'); el.hidden = false;
   const vencer = () => { if (el.hidden) return; if (el.contains(document.activeElement)) mostrarOferta.t = setTimeout(vencer, 5000); else el.hidden = true; };
   clearTimeout(mostrarOferta.t); mostrarOferta.t = setTimeout(vencer, 30000);
@@ -732,6 +733,7 @@ function lecturas(p, c) {
   const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0);
   if (kc !== S.kClimaDia && !S.viaje) { S.kClimaDia = kc; pintarClimaDia(); }
   const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, S.viaje?.fase].join('|');
+  confortHora(p, c);                              // el punto de la carta y la línea de UTCI, si el panel está abierto
   if (key === lastLect) return; lastLect = key;
   const vivo = S.modo === 'ahora', V = S.viaje;
   // en el viaje, mientras corre la fecha, la hora no se muestra: todavía no es la de ningún momento real
@@ -1067,6 +1069,8 @@ function prepararUI() {
     }
   };
   globalThis.__abrirIr = abrirIr;
+  $('#abrir-confort').addEventListener('click', () => abrirConfort($('#confort').hidden));
+  $('#cerrar-confort').addEventListener('click', () => abrirConfort(false));
   $('#elegir').addEventListener('click', () => abrirIr($('#ir-a').hidden));
   $('#abrir-ir').addEventListener('click', () => abrirIr($('#ir-a').hidden));
   $('#ir-fecha').addEventListener('change', () => { const [y, m] = $('#ir-fecha').value.split('-').map(Number); if (y > 1900 && m) { const f0 = S.fecha; S.fecha = { ...S.fecha, y, m }; pintarConsultas(); S.fecha = f0; } });
@@ -1121,7 +1125,7 @@ function prepararUI() {
     else if (S.paso != null && e.key === 'ArrowRight') recorrido(S.paso + 1);
     else if (S.paso != null && e.key === 'ArrowLeft') recorrido(S.paso - 1);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
@@ -1427,7 +1431,7 @@ function aplicarPartes() {
 }
 const _pp = new THREE.Vector3(), _pv = new THREE.Vector3();
 // paneles de la interfaz que las etiquetas no deben tapar ni quedar debajo
-const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#panel-fachada', '#qr', '#aviso.ver'];
+const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#confort', '#panel-fachada', '#qr', '#aviso.ver'];
 /** Coloca las etiquetas sobre la imagen: proyecta cada ancla con la cámara, esquiva los paneles y evita que se encimen. */
 function pintarPartes() {
   const capa = $('#partes-capa'); if (!capa || !escena) return;
@@ -1861,7 +1865,7 @@ function recorrido(i) {
   $('#rec-prev').disabled = i === 0; $('#rec-sig').textContent = i === P.length - 1 ? 'Terminar' : 'Siguiente';
   $('#rec-puntos').innerHTML = P.map((_, j) => `<i class="${j === i ? 'hoy' : j < i ? 'ya' : ''}"></i>`).join('');
   $('#recorrido').hidden = false; document.documentElement.classList.add('en-recorrido');
-  ['#sirve', '#ir-a', '#capas'].forEach((x) => { $(x).hidden = true; }); abrirVoladizo(false);
+  ['#sirve', '#ir-a', '#capas', '#confort'].forEach((x) => { $(x).hidden = true; }); abrirVoladizo(false);
   (conPregunta ? q.antes : q.ir)(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
   if (conPregunta && foco) $('#rec-ver').focus();
 }
@@ -1952,6 +1956,102 @@ function listaConsultas() {
   }
   return out;
 }
+// ---------------- Confort térmico: carta psicrométrica y sensación térmica (UTCI) ----------------
+// Lo de 25 años viene precalculado en datos/confort.json (fuente/confort.mjs); aquí solo se dibuja y se calcula la hora elegida.
+let confortJ = null;
+// categorías de UTCI en calor, de «sin estrés» a «extremo»: pasos planos de color, sin degradado (índices de CATEGORIAS_UTCI)
+const UTCI_COL = { 4: '#8fa39b', 5: '#f2c46b', 6: '#e8913a', 7: '#cf5a2c', 8: '#9e2f1c', 9: '#5e1a12' };
+async function abrirConfort(abrir) {
+  $('#confort').hidden = !abrir; $('#abrir-confort').setAttribute('aria-expanded', String(abrir));
+  if (!abrir) return;
+  cerrarOferta(); abrirVoladizo(false); globalThis.__abrirIr?.(false);
+  $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false');
+  $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false');
+  if (!confortJ) {
+    try { confortJ = await (await fetch(BASE + 'datos/confort.json')).json(); }
+    catch (e) { anotar('aviso', 'confort: ' + e); $('#carta-cifras').textContent = 'No se pudieron cargar los datos de confort.'; return; }
+    pintarCarta(); pintarUTCI();
+  }
+  confortClave = ''; confortHora(posicionSol({ ...S.fecha, h: 0, min: S.min }), climaEn(S.fecha, S.min));
+}
+
+// carta: x = temperatura del aire (°C), y = humedad absoluta (g/kg); área útil dentro de márgenes para ejes y rótulos
+const CARTA = { x0: 34, x1: 366, y0: 12, y1: 226 };
+const cx = (t) => CARTA.x0 + (t - confortJ.carta.t0) / (confortJ.carta.t1 - confortJ.carta.t0) * (CARTA.x1 - CARTA.x0);
+const cy = (w) => CARTA.y1 - (w - confortJ.carta.w0) / (confortJ.carta.w1 - confortJ.carta.w0) * (CARTA.y1 - CARTA.y0);
+function pintarCarta() {
+  const J = confortJ, C = J.carta, s = [];
+  // densidad de horas: cinco clases planas (cuantiles de las celdas con horas), una sola tinta
+  const vals = C.celdas.flat().filter((v) => v > 0).sort((a, b) => a - b), q = [0.2, 0.4, 0.6, 0.8].map((p) => vals[Math.floor(p * vals.length)]);
+  const clase = (v) => (v <= q[0] ? 0 : v <= q[1] ? 1 : v <= q[2] ? 2 : v <= q[3] ? 3 : 4), OP = [0.14, 0.26, 0.4, 0.58, 0.8];
+  C.celdas.forEach((fila, j) => fila.forEach((v, i) => { if (!v) return;
+    s.push(`<rect x="${cx(C.t0 + i).toFixed(1)}" y="${cy(C.w0 + j + 1).toFixed(1)}" width="${(cx(1) - cx(0)).toFixed(1)}" height="${(cy(0) - cy(1)).toFixed(1)}" fill="#4aa8dc" fill-opacity="${OP[clase(v)]}"><title>${C.t0 + i}–${C.t0 + i + 1} °C · ${C.w0 + j}–${C.w0 + j + 1} g/kg: ${miles(v)} h</title></rect>`); }));
+  // curvas de humedad relativa (50 % y 100 %, rotuladas) y 70 / 90 % finas
+  for (const rh of [50, 70, 90, 100]) {
+    const pts = []; for (let t = C.t0; t <= C.t1; t += 0.5) { const w = humedadAbs(t, rh); if (w <= C.w1 + 0.01) pts.push(`${cx(t).toFixed(1)},${cy(Math.max(C.w0, w)).toFixed(1)}`); }
+    s.push(`<polyline points="${pts.join(' ')}" fill="none" stroke="rgba(239,233,222,${rh === 100 ? 0.6 : 0.25})" stroke-width="${rh === 100 ? 1.4 : 1}"/>`);
+    if (rh === 50 || rh === 100) { const t = rh === 100 ? 18.2 : 34; s.push(`<text x="${cx(t) + 3}" y="${cy(Math.min(C.w1, humedadAbs(t, rh))) + (rh === 100 ? -6 : 12)}" fill="#b6bdb9" font-size="10">${rh === 100 ? 'HR 100 %' : rh + ' %'}</text>`); }
+  }
+  // banda adaptativa de ASHRAE 55 (80 %) para el rango de t_pma de la serie; con aire a 1,2 m/s llega 2,2 °C más arriba
+  const lo = 0.31 * J.tpma.min + 17.8 - 3.5, hi = 0.31 * J.tpma.max + 17.8 + 3.5;
+  s.push(`<rect x="${cx(lo).toFixed(1)}" y="${CARTA.y0}" width="${(cx(hi) - cx(lo)).toFixed(1)}" height="${CARTA.y1 - CARTA.y0}" fill="none" stroke="#b6bdb9" stroke-width="1" stroke-dasharray="2 3"/>`);
+  s.push(`<rect x="${cx(hi).toFixed(1)}" y="${CARTA.y0}" width="${(cx(hi + 2.2) - cx(hi)).toFixed(1)}" height="${CARTA.y1 - CARTA.y0}" fill="none" stroke="#b6bdb9" stroke-width="1" stroke-dasharray="1 4"/>`);
+  s.push(`<text x="${cx(lo) + 3}" y="${CARTA.y0 + 10}" fill="#b6bdb9" font-size="9.5">ASHRAE 55</text>`);
+  // zonas de Givoni: aire quieto (línea llena) y con ventilación (a trazos), recortadas a la carta
+  const poli = (P) => P.map(([t, w]) => `${cx(t).toFixed(1)},${cy(Math.max(C.w0, w)).toFixed(1)}`).join(' ');
+  s.push(`<polygon points="${poli(GIVONI.ventilacion)}" fill="none" stroke="#f4b545" stroke-width="1.6" stroke-dasharray="6 4"/>`);
+  s.push(`<polygon points="${poli(GIVONI.quieto)}" fill="none" stroke="#f4b545" stroke-width="2"/>`);
+  // ejes
+  for (let t = C.t0; t <= C.t1; t += 2) s.push(`<line x1="${cx(t)}" x2="${cx(t)}" y1="${CARTA.y1}" y2="${CARTA.y1 + 4}" stroke="#7f8a86"/><text x="${cx(t)}" y="${CARTA.y1 + 15}" fill="#b6bdb9" font-size="10" text-anchor="middle">${t}</text>`);
+  for (let w = C.w0; w <= C.w1; w += 4) s.push(`<line x1="${CARTA.x0 - 4}" x2="${CARTA.x0}" y1="${cy(w)}" y2="${cy(w)}" stroke="#7f8a86"/><text x="${CARTA.x0 - 7}" y="${cy(w) + 3.5}" fill="#b6bdb9" font-size="10" text-anchor="end">${w}</text>`);
+  s.push(`<text x="${(CARTA.x0 + CARTA.x1) / 2}" y="${CARTA.y1 + 31}" fill="#b6bdb9" font-size="10" text-anchor="middle">temperatura del aire (°C)</text>`);
+  s.push(`<text x="10" y="${(CARTA.y0 + CARTA.y1) / 2}" fill="#b6bdb9" font-size="10" text-anchor="middle" transform="rotate(-90 10 ${(CARTA.y0 + CARTA.y1) / 2})">humedad (g/kg)</text>`);
+  s.push('<g id="carta-punto"></g>');
+  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas en temperatura y humedad; la mayoría cae arriba de 17 g/kg, fuera del aire quieto de Givoni.</desc>` + s.join('');
+  const P = J.pct, li = (col, dash, txt) => `<li><i style="border:2px ${dash} ${col};background:none"></i>${txt}</li>`;
+  $('#carta-cifras').innerHTML = [
+    // en enteros: ERA5 no sostiene décimas en la humedad de una celda de ~28 km
+    li('#f4b545', 'solid', `Givoni, aire quieto: <b>${Math.round(P.quieto)} %</b> de las horas`),
+    li('#f4b545', 'dashed', `Givoni, con ventilación de ~2 m/s: <b>${Math.round(P.ventilacion)} %</b>`),
+    li('#b6bdb9', 'dotted', `ASHRAE 55 adaptativo, aire quieto: <b>${Math.round(P.adaptativo80)} %</b> · con aire a 0,6 m/s: <b>${Math.round(P.adaptativo80_06)} %</b>`),
+  ].join('');
+}
+let confortClave = '';
+function confortHora(p, c) {
+  if (!confortJ || $('#confort').hidden) return;
+  const ok = c && c.temp != null && c.humedad != null, k = ok ? [Math.round(c.temp * 10), Math.round(c.humedad), Math.round((c.dni ?? 0) / 10), Math.round((c.difusa ?? 0) / 10), Math.round(c.viento ?? 0), Math.round(p.alt)].join('|') : 'no';
+  if (k === confortClave) return; confortClave = k;
+  const g = $('#carta-punto');
+  if (!ok) { if (g) g.innerHTML = ''; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
+  const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
+  if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
+  const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
+  if (p.alt <= 0 || c.dni == null) {
+    const u = utci(c.temp, c.temp, va, c.humedad, { recortarViento: true }), k2 = categoriaUTCI(u);
+    $('#utci-hora').innerHTML = `A las ${hora} (de noche o sin radiación): UTCI <b>${Math.round(u)} °C</b>, ${CATEGORIAS_UTCI[k2]?.nombre.toLowerCase() ?? '—'}. Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
+    return;
+  }
+  const uS = utci(c.temp, tmrtSol({ ta: c.temp, altSol: p.alt, dni: c.dni, difusa: c.difusa ?? 0 }), va, c.humedad, { recortarViento: true });
+  const uA = utci(c.temp, tmrtSombra({ ta: c.temp, difusa: c.difusa ?? 0, altSol: p.alt, dni: c.dni }), va, c.humedad, { recortarViento: true });
+  const nom = (u) => CATEGORIAS_UTCI[categoriaUTCI(u)]?.nombre.toLowerCase() ?? '—';
+  $('#utci-hora').innerHTML = `A las ${hora}: al sol se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
+}
+function pintarUTCI() {
+  const J = confortJ.utci, s = [], L = 38, R = 372, T = 8, B = 118, gw = (R - L) / 12, bw = gw * 0.36;
+  const usadas = [4, 5, 6, 7, 8, 9].filter((k) => J.anual.sol[k] + J.anual.sombra[k] > 0);
+  J.meses.forEach((M, m) => ['sol', 'sombra'].forEach((lado, j) => {
+    let y = B; const x = L + m * gw + gw * 0.12 + j * (bw + gw * 0.04);
+    for (const k of usadas) { const h = M.horas ? (M[lado][k] / M.horas) * (B - T) : 0; if (h <= 0) continue; y -= h;
+      s.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${UTCI_COL[k]}"><title>${MESES[m]}, ${lado === 'sol' ? 'al sol' : 'bajo el alero'}: ${CATEGORIAS_UTCI[k].nombre.toLowerCase()}, ${Math.round(100 * M[lado][k] / M.horas)} % de las horas de día</title></rect>`); }
+  }));
+  MES3.forEach((t, m) => s.push(`<text x="${(L + m * gw + gw / 2).toFixed(1)}" y="${B + 12}" fill="#b6bdb9" font-size="10" text-anchor="middle">${t}</text>`));
+  for (const p of [0, 50, 100]) s.push(`<text x="${L - 5}" y="${(B - p / 100 * (B - T) + 3.5).toFixed(1)}" fill="#7f8a86" font-size="9.5" text-anchor="end">${p} %</text>`);
+  $('#utci').innerHTML = `<desc id="utci-desc">Por mes, la parte de las horas de día en cada categoría de estrés térmico, al sol y bajo el alero.</desc>` + s.join('');
+  const pc = (lado, k) => Math.round(100 * J.anual[lado][k] / J.anual.horas);
+  $('#utci-ley').innerHTML = '<li style="grid-column:1/-1">En cada mes, la barra de la izquierda es al sol y la de la derecha, bajo el alero.</li>' + usadas.map((k) => `<li><i style="background:${UTCI_COL[k]}"></i>${CATEGORIAS_UTCI[k].nombre} · sol ${pc('sol', k)} % · alero ${pc('sombra', k)} %</li>`).join('')
+    + `<li style="grid-column:1/-1">El alero baja la sensación térmica unos <b>${Math.round(J.alivioMedioAlero)} °C</b> en promedio.</li>`;
+}
+
 function pintarConsultas() {
   const ul = $('#consultas'); if (!ul) return;
   const L = listaConsultas(); S.listaConsultas = L;

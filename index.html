@@ -413,6 +413,22 @@
   #elegir:hover { color: var(--cal); border-bottom-color: var(--sol); }
   #elegir .lapiz { font-size: 10px; color: var(--sol); }
   /* panel lateral a la izquierda: deja ver el edificio y la brújula mientras se viaja */
+  #confort { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px);
+    width: min(430px, calc(100vw - 2 * var(--gutter) - 150px)); align-content: start; overflow: auto; overscroll-behavior: contain;
+    background: var(--panel-2); border: 1px solid var(--sol); border-radius: 18px; padding: 16px; backdrop-filter: blur(18px); display: grid; gap: 14px; box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .22s cubic-bezier(.2, 0, 0, 1); }
+  #confort h3 { font: 760 22px/1 var(--display); margin: 0; letter-spacing: -0.01em; }
+  #confort section { display: grid; gap: 8px; }
+  #confort h4 { font: 500 11.5px/1.3 var(--datos); color: var(--sol); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  #confort svg { width: 100%; height: auto; display: block; font-family: var(--datos); }
+  #confort .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }        /* --cal-3 no llega a 4,5:1 sobre el panel */
+  .conf-cifras, .conf-ley { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 500 12.5px/1.35 var(--texto); color: var(--cal-2); }
+  .conf-cifras b { font: 600 13px/1 var(--datos); color: var(--cal); font-variant-numeric: tabular-nums; }
+  .conf-ley { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); font-size: 12px; }
+  .conf-ley i, .conf-cifras i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+  .conf-hora { margin: 0; font: 500 13px/1.4 var(--texto); color: var(--cal); }
+  .conf-hora b { font-family: var(--datos); font-variant-numeric: tabular-nums; }
+  html:has(#confort:not([hidden])) #rotulo, html:has(#confort:not([hidden])) #panel-fachada { display: none; }
   #ir-a { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px);
     width: min(400px, calc(100vw - 2 * var(--gutter) - 150px)); align-content: start; overflow: auto; overscroll-behavior: contain;
     background: var(--panel-2); border: 1px solid var(--sol); border-radius: 18px; padding: 16px; backdrop-filter: blur(18px); display: grid; gap: 12px; box-sizing: border-box;
@@ -548,7 +564,7 @@
     .dock-lect b { font-size: 15px; white-space: normal; }
     .dock-lect small { font-size: 11.5px; }
     #l-fuente { display: none; }
-    #capas, #ir-a { left: 8px; right: 8px; width: auto; }
+    #capas, #ir-a, #confort { left: 8px; right: 8px; width: auto; }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px 18px 14px 14px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
     .lentes::before { display: none; } .lentes button { padding: 7px 10px; font-size: 12.5px; }
@@ -875,6 +891,7 @@
     <button class="boton" id="reproducir" type="button" aria-pressed="false" aria-label="Reproducir"></button>
     <button class="boton" id="abrir-ir" type="button" aria-expanded="false" aria-controls="ir-a" title="Una fecha exacta o uno de los días extremos de la serie">Ir a…</button>
     <button class="boton" id="abrir-capas" type="button" aria-expanded="false" aria-controls="capas">Capas</button>
+    <button class="boton" id="abrir-confort" type="button" aria-expanded="false" aria-controls="confort" title="Carta psicrométrica y sensación térmica de 25 años de datos">Confort</button>
   </div>
 </section>
 
@@ -990,6 +1007,24 @@
     </ol>
   </section>
   <p class="sirve-pie">Cálculos: geometría solar NOAA minuto a minuto (2026) y datos horarios ERA5 2001–2025 de Open-Meteo, sobre el modelo paramétrico (escala ±12 %, ventanas inferidas). Detalle de fuentes en «Qué es · fuentes».</p>
+</aside>
+
+<aside id="confort" hidden aria-labelledby="confort-t">
+  <div class="ir-cab"><h3 id="confort-t">Confort térmico</h3><button class="boton" type="button" id="cerrar-confort">Cerrar</button></div>
+  <section aria-labelledby="carta-t">
+    <h4 id="carta-t">Carta psicrométrica · cada hora de 2001 a 2025</h4>
+    <svg id="carta" viewBox="0 0 380 262" role="img" aria-labelledby="carta-t carta-desc"><desc id="carta-desc"></desc></svg>
+    <ul class="conf-cifras" id="carta-cifras"></ul>
+    <p class="nota">Es el aire exterior a la sombra, no el interior del aula: las zonas suponen un aula liviana y ventilada que sigue al aire de afuera, como el 106. Givoni pone un techo de humedad; el modelo adaptativo de ASHRAE, medido en edificios ventilados, no. Por eso no coinciden.</p>
+  </section>
+  <section aria-labelledby="utci-t">
+    <h4 id="utci-t">Sensación térmica de día (UTCI) · al sol y bajo el alero</h4>
+    <p class="conf-hora" id="utci-hora" aria-live="polite"></p>
+    <svg id="utci" viewBox="0 0 380 136" role="img" aria-labelledby="utci-t utci-desc"><desc id="utci-desc"></desc></svg>
+    <ul class="conf-ley" id="utci-ley"></ul>
+    <p class="nota">Horas con el sol a más de 5°, 2001–2025. UTCI de Bröde et al. (2012) con la temperatura, la humedad y el viento a 10 m de ERA5; la radiación con el método SolarCal de ASHRAE 55 (persona de pie, absortividad 0,7, suelo al 20 %). Bajo el alero: sin sol directo y con medio cielo; la temperatura radiante de fondo se toma igual a la del aire (aproximación).</p>
+  </section>
+  <p class="nota" id="confort-fuentes">Datos: reanálisis ERA5 (celda de ~28 km), no una medición en el sitio. Zonas: Givoni (1992), <i>Energy and Buildings</i> 18, variante para países cálidos, digitalizadas de sus figuras 3 y 4; ASHRAE 55-2017, modelo adaptativo al 80 %. Cálculo verificado contra pythermalcomfort.</p>
 </aside>
 
 <aside id="ir-a" hidden aria-labelledby="ir-a-t">
