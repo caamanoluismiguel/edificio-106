@@ -18,7 +18,7 @@ def fila(ps):
 filas = [
   fila([panel(FOTO, (395, 470, 875, 810), 400, 'foto WA0014'),
         panel(A + 'foto.png', (395, 465, 875, 805), 400, 'antes (4,80 m entre ejes, capitel 3,56 m)'),
-        panel(D + 'foto.png', (395, 465, 875, 805), 400, 'despues (3,10 m entre ejes, capitel 2,40 m)')]),
+        panel(D + 'foto.png', (395, 465, 875, 805), 400, 'despues (2,20 m entre ejes, capitel 2,40 m)')]),
   fila([panel(SV % 1, None, 330, 'Street View, acercamiento 1'), panel(D + 'sv1.png', (0, 250, 1600, 1000), 330, 'despues, punto parecido')]),
   fila([panel(SV % 2, None, 330, 'Street View, acercamiento 2'), panel(D + 'sv2.png', (150, 250, 1600, 1000), 330, 'despues, punto parecido')]),
   fila([panel(A + 'frente-cerca.png', None, 280, 'frente cercano, antes'), panel(D + 'frente-cerca.png', None, 280, 'frente cercano, despues')]),
