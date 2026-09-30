@@ -102,7 +102,7 @@ const VISTAS = {
 // en pantallas verticales la planta, más alta: el hueco libre entre los botones y la tarjeta del recorrido es bajo (ver encuadreMovil)
 if (innerWidth / innerHeight < 0.8) VISTAS.planta.pos = [CENTRO[0] - NORTE.x * 5.1, 290, CENTRO[2] - NORTE.z * 5.1];
 const VISTA_FACHADA = {
-  'fachada-se': { pos: [9, 1.65, 30], tgt: [4, 6.2, 11.5] },
+  'fachada-se': { pos: [9, 1.65, 28.5], tgt: [4, 6.2, 11.5] },   // en la calle: La Casa (contexto.mjs) tiene la cubierta de su galería hasta z ≈ 30 y las columnas en z ≈ 30,9
   'fachada-no': { pos: [-2, 1.65, -32], tgt: [0, 6.2, -11.5] },
   'fachada-ne': { pos: [46, 1.65, -4], tgt: [22.75, 6.2, 0] },
   'fachada-so': { pos: [-41, 1.65, 4], tgt: [-22.75, 6.2, 0] },   // el 105 (contexto.mjs) tiene el muro en x ≈ −42,9 y el alero hasta −41,3: más atrás la cámara quedaba bajo su alero o dentro de su muro
@@ -1197,7 +1197,7 @@ const LENTES = {
     ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche se ve solo la luz que hay: la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
   sol: { t: 'Sol: cuánta radiación solar incide en cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
-    que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio, la de los árboles y la de los vecinos más cercanos (el 105, el salón de Innova y Balboa Academy): bajo el alero, el color baja.',
+    que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio, la de los árboles y la de los vecinos más cercanos (el 105, el salón de un piso de enfrente y Balboa Academy): bajo el alero, el color baja.',
     leer: '«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo, en W/m².',
     prueba: 'Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.',
     porque: 'Es el asoleamiento del edificio: muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.',
@@ -1474,7 +1474,7 @@ function pintarPartes() {
 }
 
 // El alero como voladizo: proporciones con la misma sección y la misma carga por metro (no es el cálculo de este alero)
-const VISTA_ALERO = { pos: [34.6, 7.5, 29.6], tgt: [19, 7.5, 11] };        // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel (en la misma línea de antes, más cerca: en (40; 36) quedaba dentro del salón de Innova, que empieza en z ≈ 30,6)
+const VISTA_ALERO = { pos: [34.6, 7.5, 29.6], tgt: [19, 7.5, 11] };        // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel (en la misma línea de antes, más cerca: en (40; 36) quedaba dentro de la caja de 11 m que el contexto anterior ponía sobre la huella 108; hoy ahí está La Casa, un salón de un piso cuya huella empieza en z ≈ 30,6 y cuya cubierta queda por debajo de los 7 m)
 function abrirVoladizo(abrir) {
   const el = $('#voladizo'); if (!el) return;
   if (!!S.voladizo === abrir) return;

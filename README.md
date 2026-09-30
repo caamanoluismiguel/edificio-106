@@ -23,7 +23,7 @@ Un levantamiento (escala ±12 %, ventanas regularizadas) ni una medición del cl
 - Hersbach, H. et al. (2023). *ERA5 hourly data on single levels from 1940 to present*. C3S Climate Data Store. doi:10.24381/cds.adbb2d47. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2025). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.
 - Algoritmo solar de NOAA (Meeus). Estaciones de contraste: IMHPA (Tocumen) e INEC (Balboa, Albrook).
 - Enscore, S. I. (2000). *Guarding the Gates: The Story of Fort Clayton*. CERL, DTIC ADA388262.
-- Contexto: huellas de edificios © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), en `fuente/osm.json`; `fuente/contexto.mjs` genera `modelo/contexto.glb` alineando OSM con el 106 del modelo. Las alturas de los vecinos son estimadas (los cuarteles del cuadrángulo repiten el 106; Innova, 11 m; el resto, los niveles de OSM o dos).
+- Contexto: huellas de edificios © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), en `fuente/osm.json`; `fuente/contexto.mjs` genera `modelo/contexto.glb` alineando OSM con el 106 del modelo. Las alturas de los vecinos son estimadas (los cuarteles del cuadrángulo repiten el 106; La Casa, el salón de un piso de enfrente, ~7 m a la cumbrera; Innova, 11 m; el Ateneo, 10 m; el resto, los niveles de OSM o dos).
 - [three.js](https://threejs.org/) (MIT).
 
 `fuente/` contiene el código (Vite) y los scripts que preparan el modelo, los puntos de la intro y el clima.
