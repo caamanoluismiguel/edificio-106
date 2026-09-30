@@ -16,6 +16,9 @@
 //       · oeste: el tramo horizontal se alarga hasta el muro (z 11,50) con dos postes intermedios (z 13,70 y 12,60),
 //         copias del poste superior de la escalera, a ~1,1 m como los de la escalera.
 //       · este: poste de remate bajo el extremo (z 13,82), copia del mismo poste.
+//     Después, entrada.mjs retira la escalera 3,15 m hasta la puerta y mueve con ella estos pasamanos (quita los tres postes
+//     del porche, que quedarían dentro del edificio); sobre el entrada.glb ya corregido esta regla no hace nada. Para el
+//     .blend, las instrucciones de la escalera y sus pasamanos que valen son las de entrada.mjs.
 //  2. Rellano de la rampa (x 21,5 a 22,9, z 11,5 a 14,24, a 0,635 m del suelo): el borde exterior (z 14,22) quedaba abierto
 //     1,32 m entre el poste final del tramo bajo (x 21,50) y el poste de esquina (x 22,82). En la foto la baranda exterior
 //     del tramo bajo sigue por el rellano hasta la esquina. Se agregan sus tres tubos (pasamanos y dos travesaños, a las
@@ -39,10 +42,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const MURO_SE = 11.50, MURO_NO = -11.50;
-const aplicar = (M, [x, y, z]) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]];
+export const aplicar = (M, [x, y, z]) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]];
 
 /** Piezas (componentes conexas) de las mallas cuyo nombre cumple `re`, con sus vértices en coordenadas del mundo. */
-function piezas(doc, re) {
+export function piezas(doc, re) {
   const out = [];
   for (const n of doc.getRoot().listNodes()) {
     const m = n.getMesh(); if (!m || !re.test(m.getName())) continue;
@@ -70,8 +73,8 @@ function piezas(doc, re) {
   }
   return out;
 }
-const centro = (c) => c.mn.map((x, k) => (x + c.mx[k]) / 2);
-const tam = (c) => c.mx.map((x, k) => x - c.mn[k]);
+export const centro = (c) => c.mn.map((x, k) => (x + c.mx[k]) / 2);
+export const tam = (c) => c.mx.map((x, k) => x - c.mn[k]);
 /** Las piezas que cumplen `f`; con `n`, exige que sean exactamente n (si no, el modelo cambió y la regla ya no aplica). */
 function elegir(L, f, n, que) {
   const r = L.filter(f);
@@ -90,14 +93,14 @@ function estirar(c, eje, lado, valor) {
   }
   return n;
 }
-function comprobar(l, c) {
+export function comprobar(l, c) {
   if (l.some((x) => Math.abs(x) > 1 + 1e-4)) throw new Error(`${c.malla}: la pieza nueva sale del volumen de cuantización de la malla`);
   return l.map((x) => Math.max(-1, Math.min(1, x)));         // los vértices del borde del volumen, sin el error de redondeo
 }
 
 /** Agrega a la primitiva de `molde` una copia de sus triángulos con cada vértice (del mundo) pasado por `mover`,
  *  y cada normal por `girar`. */
-function copiar(doc, molde, mover, girar = (n) => n) {
+export function copiar(doc, molde, mover, girar = (n) => n) {
   const p = molde.p, vs = [...molde.verts], nuevo = new Map(), base = p.getAttribute('POSITION').getCount();
   vs.forEach((v, i) => nuevo.set(v, base + i));
   for (const sem of p.listSemantics()) {
@@ -129,8 +132,11 @@ export function corregirBarandas(doc, grupo) {
   if (grupo === 'entrada') {
     const L = piezas(doc, /guardrail/i);
     const cerca = (a, b, tol = 0.05) => Math.abs(a - b) < tol;
-    // 1. pasamanos de la escalera: tubo inclinado de ~2,9 m en z, a x 11,10 y 14,50
-    for (const x of [11.10, 14.50]) {
+    // 1. pasamanos de la escalera: tubo inclinado de ~2,9 m en z, a x 11,10 y 14,50. Si entrada.mjs ya retiró la escalera
+    //    hasta la puerta (sin poste superior en z 14,80), los pasamanos ya llegan al muro y la regla no aplica.
+    const retirada = !L.some((c) => cerca(c.mn[1], 1.12) && tam(c)[2] < 0.06 && cerca(centro(c)[2], 14.80));
+    if (retirada) res.push('escalera de la entrada ya retirada (entrada.mjs): regla 1 sin efecto');
+    for (const x of retirada ? [] : [11.10, 14.50]) {
       const [pas] = elegir(L, (c) => cerca(centro(c)[0], x) && tam(c)[2] > 1.2 && tam(c)[1] > 0.5, 1, `pasamanos de la escalera x ${x}`);
       const [poste] = elegir(L, (c) => cerca(centro(c)[0], x) && cerca(centro(c)[2], 14.80) && tam(c)[2] < 0.06 && cerca(c.mn[1], 1.12), 1, `poste superior x ${x}`);
       // (por vértices y no por piezas: una pieza nueva puede quedar soldada a la vecina si comparten vértices)
@@ -212,6 +218,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.log(r.length ? r.join('\n') : `${g}: nada que corregir`);
     // la misma compresión que optimize2.mjs (meshopt «high» = filtros de cuantización sobre los búferes)
     doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
-    if (r.length) { await io.write(archivo, doc); console.log('escrito', archivo); }
+    if (r.some((x) => !/sin efecto/.test(x))) { await io.write(archivo, doc); console.log('escrito', archivo); }
   }
 }

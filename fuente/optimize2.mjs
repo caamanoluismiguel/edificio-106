@@ -12,6 +12,7 @@ import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import fs from 'fs';
 import { corregirArbustos } from './arbustos.mjs';   // setos que atravesaban la escalera y la galería traseras (ver arbustos.mjs)
 import { corregirBarandas } from './barandas.mjs';   // barandas de los accesos cortadas en el aire (ver barandas.mjs)
+import { corregirEntrada } from './entrada.mjs';     // losa bajo el pórtico y escalera retirada hasta la puerta, como en WA0014 (ver entrada.mjs)
 import { reducirArboles } from './arboles.mjs';      // árboles del anillo de relleno que caían en edificios, calles o el estacionamiento (ver arboles.mjs)
 await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
@@ -86,6 +87,7 @@ for (const g of groups) {
   await doc.transform(dedup(), prune(), quantize({ quantizePosition: 16, quantizeNormal: 10 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
   if (g === 'vegetacion') console.log([...corregirArbustos(doc), ...reducirArboles(doc)].join('\n'));
   if (g === 'entrada' || g === 'sitio') console.log(corregirBarandas(doc, g).join('\n'));
+  if (g === 'entrada') console.log(corregirEntrada(doc).join('\n'));   // después de barandas.mjs: mueve sus pasamanos con la escalera
   await io.write(`public/modelo/${g}.glb`, doc);
   const b = fs.readFileSync(`public/modelo/${g}.glb`);
   resumen[g] = { tris0: t0, tris: t1, MB: +(b.length / 1e6).toFixed(2) };
