@@ -105,7 +105,7 @@ const VISTA_FACHADA = {
   'fachada-se': { pos: [9, 1.65, 30], tgt: [4, 6.2, 11.5] },
   'fachada-no': { pos: [-2, 1.65, -32], tgt: [0, 6.2, -11.5] },
   'fachada-ne': { pos: [46, 1.65, -4], tgt: [22.75, 6.2, 0] },
-  'fachada-so': { pos: [-41, 1.65, 4], tgt: [-22.75, 6.2, 0] },   // el edificio vecino empieza en x ≈ −43,9: más atrás la cámara quedaba dentro de su muro
+  'fachada-so': { pos: [-41, 1.65, 4], tgt: [-22.75, 6.2, 0] },   // el 105 (contexto.mjs) tiene el muro en x ≈ −42,9 y el alero hasta −41,3: más atrás la cámara quedaba bajo su alero o dentro de su muro
 };
 const ROTULOS = [ // aparecen durante el armado, en el orden de los grupos
   { b: 0, t: 'Planta de 45,5 × 23 m' },       // aparece cuando los puntos ya formaron el edificio
@@ -1473,7 +1473,7 @@ function pintarPartes() {
 }
 
 // El alero como voladizo: proporciones con la misma sección y la misma carga por metro (no es el cálculo de este alero)
-const VISTA_ALERO = { pos: [40, 7.5, 36], tgt: [19, 7.5, 11] };            // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel
+const VISTA_ALERO = { pos: [34.6, 7.5, 29.6], tgt: [19, 7.5, 11] };        // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel (en la misma línea de antes, más cerca: en (40; 36) quedaba dentro del salón de Innova, que empieza en z ≈ 30,6)
 function abrirVoladizo(abrir) {
   const el = $('#voladizo'); if (!el) return;
   if (!!S.voladizo === abrir) return;
