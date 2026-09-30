@@ -24,6 +24,9 @@ export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrad
 // Reparto de partículas por grupo (fracción del total)
 const CUOTA = { sitio: 0.11, arquitectura: 0.19, ventanas: 0.10, cubiertas: 0.20, entrada: 0.05, detalles: 0.05, vegetacion: 0.2, contexto: 0.10 };
 
+/** Paradas de la rampa de la lente «Sol» (RGB lineal, a 0, 200, 400, 600 y 800 W/m²). La leyenda se arma con estas mismas,
+ *  pasadas a sRGB (main.js), para que el color de la leyenda sea el que se pinta antes de la luz de la escena. */
+export const RAMPA_SOL = [[0.01, 0.03, 0.22], [0.30, 0.02, 0.40], [0.85, 0.12, 0.02], [1.0, 0.45, 0.0], [1.0, 0.85, 0.15]];
 export const U = {                       // uniformes compartidos
   build: uniform(0),                     // 0..8: avance del armado (un grupo por unidad)
   junta: uniform(0),                     // 0..1: los puntos vuelan hasta su lugar (todos a la vez)
@@ -675,8 +678,8 @@ export class Escena {
       const irr = directa.add(difusa.mul(U.total)).div(800);
       // escala de calor ordenada (azul noche → morado → rojo → naranja → amarillo), con colores puros para que el tonemapping no la lave
       const s4 = (a, b) => smoothstep(a, b, irr);
-      const ramp = mix(mix(mix(mix(vec3(0.01, 0.03, 0.22), vec3(0.30, 0.02, 0.40), s4(0.0, 0.25)), vec3(0.85, 0.12, 0.02), s4(0.25, 0.5)),
-        vec3(1.0, 0.45, 0.0), s4(0.5, 0.75)), vec3(1.0, 0.85, 0.15), s4(0.75, 1.0));
+      const [c0, c1, c2, c3, c4] = RAMPA_SOL.map((c) => vec3(...c));
+      const ramp = mix(mix(mix(mix(c0, c1, s4(0.0, 0.25)), c2, s4(0.25, 0.5)), c3, s4(0.5, 0.75)), c4, s4(0.75, 1.0));
       const e = ramp.mul(U.calor).mul(0.8);
       // lluvia con viento y viento de frente: reparto por orientación, con la paleta de cada lente (el techo queda neutro)
       const w = (nx, nz) => pow(max(dot(n, vec3(nx, 0, nz)), 0), 3.0);

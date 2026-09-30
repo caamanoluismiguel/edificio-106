@@ -20,11 +20,20 @@ Un levantamiento (escala ±12 %, ventanas regularizadas) ni una medición del cl
 
 ## Fuentes y créditos
 - [Weather data by Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0).
-- Hersbach, H. et al. (2023). *ERA5 hourly data on single levels from 1940 to present*. C3S Climate Data Store. doi:10.24381/cds.adbb2d47. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2025). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.
-- Algoritmo solar de NOAA (Meeus). Estaciones de contraste: IMHPA (Tocumen) e INEC (Balboa, Albrook).
-- Enscore, S. I. (2000). *Guarding the Gates: The Story of Fort Clayton*. CERL, DTIC ADA388262.
-- Contexto: huellas de edificios © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), en `fuente/osm.json`; `fuente/contexto.mjs` genera `modelo/contexto.glb` alineando OSM con el 106 del modelo. Las alturas de los vecinos son estimadas (los cuarteles del cuadrángulo repiten el 106; La Casa, el salón de un piso de enfrente, ~7 m a la cumbrera; Innova, 11 m; el Ateneo, 10 m; el resto, los niveles de OSM o dos).
+- Hersbach, H. et al. (2020). The ERA5 global reanalysis. *QJRMS* 146, 1999–2049. doi:10.1002/qj.3803. Y (2023). *ERA5 hourly data on single levels from 1940 to present*. C3S Climate Data Store. doi:10.24381/cds.adbb2d47. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2026). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.
+- Algoritmo solar de NOAA (Meeus), verificado contra Michalsky (1988) y NREL SPA (Reda y Andreas, 2004). Estaciones de contraste: Tocumen (IMHPA 1977–2010 e INEC 2001–2010), Balboa (ACP) y Albrook (Autoridad de Aeronáutica Civil), publicadas por el INEC, cuadro 121-01.
+- Enscore, S. I., Johnson, S. P., Webster, J. L. y Cohen, G. L. (2000). *Guarding the Gates: The Story of Fort Clayton*. CERL, DTIC ADA388262. Ojo: en sus planos de los años 30, el número 106 era un galpón de madera para equipo de artillería (fig. 3.46); la numeración actual puede no corresponder al mismo edificio.
+- Contexto: huellas de edificios © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), en `fuente/osm.json`; `fuente/contexto.mjs` genera `modelo/contexto.glb` alineando OSM con el 106 del modelo. Las alturas de los vecinos son estimadas (los edificios vecinos del cuadrángulo, que parecen repetir el volumen del 106; La Casa, el salón de un piso de enfrente, ~7 m a la cumbrera; Innova, 11 m; el Ateneo, 10 m; el resto, los niveles de OSM o dos).
 - [three.js](https://threejs.org/) (MIT).
+
+## Método y validación
+- **Datos:** ERA5 (Hersbach et al., 2020, doi:10.1002/qj.3803) por la API de archivo de Open-Meteo (Zippenfenig, 2024, doi:10.5281/zenodo.7970649), celda 9,000° N 79,500° O (24 m), hora de Panamá. `fuente/descargar_era5.py` baja la serie y `fuente/clima_bin.py` la empaqueta (lluvia 0,1 mm, temperatura 1/6 °C, radiación 4 W/m², viento 1 km/h, dirección 2°).
+- **Sol:** NOAA/Meeus, verificado contra Michalsky (1988) y NREL SPA (Reda y Andreas, 2004): ≤0,03° en altura y ≤0,11° en azimut; salida y puesta a ±1 min.
+- **Radiación en fachadas:** Hay y Davies (1980), suelo al 20 %, sin factor de vista del cielo. **Lluvia batiente:** ISO 15927-3 en campo abierto (Blocken y Carmeliet, 2004, doi:10.1016/j.jweia.2004.06.003). **Confort:** Givoni (1992), ASHRAE 55-2017 y UTCI (Bröde et al., 2012), verificados contra pythermalcomfort.
+- **Pruebas:** `cd fuente && node verificar.mjs` (sol, sombras contra trazado de rayos, luces, errores y tirones) y `node guardia.mjs` antes de publicar (que nada cambie fuera de lo declarado).
+
+## Cómo citar
+Caamaño, L. M. (2026). *Edificio 106 · Isthmus: visor de sol y clima* (versión del 30 de septiembre de 2026) [software]. https://github.com/caamanoluismiguel/edificio-106. Ver `CITATION.cff`. Código MIT (`LICENSE`); datos derivados CC BY 4.0.
 
 `fuente/` contiene el código (Vite) y los scripts que preparan el modelo, los puntos de la intro y el clima.
 

@@ -163,7 +163,7 @@
   #ley-mas summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); }
   #ley-mas p { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
   #ley-mas p b { color: var(--cal); font-weight: 600; }
-  #ley-mas .tec { font-size: 11px; color: var(--cal-3); }
+  #ley-mas .tec { font-size: 11px; color: var(--cal-2); }
   .lentes .info { width: 30px; padding: 8px 0; font-family: var(--datos); color: var(--sol); }
   .lentes .info[aria-expanded="true"] { background: var(--sol-tenue); }
   /* datos tocables del dock */
@@ -244,7 +244,7 @@
   #ley-parte p b { color: var(--cal); font-weight: 600; } #ley-parte p b.k2 { color: var(--sol); }
   #lp-tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
   #lp-tabla th, #lp-tabla td { padding: 4px 0; border-top: 1px solid var(--linea); text-align: right; font: 500 11.5px/1.25 var(--datos); color: var(--cal); white-space: nowrap; padding-left: 8px; }
-  #lp-tabla thead th { font: 500 11px/1.2 var(--datos); letter-spacing: .06em; text-transform: uppercase; color: var(--cal-3); border-top: 0; white-space: normal; }
+  #lp-tabla thead th { font: 500 11px/1.2 var(--datos); letter-spacing: .06em; text-transform: uppercase; color: var(--cal-2); border-top: 0; white-space: normal; }
   #lp-tabla tbody th { text-align: left; font: 400 12px/1.25 var(--texto); color: var(--cal-2); white-space: normal; padding-left: 0; }
   #lp-tabla td:last-child { color: var(--sol); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -266,21 +266,21 @@
   #voladizo h2 { margin: 0; font: 760 22px/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
   #voladizo p { margin: 0; font-size: 14px; line-height: 1.45; text-wrap: pretty; } #voladizo p b.k2 { color: var(--sol); font-weight: 600; }
   .vol-largos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .vol-largos span { font: 500 11px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; text-transform: uppercase; }
+  .vol-largos span { font: 500 11px/1 var(--datos); color: var(--cal-2); letter-spacing: .06em; text-transform: uppercase; }
   .vol-largos button { font-family: var(--datos); font-size: 13px; padding: 9px 13px; }
   #vol-svg { display: block; width: 100%; height: auto; max-height: 176px; background: rgba(239,233,222,.03); border-radius: 12px; }
-  #vol-svg .vt { font: 600 11px var(--texto); } #vol-svg .vt.m { font: 500 10px var(--datos); fill: var(--cal-3); }
+  #vol-svg .vt { font: 600 11px var(--texto); } #vol-svg .vt.m { font: 500 10px var(--datos); fill: var(--cal-2); }
   .vol-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .vol-datos div { border: 1px solid var(--linea); border-radius: 10px; padding: 7px 10px; display: grid; gap: 4px; align-content: start; }
   .vol-datos span { font: 500 11px/1.2 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
   .vol-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; }
   .vol-datos small { font-size: 11.5px; color: var(--cal-2); line-height: 1.3; }
-  #voladizo .vol-nota { font-size: 12px; color: var(--cal-3); }
+  #voladizo .vol-nota { font-size: 12px; color: var(--cal-2); }
   /* corte del alero con el rayo de sol de esta hora */
   #corte { display: grid; gap: 8px; border-top: 1px solid var(--linea-2); padding-top: 11px; margin-top: 2px; }
   #corte h3 { margin: 0; font: 700 17px/1.15 var(--display); color: var(--sol); }
   .corte-fach { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .corte-fach span { font: 500 11px/1 var(--datos); color: var(--cal-3); letter-spacing: .06em; text-transform: uppercase; }
+  .corte-fach span { font: 500 11px/1 var(--datos); color: var(--cal-2); letter-spacing: .06em; text-transform: uppercase; }
   .corte-fach button { font: 600 13px/1 var(--datos); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 9px 12px; min-width: 44px; cursor: pointer; }
   .corte-fach button[aria-pressed="true"] { background: var(--sol); color: #1d1405; border-color: var(--sol); }
   #corte-svg { display: block; width: 100%; height: auto; max-height: 320px; background: #111b20; border: 1px solid var(--linea); border-radius: 12px; }
@@ -335,7 +335,7 @@
   html:not(.vivo) #ahora::before { background: var(--sol); }
   .dock-centro { grid-area: centro; display: grid; gap: 10px; }
   .pestanas { display: flex; gap: 4px; }
-  .pestanas button { border: 1px solid transparent; background: none; cursor: pointer; font: 600 12.5px/1 var(--texto); color: var(--cal-3); padding: 7px 11px; border-radius: 999px; transition: color .2s, border-color .2s, background .2s; }
+  .pestanas button { border: 1px solid transparent; background: none; cursor: pointer; font: 600 12.5px/1 var(--texto); color: var(--cal-2); padding: 7px 11px; border-radius: 999px; transition: color .2s, border-color .2s, background .2s; }
   .pestanas button:hover { color: var(--cal); }
   .pestanas button[aria-selected="true"] { color: var(--noche); background: var(--cal); }
   .regla { position: relative; }
@@ -386,13 +386,13 @@
   .hallazgo h3 { font: 700 17px/1.2 var(--display); margin: 0; letter-spacing: -0.005em; text-wrap: balance; }
   .hallazgo p { margin: 0; font-size: 14px; line-height: 1.45; text-wrap: pretty; }
   .hallazgo .uso { color: var(--cal); } .hallazgo .uso b { color: var(--sol); font-weight: 600; }
-  .hallazgo .limite { font-size: 12.5px; color: var(--cal-3); } .hallazgo .limite b { font-weight: 600; color: var(--cal-2); }
+  .hallazgo .limite { font-size: 12.5px; color: var(--cal-2); } .hallazgo .limite b { font-weight: 600; color: var(--cal-2); }
   .hallazgo .ver { display: grid; gap: 3px; text-align: left; border: 1px solid var(--sol); background: var(--sol-tenue); color: var(--cal); border-radius: 10px; padding: 9px 11px; cursor: pointer; transition: background .2s; }
   .hallazgo .ver:hover { background: rgba(244, 181, 69, 0.28); }
   .hallazgo .ver span { font: 600 13px/1.2 var(--texto); color: var(--sol); }
   .hallazgo .ver small { font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
   .hallazgo.activo { border-color: var(--sol); }
-  .sirve-pie { margin: 0; font: 500 11px/1.4 var(--datos); color: var(--cal-3); }
+  .sirve-pie { margin: 0; font: 500 11px/1.4 var(--datos); color: var(--cal-2); }
   .sirve-h { font: 500 11px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 6px 0 0; }
   .para-todos { display: grid; gap: 10px; }
   .para-todos > p { margin: 0; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
@@ -405,7 +405,7 @@
   .hallazgo.simple .ver { padding: 7px 10px; }
   .no-es { font-size: 13.5px !important; color: var(--cal-2); border-left: 2px solid var(--linea-2); padding-left: 10px; }
   #acerca .fuentes li { font-size: 13.5px; }
-  #acerca .aviso { font-size: 13px; color: var(--cal-3); margin-top: 14px; }
+  #acerca .aviso { font-size: 13px; color: var(--cal-2); margin-top: 14px; }
 
   /* ---------- ir a… (fecha exacta y consultas) ---------- */
   #elegir { display: inline-flex; gap: 6px; align-items: center; border: 0; background: none; padding: 2px 0; cursor: pointer; color: var(--cal-2); border-bottom: 1px dashed var(--linea-2); }
@@ -438,7 +438,7 @@
   #ir-a label { display: grid; gap: 6px; font: 600 12px/1 var(--texto); color: var(--cal-2); }
   #ir-a input { font: 500 16px/1 var(--datos); color: var(--cal); background: rgba(239,233,222,.06); border: 1px solid var(--linea-2); border-radius: 10px; padding: 10px; min-width: 0; color-scheme: dark; }
   #ir-a input:focus { outline: 2px solid var(--sol); outline-offset: 1px; }
-  #ir-a .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-3); }
+  #ir-a .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
   #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
   .consultas { display: grid; gap: 14px; }
   html:has(#ir-a:not([hidden])) #rotulo, html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
@@ -665,7 +665,7 @@
     <ol id="intro-rotulos" aria-live="polite">
       <li>Planta de <b>45,5 × 23 m</b></li>
       <li><b>3</b> pisos sobre una base de <b>0,65 m</b></li>
-      <li><b>116</b> aberturas: 112 ventanas y 4 puertas</li>
+      <li><b>116</b> aberturas en el modelo (las de los pisos 2 y 3, inferidas)</li>
       <li>Aleros de <b>1,65 m</b> en 3 niveles · <b>78</b> ménsulas</li>
       <li>Clayton, Panamá · eje largo a <b>56°</b> del norte</li>
     </ol>
@@ -787,7 +787,7 @@
   <p>Un voladizo es una pieza sujeta por un solo lado, como un trampolín. Con su peso, arriba se estira (tracción) y abajo se aprieta (compresión); donde más trabaja es en la raíz, junto al muro.</p>
   <div class="vol-largos" role="group" aria-label="Largo del alero"><span>Largo del alero</span>
     <button type="button" data-largo="1" aria-pressed="false">1,00 m</button>
-    <button type="button" data-largo="1.65" aria-pressed="true">1,65 m · el real</button>
+    <button type="button" data-largo="1.65" aria-pressed="true">≈1,65 m · el del modelo</button>
     <button type="button" data-largo="2.5" aria-pressed="false">2,50 m</button>
   </div>
   <svg id="vol-svg" viewBox="0 0 518 200" role="img" aria-label="Esquema del alero en voladizo: tracción arriba, compresión abajo y el esfuerzo máximo en la raíz, junto al muro"></svg>
@@ -901,7 +901,7 @@
   <section class="para-todos" aria-labelledby="todos-t">
     <h3 id="todos-t" class="sirve-h">En pocas palabras</h3>
     <p>Es una maqueta digital del Edificio 106 de Isthmus, en Ciudad del Saber. En ella puedes ver cómo inciden el sol, la lluvia y el viento sobre el edificio a cualquier hora de cualquier día, con el clima de cada hora entre 2001 y 2025.</p>
-    <p><b>¿Por qué importa?</b> Un edificio no está quieto frente al clima: el sol incide primero sobre una fachada y después sobre otra, los aguaceros mojan más una pared que las otras y el viento sopla casi siempre desde la misma dirección. Eso decide si adentro hace calor, si las paredes se manchan de humedad o si entra aire fresco por las ventanas. Los arquitectos tienen que pensarlo antes de construir, y en un plano cuesta imaginarlo. Aquí se ve.</p>
+    <p><b>¿Por qué importa?</b> Un edificio no está quieto frente al clima: el sol incide primero sobre una fachada y después sobre otra, los aguaceros mojan más una pared que las otras y el viento sopla casi siempre desde la misma dirección. Eso decide si adentro hace calor, si las paredes se manchan de humedad o si entra la brisa por las ventanas. Los arquitectos tienen que pensarlo antes de construir, y en un plano cuesta imaginarlo. Aquí se ve.</p>
     <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, aprender cómo se llama cada parte del edificio e ir a días especiales, como el más lluvioso en 25 años.</p>
     <p><button class="boton primario" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
     <h3 class="sirve-h">Lo que se aprende en pocos minutos</h3>
@@ -913,7 +913,7 @@
       </article>
       <article class="hallazgo simple" data-fecha="2026-01-15" data-hora="10:00" data-vista="" data-fachada="se" data-capa="calor" data-modo="directa">
         <h4>Los aleros son la visera del edificio</h4>
-        <p>Con el sol alto, los aleros de 1,65 m dejan las ventanas en sombra, como la visera de una gorra. En el mapa de sol, el vidrio bajo el alero queda azul mientras la pared sigue al sol.</p>
+        <p>Cuando el sol, visto de perfil contra la fachada, sube de unos 45°, los aleros de 1,65 m dejan las ventanas en sombra, como la visera de una gorra. El sol bajo de la tarde, en cambio, entra por debajo. En el mapa de sol, el vidrio bajo el alero queda azul mientras la pared sigue al sol.</p>
         <button class="ver" type="button"><span>Verlo</span><small>15 de enero, 10:00 · fachada sureste · mapa de sol</small></button>
       </article>
       <article class="hallazgo simple" data-fecha="2024-03-25" data-hora="15:30" data-vista="" data-fachada="so" data-capa="calor" data-modo="directa">
@@ -928,7 +928,7 @@
       </article>
       <article class="hallazgo simple" data-fecha="2016-02-18" data-hora="14:00" data-vista="aerea" data-fachada="" data-capa="viento" data-modo="anio">
         <h4>El viento llega casi siempre del mismo lado</h4>
-        <p>Casi todo el año sopla del norte y del noroeste. La pared noroeste lo recibe de frente: por ahí entraría el aire fresco, y saldría por el lado opuesto.</p>
+        <p>Unas dos de cada tres horas del año sopla entre el oeste noroeste y el norte; en la temporada seca, cuatro de cada cinco. La pared noroeste lo recibe de frente: por ahí entraría la brisa, y saldría por el lado opuesto si el interior la deja pasar.</p>
         <button class="ver" type="button"><span>Verlo</span><small>Año típico · vista aérea · mapa de viento</small></button>
       </article>
       <article class="hallazgo simple" data-fecha="2024-03-25" data-hora="09:30" data-vista="esquina" data-fachada="" data-capa="partes" data-modo="">
@@ -937,8 +937,8 @@
         <button class="ver" type="button"><span>Verlo</span><small>Ver → Partes · esquina</small></button>
       </article>
       <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
-        <h4>Llueve casi todas las tardes de mayo a noviembre</h4>
-        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y sobre todo en las tardes. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
+        <h4>Llueve la mayoría de las tardes de mayo a noviembre</h4>
+        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En ERA5 llueve (1 mm o más) en 87 de cada 100 tardes de mayo a noviembre; el reanálisis reparte de más la lluvia débil, así que en la realidad son algo menos. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
         <button class="ver" type="button"><span>Verlo</span><small>1 de julio de 2023, 14:30 · esquina</small></button>
       </article>
     </div>
@@ -949,8 +949,8 @@
   <div class="hallazgos">
     <article class="hallazgo" data-fecha="2026-04-12" data-hora="12:19" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Cero sombra en 2026: 12 de abril y 29 de agosto, a las 12:19</h3>
-      <p>Entre esas dos fechas (139 días) el sol del mediodía pasa al norte del cenit. Por el giro de 56°, las cuatro fachadas tienen el sol de frente todos los días del año: sin descontar nubes, la SE unas 2.500 horas al año y la NO unas 1.900.</p>
-      <p class="uso"><b>Para el diseño:</b> A 9° N ninguna fachada se libra del sol; de abril a agosto la cara norte también necesita protección.</p>
+      <p>Entre esas dos fechas (139 días) el sol del mediodía pasa al norte del cenit. Por el giro de 56°, las cuatro fachadas reciben sol directo todos los días del año, aunque a veces rasante: sin descontar nubes, la SE unas 2.500 horas al año y la NO unas 1.900.</p>
+      <p class="uso"><b>Para el diseño:</b> A 9° N ninguna fachada se libra del sol; de abril a agosto las caras NO y NE también necesitan protección.</p>
       <p class="limite"><b>Límite:</b> Geometría solar (NOAA): no descuenta nubes ni vecinos. Afuera se comprueba con un poste.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>12/04/2026 12:19 · vista aérea · sol directo en fachadas: las cuatro casi en cero y la sombra de 1 m casi desaparece.</small></button>
     </article>
@@ -964,7 +964,7 @@
     <article class="hallazgo" data-fecha="2024-01-15" data-hora="07:30" data-vista="" data-fachada="se" data-capa="">
       <h3>El alero de 1,65 m quita al vidrio entre 70 % y 85 % de la irradiación directa</h3>
       <p>El vidrio queda en sombra total cuando el ángulo de perfil pasa de unos 45° y a pleno sol solo por debajo de unos 9°. Más de la mitad del vidrio recibe sol en la SE hasta cerca de las 8:45 en enero, y en el SO desde cerca de las 15:40 en noviembre y diciembre. En la SE los vecinos casi no cuentan: el salón de un piso de enfrente, al otro lado de la calle, le da sombra sobre todo a la planta baja y solo en la primera media hora de sol, en enero hasta cerca de las 7:15. En el SO el edificio 105 sí tapa la última hora de la tarde, desde cerca de las 16:45.</p>
-      <p class="uso"><b>Para el diseño:</b> Da el ángulo de corte (~45°) para discutir aleros, y muestra que el SO necesita protección extra contra el sol bajo de la tarde.</p>
+      <p class="uso"><b>Para el diseño:</b> Da el ángulo de corte (~45°) para discutir aleros, y muestra que el alero no alcanza contra el sol bajo de la tarde: la SO necesita protección vertical o móvil (quiebrasoles, persianas o árboles).</p>
       <p class="limite"><b>Límite:</b> Pisos 2 y 3, con ventanas inferidas: con ±0,3 m de alero o ±0,15 m de ventana queda entre 65 % y 86 %. La difusa y la reflejada se reducen bastante menos.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>15/01/2024 07:30 · fachada SE: el 92 % del vidrio del piso 2 al sol. Pasa la regla a las 10:00: el muro sigue al sol y el vidrio queda casi todo en sombra.</small></button>
     </article>
@@ -983,8 +983,8 @@
       <button class="ver" type="button"><span>Verlo en la escena</span><small>23/11/2006 12:30 · fachada NO: llueve con viento de unos 25 km/h que llega de frente a esta fachada.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2003-04-11" data-hora="15:30" data-vista="" data-fachada="so" data-capa="calor" data-modo="directa">
-      <h3>En las horas más cálidas, el sol incide casi de frente sobre la fachada lateral SO</h3>
-      <p>En las horas de 30 °C o más de ERA5 (unas 440 al año, de ~200 a ~870 según el año), el sol está frente al SO en el 78 % e incide sobre ella con más de 100 W/m² en el 59 %. Detrás del alero, los vidrios SE y NE nunca reciben sol en esas horas; el del SO, unas 30 horas al año.</p>
+      <h3>En las horas más cálidas, el sol está del lado de la fachada lateral SO</h3>
+      <p>En las horas de 30 °C o más de ERA5 (unas 440 al año, de ~200 a ~870 según el año), a la hora del dato de temperatura el sol está del lado de la SO (a menos de 90° de su perpendicular) en el 78 %, y en la mitad le llega más de 100 W/m² de sol directo. Detrás del alero, los vidrios SE y NE nunca reciben sol en esas horas; el del SO, unas 30 horas al año.</p>
       <p class="uso"><b>Para el diseño:</b> Sugiere sombrear o ventilar la fachada lateral SO, y no poner ahí espacios muy ocupados por la tarde.</p>
       <p class="limite"><b>Límite:</b> ERA5 subestima el rango diario (da 4–6 °C; máxima de 32,8 °C en 25 años): las horas de 30 °C cambian mucho con el umbral.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>11/04/2003 15:30 · fachada SO · sol directo en fachadas: más de 30 °C y el SO con el valor más alto.</small></button>
@@ -1074,7 +1074,7 @@
   <p>Un modelo 3D paramétrico del Edificio 106, con su norte real, el sol calculado (NOAA) y el tiempo de cada hora. Entre 2001 y 2025 el tiempo sale del reanálisis ERA5 (un modelo del clima alimentado con mediciones); para estos días, del pronóstico de modelo de Open-Meteo. Sirve para leer y discutir cómo trabajan la orientación, los aleros, la lluvia y el viento en este edificio.</p>
   <h3>Cómo leerlo</h3>
   <ul>
-    <li><b>Ahora:</b> el sol de este minuto y el pronóstico de modelo de Open-Meteo, que se renueva cada 15 min. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
+    <li><b>Ahora:</b> el sol de este minuto y el pronóstico de Open-Meteo (combinación automática de modelos, «best_match»), con valores cada 15 min interpolados; el modelo se actualiza varias veces al día. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
     <li><b>Máquina del tiempo:</b> Día · Año · 25 años, o una fecha y hora exactas (toca la fecha bajo la hora grande). Entre 2001 y 2025, si ERA5 da lluvia en esa hora, llueve en la escena.</li>
     <li><b>Orientación:</b> arrastra para girar el edificio. La brújula marca el norte real y el sol; en el suelo están la rosa N·E·S·O y el arco del sol del día.</li>
     <li><b>Qué significa cada dato:</b> toca la hora, «Sol», «Sombra de 1 m» o «Clima» en la barra de abajo, o las pestañas Día · Año · 25 años, y aparece la explicación con los valores de ese momento.</li>
@@ -1087,22 +1087,41 @@
     <li>No es un levantamiento: es un modelo paramétrico, con escala aproximada (±12 %) y ventanas regularizadas a partir de fotos.</li>
     <li>El tiempo es dato de modelo, no una medición en el sitio: ERA5 representa una celda de 0,25° (unos 28 km), con su punto central a 9 km al este.</li>
     <li>No sirve para dimensionar canales, bajantes ni desagües: ERA5 suaviza los aguaceros.</li>
-    <li>No calcula la ventilación interior, la temperatura de superficies ni el confort; la radiación difusa y reflejada se estima con un modelo simple. En «Para qué sirve» → «Qué no hace esta herramienta» está qué usar para cada cosa. De noche se ve solo la luz que hay: la luna de esa noche (su posición y su fase están calculadas, y las nubes del dato la tapan), el resplandor de la ciudad en el cielo y el poste de la esquina. Las ventanas encendidas y el tipo de lámpara del poste son una suposición, no un dato.</li>
+    <li>No calcula la ventilación interior, la temperatura de superficies ni el confort; la radiación difusa y reflejada se estima con un modelo simple. En «Para qué sirve» → «Qué no hace esta herramienta» está qué usar para cada cosa. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna de esa noche (su posición y su fase están calculadas, y las nubes del dato la tapan), el resplandor de la ciudad en el cielo y el poste de la esquina. Las ventanas encendidas y el tipo de lámpara del poste son una suposición, no un dato.</li>
   </ul>
   <h3>Contexto</h3>
-  <p>Isthmus, que abrió en 2000, se presenta como el primer programa en operar en Ciudad del Saber, en la antigua base militar de Clayton; hoy tiene su sede en el Edificio 106. El proyecto de Fort Clayton se aprobó en 1919 y sus primeros 36 edificios estaban listos en agosto de 1920; la ampliación empezó en junio de 1939. La base pasó a Panamá el 30 de noviembre de 1999, y de 243 edificios recibidos se conservan más de 130.</p>
-  <p>Según el informe de CERL (2000), en Clayton se usó concreto armado, bloque de concreto con repello (revoque) y techos de teja española sobre armazón de madera, con aleros anchos que alejan la lluvia de los muros, viseras sobre las ventanas y, en los pisos intermedios, lo que el informe llama <i>mediagua</i>: un alero corrido. Esta página no afirma año de construcción, uso original, autor ni estilo del Edificio 106.</p>
+  <p>Isthmus, que abrió en 2000, se presenta como el primer programa en operar en Ciudad del Saber, en la antigua base militar de Clayton; hoy tiene su sede en el Edificio 106. El proyecto de Fort Clayton se aprobó en 1919 y sus primeros 36 edificios estaban listos en agosto de 1920; en junio de 1939 el Congreso de EE. UU. empezó a financiar la ampliación. La base pasó a Panamá el 30 de noviembre de 1999, y según la Fundación Ciudad del Saber, de 243 edificios recibidos se conservan más de 130.</p>
+  <p>Según el informe de CERL (2000), en Clayton se usó concreto armado, bloque de concreto con repello (revoque) y techos de teja española sobre armazón de madera, con aleros anchos que alejan la lluvia de los muros, viseras sobre las ventanas y, en los pisos intermedios, lo que el informe llama <i>mediagua</i>: un tejadillo corrido de una sola pendiente, fijado en los pisos intermedios, que resguarda las ventanas de abajo (p. 2-8). Esta página no afirma año de construcción, uso original, autor ni estilo del Edificio 106. Ojo: en los planos del Ejército de los años 30, el número 106 era un galpón de madera para el equipo de una batería de artillería (CERL, fig. 3.46); la numeración actual puede no corresponder al mismo edificio.</p>
   <h3>Fuentes y créditos</h3>
   <ul class="fuentes">
     <li><b>Tiempo:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0): pronóstico para «Ahora», serie 2001–2025 y consultas en línea.</li>
-    <li><b>Reanálisis ERA5:</b> Hersbach, H. et al. (2023). <i>ERA5 hourly data on single levels from 1940 to present</i>. Copernicus Climate Change Service (C3S) Climate Data Store. <a href="https://doi.org/10.24381/cds.adbb2d47" target="_blank" rel="noopener">doi:10.24381/cds.adbb2d47</a>. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2025). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.</li>
-    <li><b>Sol:</b> algoritmo de la <a href="https://gml.noaa.gov/grad/solcalc/" target="_blank" rel="noopener">calculadora solar de NOAA</a> (Meeus), con refracción; verificado contra el algoritmo SPA (diferencias menores a 0,02° en altura).</li>
-    <li><b>Estaciones de contraste:</b> <a href="https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf" target="_blank" rel="noopener">IMHPA</a>, Tocumen 1977–2010 (1.917 mm al año); <a href="https://www.inec.gob.pa/archivos/P3771121-01.pdf" target="_blank" rel="noopener">INEC, cuadro 121-01</a>, Balboa y Albrook 2001–2010.</li>
-    <li><b>Clayton:</b> Enscore, S. I. (2000). <i>Guarding the Gates: The Story of Fort Clayton</i>. CERL, <a href="https://archive.org/details/DTIC_ADA388262" target="_blank" rel="noopener">DTIC ADA388262</a>. Gordón, C. A. (2021), <a href="https://www.laestrella.com.pa/panama/nacional/fort-clayton-procesos-cambio-urbano-PILE459512" target="_blank" rel="noopener">«Fort Clayton: procesos de cambio urbano», La Estrella de Panamá</a>. Fundación Ciudad del Saber, <a href="https://ciudaddelsaber.org/historia" target="_blank" rel="noopener">Historia</a> y <a href="https://ciudaddelsaber.org/conoce-el-campus" target="_blank" rel="noopener">Conoce el campus</a>.</li>
+    <li><b>Reanálisis ERA5:</b> Hersbach, H. et al. (2023). <i>ERA5 hourly data on single levels from 1940 to present</i>. Copernicus Climate Change Service (C3S) Climate Data Store. <a href="https://doi.org/10.24381/cds.adbb2d47" target="_blank" rel="noopener">doi:10.24381/cds.adbb2d47</a>. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2026). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.</li>
+    <li><b>Sol:</b> algoritmo de la <a href="https://gml.noaa.gov/grad/solcalc/" target="_blank" rel="noopener">calculadora solar de NOAA</a> (Meeus), con refracción; verificado contra Michalsky (1988) en 132.392 momentos de 2001 a 2025 y contra NREL SPA (Reda y Andreas, 2004): hasta 0,03° en altura con el sol sobre 3° y hasta 0,11° en azimut. Salida y puesta a ±1 min de SPA.</li>
+    <li><b>Estaciones de contraste:</b> <a href="https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf" target="_blank" rel="noopener">IMHPA</a>, Tocumen 1977–2010 (1.917 mm al año); <a href="https://www.inec.gob.pa/archivos/P3771121-01.pdf" target="_blank" rel="noopener">INEC, cuadro 121-01</a> (2001–2010): Balboa, estación de la ACP, 1.885 mm al año; Albrook, de la Autoridad de Aeronáutica Civil, 1.898; Tocumen, 1.941.</li>
+    <li><b>Clayton:</b> Enscore, S. I., Johnson, S. P., Webster, J. L. y Cohen, G. L. (2000). <i>Guarding the Gates: The Story of Fort Clayton</i>. CERL, <a href="https://archive.org/details/DTIC_ADA388262" target="_blank" rel="noopener">DTIC ADA388262</a>. Gordón, C. A. (2021), <a href="https://www.laestrella.com.pa/panama/nacional/fort-clayton-procesos-cambio-urbano-PILE459512" target="_blank" rel="noopener">«Fort Clayton: procesos de cambio urbano», La Estrella de Panamá</a>. Fundación Ciudad del Saber, <a href="https://ciudaddelsaber.org/historia" target="_blank" rel="noopener">Historia</a> y <a href="https://ciudaddelsaber.org/conoce-el-campus" target="_blank" rel="noopener">Conoce el campus</a>.</li>
     <li><b>Isthmus en Ciudad del Saber:</b> <a href="https://isthmus.edu.pa/ciudad-del-saber/" target="_blank" rel="noopener">isthmus.edu.pa</a>.</li>
-    <li><b>Lluvia batiente:</b> ISO 15927-3:2009, método del índice anual en campo abierto.</li>
-    <li><b>Contexto:</b> huellas de edificios © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">colaboradores de OpenStreetMap</a> (ODbL), alineadas con el 106 del modelo. Las alturas de los vecinos son estimadas: los cuarteles del cuadrángulo repiten el 106; el salón de un piso de enfrente, Innova y el Ateneo se leyeron en Street View (unos 7, 11 y 10 m); Balboa Academy y los demás, con los niveles de OpenStreetMap (o dos si no los trae). Los vecinos a menos de ~60 m proyectan sombra sobre el edificio.</li>
+    <li><b>Lluvia batiente:</b> ISO 15927-3:2009, índice anual en campo abierto (Blocken y Carmeliet, 2004, <a href="https://doi.org/10.1016/j.jweia.2004.06.003" target="_blank" rel="noopener">doi:10.1016/j.jweia.2004.06.003</a>): litros por m² sobre un plano vertical libre, sin los factores de rugosidad, topografía, obstrucción ni pared de la norma. Ordena fachadas; en el muro llega bastante menos.</li>
+    <li><b>Contexto:</b> huellas de edificios © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">colaboradores de OpenStreetMap</a> (ODbL), alineadas con el 106 del modelo. Las alturas de los vecinos son estimadas: los edificios vecinos del cuadrángulo, que parecen repetir el volumen del 106, lo repiten en el modelo; el salón de un piso de enfrente, Innova y el Ateneo se leyeron en Street View (unos 7, 11 y 10 m); Balboa Academy y los demás, con los niveles de OpenStreetMap (o dos si no los trae). Los vecinos a menos de ~60 m proyectan sombra sobre el edificio.</li>
     <li><b>Motor 3D:</b> <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a> (MIT). Follaje simplificado para la web por poda estocástica (Cook et al., 2007).</li>
   </ul>
+  <h3>Método, supuestos y validación</h3>
+  <ul class="fuentes">
+    <li><b>Datos del clima:</b> reanálisis ERA5 (Hersbach et al., 2020, <i>QJRMS</i> 146, <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">doi:10.1002/qj.3803</a>) leído con la API de archivo de Open-Meteo (Zippenfenig, 2024, <a href="https://doi.org/10.5281/zenodo.7970649" target="_blank" rel="noopener">doi:10.5281/zenodo.7970649</a>) para la celda de 9,000° N, 79,500° O (24 m), en hora de Panamá. La lluvia y la radiación de cada hora son el total o el promedio de la hora anterior. El script de descarga y el empaquetado están en el código (<code>fuente/descargar_era5.py</code>, <code>fuente/clima_bin.py</code>). Resolución guardada: lluvia 0,1 mm, temperatura 1/6 °C, radiación 4 W/m², viento 1 km/h, dirección 2°.</li>
+    <li><b>Radiación sobre las fachadas:</b> directa por el coseno de incidencia; difusa con el cielo de Hay y Davies (1980); reflejada por un suelo que devuelve el 20 %; sin descontar el cielo que tapan el alero o los vecinos (Duffie y Beckman, <i>Solar Engineering of Thermal Processes</i>). El hallazgo del alero es un corte en 2D con el alero continuo, sin retornos ni ménsulas.</li>
+    <li><b>Validación:</b> sol contra Michalsky (1988) y NREL SPA (Reda y Andreas, 2004); sombras 3D contra un trazado de rayos sobre la geometría del modelo, dentro de ±8 cm con el sol entre 14° y 42° (salen unos 5 cm más cortas); lluvia anual de ERA5, {{ERA5_2001_2010}} mm en 2001–2010, frente a 1.885–1.941 mm en Balboa, Albrook y Tocumen. La radiación y el viento no tienen contraste local: no hay piranómetro ni anemómetro con datos abiertos cerca.</li>
+    <li><b>Incertidumbre:</b> ERA5 representa una celda de ~28 km: subestima los aguaceros de una hora, adelanta la lluvia de la tarde (Lavers et al., 2022, <a href="https://doi.org/10.1002/qj.4351" target="_blank" rel="noopener">doi:10.1002/qj.4351</a>) y achica la diferencia entre el día y la noche. Las medidas del edificio salen de un modelo con escala ±12 %; las ventanas de los pisos 2 y 3 son inferidas.</li>
+    <li><b>Confort:</b> Givoni (1992), <i>Energy and Buildings</i> 18, <a href="https://doi.org/10.1016/0378-7788(92)90047-K" target="_blank" rel="noopener">doi:10.1016/0378-7788(92)90047-K</a>; ASHRAE 55-2017; UTCI de Bröde et al. (2012), <a href="https://doi.org/10.1007/s00484-011-0454-1" target="_blank" rel="noopener">doi:10.1007/s00484-011-0454-1</a>, con la radiación de SolarCal (Arens et al., 2015); cálculo verificado contra pythermalcomfort (Tartarini y Schiavon, 2020).</li>
+    <li><b>Código abierto y pruebas:</b> <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>; <code>fuente/verificar.mjs</code> repite las comprobaciones.</li>
+  </ul>
+  <h3>Bibliografía de diseño</h3>
+  <ul class="fuentes">
+    <li>Koenigsberger, O. H., Ingersoll, T. G., Mayhew, A. y Szokolay, S. V. (1974). <i>Manual of Tropical Housing and Building. Part 1: Climatic Design</i>. Longman.</li>
+    <li>Olgyay, A. y Olgyay, V. (1957). <i>Solar Control and Shading Devices</i>. Princeton University Press.</li>
+    <li>Olgyay, V. (1963). <i>Design with Climate</i>. Princeton University Press.</li>
+    <li>Givoni, B. (1976). <i>Man, Climate and Architecture</i> (2.ª ed.). Applied Science. Y (1998). <i>Climate Considerations in Building and Urban Design</i>. Wiley.</li>
+    <li>Szokolay, S. V. (2008). <i>Introduction to Architectural Science: The Basis of Sustainable Design</i> (2.ª ed.). Architectural Press.</li>
+  </ul>
+  <h3>Cómo citar</h3>
+  <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 30 de septiembre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>

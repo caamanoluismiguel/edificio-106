@@ -7,7 +7,8 @@ const rad = Math.PI / 180, deg = 180 / Math.PI;
 
 /** fecha: objeto {y,m,d,h,min} en hora de Panamá. Devuelve {alt, az} en grados (az desde el norte, horario). */
 export function posicionSol({ y, m, d, h = 12, min = 0, s = 0 }, lat = LAT, lon = LON) {
-  const utcMs = Date.UTC(y, m - 1, d, h - TZ, min, s);
+  // los minutos y segundos se suman aparte: Date.UTC trunca los fraccionarios (con min = 600,99 daba lo mismo que con 600)
+  const utcMs = Date.UTC(y, m - 1, d, h - TZ) + (min * 60 + s) * 1000;
   const jd = utcMs / 86400000 + 2440587.5;
   const T = (jd - 2451545) / 36525;
   const L0 = (280.46646 + T * (36000.76983 + T * 0.0003032)) % 360;
@@ -44,7 +45,7 @@ export function posicionSol({ y, m, d, h = 12, min = 0, s = 0 }, lat = LAT, lon 
     else refr = -20.772 / te;
     refr /= 3600;
   }
-  return { alt: elev + refr, az, decl, eqTime };
+  return { alt: elev + refr, geo: elev, az, decl, eqTime };        // geo: altura geométrica, sin refracción
 }
 
 /** Vector unitario hacia el sol en coordenadas de la escena (three.js, Y arriba),
@@ -78,9 +79,11 @@ export function diasCeroSombra(y) {
   return res;
 }
 
-/** Salida y puesta del sol (altitud −0,833°) en minutos del día, búsqueda por bisección. */
+/** Salida y puesta del sol en minutos del día, por bisección: el centro del disco a −0,833° de altura GEOMÉTRICA (los −0,833°
+ *  ya incluyen la refracción media en el horizonte y el radio del disco; con la altura aparente se contaba la refracción dos
+ *  veces y la salida salía ~1 min antes y la puesta ~2 min después que NREL SPA). */
 export function saleYPone(y, m, d) {
-  const f = (min) => posicionSol({ y, m, d, h: 0, min }).alt + 0.833;
+  const f = (min) => posicionSol({ y, m, d, h: 0, min }).geo + 0.833;
   const bis = (a, b) => { for (let i = 0; i < 40; i++) { const c = (a + b) / 2; (f(a) * f(c) <= 0) ? b = c : a = c; } return (a + b) / 2; };
   return { sale: bis(240, 720), pone: bis(720, 1260) };
 }

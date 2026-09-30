@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "Si usas este visor o sus datos, cítalo así."
+title: "Edificio 106 · Isthmus: visor de sol y clima"
+type: software
+authors:
+  - family-names: "Caamaño"
+    given-names: "Luis Miguel"
+version: "2026-09-30"
+date-released: "2026-09-30"
+license: MIT
+repository-code: "https://github.com/caamanoluismiguel/edificio-106"
+url: "https://caamanoluismiguel.github.io/edificio-106/"
+abstract: >-
+  Maqueta digital del Edificio 106 (Ciudad del Saber, Panamá) para ver cómo inciden el sol,
+  la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025).
+  Proyecto académico experimental, no oficial de Isthmus ni de Ciudad del Saber.
+keywords: [arquitectura bioclimática, trópico húmedo, ERA5, radiación solar, lluvia batiente, confort térmico, Panamá]
+references:
+  - type: article
+    authors: [{family-names: "Hersbach", given-names: "Hans"}]
+    title: "The ERA5 global reanalysis"
+    journal: "Quarterly Journal of the Royal Meteorological Society"
+    year: 2020
+    doi: "10.1002/qj.3803"
+  - type: software
+    authors: [{family-names: "Zippenfenig", given-names: "Patrick"}]
+    title: "Open-Meteo.com Weather API"
+    year: 2024
+    doi: "10.5281/zenodo.7970649"

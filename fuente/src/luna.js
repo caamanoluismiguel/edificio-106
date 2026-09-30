@@ -14,7 +14,8 @@ const S = (x) => Math.sin(x * rad), C = (x) => Math.cos(x * rad);
  *  (az desde el norte, horario, con refracción), fracción iluminada del disco (0..1), fase en grados (0 = nueva,
  *  180 = llena; menos de 180 es creciente) y distancia en km. */
 export function posicionLuna({ y, m, d, h = 0, min = 0, s = 0 }, lat = LAT, lon = LON) {
-  const utcMs = Date.UTC(y, m - 1, d, h - TZ, min, s);
+  // los minutos y segundos se suman aparte: Date.UTC trunca los fraccionarios (con min = 600,99 daba lo mismo que con 600)
+  const utcMs = Date.UTC(y, m - 1, d, h - TZ) + (min * 60 + s) * 1000;
   const dias = utcMs / 86400000 + 2440587.5 - 2451545;
   const T = dias / 36525;
   const Lp = nrm(218.3164477 + 481267.88123421 * T);      // longitud media de la luna
