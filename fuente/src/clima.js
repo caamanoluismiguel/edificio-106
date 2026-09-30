@@ -2,6 +2,7 @@
 // y el tiempo real (pronóstico de modelo de Open-Meteo, que se actualiza cada 15 min).
 import { binario } from './datos.js';
 import { LAT, LON } from './sol.js';
+const LLUVIA_VIVO_MIN = 1;   // mm/h: umbral para que el pronóstico en vivo cuente como lluvia (ver cargarVivo)
 
 const T0 = Date.UTC(2001, 0, 1, 0);            // primera hora de la serie (hora de Panamá tratada como UTC)
 const COLS = ['nubes', 'lluvia', 'temp', 'humedad', 'dni', 'difusa', 'viento', 'dir'];
@@ -132,7 +133,11 @@ export class Clima {
       const j = await r.json(), c = j.current;
       // la precipitación actual es la suma de los últimos `interval` segundos (15 min): se lleva a mm por hora
       const k = 3600 / (c.interval || 900);
-      this.vivo = { fuente: 'vivo', hora: c.time.slice(11, 16), fecha: c.time.slice(0, 10), nubes: c.cloud_cover, lluvia: c.precipitation * k, lluvia15: c.precipitation, temp: c.temperature_2m,
+      // el modelo reparte trazas de lluvia por toda su celda (la más cercana cae ~4 km al sur del edificio): 0,1 mm en 15 min, su
+      // unidad mínima, son 0,4 mm/h y casi nunca se notan en la calle. En vivo solo se cuenta como lluvia desde 1 mm/h; por debajo
+      // queda como «llovizna del modelo» (se dice en el texto, la escena no la dibuja ni moja)
+      const mmh = c.precipitation * k, llueve = mmh >= LLUVIA_VIVO_MIN;
+      this.vivo = { fuente: 'vivo', hora: c.time.slice(11, 16), fecha: c.time.slice(0, 10), nubes: c.cloud_cover, lluvia: llueve ? mmh : 0, lluviaModelo: mmh, llovizna: !llueve && mmh > 0, lluvia15: c.precipitation, temp: c.temperature_2m,
         humedad: c.relative_humidity_2m, viento: c.wind_speed_10m, dir: c.wind_direction_10m, dni: c.direct_normal_irradiance ?? null, difusa: c.diffuse_radiation ?? null, recibido: Date.now() };
     } catch (e) { this.vivo = null; }
     finally { clearTimeout(to); }

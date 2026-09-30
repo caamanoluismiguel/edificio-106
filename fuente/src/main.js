@@ -568,7 +568,8 @@ function encuadreMovil(dt) {
 // pantalla y la vuelve a subir cuando va fluido. No cuenta la intro, los viajes, la página oculta ni los tirones de carga.
 // (Antes solo subía por debajo de 12 ms por cuadro, algo imposible a 60 Hz: una vez que bajaba, se quedaba baja.)
 const RES = { iv: [], minIv: 16.7, techo: 0, tTecho: -1e9, fija: false };
-try { RES.fija = localStorage.getItem('e106-nitidez') === '1'; } catch (e) { /* sin almacenamiento */ }
+// máxima nitidez por defecto (pedido de LM): solo se apaga si alguien la desmarca en Capas
+try { RES.fija = localStorage.getItem('e106-nitidez') !== '0'; } catch (e) { RES.fija = true; }
 function medirCuadro(now, dtReal) {
   const iv = dtReal * 1000, previo = S.dibujoPrevio; S.dibujoPrevio = true;
   if (RES.fija) { if (Math.abs(escena.renderer.getPixelRatio() - escena.dprMax()) > 0.01) { escena.fijarResolucion(escena.dprMax()); pintarResolucion(); } return; }
@@ -741,7 +742,7 @@ function lecturas(p, c) {
     let agua = '';
     if (c.fuente === 'mes') { temp = `${Math.round(c.lluviaMes)} mm`; agua = 'de lluvia en el mes'; }
     else if (c.fuente === 'tipico') agua = `llueve en ${Math.round(c.probLluvia)} % de estas horas`;
-    else agua = (c.lluvia ?? 0) >= 0.1 ? `lluvia ${f1(c.lluvia)} mm/h` : 'sin lluvia';
+    else agua = (c.lluvia ?? 0) >= 0.1 ? `lluvia ${f1(c.lluvia)} mm/h` : c.llovizna ? 'llovizna leve en la zona' : 'sin lluvia';
     if (c.fuente === 'vivo') {
       const tip = clima.tipico(S.fecha.m, S.min);
       if (tip) { const dT = c.temp - tip.temp; agua += ` · ${dT >= 0 ? '+' : '−'}${f1(Math.abs(dT))} °C vs. típico`; }
@@ -825,7 +826,7 @@ function rotulo(p, c, sp) {
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y se proyecta hacia el ${rumboTexto(sp.rumbo)}.`
     : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : textoNoche(c);
   let clTxt = '';
-  if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Está lloviendo (${f1(c.lluvia)} mm/h).` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
+  if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` El modelo da lluvia en la zona (${f1(c.lluvia)} mm/h).` : c.llovizna ? ` Cielo con ${Math.round(c.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${f1(c.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
   else if (c?.fuente === 'serie' || c?.fuente === 'dia') {
     clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Entre las ${hhmm(Math.floor(S.min / 60) * 60)} y las ${hhmm(Math.floor(S.min / 60) * 60 + 60)} llovieron ${f1(c.lluvia)} mm.` : ` A esa hora no llovía; ${Math.round(c.nubes)} % de nubes.`;
     clTxt += ` ${f1(c.temp)} °C, humedad ${Math.round(c.humedad)} %, viento ${Math.round(c.viento)} km/h desde el ${rumboTexto(c.dir)}.`;
