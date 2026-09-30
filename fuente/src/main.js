@@ -327,7 +327,7 @@ function viajarA(d) {
   const T = reduce || d.inmediato ? 0 : Math.min(2800, Math.max(900, 900 + 350 * Math.log10(1 + dh)));
   const vista = d.fachada ? VISTA_FACHADA['fachada-' + d.fachada] : d.vista ? VISTAS[d.vista] : null;
   if (vista) volarA(vista, Math.max(1.2, T / 1000), d.fachada ? null : d.vista, false);
-  if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; lastLect = ''; llegada(d); return; }
+  if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; S.solViaje = null; U.viaje.value = 0; lastLect = ''; llegada(d); return; }
   const m0 = S.min, dm = ((((m1 - m0) % 1440) + 2160) % 1440) - 720;       // camino corto de la hora: entre −12 h y +12 h
   const mismoDia = f1.y === S.fecha.y && f1.m === S.fecha.m && f1.d === S.fecha.d;
   // el sol del tramo 1: de donde está ahora a donde estaría a la hora de salida en el día de llegada
