@@ -105,7 +105,7 @@ const VISTA_FACHADA = {
   'fachada-se': { pos: [9, 1.65, 30], tgt: [4, 6.2, 11.5] },
   'fachada-no': { pos: [-2, 1.65, -32], tgt: [0, 6.2, -11.5] },
   'fachada-ne': { pos: [46, 1.65, -4], tgt: [22.75, 6.2, 0] },
-  'fachada-so': { pos: [-41, 1.65, 4], tgt: [-22.75, 6.2, 0] },   // el edificio vecino empieza en x ≈ −43,9: más atrás la cámara quedaba dentro de su muro
+  'fachada-so': { pos: [-41, 1.65, 4], tgt: [-22.75, 6.2, 0] },   // el 105 (contexto.mjs) tiene el muro en x ≈ −42,9 y el alero hasta −41,3: más atrás la cámara quedaba bajo su alero o dentro de su muro
 };
 const ROTULOS = [ // aparecen durante el armado, en el orden de los grupos
   { b: 0, t: 'Planta de 45,5 × 23 m' },       // aparece cuando los puntos ya formaron el edificio
@@ -327,7 +327,7 @@ function viajarA(d) {
   const T = reduce || d.inmediato ? 0 : Math.min(2800, Math.max(900, 900 + 350 * Math.log10(1 + dh)));
   const vista = d.fachada ? VISTA_FACHADA['fachada-' + d.fachada] : d.vista ? VISTAS[d.vista] : null;
   if (vista) volarA(vista, Math.max(1.2, T / 1000), d.fachada ? null : d.vista, false);
-  if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; lastLect = ''; llegada(d); return; }
+  if (!T) { S.fecha = f1; S.min = m1; S.salto = true; S.viaje = null; S.solViaje = null; U.viaje.value = 0; lastLect = ''; llegada(d); return; }
   const m0 = S.min, dm = ((((m1 - m0) % 1440) + 2160) % 1440) - 720;       // camino corto de la hora: entre −12 h y +12 h
   const mismoDia = f1.y === S.fecha.y && f1.m === S.fecha.m && f1.d === S.fecha.d;
   // el sol del tramo 1: de donde está ahora a donde estaría a la hora de salida en el día de llegada
@@ -1196,11 +1196,11 @@ const LENTES = {
     ojo: 'La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche se ve solo la luz que hay: la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: las ventanas encendidas (y la luz que derraman) son inventadas, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (error menor a 0,02°). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras.' },
   sol: { t: 'Sol: cuánta radiación solar incide en cada punto del edificio', u: 'W/m²', rampa: 'linear-gradient(90deg, #07113d, #5b0b70 25%, #e2320b 50%, #ff9a12 75%, #ffe46a)', esc: ['nada', '400 W/m²', '800 o más'],
-    que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio: bajo el alero, el color baja.',
+    que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio, la de los árboles y la de los vecinos más cercanos (el 105, el salón de Innova y Balboa Academy): bajo el alero, el color baja.',
     leer: '«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo, en W/m².',
     prueba: 'Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.',
     porque: 'Es el asoleamiento del edificio: muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.',
-    ojo: 'La difusa usa un cielo que brilla más alrededor del sol (Hay-Davies); esa parte cercana al sol se tapa con la sombra del alero, pero el resto del cielo que tapan el alero o los vecinos no se descuenta: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.',
+    ojo: 'La difusa usa un cielo que brilla más alrededor del sol (Hay-Davies); esa parte cercana al sol se tapa con la sombra del alero, pero el resto del cielo que tapan el alero o los vecinos no se descuenta: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Los vecinos son volúmenes sobre las huellas de OpenStreetMap con alturas estimadas; los que están a más de ~60 m no proyectan sombra. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.',
     tec: 'Directa: radiación directa normal (DNI) de ERA5 × coseno del ángulo entre el sol y la superficie × sombra, con el mismo mapa de sombras de la escena. Difusa: modelo de Hay-Davies con la difusa horizontal de ERA5: la parte circunsolar (según cuánto sol directo llega frente al que llega fuera de la atmósfera) va con el ángulo del sol y con la sombra; el resto, × (1 + cos de la inclinación) / 2. Reflejada: global horizontal × 0,2 × (1 − cos de la inclinación) / 2.' },
   lluvia: { t: 'Lluvia: qué fachada se moja cuando llueve con viento', rampa: 'linear-gradient(90deg, #0d121a, #1566e6 50%, #99e6ff)', esc: ['nada', '', 'mucha'],
     que: 'Con viento, la lluvia no cae derecha: se moja más la fachada que mira hacia donde viene el viento. Cada fachada se pinta en azules según esa exposición: oscuro es nada y azul claro es mucha.',
@@ -1473,7 +1473,7 @@ function pintarPartes() {
 }
 
 // El alero como voladizo: proporciones con la misma sección y la misma carga por metro (no es el cálculo de este alero)
-const VISTA_ALERO = { pos: [40, 7.5, 36], tgt: [19, 7.5, 11] };            // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel
+const VISTA_ALERO = { pos: [34.6, 7.5, 29.6], tgt: [19, 7.5, 11] };        // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel (en la misma línea de antes, más cerca: en (40; 36) quedaba dentro del salón de Innova, que empieza en z ≈ 30,6)
 function abrirVoladizo(abrir) {
   const el = $('#voladizo'); if (!el) return;
   if (!!S.voladizo === abrir) return;
