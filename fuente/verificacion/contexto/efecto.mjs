@@ -2,7 +2,7 @@
 // meses y a qué horas, y cuánto cambia lo que dice el visor. Trazado de rayos sobre los .glb del sitio armado (la misma
 // geometría que dibuja la app; verificar-geometria.mjs), sin navegador.
 //
-//   cd fuente && node verificacion/contexto/efecto.mjs [--antes=<carpeta con modelo/ de antes>]
+//   cd fuente && node verificacion/contexto/efecto.mjs [--antes=<carpeta con modelo/ de antes>] [--comparar=<otro contexto.glb>]
 //
 // Puntos: la superficie visible de cada fachada (muro, vidrio, marcos), con rayos horizontales hacia el edificio cada 0,8 m
 // a lo largo y cada 0,4 m en altura, de 0,8 a 11,4 m. Las sombras son las del mapa de sombras de la app (tejas con su
@@ -11,6 +11,8 @@
 //  · «sin vecinos»: el 106, su sitio y la vegetación (lo que el visor ya sombreaba).
 //  · «con vecinos»: lo mismo más los nodos del contexto que proyectan sombra (extras.sombra en contexto.glb).
 //  · «antes»: el modelo publicado (26546a4), con el anillo de árboles de relleno y el contexto sin sombra (con --antes).
+//  · «publicado»: con --comparar=<glb>, los vecinos de otro contexto.glb (p. ej. el de origin/main, que ponía la caja de 11 m
+//    de Innova sobre la huella 108, donde en realidad está La Casa, un salón de un piso).
 // Energía: sol directo de cielo despejado (dniDespejado de sol.js) sobre cada punto, cada 15 min, un día de cada 5 de 2025.
 // Horas cálidas: la serie ERA5 del sitio (datos/clima_horario.bin.gz), como el hallazgo «En las horas más cálidas…».
 // Salida: verificacion/contexto/efecto.json y efecto.md (tablas).
@@ -31,6 +33,7 @@ const ANTES = (ARGS.find((a) => a.startsWith('--antes=')) ?? '').slice(8) || nul
 // --contexto=otro.glb: los vecinos de otro archivo (p. ej. con otra altura de Innova); --salida=nombre: efecto-nombre.md/json
 const CTX = (ARGS.find((a) => a.startsWith('--contexto=')) ?? '').slice(11) || null;
 const SAL = (ARGS.find((a) => a.startsWith('--salida=')) ?? '').slice(9);
+const COMP = (ARGS.find((a) => a.startsWith('--comparar=')) ?? '').slice(11) || null;
 const rad = Math.PI / 180;
 const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
@@ -55,8 +58,8 @@ const rSin = new Rayos(m, (i) => !tejaReal(m, i));                              
 // contexto: solo los nodos que proyectan sombra, cada uno con su nombre (para saber quién da la sombra)
 await MeshoptDecoder.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
-async function vecinos(raiz) {
-  const doc = await io.read(CTX ?? path.join(raiz, 'modelo', 'contexto.glb'));
+async function vecinos(raiz, archivo = null) {
+  const doc = await io.read(archivo ?? CTX ?? path.join(raiz, 'modelo', 'contexto.glb'));
   const tri = [], quien = [];
   for (const nodo of doc.getRoot().listNodes()) {
     const malla = nodo.getMesh(); if (!malla || !nodo.getExtras()?.sombra) continue;
@@ -72,12 +75,13 @@ async function vecinos(raiz) {
   return { rayos: new Rayos(mm), quien };
 }
 const ctx = await vecinos(RAIZ);
-// quién es quién en el nodo de los vecinos cercanos (Innova, Balboa y la estructura van juntos): por la posición del choque
+const ctxB = COMP ? await vecinos(RAIZ, COMP) : null;
+// quién es quién en el nodo de los vecinos cercanos (La Casa, Balboa y la estructura van juntos): por la posición del choque
 function nombreVecino(i, p) {
   const q = ctx.quien[i];
   if (/cuartel 105/.test(q)) return '105';
   if (p[0] > 50) return 'Balboa';
-  if (p[2] > 25) return 'Innova';
+  if (p[2] > 25) return 'La Casa';
   if (p[2] < -18 && p[0] < -20) return 'estructura';
   return q;
 }
@@ -106,8 +110,8 @@ console.log('puntos', cuenta);
 
 /** Estado de una fachada con el sol en `d`: fracción al sol sin vecinos, con vecinos, antes; y quién sombrea. */
 function estado(k, d, conAntes = false) {
-  const L = puntos[k]; let delante = 0, sin = 0, con = 0, antes = 0, vS = 0, vC = 0, vA = 0, nv = 0; const por = {};
-  const pisoV = { 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0] };
+  const L = puntos[k]; let delante = 0, sin = 0, con = 0, antes = 0, vS = 0, vC = 0, vA = 0, nv = 0, pub = 0, vP = 0; const por = {};
+  const pisoV = { 1: [0, 0, 0, 0], 2: [0, 0, 0, 0], 3: [0, 0, 0, 0] };
   for (const q of L) {
     const c = q.n[0] * d[0] + q.n[1] * d[1] + q.n[2] * d[2];
     if (q.clase === 'vidrio') { nv++; pisoV[q.piso][0]++; }
@@ -116,12 +120,13 @@ function estado(k, d, conAntes = false) {
     const a = !rSin.lanzar(q.p, d, 400);
     let b = a;
     if (a) { const h = ctx.rayos.lanzar(q.p, d, 400); if (h) { b = false; const hp = q.p.map((x, j) => x + d[j] * h.t); const nmb = nombreVecino(h.i, hp); por[nmb] = (por[nmb] ?? 0) + 1; } }
-    if (a) sin++; if (b) con++;
-    if (q.clase === 'vidrio') { if (a) { vS++; pisoV[q.piso][1]++; } if (b) { vC++; pisoV[q.piso][2]++; } }
+    const c2 = ctxB ? a && !ctxB.rayos.lanzar(q.p, d, 400) : null;
+    if (a) sin++; if (b) con++; if (c2) pub++;
+    if (q.clase === 'vidrio') { if (a) { vS++; pisoV[q.piso][1]++; } if (b) { vC++; pisoV[q.piso][2]++; } if (c2) { vP++; pisoV[q.piso][3]++; } }
     if (conAntes && rAntes) { const e = !rAntes.lanzar(q.p, d, 400); if (e) antes++; if (e && q.clase === 'vidrio') vA++; }
   }
   const N = L.length;
-  return { delante: delante / N, sin: sin / N, con: con / N, antes: conAntes && rAntes ? antes / N : null, vidrioSin: vS / nv, vidrioCon: vC / nv, vidrioAntes: conAntes && rAntes ? vA / nv : null, por, pisoV };
+  return { delante: delante / N, sin: sin / N, con: con / N, antes: conAntes && rAntes ? antes / N : null, vidrioSin: vS / nv, vidrioCon: vC / nv, vidrioAntes: conAntes && rAntes ? vA / nv : null, pub: ctxB ? pub / N : null, vidrioPub: ctxB ? vP / nv : null, por, pisoV };
 }
 const solEn = (f, min) => { const p = posicionSol({ ...f, h: 0, min }); const v = vectorSol(p.alt, p.az); return { ...p, d: [v.x, v.y, v.z] }; };
 
@@ -143,25 +148,26 @@ console.timeEnd('meses');
 
 // ---------------- 2. energía directa de cielo despejado en un año ----------------
 console.time('año');
-const E = Object.fromEntries(Object.keys(MARCO).map((k) => [k, { sin: 0, con: 0, antes: 0, vSin: 0, vCon: 0, horasSin: 0, horasCon: 0 }]));
+const E = Object.fromEntries(Object.keys(MARCO).map((k) => [k, { sin: 0, con: 0, antes: 0, vSin: 0, vCon: 0, pub: 0, vPub: 0 }]));
 for (let dia = 2; dia < 365; dia += 5) {
   const dd = new Date(Date.UTC(Y, 0, 1 + dia)), f = { y: Y, m: dd.getUTCMonth() + 1, d: dd.getUTCDate() };
   for (let min = 5 * 60 + 37.5; min <= 18 * 60 + 45; min += 15) {
     const s = solEn(f, min); if (s.alt < 0.5) continue;
     const dni = dniDespejado(s.alt);
     for (const k of Object.keys(MARCO)) {
-      const L = puntos[k]; let a = 0, b = 0, c0 = 0, va = 0, vb = 0, nv = 0;
+      const L = puntos[k]; let a = 0, b = 0, c0 = 0, va = 0, vb = 0, nv = 0, bp = 0, vp = 0;
       for (const q of L) {
         if (q.clase === 'vidrio') nv++;
         const c = q.n[0] * s.d[0] + q.n[1] * s.d[1] + q.n[2] * s.d[2]; if (c <= 0.02) continue;
         const lit = !rSin.lanzar(q.p, s.d, 400); if (!lit) { if (rAntes && !rAntes.lanzar(q.p, s.d, 400)) c0 += c; continue; }
         const litN = !ctx.rayos.lanzar(q.p, s.d, 400);
-        a += c; if (litN) b += c;
+        const litP = ctxB ? !ctxB.rayos.lanzar(q.p, s.d, 400) : false;
+        a += c; if (litN) b += c; if (litP) bp += c;
         if (rAntes && !rAntes.lanzar(q.p, s.d, 400)) c0 += c;
-        if (q.clase === 'vidrio') { va += c; if (litN) vb += c; }
+        if (q.clase === 'vidrio') { va += c; if (litN) vb += c; if (litP) vp += c; }
       }
       const w = dni * (15 / 60) * 5 / 1000 / L.length;        // kWh/m² (cada muestra vale 5 días × 15 min), promedio de la fachada
-      E[k].sin += a * w; E[k].con += b * w; E[k].antes += c0 * w;
+      E[k].sin += a * w; E[k].con += b * w; E[k].antes += c0 * w; E[k].pub += bp * w; E[k].vPub += vp * dni * (15 / 60) * 5 / 1000 / Math.max(1, nv);
       E[k].vSin += va * dni * (15 / 60) * 5 / 1000 / Math.max(1, nv); E[k].vCon += vb * dni * (15 / 60) * 5 / 1000 / Math.max(1, nv);
     }
   }
@@ -196,9 +202,10 @@ console.timeEnd('horas cálidas');
 
 // ---------------- 4. momentos que cita el visor ----------------
 const momentos = [
-  { que: 'Hallazgo «El alero…»: 15/01/2026 07:30, fachada SE («casi todo el vidrio del piso 2 al sol»)', f: { y: 2026, m: 1, d: 15 }, min: 450, k: 'se' },
-  { que: 'La misma fachada SE el 15/01/2026 a las 08:00', f: { y: 2026, m: 1, d: 15 }, min: 480, k: 'se' },
-  { que: 'La misma fachada SE el 15/01/2026 a las 08:30', f: { y: 2026, m: 1, d: 15 }, min: 510, k: 'se' },
+  { que: 'La misma fachada SE el 15/01/2024 a las 08:00 (donde estaba antes el «Verlo» del hallazgo del alero)', f: { y: 2024, m: 1, d: 15 }, min: 480, k: 'se' },
+  { que: 'La misma fachada SE el 15/01/2024 a las 07:00', f: { y: 2024, m: 1, d: 15 }, min: 420, k: 'se' },
+  { que: 'Hallazgo «El alero…», botón «Verlo» y «prueba» de la lente Sol: 15/01/2024 07:30, fachada SE', f: { y: 2024, m: 1, d: 15 }, min: 450, k: 'se' },
+  { que: 'La misma fachada SE el 15/01/2024 a las 08:30', f: { y: 2024, m: 1, d: 15 }, min: 510, k: 'se' },
   { que: 'Recorrido guiado, paso 4: 25/03/2024 15:30, fachada SO («la recibe casi de frente»)', f: { y: 2024, m: 3, d: 25 }, min: 930, k: 'so' },
   { que: 'Consulta «Sol de la tarde en la fachada lateral SO» (a las 15:30 de un día de mucho sol; aquí 13/01/2024)', f: { y: 2024, m: 1, d: 13 }, min: 930, k: 'so' },
   { que: 'Captura: 13/01/2024 16:30, fachada SO', f: { y: 2024, m: 1, d: 13 }, min: 990, k: 'so' },
@@ -212,19 +219,19 @@ for (const q of momentos) { const s = solEn(q.f, q.min); q.sol = { alt: +s.alt.t
 // noviembre y diciembre»: la hora en que el vidrio al sol cruza el 50 %, con y sin vecinos (promedio de los días del mes)
 function cruce(k, meses) {
   // para cada día, la primera y la última hora con más de la mitad del vidrio al sol; luego la mediana de los días
-  const dias = { sin: [], con: [] };
+  const dias = { sin: [], con: [], pub: [] };
   for (const mes of meses) for (let d = 1; d <= 28; d += 3) {
-    const f = { y: Y, m: mes, d }, S = [], C = [];
+    const f = { y: Y, m: mes, d }, S = [], C = [], B = [];
     for (let min = 5 * 60 + 45; min <= 18 * 60 + 45; min += 5) {
       const s = solEn(f, min); if (s.alt < 0.5) continue;
       const e = estado(k, s.d); if (e.delante === 0) continue;
-      if (e.vidrioSin > 0.5) S.push(min); if (e.vidrioCon > 0.5) C.push(min);
+      if (e.vidrioSin > 0.5) S.push(min); if (e.vidrioCon > 0.5) C.push(min); if (e.vidrioPub > 0.5) B.push(min);
     }
-    dias.sin.push(S.length ? [S[0], S.at(-1)] : null); dias.con.push(C.length ? [C[0], C.at(-1)] : null);
+    dias.sin.push(S.length ? [S[0], S.at(-1)] : null); dias.con.push(C.length ? [C[0], C.at(-1)] : null); dias.pub.push(B.length ? [B[0], B.at(-1)] : null);
   }
   const med = (a, j) => { const b = a.filter(Boolean).map((x) => x[j]).sort((x, y) => x - y); return b.length ? b[b.length >> 1] : null; };
   const nulos = (a) => a.filter((x) => !x).length;
-  return { sin: [med(dias.sin, 0), med(dias.sin, 1)], con: [med(dias.con, 0), med(dias.con, 1)], diasSinMitad: { sin: nulos(dias.sin), con: nulos(dias.con), de: dias.sin.length }, dias };
+  return { sin: [med(dias.sin, 0), med(dias.sin, 1)], con: [med(dias.con, 0), med(dias.con, 1)], pub: [med(dias.pub, 0), med(dias.pub, 1)], diasSinMitad: { sin: nulos(dias.sin), con: nulos(dias.con), de: dias.sin.length }, dias };
 }
 const vidrioSE = cruce('se', [1]), vidrioSO = cruce('so', [11, 12]);
 // y cuánto del vidrio queda al sol en la hora del alba: el máximo de la mañana (SE, enero) o de la tarde (SO, nov-dic)
@@ -243,9 +250,9 @@ const f1 = (x) => (x == null ? '—' : x.toFixed(1).replace('.', ','));
 const nombreF = { se: 'SE', no: 'NO', ne: 'NE', so: 'SO' };
 let md = `# Efecto de los vecinos en el análisis de sol del 106\n\n`;
 md += `Trazado de rayos sobre la geometría del sitio (${Object.values(cuenta).reduce((a, c) => a + c.total, 0)} puntos de fachada: SE ${cuenta.se.total}, NO ${cuenta.no.total}, NE ${cuenta.ne.total}, SO ${cuenta.so.total}; de ellos ${Object.values(cuenta).reduce((a, c) => a + c.vidrio, 0)} en vidrio). `;
-md += `«Sin vecinos» = el 106, su sitio y la vegetación, lo que el visor sombreaba antes; «con vecinos» = más los vecinos a menos de ~60 m (105, salón de Innova, Balboa Academy, estructura del cuadrángulo), que ahora sí proyectan sombra en el mapa de sombras. Porcentajes sobre el área de la fachada. Sol de ${Y} (NOAA).\n\n`;
-md += `## 1. Energía directa de un año de cielo despejado (kWh/m², promedio de la fachada, con la sombra de aleros y vegetación)\n\n| Fachada | Sin vecinos | Con vecinos | Pierde | Vidrio sin | Vidrio con | Vidrio pierde |${rAntes ? ' Antes (modelo publicado) |' : ''}\n|---|---|---|---|---|---|---|${rAntes ? '---|' : ''}\n`;
-for (const k of Object.keys(MARCO)) { const e = E[k]; md += `| ${nombreF[k]} | ${Math.round(e.sin)} | ${Math.round(e.con)} | ${pc(1 - e.con / e.sin)} | ${Math.round(e.vSin)} | ${Math.round(e.vCon)} | ${pc(1 - e.vCon / Math.max(1e-9, e.vSin))} |${rAntes ? ` ${Math.round(e.antes)} |` : ''}\n`; }
+md += `«Sin vecinos» = el 106, su sitio y la vegetación, lo que el visor sombreaba antes; «con vecinos» = más los vecinos a menos de ~60 m (105, La Casa, Balboa Academy, estructura del cuadrángulo), que proyectan sombra en el mapa de sombras. La Casa (edificio 108) es el salón de eventos de un piso que queda enfrente de la entrada, al otro lado de la calle: alero a 3,2 m y cumbrera a ~6,8 m, ESTIMADOS (verificacion/contexto2/identificacion.md).${ctxB ? ' «Publicado» = los vecinos del contexto que se publicó antes, que ponía sobre la huella 108 una caja blanca de 11 m (el salón de Innova, que en realidad es el 109, más allá del estacionamiento).' : ''} Porcentajes sobre el área de la fachada. Sol de ${Y} (NOAA). Los informes efecto-innova10.md y efecto-innova12.md midieron ese volumen equivocado: quedan como registro, ya no describen el sitio.\n\n`;
+md += `## 1. Energía directa de un año de cielo despejado (kWh/m², promedio de la fachada, con la sombra de aleros y vegetación)\n\n| Fachada | Sin vecinos | Con vecinos | Pierde | Vidrio sin | Vidrio con | Vidrio pierde |${ctxB ? ' Publicado: con vecinos · pierde | Publicado: vidrio con · pierde |' : ''}${rAntes ? ' Antes (modelo publicado) |' : ''}\n|---|---|---|---|---|---|---|${ctxB ? '---|---|' : ''}${rAntes ? '---|' : ''}\n`;
+for (const k of Object.keys(MARCO)) { const e = E[k]; md += `| ${nombreF[k]} | ${Math.round(e.sin)} | ${Math.round(e.con)} | ${pc(1 - e.con / e.sin)} | ${Math.round(e.vSin)} | ${Math.round(e.vCon)} | ${pc(1 - e.vCon / Math.max(1e-9, e.vSin))} |${ctxB ? ` ${Math.round(e.pub)} · ${pc(1 - e.pub / e.sin)} | ${Math.round(e.vPub)} · ${pc(1 - e.vPub / Math.max(1e-9, e.vSin))} |` : ''}${rAntes ? ` ${Math.round(e.antes)} |` : ''}\n`; }
 md += `\n## 2. Cuándo y cuánto: día 21 de cada mes, momentos en que los vecinos dejan en sombra al menos el 5 % de la fachada\n\n`;
 md += `Por fachada y mes: ventana horaria, máximo de fachada que pasa de sol a sombra por los vecinos (y la hora), quién la da y, en ese momento, la fachada al sol sin y con vecinos. Los máximos caen casi siempre con el sol a pocos grados del horizonte, cuando llega poca energía; la última columna da el caso más fuerte con el sol a 10° o más.\n\n| Fachada | Mes | Horas | Máx. sombra de vecinos | Hora del máx. | Sol / altura | Quién | Al sol sin → con | Con el sol a ≥ 10°: hora · sombra · sin → con |\n|---|---|---|---|---|---|---|---|---|\n`;
 const resumenMeses = [];
@@ -260,14 +267,23 @@ for (const k of Object.keys(MARCO)) for (let mes = 1; mes <= 12; mes++) {
   resumenMeses.at(-1).alto = m10 ? { hora: hhmm(m10.min), alt: m10.alt, sombra: m10.sin - m10.con, sin: m10.sin, con: m10.con } : null;
   md += `| ${nombreF[k]} | ${MES[mes - 1]} | ${hhmm(t0)}–${hhmm(t1)} | ${pc(mx.sin - mx.con)} | ${hhmm(mx.min)} | az ${Math.round(mx.az)}° · ${f1(mx.alt)}° | ${quien} | ${pc(mx.sin)} → ${pc(mx.con)} | ${m10 ? `${hhmm(m10.min)} (${f1(m10.alt)}°) · ${pc(m10.sin - m10.con)} · ${pc(m10.sin)} → ${pc(m10.con)}` : '—'} |\n`;
 }
-md += `\n## 3. Lo que dice el visor, con y sin vecinos\n\n| Momento | Sol | Fachada al sol sin → con | Vidrio al sol sin → con | Vidrio del piso 2 sin → con |${rAntes ? ' Antes (fachada / vidrio) |' : ''}\n|---|---|---|---|---|${rAntes ? '---|' : ''}\n`;
-for (const q of momentos) { const p2 = q.e.pisoV[2]; md += `| ${q.que} | az ${q.sol.az}° · ${f1(q.sol.alt)}° | ${pc(q.e.sin)} → ${pc(q.e.con)} | ${pc(q.e.vidrioSin)} → ${pc(q.e.vidrioCon)} | ${pc(p2[1] / Math.max(1, p2[0]))} → ${pc(p2[2] / Math.max(1, p2[0]))} |${rAntes ? ` ${pc(q.e.antes)} / ${pc(q.e.vidrioAntes)} |` : ''}\n`; }
+md += `\n## 3. Lo que dice el visor, con y sin vecinos\n\n| Momento | Sol | Fachada al sol sin → con | Vidrio al sol sin → con | Vidrio del piso 2 sin → con |${ctxB ? ' Publicado (fachada / vidrio / vidrio piso 2) |' : ''}${rAntes ? ' Antes (fachada / vidrio) |' : ''}\n|---|---|---|---|---|${ctxB ? '---|' : ''}${rAntes ? '---|' : ''}\n`;
+for (const q of momentos) { const p2 = q.e.pisoV[2]; md += `| ${q.que} | az ${q.sol.az}° · ${f1(q.sol.alt)}° | ${pc(q.e.sin)} → ${pc(q.e.con)} | ${pc(q.e.vidrioSin)} → ${pc(q.e.vidrioCon)} | ${pc(p2[1] / Math.max(1, p2[0]))} → ${pc(p2[2] / Math.max(1, p2[0]))} |${ctxB ? ` ${pc(q.e.pub)} / ${pc(q.e.vidrioPub)} / ${pc(p2[3] / Math.max(1, p2[0]))} |` : ''}${rAntes ? ` ${pc(q.e.antes)} / ${pc(q.e.vidrioAntes)} |` : ''}\n`; }
+// la mañana del hallazgo, cada 15 minutos
+md += `\nLa fachada SE la mañana del 15/01/2024, cada 15 minutos (vidrio de toda la fachada y del piso 2 al sol, sin vecinos → con vecinos${ctxB ? ' · publicado' : ''}):\n\n| Hora | Sol | Fachada | Vidrio | Vidrio del piso 2 |${ctxB ? ' Publicado: vidrio / piso 2 |' : ''} Quién |\n|---|---|---|---|---|${ctxB ? '---|' : ''}---|\n`;
+const manana = [];
+for (let min = 6 * 60 + 45; min <= 9 * 60; min += 15) {
+  const s = solEn({ y: 2024, m: 1, d: 15 }, min); if (s.alt < 0.5) continue;
+  const e = estado('se', s.d), p2 = e.pisoV[2], n2 = Math.max(1, p2[0]);
+  manana.push({ hora: hhmm(min), alt: s.alt, az: s.az, fachada: [e.sin, e.con, e.pub], vidrio: [e.vidrioSin, e.vidrioCon, e.vidrioPub], piso2: [p2[1] / n2, p2[2] / n2, p2[3] / n2], por: e.por });
+  md += `| ${hhmm(min)} | az ${Math.round(s.az)}° · ${f1(s.alt)}° | ${pc(e.sin)} → ${pc(e.con)} | ${pc(e.vidrioSin)} → ${pc(e.vidrioCon)} | ${pc(p2[1] / n2)} → ${pc(p2[2] / n2)} |${ctxB ? ` ${pc(e.vidrioPub)} / ${pc(p2[3] / n2)} |` : ''} ${Object.keys(e.por).join(', ') || '—'} |\n`;
+}
 md += `\nHallazgo «El alero de 1,65 m…» («más de la mitad del vidrio recibe sol en la SE hasta cerca de las 8:45 en enero, y en el SO desde cerca de las 15:40 en noviembre y diciembre»), mediana de los días del mes:\n\n`;
 const franja = (c) => (c[0] == null ? 'ningún momento' : `${hhmm(c[0])}–${hhmm(c[1])}`);
-md += `- SE, enero: más de la mitad del vidrio al sol de ${franja(vidrioSE.sin)} sin vecinos y de ${franja(vidrioSE.con)} con vecinos (${vidrioSE.diasSinMitad.con} de ${vidrioSE.diasSinMitad.de} días sin ningún momento). Máximo de vidrio al sol en la mañana del 15 de enero: ${pc(maxSE.sin)} sin vecinos (${maxSE.cuando}), ${pc(maxSE.con)} con vecinos en ese momento; con vecinos, el máximo es ${pc(maxSE.conMax)} (${maxSE.cuandoCon}).\n`;
-md += `- SO, noviembre y diciembre: más de la mitad del vidrio al sol de ${franja(vidrioSO.sin)} sin vecinos y de ${franja(vidrioSO.con)} con vecinos (${vidrioSO.diasSinMitad.con} de ${vidrioSO.diasSinMitad.de} días sin ningún momento). Máximo de vidrio al sol en la tarde del 15 de nov/dic: ${pc(maxSO.sin)} sin vecinos (${maxSO.cuando}), ${pc(maxSO.con)} con vecinos en ese momento; con vecinos, el máximo es ${pc(maxSO.conMax)} (${maxSO.cuandoCon}).\n`;
+md += `- SE, enero: más de la mitad del vidrio al sol de ${franja(vidrioSE.sin)} sin vecinos y de ${franja(vidrioSE.con)} con vecinos${ctxB ? ` (publicado: ${franja(vidrioSE.pub)})` : ''} (${vidrioSE.diasSinMitad.con} de ${vidrioSE.diasSinMitad.de} días sin ningún momento). Máximo de vidrio al sol en la mañana del 15 de enero: ${pc(maxSE.sin)} sin vecinos (${maxSE.cuando}), ${pc(maxSE.con)} con vecinos en ese momento; con vecinos, el máximo es ${pc(maxSE.conMax)} (${maxSE.cuandoCon}).\n`;
+md += `- SO, noviembre y diciembre: más de la mitad del vidrio al sol de ${franja(vidrioSO.sin)} sin vecinos y de ${franja(vidrioSO.con)} con vecinos${ctxB ? ` (publicado: ${franja(vidrioSO.pub)})` : ''} (${vidrioSO.diasSinMitad.con} de ${vidrioSO.diasSinMitad.de} días sin ningún momento). Máximo de vidrio al sol en la tarde del 15 de nov/dic: ${pc(maxSO.sin)} sin vecinos (${maxSO.cuando}), ${pc(maxSO.con)} con vecinos en ese momento; con vecinos, el máximo es ${pc(maxSO.conMax)} (${maxSO.cuandoCon}).\n`;
 md += `\nHallazgo «En las horas más cálidas…» (ERA5 2001–2025, horas de 30 °C o más): ${cal.horas} horas (${Math.round(cal.horas / 25)} al año); el sol está frente al SO en ${pc(cal.frenteSO / cal.horas)} e incide con más de 100 W/m² en ${pc(cal.so100 / cal.horas)}. `;
 md += `En esas horas de más de 100 W/m², los vecinos dejan en sombra más del 5 % del SO en ${cal.soSombra105} (${pc(cal.soSombra105 / Math.max(1, cal.so100))}); el vidrio del SO recibe algo de sol en ${Math.round(cal.soVidrioSin / 25)} h al año sin vecinos y ${Math.round(cal.soVidrioCon / 25)} h con vecinos.\n`;
 fs.writeFileSync(path.join(AQUI, `efecto${SAL ? '-' + SAL : ''}.md`), md);
-fs.writeFileSync(path.join(AQUI, `efecto${SAL ? '-' + SAL : ''}.json`), JSON.stringify({ fecha: new Date().toISOString(), puntos: cuenta, energia: E, meses: resumenMeses, momentos: momentos.map(({ e, ...q }) => ({ ...q, e: { ...e, pisoV: undefined } })), vidrioSE, vidrioSO, maxSE, maxSO, horasCalidas: cal }, null, 1));
+fs.writeFileSync(path.join(AQUI, `efecto${SAL ? '-' + SAL : ''}.json`), JSON.stringify({ fecha: new Date().toISOString(), puntos: cuenta, energia: E, meses: resumenMeses, momentos: momentos.map(({ e, ...q }) => ({ ...q, e: { ...e, pisoV: undefined } })), manana, vidrioSE, vidrioSO, maxSE, maxSO, horasCalidas: cal }, null, 1));
 console.log(md);

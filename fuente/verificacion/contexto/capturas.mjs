@@ -1,5 +1,5 @@
 // Capturas del contexto (vecinos de OpenStreetMap): el sitio armado en la raíz del repositorio en escenas fijas.
-// Uso: cd fuente && node verificacion/contexto/capturas.mjs --etiqueta=antes|despues [--solo=aerea,esquina] [--raiz=<sitio>] [--movil] [--webgl] [--visible]
+// Uso: cd fuente && node verificacion/contexto/capturas.mjs --etiqueta=antes|despues [--solo=aerea,esquina] [--raiz=<sitio>] [--cap=<carpeta>] [--movil] [--webgl] [--visible]
 // Antes de «despues»: armar el sitio de la rama en la raíz (ver verificacion/noche/armar-rama.sh) y al terminar restaurar
 // index.html y js/ (git checkout -- ../index.html ../js). Salida: verificacion/contexto/cap/<etiqueta>_<escena>.jpg
 import http from 'node:http';
@@ -10,8 +10,8 @@ import { chromium } from 'playwright';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.resolve((process.argv.find((a) => a.startsWith('--raiz=')) ?? '').slice(7) || path.resolve(AQUI, '../../..'));   // --raiz=: otro sitio armado (p. ej. el publicado)
-const CAP = path.join(AQUI, 'cap'); fs.mkdirSync(CAP, { recursive: true });
 const ARGS = process.argv.slice(2);
+const CAP = path.resolve((ARGS.find((a) => a.startsWith('--cap=')) ?? '').slice(6) || path.join(AQUI, 'cap')); fs.mkdirSync(CAP, { recursive: true });
 const ETIQ = (ARGS.find((a) => a.startsWith('--etiqueta=')) ?? '--etiqueta=despues').slice(11);
 const SOLO = (ARGS.find((a) => a.startsWith('--solo=')) ?? '').slice(7).split(',').filter(Boolean);
 const MOVIL = ARGS.includes('--movil');                    // pantalla vertical de teléfono (las vistas cambian de encuadre)
@@ -49,6 +49,18 @@ export const ESCENAS = {
   vecino105: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [-28, 5, 24], tgt: [-62, 7, 0] } },
   innova: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [-35, 2, 26], tgt: [10, 6, 45] } },
   fundacion: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [-70, 22, -30], tgt: [-128, 8, -62] } },
+  // contexto2 (108 La Casa, 109 Innova): la fachada SE en la mañana del hallazgo del alero, desde la entrada y desde el estacionamiento
+  se_0730: { fecha: { y: 2024, m: 1, d: 15 }, min: 7 * 60 + 30, fachada: 'se' },
+  se_0800: { fecha: { y: 2024, m: 1, d: 15 }, min: 8 * 60, fachada: 'se' },
+  se_0730_sol: { fecha: { y: 2024, m: 1, d: 15 }, min: 7 * 60 + 30, fachada: 'se', lente: 'sol' },
+  se_0800_sol: { fecha: { y: 2024, m: 1, d: 15 }, min: 8 * 60, fachada: 'se', lente: 'sol' },
+  se_0730_arriba: { fecha: { y: 2024, m: 1, d: 15 }, min: 7 * 60 + 30, cam: { pos: [-30, 14, 40], tgt: [5, 3, 18] } },
+  entrada_salon: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [17, 1.7, 21], tgt: [-2, 3, 45] } },
+  entrada_casa: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [20, 1.7, 21], tgt: [22, 3, 45] } },
+  aerea_frente: { fecha: { y: 2024, m: 1, d: 15 }, min: 7 * 60 + 30, cam: { pos: [45, 60, -35], tgt: [-25, 0, 50] } },
+  innova_est: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [-55, 1.7, 44], tgt: [-104, 6, 62] } },
+  innova_calle: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [-104.5, 1.7, 24], tgt: [-104, 6, 51] } },
+  ateneo_est: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [-55, 1.7, 44], tgt: [-40, 6, 90] } },
   balboa: { fecha: { y: 2024, m: 3, d: 25 }, min: 10 * 60, cam: { pos: [30, 3, 16], tgt: [90, 6, -5] } },
 };
 

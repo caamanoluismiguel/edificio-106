@@ -1,3 +1,5 @@
+> **Obsoleto (29 sep 2026).** Este informe mide una caja de Innova puesta sobre la huella 108, que en realidad es La Casa, un salón de un piso (ver `../contexto2/identificacion.md`). El efecto con el contexto corregido está en `efecto.md`.
+
 # Efecto de los vecinos en el análisis de sol del 106
 
 Trazado de rayos sobre la geometría del sitio (3841 puntos de fachada: SE 1280, NO 1279, NE 644, SO 638; de ellos 613 en vidrio). «Sin vecinos» = el 106, su sitio y la vegetación, lo que el visor sombreaba antes; «con vecinos» = más los vecinos a menos de ~60 m (105, salón de Innova, Balboa Academy, estructura del cuadrángulo), que ahora sí proyectan sombra en el mapa de sombras. Porcentajes sobre el área de la fachada. Sol de 2025 (NOAA).
