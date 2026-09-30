@@ -92,8 +92,8 @@ const alza = (z) => LOSA * (1 - pendiente(z) / PORCHE);
 export function corregirEntrada(doc) {
   const res = [];
   const H = piezas(doc, /^Pale cast concrete — entrance$/);
-  // (de x 11,05 a 14,55; o de x 11,60 a 14,00 si portico.mjs ya angostó la escalera)
-  const pasos = H.filter((c) => cerca(centro(c)[0], 12.80) && (cerca(tam(c)[0], 3.50) || cerca(tam(c)[0], 2.40)) && tam(c)[2] < 0.45 && tam(c)[1] > 0.1);
+  // (de x 11,05 a 14,55; o más angostos, centrados en la puerta, si portico.mjs ya angostó la escalera)
+  const pasos = H.filter((c) => cerca(centro(c)[0], 12.80) && tam(c)[0] > 2.2 && tam(c)[0] < 3.55 && tam(c)[2] < 0.45 && tam(c)[1] > 0.1);
   if (pasos.length !== 7) throw new Error(`entrada.mjs: se esperaban 7 peldaños y hay ${pasos.length}; el modelo cambió`);
   const pie = Math.max(...pasos.map((c) => c.mx[2]));
   if (cerca(pie, PIE, 0.02)) return ['entrada: la escalera ya arranca en z ' + f2(PIE) + '; nada que corregir'];
@@ -180,7 +180,7 @@ async function medir(doc) {
   const dsc = (c) => `x ${f2(c.mn[0])}–${f2(c.mx[0])}  y ${c.mn[1].toFixed(3)}–${c.mx[1].toFixed(3)}  z ${f2(c.mn[2])}–${f2(c.mx[2])}`;
   for (const c of piezas(doc, /Pale cast concrete — entrance/).filter((c) => c.mx[0] < 16 && c.mn[0] < 14.6)) L.push(`${c.malla.padEnd(34)} ${dsc(c)}`);
   for (const c of piezas(doc, /Warm lime-painted plaster/)) L.push(`${c.malla.padEnd(34)} ${dsc(c)}`);
-  for (const c of piezas(doc, /guardrail/i).filter((c) => [11.10, 14.50, 11.65, 13.95].some((x) => cerca(centro(c)[0], x)) && c.mn[2] > 11.4)) L.push(`${c.malla.padEnd(34)} ${dsc(c)}`);
+  for (const c of piezas(doc, /guardrail/i).filter((c) => [11.10, 14.50, 11.65, 13.95, 11.70, 13.90].some((x) => cerca(centro(c)[0], x)) && c.mn[2] > 11.4)) L.push(`${c.malla.padEnd(34)} ${dsc(c)}`);
   return L;
 }
 
