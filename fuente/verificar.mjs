@@ -188,7 +188,9 @@ const pto = (M, s, y, prof) => [M.n[0] * prof + M.t[0] * s, y, M.n[2] * prof + M
 
 async function prepararGeometria() {
   const t0 = Date.now();
-  const G = ['arquitectura', 'cubiertas', 'detalles', 'entrada', 'ventanas', 'sitio', 'cubiertas_sombra'];
+  // el contexto entra en las sombras (los vecinos cercanos también las proyectan en la app, y la vegetación se oculta al medir),
+  // pero no en la vista: los rayos que miden el muro salen de 40 m afuera, dentro del 105 en la fachada suroeste
+  const G = ['arquitectura', 'cubiertas', 'detalles', 'entrada', 'ventanas', 'sitio', 'cubiertas_sombra', 'contexto'];
   const m = await cargarTriangulos(RAIZ, G);
   const gi = (g) => G.indexOf(g);
   const esTeja = (i) => /terracotta/i.test(m.nombres[m.mat[i]]);
@@ -196,8 +198,9 @@ async function prepararGeometria() {
   // modelo real (tejas de verdad) y lo que la app usa para proyectar sombras (tejas → sustituto cubiertas_sombra)
   const real = new Rayos(m, (i) => m.grupo[i] !== gi('cubiertas_sombra'));
   const app = new Rayos(m, (i) => m.grupo[i] !== gi('cubiertas') ? true : !esTeja(i));
-  // la vista: lo que la cámara ve (sin el sustituto, que solo ve la cámara de la sombra)
-  return { m, real, app, vista: real, esFachada, ms: Date.now() - t0, triangulos: m.mat.length };
+  // la vista: lo que la cámara ve del 106 (sin el sustituto, que solo ve la cámara de la sombra, y sin los vecinos)
+  const vista = new Rayos(m, (i) => m.grupo[i] !== gi('cubiertas_sombra') && m.grupo[i] !== gi('contexto'));
+  return { m, real, app, vista, esFachada, ms: Date.now() - t0, triangulos: m.mat.length };
 }
 
 /** Datos del muro y del alero de una fachada: plano del muro, borde del alero y altura del canto inferior en cada nivel. */
