@@ -3,7 +3,8 @@
 // ?prueba (el gancho window.__e106) en Chromium y mide. Uso:  cd fuente && node verificar.mjs  [--webgl] [--visible] [--solo=1,2]
 //   --webgl    fuerza WebGL 2 (?webgl) en lugar de WebGPU
 //   --visible  abre el navegador con ventana (si el modo sin ventana no dibuja)
-//   --solo=…   corre solo esas comprobaciones (1 a 6)
+//   --solo=…   corre solo esas comprobaciones (1 a 7)
+//   --control-bias=-0.004  prueba de sensibilidad de la comprobación 7 (el sol alto debe colarse bajo el alero y FALLAR)
 //   --control-sesgo=0.35  prueba de sensibilidad: repone el normalBias viejo en esta página; la comprobación 2 debe fallar
 // Resultado: fuente/verificacion/informe.json (con --webgl, en verificacion/webgl/), capturas al lado y un resumen en la consola.
 // Tarda ~6 min (la comprobación 5 abre dos navegadores más; la 4 recorre ~80 pasos de la interfaz).
@@ -27,6 +28,8 @@ const VISIBLE = ARGS.includes('--visible');
 // --control-sesgo=0.35: prueba de sensibilidad de la comprobación 2; pone ese normalBias en la luz del sol (solo en esta página)
 // para reproducir el error viejo de los aleros (sombras ~21 % cortas). La comprobación 2 debe FALLAR con él.
 const CONTROL = Number((ARGS.find((a) => a.startsWith('--control-sesgo=')) ?? '').slice(16)) || null;
+// --control-bias=-0.004: prueba de sensibilidad de la comprobación 7; pone ese bias (10 veces el de la app) y la 7 debe FALLAR
+const CONTROL_BIAS = Number((ARGS.find((a) => a.startsWith('--control-bias=')) ?? '').slice(15)) || null;
 const SOLO = (ARGS.find((a) => a.startsWith('--solo=')) ?? '').slice(7).split(',').filter(Boolean).map(Number);
 const corre = (n) => !SOLO.length || SOLO.includes(n);
 const ANCHO = 1600, ALTO = 1000;
@@ -350,6 +353,93 @@ async function comprobacion2(pg, geo) {
     esperadoPorNormalBias: r2(-sesgoApp.normalBias / 1.65, 4), casos, notas,
     criterio: 'error ≤ máx(8 cm, 10 % de la profundidad de la sombra), contra el borde trazado con rayos sobre la geometría real',
     metodo: 'dos cuadros con la misma cámara: con sol y con el sol apagado (intensidad 0). Su cociente de luminancia vale 1 en la sombra y >1 al sol, lo que anula el color del pañete, la oclusión falsa bajo el alero, la viñeta y la niebla; el borde es el cruce del 50 % entre las mesetas de sombra y de sol. Vegetación oculta durante la medida (sus sombras tapan el muro).' };
+}
+
+// 7. Sol alto: bajo el alero no se cuela el sol. Con el sol a más de 60°, el muro justo bajo el alero está en sombra (el alero
+//    tapa el rayo a menos de un metro del muro); ahí es donde el desplazamiento del mapa de sombras (bias) podría dejar pasar luz.
+//    Se mide la franja de 60 cm bajo el canto, donde el trazado de rayos sobre la geometría da sombra en toda la franja.
+function momentosSolAlto(clave) {
+  const rumbo = FACHADAS[clave].rumbo, out = [];
+  for (let dia = 0; dia < 366; dia += 2) {
+    const d = new Date(Date.UTC(2024, 0, 1 + dia)), f = { y: 2024, m: d.getUTCMonth() + 1, d: d.getUTCDate() };
+    for (let min = 9 * 60; min <= 15 * 60; min += 10) {
+      const p = posicionSol({ ...f, h: 0, min }), c = Math.cos((p.az - rumbo) * rad);
+      if (p.alt >= 60 && c >= 0.15) out.push({ fecha: f, min, alt: p.alt, az: p.az });
+    }
+  }
+  return out;
+}
+function columnaSolAlto(geo, clave, alero, sol) {
+  const M = MARCO[clave], muro = alero.muro, haciaMuro = M.n.map((x) => -x);
+  const esPanete = (s, y) => { const h = geo.vista.lanzar(pto(M, s, y, muro + 4), haciaMuro, 6); return h && geo.esFachada(h.i) && Math.abs(4 - h.t) < 0.03; };
+  for (const N of alero.niveles) for (let s = -M.largo / 2 + 1.2; s <= M.largo / 2 - 1.2; s += 0.2) {
+    const yTop = N.canto - 0.02, yBot = N.canto - 0.62;
+    let limpia = true; for (let y = yTop; y >= yBot && limpia; y -= 0.05) limpia = esPanete(s, y) && esPanete(s - 0.08, y) && esPanete(s + 0.08, y);
+    if (!limpia) continue;
+    const vr = bordeVerdad(geo.real, M, s, muro, yTop, yBot, sol);
+    if (vr.arribaEnSol || vr.cambios.length) continue;                     // la verdad: sombra en toda la franja
+    const h = geo.real.lanzar(pto(M, s, (yTop + yBot) / 2, muro + 0.003), sol, 200);
+    if (!h || geo.m.grupos[geo.m.grupo[h.i]] !== 'cubiertas') continue;     // y la da el alero, no una ménsula
+    // punto de control al sol: el suelo 3 m delante del muro, si el trazado lo da iluminado
+    const g0 = pto(M, s, 6, muro + 3), hg = geo.real.lanzar(g0, [0, -1, 0], 12); if (!hg) continue;
+    const suelo = [g0[0], 6 - hg.t + 0.01, g0[2]];
+    if (geo.real.lanzar(suelo, sol, 200)) continue;
+    return { s, nivel: N.nivel, canto: N.canto, yTop, yBot, suelo };
+  }
+  return null;
+}
+async function comprobacion7(pg, geo) {
+  const casos = [], notas = [];
+  const sesgoApp = await pg.evaluate((b) => { const L = __e106.escena.sun.shadow; if (b) { L.bias = b; L.needsUpdate = true; } return { bias: L.bias, normalBias: L.normalBias, mapa: L.mapSize.x }; }, CONTROL_BIAS);
+  if (CONTROL_BIAS) notas.push(`CONTROL: bias forzado a ${CONTROL_BIAS} para probar que la comprobación detecta el sol colándose bajo el alero`);
+  for (const clave of Object.keys(MARCO)) {
+    const alero = medirAlero(geo, clave), lista = momentosSolAlto(clave);
+    if (!lista.length) { notas.push(`${clave}: el sol nunca pasa de 60° de su lado`); continue; }
+    const regs = await pg.evaluate((L) => L.map((c) => { const r = __e106.clima.registro(c.fecha, c.min); return r ? r.dni : null; }), lista);
+    let hecho = false;
+    for (let k = 0; k < lista.length && !hecho; k += 4) {
+      const c = lista[k]; if (regs[k] == null || regs[k] < 0.8 * dniDespejado(c.alt)) continue;
+      await irA(pg, { fecha: c.fecha, min: c.min, fachada: clave.slice(8), lente: 'foto' }, 2200);
+      const dir = await pg.evaluate(() => { const E = __e106.escena; return { d: [E.solDir.x, E.solDir.y, E.solDir.z], alt: E.alt, az: E.az }; });
+      const col = columnaSolAlto(geo, clave, alero, dir.d);
+      if (!col) { notas.push(`${clave} ${c.fecha.m}/${c.fecha.d} ${c.min}: sin franja limpia en sombra bajo el alero`); continue; }
+      const M = MARCO[clave], muro = alero.muro, yMid = (col.yTop + col.yBot) / 2;
+      // cámara a 11 m y por DEBAJO del canto (si no, el propio alero tapa la franja), mirando entre la franja y el suelo de control
+      const objetivo = pto(M, col.s, yMid - 1.4, muro + 1.5), cam = pto(M, col.s, col.yBot - 0.3, muro + 11);
+      // solo los puntos de la franja que la cámara ve directamente (sin el alero, un poste o una baranda delante)
+      const visible = (p) => { const dv = [p[0] - cam[0], p[1] - cam[1], p[2] - cam[2]], L = Math.hypot(...dv); return !geo.vista.lanzar(cam, dv.map((x) => x / L), L - 0.01); };
+      const ys = []; for (let y = col.yTop; y >= col.yBot; y -= 0.01) if (visible(pto(M, col.s, y, muro + 0.001))) ys.push(y);
+      if (ys.length < 40) { notas.push(`${clave} ${c.fecha.m}/${c.fecha.d} ${c.min}: la cámara no ve la franja`); continue; }
+      const puntos = [...ys.map((y) => pto(M, col.s, y, muro + 0.001)), col.suelo];
+      const prep = (E, a) => {
+        if (E.grupos.vegetacion && E.grupos.vegetacion.root.visible) { E.grupos.vegetacion.root.visible = false; E.sun.shadow.needsUpdate = true; }
+        E.camera.position.set(...a.cam); E.camera.lookAt(...a.objetivo); E.camera.updateMatrixWorld(true);
+        if (a.apagar) { E._intGuardada = E.sun.intensity; E.sun.intensity = 0; } else if (E._intGuardada != null) { E.sun.intensity = E._intGuardada; E._intGuardada = null; }
+      };
+      await capturar(pg, prep, { cam, objetivo, apagar: false });
+      const urlA = await capturar(pg, prep, { cam, objetivo, apagar: false }), urlB = await capturar(pg, prep, { cam, objetivo, apagar: true });
+      await capturar(pg, prep, { cam, objetivo, apagar: false });
+      const px = await pg.evaluate((P) => { const E = __e106.escena, V = E.camera.position.constructor; return P.map((p) => { const v = new V(...p).project(E.camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }); }, puntos);
+      const A = await decodificar(urlA), B = await decodificar(urlB), esc = A.w / ANCHO;
+      const cociente = ([u, v]) => { let a = 0, bb = 0; for (let q = -4; q <= 4; q++) { a += lumBilineal(A, (u + q) * esc, v * esc); bb += lumBilineal(B, (u + q) * esc, v * esc); } return a / Math.max(bb, 1e-6); };
+      const pSuelo = px.pop(), dentro = ([u, v]) => u > 8 && v > 8 && u < ANCHO - 8 && v < ALTO - 8;
+      if (!dentro(pSuelo) || !px.every(dentro)) { notas.push(`${clave} ${c.fecha.m}/${c.fecha.d} ${c.min}: la franja o el suelo de control salen del cuadro`); continue; }
+      const rSuelo = cociente(pSuelo), r = suavizar(px.map(cociente));
+      let jMax = 0; r.forEach((x, j) => { if (x > r[jMax]) jMax = j; });
+      // en sombra, el cociente sol/sin sol vale ~1; al sol (el suelo de control), bastante más. Tolerancia: 8 % del salto del control
+      const umbral = 1 + 0.08 * (rSuelo - 1);
+      const estado = rSuelo < 1.25 ? 'NO MEDIBLE' : r[jMax] <= umbral ? 'PASA' : 'FALLA';
+      casos.push({ estado, fachada: clave, momento: `${c.fecha.y}-${String(c.fecha.m).padStart(2, '0')}-${String(c.fecha.d).padStart(2, '0')} ${String(Math.floor(c.min / 60)).padStart(2, '0')}:${String(c.min % 60).padStart(2, '0')}`,
+        alt: r2(dir.alt, 1), nivelAlero: col.nivel, cocienteMaxFranja: r2(r[jMax], 3), bajoElCantoCm: Math.round((col.canto - ys[jMax]) * 100), cocienteSueloAlSol: r2(rSuelo, 2), umbral: r2(umbral, 3) });
+      hecho = true;
+    }
+    if (!hecho) notas.push(`${clave}: no hubo momento despejado con sol alto y franja limpia`);
+  }
+  await pg.evaluate(() => { const E = __e106.escena; if (E.grupos.vegetacion) E.grupos.vegetacion.root.visible = true; E.sun.shadow.needsUpdate = true; __e106.S.pausa = false; });
+  const medidos = casos.filter((c) => c.estado !== 'NO MEDIBLE');
+  return { estado: !medidos.length ? 'NO MEDIBLE' : medidos.some((c) => c.estado === 'FALLA') ? 'FALLA' : 'PASA', sombraApp: sesgoApp, casos, notas,
+    criterio: 'con el sol a más de 60°, en la franja de 60 cm bajo el canto del alero (en sombra según el trazado de rayos) el cociente de luminancia con sol / sin sol no pasa de 1 + 8 % del de un suelo al sol',
+    metodo: 'dos cuadros con la misma cámara, con sol y con el sol apagado; el cociente vale 1 en la sombra; control: un punto de suelo a 3 m del muro, al sol según el trazado, debe dar al menos 1,25. Vegetación oculta.' };
 }
 
 /** Media móvil de 5 muestras (±2), sin salirse de los extremos. */
@@ -720,7 +810,7 @@ async function main() {
   let navegador = null, geoCache = null;
   try {
     if (corre(1)) { informe.comprobaciones['1'] = { nombre: 'Posición del sol contra un algoritmo independiente', ...comprobacion1() }; }
-    const necesitaNav = [1, 2, 3, 4, 5, 6].some((n) => n !== 1 && corre(n)) || corre(1);
+    const necesitaNav = [1, 2, 3, 4, 5, 6, 7].some((n) => n !== 1 && corre(n)) || corre(1);
     if (!necesitaNav) return;
     navegador = await abrirNavegador();
     // página A: tirones (5) primero, con la página recién cargada; luego las medidas de imagen (2 y 3) y el gancho de (1)
@@ -740,6 +830,11 @@ async function main() {
       pasoActual = 'sombra en la lente Sol';
       const geo = geoCache ?? await prepararGeometria();
       informe.comprobaciones['6'] = { nombre: 'Sombra de los aleros en la lente Sol', backend: A.estado.backend, ...(await comprobacion6(A.pg, geo)) };
+    }
+    if (corre(7)) {
+      pasoActual = 'sol alto bajo el alero';
+      const geo = geoCache ?? (geoCache = await prepararGeometria());
+      informe.comprobaciones['7'] = { nombre: 'Sol alto: bajo el alero no se cuela el sol', backend: A.estado.backend, ...(await comprobacion7(A.pg, geo)) };
     }
     if (corre(3)) { pasoActual = 'luces quemadas'; informe.comprobaciones['3'] = { nombre: 'Luces quemadas', backend: A.estado.backend, ...(await comprobacion3(A.pg)) }; }
     await A.ctx.close();
@@ -773,6 +868,9 @@ function resumen() {
     for (const n of c.notas) L.push(`         nota: ${n}`); }
   if (C['6']) { const c = C['6']; L.push(`[${est(c.estado)}] 6. Sombra de aleros en la lente Sol (${c.backend}) · ${c.criterio}`);
     for (const k of c.casos) L.push(`         ${k.estado.padEnd(6)} ${k.fachada} ${k.momento} alt ${k.alt}° · nivel ${k.nivelAlero} · verdad ${k.profundidadVerdad} m · medida ${k.profundidadMedida ?? '—'} · error ${k.errorCm ?? '—'} cm · sombra vs «nada» ${k.difSombraNiveles} niveles · calidez al sol ${k.calidezSolNiveles}${k.motivo ? ' · ' + k.motivo : ''}`);
+    for (const n of c.notas) L.push(`         nota: ${n}`); }
+  if (C['7']) { const c = C['7']; L.push(`[${est(c.estado)}] 7. Sol alto bajo el alero (${c.backend}) · ${c.criterio}`);
+    for (const k of c.casos) L.push(`         ${k.estado.padEnd(10)} ${k.fachada} ${k.momento} alt ${k.alt}° · nivel ${k.nivelAlero} · cociente máx en la franja ${k.cocienteMaxFranja} (a ${k.bajoElCantoCm} cm del canto) · umbral ${k.umbral} · suelo al sol ${k.cocienteSueloAlSol}`);
     for (const n of c.notas) L.push(`         nota: ${n}`); }
   if (C['3']) { const c = C['3']; L.push(`[${est(c.estado)}] 3. Luces quemadas (${c.backend}) · ${c.umbral}`);
     for (const f of c.filas) L.push(`         ${f.estado.padEnd(6)} ${f.momento.padEnd(34)} ${f.vista.padEnd(11)} ${String(f.pctQuemado).padStart(7)} % · canal máx ${String(f.canalMax).padStart(3)} · p99,9 ${String(f.canalP999).padStart(3)} · bloom ${f.aclaradoBloom >= 0 ? "+" : ""}${f.aclaradoBloom}`); }

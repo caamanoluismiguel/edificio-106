@@ -30,7 +30,7 @@ Un levantamiento (escala ±12 %, ventanas regularizadas) ni una medición del cl
 - **Datos:** ERA5 (Hersbach et al., 2020, doi:10.1002/qj.3803) por la API de archivo de Open-Meteo (Zippenfenig, 2024, doi:10.5281/zenodo.7970649), celda 9,000° N 79,500° O (24 m), hora de Panamá. `fuente/descargar_era5.py` baja la serie y `fuente/clima_bin.py` la empaqueta (lluvia 0,1 mm, temperatura 1/6 °C, radiación 4 W/m², viento 1 km/h, dirección 2°).
 - **Sol:** NOAA/Meeus, verificado contra Michalsky (1988) y NREL SPA (Reda y Andreas, 2004): ≤0,03° en altura y ≤0,11° en azimut; salida y puesta a ±1 min.
 - **Radiación en fachadas:** Hay y Davies (1980), suelo al 20 %, sin factor de vista del cielo. **Lluvia batiente:** ISO 15927-3 en campo abierto (Blocken y Carmeliet, 2004, doi:10.1016/j.jweia.2004.06.003). **Confort:** Givoni (1992), ASHRAE 55-2017 y UTCI (Bröde et al., 2012), verificados contra pythermalcomfort.
-- **Pruebas:** `cd fuente && node verificar.mjs` (sol, sombras contra trazado de rayos, luces, errores y tirones) y `node guardia.mjs` antes de publicar (que nada cambie fuera de lo declarado).
+- **Pruebas:** `cd fuente && node verificar.mjs` (sol, sombras contra trazado de rayos, sombra en la lente Sol, sin sol colado bajo el alero con el sol alto, luces, errores y tirones) y `node guardia.mjs` antes de publicar (que nada cambie fuera de lo declarado).
 
 ## Cómo citar
 Caamaño, L. M. (2026). *Edificio 106 · Isthmus: visor de sol y clima* (versión del 30 de septiembre de 2026) [software]. https://github.com/caamanoluismiguel/edificio-106. Ver `CITATION.cff`. Código MIT (`LICENSE`); datos derivados CC BY 4.0.
