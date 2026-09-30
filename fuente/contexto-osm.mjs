@@ -15,7 +15,7 @@
 // El giro es el que deja la huella OSM del 106 paralela al modelo; los otros cuarteles del cuadrángulo en OSM son paralelos a
 // ella (−1 a −2°), así que quedan paralelos al 106 como en la realidad. Comprobado contra el mapa de Google del usuario
 // (capturas del 29 de septiembre de 2026): con la escala de esa captura (~3,7 px/m) el 105 queda a (−62, +3) m del 106
-// (OSM registrado: −65,7, +1,5), el salón de Innova a (+27, +39) (OSM: +23, +44) y Balboa Academy a (+91, −4) (OSM: +95, −4):
+// (OSM registrado: −65,7, +1,5), La Casa, el salón de enfrente (OSM 108), a (+27, +39) (OSM: +23, +44) y Balboa Academy a (+91, −4) (OSM: +95, −4):
 // diferencias de 3 a 5 m, del orden de lo que se puede leer en esa captura.
 import fs from 'node:fs';
 import path from 'node:path';

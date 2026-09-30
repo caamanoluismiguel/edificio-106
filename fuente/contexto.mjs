@@ -11,11 +11,18 @@
 //  · La Fundación Ciudad del Saber (OSM 104, «Ciudad del Saber», 3 niveles): volumen propio sobre su huella, muros a la altura
 //    del alero del 106 (3 pisos), techo de teja a cuatro aguas sobre el cuerpo principal y las alas, y tres grandes entradas
 //    sugeridas en la fachada que da al cuadrángulo (su posición exacta no se conoce: son una indicación).
-//  · El salón de Innova (OSM 108), frente a la fachada sureste del 106: un piso de doble altura, blanco, cubierta plana, con un
-//    gran paño de celosía de ladrillo y la entrada con su visera. Altura ESTIMADA en 11 m (10–12 m comparando con los carros
-//    en Street View). El paño va en la cara suroeste, la del estacionamiento (lectura de Street View, no medida).
-//  · El estacionamiento de asfalto junto al salón, frente al 105 (de los pasillos de estacionamiento de OSM).
-//  · La estructura pequeña del cuadrángulo (no está en OSM; medida en el mapa de Google del usuario): un piso, 3,5 m ESTIMADOS.
+//  · La Casa (OSM 108, el salón de eventos de Ciudad del Saber), justo enfrente de la entrada del 106, al otro lado de la
+//    calle: un piso, muros blancos hasta 3,2 m, galería de columnas en las caras noroeste (la de la calle) y noreste, y teja a
+//    cuatro aguas con la cumbrera a ~6,8 m. Alturas ESTIMADAS en Street View (alero ~3,2 m, cumbrera 6,5–7 m).
+//  · Innova (OSM 109, el Centro de Innovación, «Auditorio 109»), más allá del estacionamiento: nave blanca de doble altura con
+//    cubierta plana (~11 m ESTIMADOS), paño de celosía de ladrillo y entrada con visera en la cara noroeste (la de la calle),
+//    pilastras con franjas de ladrillo en las caras largas, torre de celosía (~13 m ESTIMADOS) en el flanco suroeste y el ala
+//    baja al suroeste (~4 m ESTIMADOS). Identificación: verificacion/contexto2/identificacion.md.
+//  · El Teatro Ateneo (OSM 182), detrás del estacionamiento: sala alta de muros blancos (~10 m ESTIMADOS) con teja.
+//  · Los dos estacionamientos de asfalto: el de enfrente del 105 (polígono medido en la vista satelital) y el que queda entre
+//    Innova y el Ateneo; y el cerramiento de bloque calado (~2,2 m) entre La Casa y la entrada del estacionamiento.
+//  · La estructura pequeña del cuadrángulo (no está en OSM; medida en el mapa de Google del usuario): un piso, 3,5 m ESTIMADOS,
+//    con cubierta metálica azulada (vista satelital).
 //  · Balboa Academy (OSM 107, 3 niveles) y el resto de edificios de OSM: volúmenes de maqueta, techo plano, con la altura de sus
 //    niveles de OSM (3,65 m por nivel + 0,65 m de base) o 2 niveles si OSM no la trae. Todas las alturas son ESTIMADAS.
 // Sombras: los nodos a menos de ~60 m del 106 llevan extras.sombra = true y escena.js los pone en la capa 1 (proyectan sombra
@@ -38,18 +45,27 @@ const rad = Math.PI / 180;
 // ---------------- parámetros ----------------
 const PISO = 3.65, BASE = 0.65;                   // altura de piso y base del 106 (main.js, «Partes»)
 const ALERO_106 = 11.6;                           // altura del muro del 106 bajo el alero del techo (arquitectura.glb)
-const H_INNOVA = +(process.env.H_INNOVA ?? 11);   // ESTIMADA: 10–12 m comparando con los carros en Street View (H_INNOVA=… para probar)
+// La Casa (OSM 108): alero de la galería y cumbrera ESTIMADOS en Street View (verificacion/contexto2/identificacion.md)
+const CASA = { alero: +(process.env.CASA_ALERO ?? 3.2), vuelo: 0.6, pend: +(process.env.CASA_PEND ?? 14.7), galeria: 2.5, columna: 0.4, paso: 3.3 };   // cumbrera = 3,2 + 13,75 · tan 14,7° ≈ 6,8 m (CASA_ALERO=… CASA_PEND=… para probar)
+// Innova (OSM 109): nave, torre y ala ESTIMADAS en Street View (pretil a ~11 m en jg_xm100_h145, f ≈ 554 px)
+const H_INNOVA = +(process.env.H_INNOVA ?? 11), H_TORRE = 13, H_ALA = 4;
+const H_ATENEO = 10, H_ATENEO_FRENTE = 7;         // ESTIMADAS: la sala del Ateneo al alero y el cuerpo de su frente
 const H_ESTRUCTURA = 3.5;                         // ESTIMADA: la estructura pequeña del cuadrángulo, un piso
 const NIVELES_SIN_DATO = 2;                       // si OSM no trae building:levels
 const RADIO_SOMBRA = 60;                          // m: a menos de esto del 106 (huella a huella) proyectan sombra
 const TIPOLOGIA_106 = new Set(['105', '102', '103']);   // cuarteles del cuadrángulo iguales al 106 (el usuario y Street View)
-const ID_FUNDACION = 300885892, ID_INNOVA = 300885896, ID_106 = 300885891;
+const ID_FUNDACION = 300885892, ID_CASA = 300885896, ID_INNOVA = 300885897, ID_ATENEO = 300885895, ID_106 = 300885891;
 // la estructura pequeña del cuadrángulo, leída en el mapa de Google (captura del 29 sep 2026, ~3,7 px/m): 9,7 × 6,0 m,
 // paralela al 106, con centro a (−28,7; −24,0) m del centro del 106 en la escena
 const ESTRUCTURA = { c: [-28.7, -24.0], largo: 9.7, ancho: 6.0 };
-// estacionamiento frente al 105 (junto al salón de Innova): la envolvente de los pasillos de OSM (vías 1387876295 y
-// 1251012796) con 7 m a cada lado para los puestos, recortada a 3 m del salón; la entrada desde la calle es la vía 1251012796
-const ESTACIONAMIENTO = { x: [-91, -16], z: [37, 73], entrada: { x: [-26.5, -18.5], z: [29.5, 37] } };
+// estacionamientos (medidos sobre la vista satelital georreferenciada, verificacion/contexto2/sat_centro.jpg): el de enfrente
+// del 105, con la esquina oeste recortada por la curva de la vía que va a Innova, y su entrada desde la calle (vía OSM
+// 1251012796); y el de detrás, entre Innova y el Ateneo, que sale a la calle del Ateneo
+const ESTACIONAMIENTO = { poly: [[-87, 33], [-22, 38], [-19, 70], [-65, 73], [-82, 56]], entrada: { x: [-26.5, -18.5], z: [29.5, 38] } };
+const ESTACIONAMIENTO_2 = [[-93, 76], [-55, 76], [-55, 121], [-93, 121]];
+// cerramiento de bloque calado entre La Casa y la entrada del estacionamiento (Street View jg_xp0_h145, jg_xm20_h145): posición
+// y medidas aproximadas
+const CERRAMIENTO = { c: [-13.5, 34.5], largo: 3.6, ancho: 3.0, alto: 2.2 };
 
 // materiales: los nombres deciden cómo los pinta escena.js (#material): «plaster» (pañete con manchas), «terracotta» (teja),
 // «glass» (vidrio, con luces de noche más tenues en el contexto), «turf» (suelo abierto de noche)
@@ -65,6 +81,8 @@ const MAT = {
   maqueta: { n: 'V016 massing model (estimated height)', c: [0.62, 0.61, 0.57], r: 0.9 },
   asfalto: { n: 'Weathered asphalt 02 — photographic 3m', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
   pasto: { n: 'V016 distant park turf', c: [0.09, 0.16, 0.05], r: 0.96 },
+  piedra: { n: 'Rubble stone plinth', c: [0.28, 0.24, 0.20], r: 0.92 },
+  metal: { n: 'Blue-gray metal roof sheet', c: [0.22, 0.29, 0.36], r: 0.55, m: 0.25 },
 };
 
 // ---------------- geometría ----------------
@@ -137,6 +155,10 @@ function franjas(P, ang) {
   }
   return { franjas: out, aMundo: (u, v) => [u * Math.cos(ang * rad) - v * Math.sin(ang * rad), u * Math.sin(ang * rad) + v * Math.cos(ang * rad)] };
 }
+
+/** Del marco local de un edificio (u a lo largo de su lado principal, v a lo ancho; origen en b.centro) a la escena, y al revés. */
+function local(b, u, v) { const ca = Math.cos(b.ang * rad), sa = Math.sin(b.ang * rad); return [b.centro[0] + u * ca - v * sa, b.centro[1] + u * sa + v * ca]; }
+function aLocal(b, x, z) { const ca = Math.cos(b.ang * rad), sa = Math.sin(b.ang * rad), dx = x - b.centro[0], dz = z - b.centro[1]; return [dx * ca + dz * sa, -dx * sa + dz * ca]; }
 
 // ---------------- el 106 reducido ----------------
 await MeshoptDecoder.ready; await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
@@ -251,20 +273,64 @@ for (const b of osm.edificios) {
       M.caja('hueco', v[0], v[1], 0.04, 5, 0, 7.5, b.ang);
     }
     resumen.volumenes.push(`Fundación Ciudad del Saber (OSM ${b.id}): muros de ${ALERO_106} m, cumbrera ${cumbrera.toFixed(1)} m, 3 entradas sugeridas`);
+  } else if (b.id === ID_CASA) {
+    // La Casa: la huella de OSM incluye la galería (el borde de la cubierta); los muros quedan 2,5 m adentro en las caras
+    // noroeste (−Z local, la de la calle) y noreste (+X local); columnas blancas en el borde; teja a cuatro aguas sobre toda la
+    // huella, con el sofito de la galería a la altura del alero
+    const [u0, u1, v0, v1] = b.caja, g = CASA.galeria, cM = local(b, (u0 + u1) / 2, (v0 + v1) / 2);
+    M.prisma('muro', [local(b, u0, v0 + g), local(b, u0, v1), local(b, u1 - g, v1), local(b, u1 - g, v0 + g)], 0, CASA.alero);
+    // zócalo de piedra (arcos y zócalo en Street View) en los muros de la galería, 5 cm hacia afuera
+    M.caja('piedra', ...local(b, (u0 + u1 - g) / 2, v0 + g - 0.025), u1 - g - u0, 0.05, 0, 0.9, b.ang);
+    M.caja('piedra', ...local(b, u1 - g + 0.025, (v0 + g + v1) / 2), 0.05, v1 - v0 - g, 0, 0.9, b.ang);
+    const col = (u, v) => { const p = local(b, u, v); M.caja('blanco', p[0], p[1], CASA.columna, CASA.columna, 0, CASA.alero, b.ang); };
+    const r = CASA.columna / 2 + 0.05;
+    const nU = Math.round((u1 - r - (u0 + r)) / CASA.paso), nV = Math.round((v1 - r - (v0 + r)) / CASA.paso);
+    for (let k = 0; k <= nU; k++) col(u0 + r + (u1 - u0 - 2 * r) * k / nU, v0 + r);                  // cara noroeste
+    for (let k = 1; k <= nV; k++) col(u1 - r, v0 + r + (v1 - v0 - 2 * r) * k / nV);                  // cara noreste
+    const cumbrera = M.cuatroAguas(cM[0], cM[1], u1 - u0, v1 - v0, b.ang, CASA.alero, CASA.vuelo, CASA.pend);
+    resumen.volumenes.push(`La Casa (OSM ${b.id}): ${b.largo.toFixed(1)} × ${b.ancho.toFixed(1)} m, un piso, alero ${CASA.alero} m y cumbrera ${cumbrera.toFixed(1)} m ESTIMADOS, galería al noroeste y al noreste`);
   } else if (b.id === ID_INNOVA) {
-    M.prisma('blanco', P, 0, H_INNOVA);
-    M.prisma('blanco', (rectangulo(b.centro[0], b.centro[1], b.largo - 1.2, b.ancho - 1.2, b.ang)), H_INNOVA, H_INNOVA + 0.6);   // pretil
-    // cara suroeste (−X local): paño de celosía de ladrillo, entrada vidriada y visera
-    const ca = Math.cos(b.ang * rad), sa = Math.sin(b.ang * rad), q = (u, v) => [b.centro[0] + u * ca - v * sa, b.centro[1] + u * sa + v * ca];
-    const xf = b.caja[0];                                 // la cara suroeste en el marco local
-    const c1 = q(xf - 0.12, -3); M.caja('ladrillo', c1[0], c1[1], 0.24, 9, 4.2, 10.3, b.ang);
-    // la celosía: una rejilla de huecos oscuros de 0,3 m sobre el paño (se lee como ladrillo calado de lejos)
-    for (let v = -7.2; v <= 1.21; v += 0.6) for (let y = 4.5; y <= 9.91; y += 0.6) { const h = q(xf - 0.245, v); M.caja('hueco', h[0], h[1], 0.01, 0.3, y, y + 0.3, b.ang); }
-    // pilastras verticales en las dos caras largas, cada 3,2 m (como en Street View)
-    for (let u = b.caja[0] + 2; u < b.caja[1] - 1; u += 3.2) for (const [v, dv] of [[b.caja[2], -0.2], [b.caja[3], 0.2]]) { const p = q(u, v + dv); M.caja('blanco', p[0], p[1], 0.3, 0.4, 0, H_INNOVA, b.ang); }
-    const c2 = q(xf - 0.03, -3); M.caja('vidrio', c2[0], c2[1], 0.06, 5, 0, 3.0, b.ang);
-    const c3 = q(xf - 1.6, -3); M.caja('blanco', c3[0], c3[1], 3.2, 7, 3.1, 3.5, b.ang, { sinFondo: false });
-    resumen.volumenes.push(`Innova (OSM ${b.id}): ${b.largo.toFixed(1)} × ${b.ancho.toFixed(1)} m, ${H_INNOVA} m ESTIMADOS, cubierta plana, celosía en la cara suroeste`);
+    // la huella tiene dos partes: la nave (x > −115) y el ala baja al suroeste; se separan por los vértices de la unión
+    const lejos = P.map(([x]) => x < -118), i0 = lejos.indexOf(true), i1 = lejos.lastIndexOf(true);
+    const ala = P.slice(i0 - 1, i1 + 2), nave = [...P.slice(i1 + 1), ...P.slice(0, i0)];
+    M.prisma('blanco', ala, 0, H_ALA);
+    // la nave en su propio marco (el de la huella): caja local [u0, u1] × [v0, v1]; la cara noroeste es v0 (−Z)
+    const n = { centro: [0, 0], ang: b.ang };
+    // (en este marco la cara suroeste libre, la noreste y la noroeste son rectas; la suroeste se abre hacia afuera junto al ala)
+    const loc = nave.map(([x, z]) => aLocal(n, x, z));
+    const u0 = Math.max(...loc.filter((p) => p[0] < -100).map((p) => p[0])), u1 = Math.min(...loc.filter((p) => p[0] > -100).map((p) => p[0]));
+    const v0 = Math.max(...loc.filter((p) => p[1] < 60).map((p) => p[1])), v1 = Math.min(...loc.filter((p) => p[1] > 88).map((p) => p[1]));
+    const vAla = Math.min(...ala.map(([x, z]) => aLocal(n, x, z)[1])), vt = (v0 + vAla) / 2;   // donde empieza el ala; la torre, en el tramo libre
+    const q = (u, v) => local(n, u, v), uc = (u0 + u1) / 2;
+    M.prisma('blanco', nave, 0, H_INNOVA);
+    M.prisma('blanco', [q(u0 + 0.6, v0 + 0.6), q(u0 + 0.6, v1 - 0.6), q(u1 - 0.6, v1 - 0.6), q(u1 - 0.6, v0 + 0.6)], H_INNOVA, H_INNOVA + 0.6);   // pretil
+    // cara noroeste: paño de celosía de ladrillo en el centro, la entrada vidriada debajo y la visera
+    const c1 = q(uc, v0 - 0.12); M.caja('ladrillo', c1[0], c1[1], 4.4, 0.24, 4.0, H_INNOVA - 0.3, b.ang);
+    for (let u = uc - 1.95; u <= uc + 1.96; u += 0.3) for (let y = 4.2; y <= H_INNOVA - 0.64; y += 0.3) { const h = q(u, v0 - 0.27); M.caja('hueco', h[0], h[1], 0.15, 0.01, y, y + 0.15, b.ang); }
+    const c2 = q(uc, v0 - 0.03); M.caja('vidrio', c2[0], c2[1], 5, 0.06, 0, 3.0, b.ang);
+    const c3 = q(uc, v0 - 1.6); M.caja('blanco', c3[0], c3[1], 7, 3.2, 3.1, 3.5, b.ang, { sinFondo: false });
+    // caras largas (noreste, hacia el estacionamiento, y suroeste): pilastras blancas cada 3,2 m y, entre ellas, franjas de ladrillo
+    for (let v = v0 + 1.6; v < v1 - 1; v += 3.2) for (const [u, du] of [[u0, -1], [u1, 1]]) {
+      if (du < 0 && (v > vAla - 1.8 || Math.abs(v - vt) < 2.5)) continue;          // en la suroeste, solo en el tramo libre y fuera de la torre
+      const p = q(u + du * 0.2, v); M.caja('blanco', p[0], p[1], 0.4, 0.5, 0, H_INNOVA, b.ang);
+      if (v + 1.6 < (du < 0 ? vAla - 1.8 : v1 - 1) && !(du < 0 && Math.abs(v + 1.6 - vt) < 2.5)) { const f = q(u + du * 0.03, v + 1.6); M.caja('ladrillo', f[0], f[1], 0.06, 0.9, 0.6, H_INNOVA - 1.2, b.ang); }
+    }
+    // torre esbelta de celosía de ladrillo en el flanco suroeste, en el tramo libre de la nave (entre la cara noroeste y el ala)
+    const t = q(u0 - 1.5, vt);
+    M.caja('ladrillo', t[0], t[1], 2.6, 2.6, 0, H_TORRE, b.ang);
+    for (let y = 1.5; y <= H_TORRE - 1.2; y += 0.7) for (const d of [-0.6, 0, 0.6]) { const h = q(u0 - 2.83, vt + d); M.caja('hueco', h[0], h[1], 0.01, 0.3, y, y + 0.35, b.ang); }
+    resumen.volumenes.push(`Innova (OSM ${b.id}): nave ${(u1 - u0).toFixed(1)} × ${(v1 - v0).toFixed(1)} m a ${H_INNOVA} m, torre ${H_TORRE} m, ala ${H_ALA} m (ESTIMADAS); celosía en la cara noroeste`);
+  } else if (b.id === ID_ATENEO) {
+    // la sala (el rectángulo grande de la huella) a 10 m con teja a cuatro aguas; el cuerpo del frente, más bajo
+    const n = { centro: [0, 0], ang: b.ang }, loc = P.map(([x, z]) => aLocal(n, x, z));
+    const vF = Math.max(...loc.filter((p) => p[1] < 90).map((p) => p[1]));   // donde empieza la sala (detrás del cuerpo del frente)
+    const u0 = Math.min(...loc.map((p) => p[0])), u1 = Math.max(...loc.map((p) => p[0])), v1 = Math.max(...loc.map((p) => p[1]));
+    M.prisma('muro', P, 0, H_ATENEO_FRENTE, { matTapa: 'madera' });
+    const sala = [local(n, u0, vF), local(n, u0, v1), local(n, u1, v1), local(n, u1, vF)];
+    M.prisma('muro', sala, H_ATENEO_FRENTE, H_ATENEO, { matTapa: 'madera' });
+    const c = local(n, (u0 + u1) / 2, (vF + v1) / 2);
+    const cumbrera = M.cuatroAguas(c[0], c[1], v1 - vF, u1 - u0, b.ang + 90, H_ATENEO, 0.8, 15);
+    resumen.volumenes.push(`Teatro Ateneo (OSM ${b.id}): sala de ${H_ATENEO} m, cumbrera ${cumbrera.toFixed(1)} m, frente de ${H_ATENEO_FRENTE} m (ESTIMADAS)`);
   } else {
     const niv = b.niveles ?? NIVELES_SIN_DATO, h = niv * PISO + BASE;
     M.prisma('maqueta', P, 0, h);
@@ -273,13 +339,23 @@ for (const b of osm.edificios) {
   if (s) resumen.sombra.push(`${b.num || b.id} ${b.nombre || ''} (a ${distanciaPoligonos(b.poly, P106).toFixed(1)} m)`);
 }
 // estructura pequeña del cuadrángulo (proyecta sombra: está a ~10 m del 106)
-MC.caja('muro', ESTRUCTURA.c[0], ESTRUCTURA.c[1], ESTRUCTURA.largo, ESTRUCTURA.ancho, 0, H_ESTRUCTURA, 0, { matTapa: 'madera' });
+MC.caja('muro', ESTRUCTURA.c[0], ESTRUCTURA.c[1], ESTRUCTURA.largo, ESTRUCTURA.ancho, 0, H_ESTRUCTURA, 0, { matTapa: 'metal' });
 resumen.sombra.push(`estructura pequeña del cuadrángulo (a ${distanciaPoligonos(rectangulo(ESTRUCTURA.c[0], ESTRUCTURA.c[1], ESTRUCTURA.largo, ESTRUCTURA.ancho, 0), P106).toFixed(1)} m)`);
-// estacionamiento (plano, a 1,5 cm sobre el pasto; no proyecta sombra)
+// estacionamientos (planos, a 1,5 cm sobre el pasto; no proyectan sombra)
 {
-  const { x, z, entrada: e } = ESTACIONAMIENTO, y = 0.015;
-  ML.quad('asfalto', [x[0], y, z[0]], [x[0], y, z[1]], [x[1], y, z[1]], [x[1], y, z[0]], [0, 1, 0]);
-  ML.quad('asfalto', [e.x[0], y, e.z[0]], [e.x[0], y, e.z[1]], [e.x[1], y, e.z[1]], [e.x[1], y, e.z[0]], [0, 1, 0]);
+  const y = 0.015, e = ESTACIONAMIENTO.entrada;
+  const plano = (P) => { P = orientar(P); for (const [a, b, c] of ShapeUtils.triangulateShape(P.map(([x, z]) => new Vector2(x, z)), [])) ML.tri('asfalto', [P[a][0], y, P[a][1]], [P[b][0], y, P[b][1]], [P[c][0], y, P[c][1]], [0, 1, 0]); };
+  plano(ESTACIONAMIENTO.poly); plano(ESTACIONAMIENTO_2);
+  plano([[e.x[0], e.z[0]], [e.x[1], e.z[0]], [e.x[1], e.z[1]], [e.x[0], e.z[1]]]);
+}
+// cerramiento de bloque calado: caja blanca con una rejilla de huecos oscuros en las cuatro caras (no proyecta sombra)
+{
+  const { c, largo: l, ancho: w, alto: h } = CERRAMIENTO;
+  ML.caja('blanco', c[0], c[1], l, w, 0, h, 0);
+  for (let y = 0.35; y <= h - 0.3; y += 0.3) {
+    for (let u = -l / 2 + 0.3; u <= l / 2 - 0.29; u += 0.3) for (const s of [-1, 1]) ML.caja('hueco', c[0] + u, c[1] + s * (w / 2 + 0.03), 0.18, 0.01, y, y + 0.18, 0);
+    for (let v = -w / 2 + 0.3; v <= w / 2 - 0.29; v += 0.3) for (const s of [-1, 1]) ML.caja('hueco', c[0] + s * (l / 2 + 0.03), c[1] + v, 0.01, 0.18, y, y + 0.18, 0);
+  }
 }
 // pasto lejano al noroeste (más allá del terreno del sitio, como el contexto anterior)
 ML.quad('pasto', [-180, -0.12, -260], [-180, -0.12, -120], [180, -0.12, -120], [180, -0.12, -260], [0, 1, 0]);
