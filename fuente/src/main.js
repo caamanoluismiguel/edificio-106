@@ -173,7 +173,7 @@ async function arrancar() {
   controls.addEventListener('start', alTomar);
   U.vaiven.value = reduce ? 0 : 1;
   // gancho para las comprobaciones automáticas (fuente/verificar.mjs): solo existe con ?prueba en la URL
-  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, controls, clima, viajarA, VISTAS, VISTA_FACHADA, posicionSol };
+  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, VISTAS, VISTA_FACHADA, posicionSol };
 
   const bytes = {};
   escena.cargar(BASE, (g, l, t) => {
@@ -201,6 +201,13 @@ async function arrancar() {
     escena.prepararSilueta();                    // en pedazos, en ratos libres
   });
   escena.cargaCompleta.then(() => { if (n) estadoCarga(`${miles(n)} puntos · modelo completo`); });
+  escena.cargaCompleta.then(() => {
+    // cuerpo, cubiertas y ventanas, más las piezas del pórtico pegadas al edificio (en entrada.glb hay vigas que llegan a z ≈ 30)
+    const c = new THREE.Box3(); for (const g of ['arquitectura', 'cubiertas', 'ventanas']) if (escena.grupos[g]?.root) c.expandByObject(escena.grupos[g].root);
+    const cerca = c.clone().expandByScalar(5), b = new THREE.Box3();
+    escena.grupos.entrada?.root.traverse((o) => { if (o.isMesh && cerca.containsBox(b.setFromObject(o))) c.union(b); });
+    if (!c.isEmpty()) ESQ106 = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? c.max.x : c.min.x, i & 2 ? c.max.y : c.min.y, i & 4 ? c.max.z : c.min.z));
+  });
   escena.cargaCompleta.then(() => clima.cargarHorario(BASE).then(() => { dibujarDecadas(); refrescar(); }).catch((e) => console.warn('clima horario', e)));
   pVivo.then(() => refrescar());
   if (location.hash === '#depurar') depurar();
@@ -340,6 +347,12 @@ function viajarA(d) {
   lastLect = '';
 }
 const _vs = new THREE.Vector3();
+const _vd = new THREE.Vector3(), _vt = new THREE.Vector3();
+// profundidad de campo (prototipo): ?dof=0 la apaga; ?margen= (m alrededor del 106), ?rampa= (fracción de la distancia al
+// punto más lejano del 106 en que el desenfoque llega al máximo), ?bokeh= (px)
+const DOF = (() => { const q = new URLSearchParams(location.search), n = (k, v) => (q.has(k) ? Number(q.get(k)) : v);
+  return { on: q.get('dof') !== '0', margen: n('margen', 3), rampa: n('rampa', 0.8), bokeh: n('bokeh', 4) }; })();
+let ESQ106 = null;                                   // las 8 esquinas de la caja del 106 (sin sitio, vegetación ni vecinos)
 function pasoViaje(now) {
   const V = S.viaje, k = Math.min(1, (now - V.t0) / V.T);
   const kA = V.tramo ? Math.min(1, k / V.tramo) : 1, kB = clamp01((k - V.tramo) / (1 - V.tramo));
@@ -498,6 +511,17 @@ function paso(now) {
   U.total.value += ((S.solModo === 'total' && S.hayDifusa ? 1 : 0) - U.total.value) * Math.min(1, dt * 4);
   escena.uViento.value += ((S.lente === 'viento' && !S.viaje ? 1 : 0) - escena.uViento.value) * Math.min(1, dt * 4);
   U.sombras.value += ((S.lente === 'sombras' && !S.viaje ? 1 : 0) - U.sombras.value) * Math.min(1, dt * 4);
+  // profundidad de campo: el 106 entero siempre nítido. La franja nítida va de su punto más cercano al más lejano a lo largo de
+  // la mirada (las 8 esquinas de su caja, más un margen); lo que queda fuera se desenfoca. Antes del modelo: el punto que se mira
+  const dirCam = escena.camera.getWorldDirection(_vd);
+  let cerca = Infinity, lejos = -Infinity;
+  if (ESQ106) for (const e of ESQ106) { const z = _vt.subVectors(e, escena.camera.position).dot(dirCam); cerca = Math.min(cerca, z); lejos = Math.max(lejos, z); }
+  else cerca = lejos = _vt.subVectors(controls.target, escena.camera.position).dot(dirCam);
+  cerca = Math.max(0.5, cerca - DOF.margen); lejos = Math.max(cerca + 1, lejos + DOF.margen);
+  escena.uFoco.value = (cerca + lejos) / 2; escena.uBanda.value = (lejos - cerca) / 2;
+  escena.uRampa.value = Math.max(20, lejos * DOF.rampa); escena.uBokeh.value = DOF.bokeh;
+  const desenfoque = DOF.on && S.lente !== 'sombras' && !S.fachada && dirCam.y > -0.8 ? 1 : 0;      // en planta, sombras o fachada: nítido
+  escena.uDesenfoque.value += (desenfoque - escena.uDesenfoque.value) * Math.min(1, dt * 3);
   if (S.lente === 'sombras' && !S.viaje) escena.setDiagrama(S.fecha);
   actualizarCalor(p, c);
   actualizarAgua(c);
