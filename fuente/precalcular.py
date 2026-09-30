@@ -1,6 +1,7 @@
 """Precalcula datos de la v2:
  - intro.bin: 120.000 puntos sobre las superficies del modelo, con color, grupo y altura normalizada,
-   en orden aleatorio (cualquier prefijo es una muestra proporcional).
+   en orden aleatorio (cualquier prefijo es una muestra proporcional). Necesita ../raw (la exportación de
+   Blender, que no está en el repositorio): para rehacerlo desde los modelos web, fuente/intro.mjs.
  - clima_horario.bin.gz: 219.144 horas × 8 variables en uint8, por columnas.
  - clima_resumen.json: bandas típicas (p10/p50/p90) por mes y hora, serie mensual, momentos curados."""
 import json, struct, glob, gzip, math, datetime as dt, sys
