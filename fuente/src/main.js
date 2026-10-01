@@ -934,8 +934,9 @@ function colorCielo(alt) {
 function dibujarReglas() {
   const f = S.fecha, { sale, pone } = saleYPone(f.y, f.m, f.d), md = mediodiaSolar(f.y, f.m, f.d);
   let stops = '';
-  // franjas planas de una hora (el color del cielo a la media hora), sin degradado: cada franja empieza y termina con el mismo color
-  for (let h = 0; h < 24; h++) { const c = colorCielo(posicionSol({ ...f, h: 0, min: h * 60 + 30 }).alt); stops += `<stop offset="${(h / 24).toFixed(4)}" stop-color="rgb(${c})"></stop><stop offset="${((h + 1) / 24).toFixed(4)}" stop-color="rgb(${c})"></stop>`; }
+  // el color del cielo cada 20 min: el amanecer y el atardecer duran unos minutos y una franja por hora los borraba. No es
+  // un degradado decorativo: es el dato (la altura del sol) y su transición real es continua
+  for (let m = 0; m <= 1440; m += 20) { const c = colorCielo(posicionSol({ ...f, h: 0, min: m }).alt); stops += `<stop offset="${(m / 1440).toFixed(4)}" stop-color="rgb(${c})"></stop>`; }
   $('#grad-dia').innerHTML = stops;
   let t = '';
   for (let h = 0; h <= 24; h++) { const x = h / 24 * 1000; t += `<line class="tick" x1="${x}" x2="${x}" y1="24" y2="${h % 6 === 0 ? 32 : 28}"></line>`; }

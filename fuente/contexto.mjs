@@ -90,7 +90,9 @@ const MAT = {
   ladrillo: { n: 'V016 brick lattice', c: [0.30, 0.10, 0.05], r: 0.9 },
   maqueta: { n: 'V016 massing model (estimated height)', c: [0.62, 0.61, 0.57], r: 0.9 },
   asfalto: { n: 'Weathered asphalt 02 — photographic 3m', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
-  pasto: { n: 'V016 distant park turf', c: [0.09, 0.16, 0.05], r: 0.96 },
+  // el pasto del entorno es el mismo del sitio (sitio.glb, «Leafy grass — photographic 2m»: color, textura y repetición):
+  // con un verde distinto se veían dos pastos en el cuadrángulo y la unión entre ellos
+  pasto: { n: 'V017 grass turf (as site)', c: [0.0355, 0.09, 0.0055], r: 0.75, image: 'leafy_grass_diff_4k.jpg', ground_uv: 2 },
   calle: { n: 'V017 street asphalt (OSM)', c: [0.23, 0.23, 0.22], r: 0.751,   // r distinto: si no, dedup() lo junta con el asfalto del sitio y pierde el adelanto en profundidad
     image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
   acera: { n: 'V017 street concrete walk (OSM)', c: [0.42, 0.41, 0.38], r: 0.9 },

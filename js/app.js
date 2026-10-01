@@ -37780,13 +37780,13 @@ function qW(e) {
 }
 function JW() {
 	let e = Q.fecha, { sale: t, pone: n } = IB(e.y, e.m, e.d), r = PB(e.y, e.m, e.d), i = "";
-	for (let t = 0; t < 24; t++) {
+	for (let t = 0; t <= 1440; t += 20) {
 		let n = qW(MB({
 			...e,
 			h: 0,
-			min: t * 60 + 30
+			min: t
 		}).alt);
-		i += `<stop offset="${(t / 24).toFixed(4)}" stop-color="rgb(${n})"></stop><stop offset="${((t + 1) / 24).toFixed(4)}" stop-color="rgb(${n})"></stop>`;
+		i += `<stop offset="${(t / 1440).toFixed(4)}" stop-color="rgb(${n})"></stop>`;
 	}
 	Z("#grad-dia").innerHTML = i;
 	let a = "";

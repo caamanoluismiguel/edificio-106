@@ -84,6 +84,12 @@ const todos = {
   sueloBajo: 'E.suelo.position.y = -0.6; E.suelo.updateMatrixWorld();',
   sinNubes: 'U.nubeSombra.value = 0;',
   viejo: 'E.suelo.position.y = -0.05; E.suelo.updateMatrixWorld();',
+  nublado: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1;',
+  nubladoSinNubes: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; U.nubeSombra.value = 0;',
+  nubladoSinSuelo: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.suelo.visible = false;',
+  nubladoSinContexto: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.grupos.contexto.root.visible = false;',
+  sinTerreno: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.scene.traverse((o) => { if (/terreno|entorno/.test(o.name)) o.visible = false; });',
+  sinPastoNO: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.scene.traverse((o) => { if (o.isMesh && /distant park turf/.test(o.material?.name || "")) o.visible = false; });',
   sinNiebla: 'U.lluvia.value = 0.25; U.mojado.value = 1; E.scene.fog.near = 1e5; E.scene.fog.far = 2e5;',
 };
 const lista = CASOS.length ? CASOS : Object.keys(todos);
