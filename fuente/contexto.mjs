@@ -23,8 +23,12 @@
 //    Innova y el Ateneo; y el cerramiento de bloque calado (~2,2 m) entre La Casa y la entrada del estacionamiento.
 //  · La estructura pequeña del cuadrángulo (no está en OSM; medida en el mapa de Google del usuario): un piso, 3,5 m ESTIMADOS,
 //    con cubierta metálica azulada (vista satelital).
-//  · Balboa Academy (OSM 107, 3 niveles) y el resto de edificios de OSM: volúmenes de maqueta, techo plano, con la altura de sus
-//    niveles de OSM (3,65 m por nivel + 0,65 m de base) o 2 niveles si OSM no la trae. Todas las alturas son ESTIMADAS.
+//  · Cuarteles al norte del cuadrángulo, de la misma tipología (Street View, nov 2022): el 101 y los dos de Balboa Academy, el
+//    100 (el principal; ~59 m de largo y girado 90°, medidos en Open Buildings: la misma malla, estirada a lo largo) y el 107
+//    (la secundaria). OSM no les trae niveles o los dibuja con otra forma; el 101 mide 46,8 × 22,5 m en Open Buildings, como el 106.
+//  · El resto de edificios de OSM: volúmenes de maqueta, techo plano, con la altura de sus niveles de OSM (3,65 m por nivel +
+//    0,65 m de base). Si OSM no la trae, la altura p90 de Google Open Buildings 2.5D (alturas_ob.json, de alturas_ob.py: estimada
+//    desde satélite, ~1,5 m de error) cuando cubre al menos el 60 % de la huella; si no, 2 niveles. Todas son ESTIMADAS.
 // Sombras: los nodos a menos de ~60 m del 106 llevan extras.sombra = true y escena.js los pone en la capa 1 (proyectan sombra
 // en el mapa de sombras); los lejanos no.
 import fs from 'node:fs';
@@ -53,7 +57,12 @@ const H_ATENEO = 10, H_ATENEO_FRENTE = 7;         // ESTIMADAS: la sala del Aten
 const H_ESTRUCTURA = 3.5;                         // ESTIMADA: la estructura pequeña del cuadrángulo, un piso
 const NIVELES_SIN_DATO = 2;                       // si OSM no trae building:levels
 const RADIO_SOMBRA = 60;                          // m: a menos de esto del 106 (huella a huella) proyectan sombra
-const TIPOLOGIA_106 = new Set(['105', '102', '103']);   // cuarteles del cuadrángulo iguales al 106 (el usuario y Street View)
+const TIPOLOGIA_106 = new Set(['105', '102', '103', '101', '100', '107']);   // cuarteles iguales al 106 (el usuario y Street View)
+// largo medido en Open Buildings de los cuarteles que no miden lo que el 106 (45,5 m): la malla se estira a lo largo
+const LARGO_CUARTEL = { '100': 58.7 };
+// alturas de Open Buildings 2.5D (alturas_ob.py) para las huellas sin niveles en OSM
+const OB = JSON.parse(fs.readFileSync(path.join(AQUI, 'alturas_ob.json'), 'utf8')).edificios;
+const OB_CUBRE = 0.6;                              // fracción mínima de la huella con edificio en el dato para usar su altura
 const ID_FUNDACION = 300885892, ID_CASA = 300885896, ID_INNOVA = 300885897, ID_ATENEO = 300885895, ID_106 = 300885891;
 // la estructura pequeña del cuadrángulo, leída en el mapa de Google (captura del 29 sep 2026, ~3,7 px/m): 9,7 × 6,0 m,
 // paralela al 106, con centro a (−28,7; −24,0) m del centro del 106 en la escena
@@ -238,11 +247,13 @@ const mTipo = doc.createMesh('tipologia 106 reducida');
 for (const [mat, g] of Object.entries(tipo)) mTipo.addPrimitive(primitiva(mat, g.p, g.n, g.i));
 for (const b of osm.edificios.filter((e) => TIPOLOGIA_106.has(e.num))) {
   const s = cerca(b.poly);
+  const ang = b.ang + (b.largo < b.ancho ? 90 : 0);  // la huella del 100 tiene el lado largo a lo ancho del 106
   const nodo = doc.createNode(`cuartel ${b.num}${b.nombre ? ' · ' + b.nombre : ''} (OSM ${b.id})`).setMesh(mTipo)
-    .setTranslation([b.centro[0], 0, b.centro[1]]).setRotation([0, Math.sin(-b.ang * rad / 2), 0, Math.cos(-b.ang * rad / 2)]);
+    .setTranslation([b.centro[0], 0, b.centro[1]]).setRotation([0, Math.sin(-ang * rad / 2), 0, Math.cos(-ang * rad / 2)]);
+  if (LARGO_CUARTEL[b.num]) nodo.setScale([LARGO_CUARTEL[b.num] / 45.5, 1, 1]);
   if (s) nodo.setExtras({ sombra: true });
   raiz.addChild(nodo);
-  resumen.cuarteles.push(`${b.num} (${b.centro.map((v) => v.toFixed(1)).join(', ')}) giro ${b.ang.toFixed(2)}°${s ? ', proyecta sombra' : ''}`);
+  resumen.cuarteles.push(`${b.num} (${b.centro.map((v) => v.toFixed(1)).join(', ')}) giro ${ang.toFixed(2)}°${LARGO_CUARTEL[b.num] ? `, ${LARGO_CUARTEL[b.num]} m de largo` : ''}${s ? ', proyecta sombra' : ''}`);
 }
 
 // volúmenes propios: cerca (proyectan sombra) y lejos
@@ -332,9 +343,10 @@ for (const b of osm.edificios) {
     const cumbrera = M.cuatroAguas(c[0], c[1], v1 - vF, u1 - u0, b.ang + 90, H_ATENEO, 0.8, 15);
     resumen.volumenes.push(`Teatro Ateneo (OSM ${b.id}): sala de ${H_ATENEO} m, cumbrera ${cumbrera.toFixed(1)} m, frente de ${H_ATENEO_FRENTE} m (ESTIMADAS)`);
   } else {
-    const niv = b.niveles ?? NIVELES_SIN_DATO, h = niv * PISO + BASE;
+    const ob = !b.niveles && OB[b.id]?.cubre >= OB_CUBRE ? OB[b.id] : null;
+    const niv = b.niveles ?? NIVELES_SIN_DATO, h = ob ? ob.p90 : niv * PISO + BASE;
     M.prisma('maqueta', P, 0, h);
-    resumen.volumenes.push(`${b.num || '—'} ${b.nombre || ''} (OSM ${b.id}): maqueta de ${h.toFixed(2)} m (${niv} niveles${b.niveles ? ' de OSM' : ', sin dato'}; ESTIMADA)`);
+    resumen.volumenes.push(`${b.num || '—'} ${b.nombre || ''} (OSM ${b.id}): maqueta de ${h.toFixed(2)} m (${ob ? 'Open Buildings p90' : niv + ' niveles' + (b.niveles ? ' de OSM' : ', sin dato')}; ESTIMADA)`);
   }
   if (s) resumen.sombra.push(`${b.num || b.id} ${b.nombre || ''} (a ${distanciaPoligonos(b.poly, P106).toFixed(1)} m)`);
 }
