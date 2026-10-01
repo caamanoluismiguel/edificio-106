@@ -1,10 +1,10 @@
 // Barcos ILUSTRATIVOS por el canal: no son la posición real de ningún barco. Siguen los dos ejes del canal por las esclusas
 // de Miraflores (canal-rutas.js, de OSM), uno por vía, en sentidos contrarios, con la hora de la escena.
 // Lo que sí sale de fuentes (Autoridad del Canal de Panamá, consultadas el 1 de octubre de 2026):
-//  · tamaño máximo en las esclusas Panamax: 294,13 m de largo y 32,31 m de manga (Aviso a la Navegación N-1-2024,
+//  · buque Panamax según la ACP: hasta 294,13 m de eslora y 32,31 m de manga (OP Notice to Shipping N-1-2024, 1.p,
 //    https://pancanal.com/wp-content/uploads/2021/08/N01-2024-Vessel-Requirements-AC.pdf); aquí, 290 × 32 m y uno de 225 m;
-//  · ritmo: unos 23 a 25 tránsitos Panamax al día por Miraflores (ACP: 7.633 Panamax entre octubre de 2025 y julio de 2026, y
-//    23 cupos Panamax diarios desde el 15 de septiembre de 2026); aquí, uno por hora en cada vía (24 al día);
+//  · ritmo: unos 25 tránsitos Panamax al día (ACP: 7.633 entre octubre de 2025 y julio de 2026) y 23 cupos de reserva diarios
+//    en las esclusas Panamax desde el 15 de septiembre de 2026 (ADV-29-2026); aquí, uno cada dos horas en cada vía (24 al día);
 //  · las dos vías de las esclusas pueden ir en sentidos contrarios a la vez (ACP, «Design of the locks»).
 // Sin fuente primaria (estimados, solo para el dibujo): la altura sobre el agua (casco ~8 m, contenedores hasta ~24 m, puente
 // ~35 m), la velocidad (5 nudos en los canales de acceso, ~0,8 nudos de promedio dentro de las esclusas, con la espera del
@@ -17,7 +17,7 @@ import { RUTAS_CANAL } from './canal-rutas.js';
 const NUDO = 0.5144;                                  // m/s
 const V_CANAL = 5 * NUDO, V_ESCLUSA = 0.8 * NUDO;
 const Z_ESCLUSAS = [-670, 110];                       // las cámaras de Miraflores, en Z de la escena (entorno-osm.mjs)
-const CADA = 60;                                      // min entre barcos en cada vía
+const CADA = 120;                                     // min entre barcos en cada vía: 12 por vía, 24 al día entre las dos
 
 function mulberry(a) { return () => { a |= 0; a = a + 0x6d2b79f5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
