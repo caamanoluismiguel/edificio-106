@@ -176,7 +176,7 @@ async function arrancar() {
   controls.addEventListener('start', alTomar);
   U.vaiven.value = reduce ? 0 : 1;
   // gancho para las comprobaciones automáticas (fuente/verificar.mjs): solo existe con ?prueba en la URL
-  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, VISTAS, VISTA_FACHADA, posicionSol };
+  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, enlaceMomento, VISTAS, VISTA_FACHADA, posicionSol };
 
   const bytes = {};
   escena.cargar(BASE, (g, l, t) => {
@@ -304,12 +304,39 @@ function mostrarOferta() {
 }
 function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = true; clearTimeout(mostrarOferta.t); }
 
-/** Enlace directo a un momento: #m-AAAAMMDD-HHMM (p. ej. #m-20240724-1745). */
+/** Enlace directo a un momento: #m-AAAAMMDD-HHMM y, opcionales, lo que se está mirando:
+ *  &lente=sol|lluvia|viento|sombras|partes|foto &modo=… &vista=esquina|aerea|planta o &fachada=se|no|ne|so &parte=… y
+ *  &cam=x,y,z,tx,ty,tz (posición y punto de mira de la cámara, en m). Ej.: #m-20240325-1530&lente=sol&modo=total&vista=aerea.
+ *  Los enlaces viejos, solo con la fecha y la hora, siguen valiendo. */
 function irAMomentoHash() {
-  const r = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})$/.exec(location.hash); if (!r) return false;
-  const [, y, mo, d, hh, mi] = r.map(Number);
-  viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi });
+  const r = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(?:&(.*))?$/.exec(location.hash); if (!r) return false;
+  const [y, mo, d, hh, mi] = r.slice(1, 6).map(Number), q = new URLSearchParams(r[6] ?? '');
+  const lente = LENTES[q.get('lente')] ? q.get('lente') : undefined;
+  const modo = lente && MODOS[lente]?.some(([k]) => k === q.get('modo')) ? q.get('modo') : undefined;
+  const fachada = FACHADAS['fachada-' + q.get('fachada')] ? q.get('fachada') : undefined;
+  const vista = !fachada && VISTAS[q.get('vista')] ? q.get('vista') : undefined;
+  const cam = (q.get('cam') ?? '').split(',').map(Number);
+  viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, fachada, vista });
+  if (lente === 'partes' && PARTES[q.get('parte')]) elegirParte(q.get('parte'));
+  if (cam.length === 6 && cam.every(Number.isFinite)) volarA({ pos: cam.slice(0, 3), tgt: cam.slice(3) }, 1.4, vista ?? null, false);
   return true;
+}
+/** El enlace del momento que se está viendo, con la forma de ver, su modo, la vista o la fachada y el encuadre de la cámara. */
+function enlaceMomento() {
+  const f = S.fecha, m0 = ((Math.round(S.min) % 1440) + 1440) % 1440, q = [];
+  if (S.lente && S.lente !== 'foto') q.push('lente=' + S.lente);
+  if (MODO_DE[S.lente] && S[MODO_DE[S.lente]]) q.push('modo=' + S[MODO_DE[S.lente]]);
+  if (S.lente === 'partes' && S.parte) q.push('parte=' + S.parte);
+  const vistaB = document.querySelector('.vistas [data-vista][aria-pressed="true"]');
+  if (S.fachada) q.push('fachada=' + S.fachada.slice(8)); else if (vistaB) q.push('vista=' + vistaB.dataset.vista);
+  const c = escena.camera.position, t = controls.target, r1 = (x) => Math.round(x * 10) / 10;
+  q.push('cam=' + [c.x, c.y, c.z, t.x, t.y, t.z].map(r1).join(','));
+  return `${SITIO}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
+}
+async function copiarEnlace() {
+  const u = enlaceMomento(), est = $('#img-estado');
+  try { await navigator.clipboard.writeText(u); est.textContent = 'Enlace copiado: abre este mismo momento, con la misma forma de ver y el mismo encuadre.'; }
+  catch (e) { prompt('Copia este enlace:', u); }
 }
 
 // ---------------- Viaje en el tiempo ----------------
@@ -1127,6 +1154,7 @@ function prepararUI() {
   }));
   $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; anunciar(); });
   $('#guardar-img').addEventListener('click', guardarImagen);
+  $('#copiar-enlace').addEventListener('click', copiarEnlace);
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   // exposición larga: la alternativa a la noche honesta; se rotula en la escena mientras está activa
@@ -1738,7 +1766,7 @@ async function guardarImagen() {
   b.setAttribute('aria-busy', 'true'); b.disabled = true; b.textContent = 'Generando imagen…'; est.textContent = '';
   try {
     const f = S.fecha, m0 = ((Math.round(S.min) % 1440) + 1440) % 1440, hh = Math.floor(m0 / 60), mi = m0 % 60;
-    const enlace = `${SITIO}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(hh)}${dos(mi)}`;
+    const enlace = enlaceMomento();                    // el QR abre este mismo momento, forma de ver y encuadre
     const L = LENTES[S.lente], modo = MODOS[S.lente]?.find(([k]) => k === S[MODO_DE[S.lente]])?.[1];
     const forma = L.t.split(':')[0] + (modo ? ` · ${modo}` : '') + (S.lente === 'partes' ? ` · ${(PARTES[S.parte] ?? PARTES.alero).t}` : '');
     const vistaB = document.querySelector('.vistas [data-vista][aria-pressed="true"]');

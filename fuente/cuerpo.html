@@ -480,6 +480,7 @@
   .capas-pie { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
   #motor { color: var(--cal); letter-spacing: 0.04em; }
   .lamina { display: grid; gap: 8px; justify-items: start; }
+  .lamina-botones { display: flex; flex-wrap: wrap; gap: 8px; }
   #guardar-img { min-height: 44px; padding: 10px 16px; border-color: var(--sol); color: var(--sol); }
   #guardar-img[aria-busy="true"] { opacity: .7; cursor: progress; }
   .lamina-nota { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--cal-2); }
@@ -1081,8 +1082,8 @@
   </div>
   <div class="lamina">
     <h3>Para la lámina</h3>
-    <button class="boton" id="guardar-img" type="button">Guardar imagen (PNG)</button>
-    <p class="lamina-nota">Descarga lo que ves en la escena, a 2.400 px en el lado largo aunque tu pantalla sea pequeña, con un pie: fecha y hora, forma de ver, fachada o vista, la leyenda de color y un código QR que abre este mismo momento.</p>
+    <div class="lamina-botones"><button class="boton" id="guardar-img" type="button">Guardar imagen (PNG)</button><button class="boton" id="copiar-enlace" type="button">Copiar enlace</button></div>
+    <p class="lamina-nota">Descarga lo que ves en la escena, a 2.400 px en el lado largo aunque tu pantalla sea pequeña, con un pie: fecha y hora, forma de ver, fachada o vista, la leyenda de color y un código QR que abre este mismo momento. «Copiar enlace» da la dirección de lo que ves: fecha y hora, forma de ver, vista o fachada y el encuadre, para proyectarlo en clase o entregarlo como evidencia.</p>
     <p id="img-estado" class="lamina-nota" role="status"></p>
   </div>
   <p class="capas-pie">Motor de dibujo en este navegador: <span id="motor">…</span></p>
