@@ -90,11 +90,17 @@ export class Barcos {
     const mat = new THREE.MeshStandardNodeMaterial({ vertexColors: true, roughness: 0.8, metalness: 0 });
     this.modelos = { contenedores: [casco('contenedores', 106), casco('contenedores', 107)], gas: [casco('gas', 108)] };
     // dos barcos por vía (el que entra y el que sale): bastan, porque cada uno tarda más o menos lo que hay entre dos
-    this.barcos = [];
+    // cada lugar tiene una malla por modelo y se muestra la que toca: cambiar la geometría de una malla ya dibujada deja a
+    // WebGPU con el búfer de vértices del modelo anterior (error de validación al dibujar)
+    this.barcos = []; this.lugares = [];
     for (let v = 0; v < this.rutas.length; v++) for (let k = 0; k < 2; k++) {
-      const m = new THREE.Mesh(this.modelos.contenedores[0], mat);
-      m.castShadow = false; m.receiveShadow = false; m.visible = false; m.userData = { via: v };
-      scene.add(m); this.barcos.push(m);
+      const lugar = {};
+      for (const [tipo, lista] of Object.entries(this.modelos)) lugar[tipo] = lista.map((g) => {
+        const m = new THREE.Mesh(g, mat);
+        m.castShadow = false; m.receiveShadow = false; m.visible = false; m.userData = { via: v, tipo };
+        scene.add(m); this.barcos.push(m); return m;
+      });
+      this.lugares.push(lugar);
     }
     this.firma = '';
   }
@@ -110,14 +116,15 @@ export class Barcos {
       // los barcos de esta vía salen cada CADA min; se miran los dos más recientes que pueden seguir en la ruta
       const n0 = Math.floor((tAhora - desfase) / (CADA * 60));
       for (const n of [n0, n0 - 1]) {
-        const m = this.barcos[i++], t = tAhora - desfase - n * CADA * 60;
-        if (t < 0 || t > R.T) { m.visible = false; continue; }
+        const lugar = this.lugares[i++], t = tAhora - desfase - n * CADA * 60;
+        for (const lista of Object.values(lugar)) for (const b of lista) b.visible = false;
+        if (t < 0 || t > R.T) continue;
         const tt = ida ? t : R.T - t;
         let j = 1; while (j < R.t.length - 1 && R.t[j] < tt) j++;
         const f = (tt - R.t[j - 1]) / (R.t[j] - R.t[j - 1] || 1), a = R.r[j - 1], b = R.r[j];
         const x = a[0] + (b[0] - a[0]) * f, z = a[1] + (b[1] - a[1]) * f, y = a[2] + (b[2] - a[2]) * f;
         const tipo = ((n * 7 + v * 3 + dia) % 3 + 3) % 3 === 2 ? 'gas' : 'contenedores';
-        const lista = this.modelos[tipo]; m.geometry = lista[((n % lista.length) + lista.length) % lista.length];
+        const lista = lugar[tipo], m = lista[((n % lista.length) + lista.length) % lista.length];
         // proa hacia donde va: atan2 en el plano x-z (la geometría tiene la proa en +X)
         const dx = (b[0] - a[0]) * (ida ? 1 : -1), dz = (b[1] - a[1]) * (ida ? 1 : -1);
         m.position.set(x, y, z); m.rotation.set(0, -Math.atan2(dz, dx), 0);
