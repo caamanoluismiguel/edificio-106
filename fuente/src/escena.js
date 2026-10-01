@@ -474,7 +474,8 @@ export class Escena {
     fogC.lerp(new THREE.Color(g * 0.88, g * 0.92, g * 0.96), Math.max(lv, cubierto * 0.6));
     fogC.lerp(new THREE.Color(...H), nv);             // de noche, la niebla del color del horizonte
     this.scene.fog.color.copy(fogC);
-    this.scene.fog.near = 350 - 310 * lv; this.scene.fog.far = 2600 - 1900 * lv;
+    this._niebla = [350 - 310 * lv, 2600 - 1900 * lv];
+    this.scene.fog.near = this._niebla[0] * (this.alejamiento ?? 1); this.scene.fog.far = this._niebla[1] * (this.alejamiento ?? 1);
     this.sky.cloudCoverage.value = Math.min(1, Math.max(U.nubeCob.value, lv));
     this.sky.cloudDensity.value = 0.45 + 0.5 * lv;
     this.sky.turbidity.value = 7 + 5 * lv;
@@ -1221,6 +1222,15 @@ export class Escena {
     const splash = new THREE.InstancedMesh(ring, ms, NS);
     splash.frustumCulled = false; splash.renderOrder = 19;
     this.scene.add(splash); this.salpicaduras = splash;
+  }
+
+  /** Con la cámara más lejos que 360 m (el alcance de antes), la neblina se corre en proporción: desde lejos se sigue viendo
+   *  el entorno (el canal, a 1,5 a 2 km de la cámara). Hasta 360 m la neblina queda igual que siempre. */
+  setAlejamiento(dist) {
+    const k = Math.max(1, dist / 360); if (Math.abs(k - (this.alejamiento ?? 1)) < 0.01) return;
+    this.alejamiento = k;
+    if (this._niebla) { this.scene.fog.near = this._niebla[0] * k; this.scene.fog.far = this._niebla[1] * k; }
+    this.sucio = true;
   }
 
   render() {

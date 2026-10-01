@@ -496,6 +496,7 @@ function paso(now) {
     controls.update(dt);
   }
 
+  escena.setAlejamiento(escena.camera.position.distanceTo(controls.target));
   // barcos ilustrativos: con «Ahora», el reloj real (al segundo); si no, la hora de la escena. Durante la intro no están.
   if (escena.barcos) {
     if (intro) { for (const b of escena.barcos.barcos) b.visible = false; escena.barcos.firma = ''; }
