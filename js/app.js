@@ -37780,13 +37780,13 @@ function qW(e) {
 }
 function JW() {
 	let e = Q.fecha, { sale: t, pone: n } = IB(e.y, e.m, e.d), r = PB(e.y, e.m, e.d), i = "";
-	for (let t = 0; t <= 1440; t += 20) {
+	for (let t = 0; t < 24; t++) {
 		let n = qW(MB({
 			...e,
 			h: 0,
-			min: t
+			min: t * 60 + 30
 		}).alt);
-		i += `<stop offset="${(t / 1440).toFixed(4)}" stop-color="rgb(${n})"></stop>`;
+		i += `<stop offset="${(t / 24).toFixed(4)}" stop-color="rgb(${n})"></stop><stop offset="${((t + 1) / 24).toFixed(4)}" stop-color="rgb(${n})"></stop>`;
 	}
 	Z("#grad-dia").innerHTML = i;
 	let a = "";
@@ -38059,7 +38059,17 @@ function iG() {
 		});
 	}));
 	let i = (e) => {
-		Z("#ir-a").hidden = !e, Z("#elegir").setAttribute("aria-expanded", String(e)), Z("#abrir-ir").setAttribute("aria-expanded", String(e)), e && (HU(), MG(!1)), e && (Z("#capas").hidden = !0, Z("#abrir-capas").setAttribute("aria-expanded", "false")), e && (Z("#ir-fecha").value = pU(Q.fecha), Z("#ir-hora").value = iU(Q.min), mK(), innerWidth > 760 && Z("#ir-fecha").focus());
+		if (Z("#ir-a").hidden = !e, Z("#elegir").setAttribute("aria-expanded", String(e)), Z("#abrir-ir").setAttribute("aria-expanded", String(e)), e && (HU(), MG(!1)), e && (Z("#capas").hidden = !0, Z("#abrir-capas").setAttribute("aria-expanded", "false")), e) {
+			{
+				let e = cU(), t = new Date(Date.UTC(e.y, e.m - 1, e.d + 15));
+				Z("#ir-fecha").max = pU({
+					y: t.getUTCFullYear(),
+					m: t.getUTCMonth() + 1,
+					d: t.getUTCDate()
+				});
+			}
+			Z("#ir-fecha").value = pU(Q.fecha), Z("#ir-hora").value = iU(Q.min), mK(), innerWidth > 760 && Z("#ir-fecha").focus();
+		}
 	};
 	globalThis.__abrirIr = i, Z("#abrir-confort").addEventListener("click", () => nK(Z("#confort").hidden)), Z("#cerrar-confort").addEventListener("click", () => nK(!1)), Z("#elegir").addEventListener("click", () => i(Z("#ir-a").hidden)), Z("#abrir-ir").addEventListener("click", () => i(Z("#ir-a").hidden)), Z("#ir-fecha").addEventListener("change", () => {
 		let [e, t] = Z("#ir-fecha").value.split("-").map(Number);
@@ -38266,9 +38276,9 @@ var mG = {
 			"mucho"
 		],
 		que: "En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.",
-		leer: "«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril, según el IMHPA; diciembre es de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.",
+		leer: "«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril; para el IMHPA, diciembre y abril son meses de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.",
 		prueba: "Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 12 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.",
-		porque: "Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.",
+		porque: "Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.",
 		ojo: "Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). En las superficies oblicuas el color mezcla el de dos fachadas vecinas.",
 		tec: "Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos."
 	},
@@ -39060,7 +39070,7 @@ function KG(e, t, n) {
 		if (n.fuente === "tipico") return ["El tiempo: valores típicos", `Para esta fecha no hay dato de esa hora, así que se muestra lo típico: la mediana de 2001–2025 para ${QH[Q.fecha.m - 1]} a esta hora. ${tU(n.temp)} °C y ${Math.round(n.nubes)} % del cielo con nubes; llueve en el ${Math.round(n.probLluvia)} % de estas horas. Entre 2001 y 2025 hay dato de cada hora; desde 1940 se consulta en línea.`];
 		if (n.fuente === "mes") return ["La lluvia del mes", `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(n.lluviaMes)} mm, es decir, ${Math.round(n.lluviaMes)} litros por metro cuadrado. Un ${QH[Q.fecha.m - 1]} típico tiene ${Math.round(DU.r.climMensual[Q.fecha.m - 1])} mm.`];
 		let e = VB(t.alt), r = [`${tU(n.temp)} °C de temperatura del aire`, `${Math.round(n.nubes)} % del cielo cubierto de nubes`];
-		n.dni != null && t.alt > 2 && r.push(`${nU(Math.round(n.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${nU(Math.round(e / 10) * 10)} W/m², según el modelo sencillo de Meinel, 1976)`);
+		n.dni != null && t.alt > 2 && r.push(`${nU(Math.round(n.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${nU(Math.round(e / 10) * 10)} W/m², según el modelo sencillo de Meinel y Meinel, 1976)`);
 		let i = n.lluvia ?? 0, a = i >= .1 ? `Llueven ${tU(i)} mm en la hora: ${tU(i)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : "No llueve a esa hora.";
 		return ["El tiempo de esa hora", `${r.join(", ")}. ${a} ${n.fuente === "vivo" ? "Es el pronóstico de modelo de Open-Meteo para ahora." : "Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer."}`];
 	}
@@ -39218,7 +39228,7 @@ function JG() {
 		},
 		{
 			t: "El viento",
-			txt: "La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas dos de cada tres horas del año sopla entre el oeste noroeste y el norte, y la fachada noroeste lo recibe de frente unas 5.900 horas al año.",
+			txt: "La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas dos de cada tres horas del año sopla entre el oeste noroeste y el norte, y la fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año.",
 			dis: "Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.",
 			pre: "Acabas de ver cuál pared se moja más con la lluvia. Con esa pista, ¿de qué lado crees que llega el viento cuando llueve? ¿Y qué pared lo recibe de frente?",
 			antes: () => {

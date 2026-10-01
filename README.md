@@ -12,16 +12,16 @@ Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad
 
 Algunos resultados que salen del propio visor, con su momento para verlo en la escena («Para qué sirve»):
 
-- **Dos días al año el sol del mediodía no deja sombra.** A 9° N pasa por el cenit en abril y en agosto (en 2026, el 12 de abril y el 29 de agosto, a las 12:19). Entre esas dos fechas el sol del mediodía va por el norte, así que de abril a agosto la cara norte también necesita protección.
+- **Dos días al año el sol del mediodía casi no deja sombra.** A 9° N pasa por el cenit en abril y en agosto (en 2026, el 12 de abril y el 29 de agosto, a las 12:19). Entre esas dos fechas el sol del mediodía va por el norte, así que de abril a agosto las caras NO y NE también necesitan protección.
 - **Ninguna fachada se libra del sol.** Por el giro de 56° del edificio, las cuatro reciben sol de frente todos los días del año. Sin descontar nubes, la sureste unas 2.500 horas al año y la noroeste unas 1.900.
 - **El alero de 1,65 m hace lo que promete con el sol alto.** Con el sol cerca del cenit, el vidrio bajo el alero queda en sombra mientras la pared sigue al sol.
-- **El calor de la tarde llega por la fachada lateral suroeste.** En las horas de 30 °C o más (unas 440 al año), el sol está frente a la SO en el 78 % de ellas.
-- **El viento llega casi siempre del norte y el noroeste.** La fachada noroeste lo recibe de frente unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la entrada natural para ventilar de forma cruzada.
-- **Llueve unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En el total anual ERA5 da entre 6 y 8 % más que Tocumen, Balboa y Albrook. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
+- **El calor de la tarde llega por la fachada lateral suroeste.** En las horas de 30 °C o más (unas 440 al año), el sol está del lado de la SO en el 78 % de ellas.
+- **El viento llega casi siempre del norte y el noroeste.** La fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la entrada natural para ventilar de forma cruzada.
+- **Llueve unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En 2001–2010 ERA5 da entre 6 y 9 % más que Balboa y Albrook; con Tocumen coincide (0,4 %) si se deja fuera 2009, que el INEC da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
 
 ## Qué se puede hacer
 
-- **Ahora:** el sol de este minuto y el pronóstico de Open-Meteo, que se renueva cada 15 minutos.
+- **Ahora:** el sol de este minuto y el pronóstico de Open-Meteo, con valores cada 15 minutos interpolados; el modelo se actualiza varias veces al día.
 - **Máquina del tiempo:** recorrer un día, un año o los 25 años. La regla del día marca la lluvia y las nubes de cada hora.
 - **Ir a…:** cualquier fecha y hora desde 1940, o un momento calculado con la serie: los días sin sombra, los solsticios, la hora más lluviosa en 25 años, la sequía más larga, el día con más sol y un día típico de cada mes.
 - **Formas de ver:** Foto; Sol (la radiación que incide en cada punto, con la sombra real de los aleros, los árboles y los vecinos); Lluvia (lluvia con viento según ISO 15927-3); Viento (rosa de vientos por temporada); Sombras (la sombra de cada hora sobre el terreno); Partes (el nombre de cada parte del edificio, qué es y qué hace, con una persona de 1,70 m para comparar). Cada una explica qué se ve, cómo leerlo, sus límites y cómo se calcula.
@@ -48,7 +48,7 @@ Cómo está hecho: MindAR solo reconoce el plano y three.js dibuja la escena en 
 ## Qué no es
 
 - **No es un levantamiento.** La escala del modelo tiene ±12 % y las ventanas de los pisos 2 y 3 son inferidas.
-- **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta la lluvia de la tarde y achica la diferencia entre el día y la noche (en la estación seca oscila de 4 a 6 °C, y Tocumen, de 11 a 16 °C).
+- **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta la lluvia de la tarde y achica la diferencia entre el día y la noche: en la estación seca su máxima y su mínima diarias se separan de 4 a 6 °C, menos de lo que mide una estación en tierra.
 - **No calcula el interior.** Ni temperatura, ni confort, ni ventilación dentro del aula (eso pide una simulación de fluidos). La página dice qué usar en cada caso: EnergyPlus o Ladybug Tools con el archivo de clima de Albrook.
 - **No es el canal en vivo.** Los barcos no son la posición real de ningún barco: siguen el eje del canal de OpenStreetMap a un ritmo cercano al promedio de la ACP. Los edificios del entorno son volúmenes con altura estimada (OpenStreetMap, Open Buildings o Street View) y el relieve lejano tiene errores de algunos metros.
 - **No dimensiona desagües.** Para eso hacen falta curvas de intensidad de lluvia de una estación cercana.
@@ -65,7 +65,7 @@ Lo genera `cd fuente && node contexto.mjs`, siempre igual a partir de los datos 
 
 | Pieza | Datos | Script |
 |---|---|---|
-| Vecinos cercanos (cuarteles, La Casa, Innova, Ateneo, Fundación) | `fuente/osm.json` + lecturas de Street View | `contexto.mjs`, `contexto-osm.mjs` |
+| Vecinos cercanos (cuarteles, el salón de enfrente, Innova, Ateneo, Fundación) | `fuente/osm.json` + lecturas de Street View | `contexto.mjs`, `contexto-osm.mjs` |
 | Ciudad del Saber entera, avenida, ferrocarril, agua del canal y esclusas | `fuente/osm-amplio.json` (Overpass, 1 oct 2026) | `entorno-osm.mjs` |
 | Alturas sin niveles en OSM | `fuente/alturas_ob.json` | `alturas_ob.py` (Google Open Buildings 2.5D, 2023) |
 | Relieve | `fuente/relieve.json` | `relieve.py` (Copernicus DEM GLO-30, filtrado a suelo) |
@@ -106,7 +106,7 @@ Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para baja
 - Reda, I. y Andreas, A. (2004). Solar position algorithm for solar radiation applications. *Solar Energy*, 76(5), 577–589. doi:10.1016/j.solener.2003.12.003
 - Hay, J. E. y Davies, J. A. (1980). Calculation of the solar radiation incident on an inclined surface. En J. E. Hay y T. K. Won (eds.), *Proceedings of the First Canadian Solar Radiation Data Workshop* (pp. 59–72). Toronto.
 - Duffie, J. A. y Beckman, W. A. (2013). *Solar Engineering of Thermal Processes* (4.ª ed.). Wiley.
-- Olgyay, V. y Olgyay, A. (1957). *Solar Control and Shading Devices*. Princeton University Press.
+- Olgyay, A. y Olgyay, V. (1957). *Solar Control and Shading Devices*. Princeton University Press.
 
 **Lluvia con viento**
 - ISO 15927-3:2009. *Hygrothermal performance of buildings. Calculation and presentation of climatic data. Part 3: Calculation of a driving rain index for vertical surfaces from hourly wind and rain data.*
@@ -123,10 +123,10 @@ Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para baja
 - Se revisó y no se usa Cedeño et al. (2022), *Novasinergia*: su simulación de aulas probó tasas de ventilación por debajo del mínimo que ella misma calcula.
 
 **El lugar**
-- Enscore, S. I., Johnson, S. P., Webster, J. L. y Cohen, G. L. (2000). *Guarding the Gates: The Story of Fort Clayton*. U.S. Army Construction Engineering Research Laboratory (CERL). [DTIC ADA388262](https://archive.org/details/DTIC_ADA388262). En sus planos de los años 30, el número 106 era un galpón de madera para equipo de artillería (fig. 3.46): la numeración actual puede no corresponder al mismo edificio, y este repositorio no afirma año de construcción, uso original ni autor del 106.
-- Gordón, C. A. (2021). [Fort Clayton: procesos de cambio urbano](https://www.laestrella.com.pa/panama/nacional/fort-clayton-procesos-cambio-urbano-PILE459512). *La Estrella de Panamá*.
+- Enscore, S. I., Johnson, S. P., Webster, J. L. y Cohen, G. L. (2000). *Guarding the Gates: The Story of Fort Clayton*. U.S. Army Construction Engineering Research Laboratory (CERL). [DTIC ADA388262](https://archive.org/details/DTIC_ADA388262). En sus planos de los años 30, el número 106 era un galpón para el equipo de una batería de artillería (fig. 3.46): la numeración actual puede no corresponder al mismo edificio, y este repositorio no afirma año de construcción, uso original ni autor del 106.
+- Gordón, C. A. (2021). [Fort Clayton: procesos de cambio urbano, militar y tecnológico en la antigua Zona del Canal](https://www.laestrella.com.pa/panama/nacional/fort-clayton-procesos-cambio-urbano-PILE459512). *La Estrella de Panamá*, 20 de noviembre de 2021.
 - Fundación Ciudad del Saber: [Historia](https://ciudaddelsaber.org/historia) y [Conoce el campus](https://ciudaddelsaber.org/conoce-el-campus). Isthmus: [isthmus.edu.pa](https://isthmus.edu.pa/ciudad-del-saber/).
-- Huellas de los edificios vecinos © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), en `fuente/osm.json`; `fuente/contexto.mjs` genera `modelo/contexto.glb` alineando OSM con el 106 del modelo. Las alturas de los vecinos son estimadas: los cuarteles que repiten el volumen del 106 (los del cuadrángulo, el 101 y los dos de Balboa Academy, el 100 y el 107) se vieron en Street View, igual que La Casa (~7 m a la cumbrera), Innova (11 m) y el Ateneo (10 m); el resto lleva los niveles de OSM o, si OSM no los trae, la altura de Open Buildings.
+- Huellas de los edificios vecinos © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), en `fuente/osm.json`; `fuente/contexto.mjs` genera `modelo/contexto.glb` alineando OSM con el 106 del modelo. Las alturas de los vecinos son estimadas: los cuarteles que repiten el volumen del 106 (los del cuadrángulo, el 101 y los dos de Balboa Academy, el 100 y el 107) se vieron en Street View, igual que el salón de un piso de enfrente (~7 m a la cumbrera), Innova (11 m) y el Ateneo (10 m); el resto lleva los niveles de OSM o, si OSM no los trae, la altura de Open Buildings.
 - Google Research. *Open Buildings 2.5D Temporal* v1, 2023 (CC BY 4.0): alturas estimadas desde satélite para los vecinos sin niveles en OSM. `fuente/alturas_ob.py` las extrae a `fuente/alturas_ob.json`. En el 106 da alrededor de un metro menos que la cumbrera real.
 - Entorno ampliado © colaboradores de OpenStreetMap (ODbL): calles, ferrocarril, agua y edificios de Ciudad del Saber, la Avenida Omar Torrijos Herrera y el canal hasta las esclusas de Miraflores, en `fuente/osm-amplio.json` (Overpass, base del 1 de octubre de 2026), leído por `fuente/entorno-osm.mjs`.
 - Copernicus Digital Elevation Model (DEM) GLO-30, accedido el 1 de octubre de 2026 desde https://registry.opendata.aws/copernicus-dem; produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. Es un modelo de superficie (techos y árboles); `fuente/relieve.py` lo filtra a un suelo aproximado, con errores de algunos metros, en `fuente/relieve.json`. Junto al 106 el terreno sigue plano.

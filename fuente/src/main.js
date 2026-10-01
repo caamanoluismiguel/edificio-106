@@ -934,7 +934,8 @@ function colorCielo(alt) {
 function dibujarReglas() {
   const f = S.fecha, { sale, pone } = saleYPone(f.y, f.m, f.d), md = mediodiaSolar(f.y, f.m, f.d);
   let stops = '';
-  for (let m = 0; m <= 1440; m += 20) { const c = colorCielo(posicionSol({ ...f, h: 0, min: m }).alt); stops += `<stop offset="${(m / 1440).toFixed(4)}" stop-color="rgb(${c})"></stop>`; }
+  // franjas planas de una hora (el color del cielo a la media hora), sin degradado: cada franja empieza y termina con el mismo color
+  for (let h = 0; h < 24; h++) { const c = colorCielo(posicionSol({ ...f, h: 0, min: h * 60 + 30 }).alt); stops += `<stop offset="${(h / 24).toFixed(4)}" stop-color="rgb(${c})"></stop><stop offset="${((h + 1) / 24).toFixed(4)}" stop-color="rgb(${c})"></stop>`; }
   $('#grad-dia').innerHTML = stops;
   let t = '';
   for (let h = 0; h <= 24; h++) { const x = h / 24 * 1000; t += `<line class="tick" x1="${x}" x2="${x}" y1="24" y2="${h % 6 === 0 ? 32 : 28}"></line>`; }
@@ -1126,6 +1127,7 @@ function prepararUI() {
     if (abrir) { cerrarOferta(); abrirVoladizo(false); }
     if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
+      { const a = ahoraPanama(), t = new Date(Date.UTC(a.y, a.m - 1, a.d + 15)); $('#ir-fecha').max = kf2({ y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() }); }   // el pronóstico llega a 15 días
       $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
       pintarConsultas(); if (innerWidth > 760) $('#ir-fecha').focus();
     }
@@ -1302,9 +1304,9 @@ const LENTES = {
     tec: 'Índice de lluvia batiente de la norma ISO 15927-3 en campo abierto: (2/9) · v · r^(8/9) · cos(D − θ), con v el viento a 10 m de altura (m/s), r la lluvia (mm/h), D de dónde viene el viento y θ hacia dónde mira la fachada. Datos ERA5, celda de unos 28 km.' },
   viento: { t: 'Viento: de dónde viene y qué fachada lo recibe de frente', rampa: rampaCSS(PAL.viento), esc: ['nada', '', 'mucho'],
     que: 'En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.',
-    leer: '«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril, según el IMHPA; diciembre es de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.',
+    leer: '«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril; para el IMHPA, diciembre y abril son meses de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.',
     prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 12 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.',
-    porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
+    porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). En las superficies oblicuas el color mezcla el de dos fachadas vecinas.',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos.' },
   sombras: { t: 'Sombras: la proyección de sombra del edificio en cada hora', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
@@ -1862,7 +1864,7 @@ function explicacion(k, p, c) {
     if (c.fuente === 'mes') return ['La lluvia del mes', `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(c.lluviaMes)} mm, es decir, ${Math.round(c.lluviaMes)} litros por metro cuadrado. Un ${MESES[S.fecha.m - 1]} típico tiene ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm.`];
     const dc = dniDespejado(p.alt);
     const partes = [`${f1(c.temp)} °C de temperatura del aire`, `${Math.round(c.nubes)} % del cielo cubierto de nubes`];
-    if (c.dni != null && p.alt > 2) partes.push(`${miles(Math.round(c.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${miles(Math.round(dc / 10) * 10)} W/m², según el modelo sencillo de Meinel, 1976)`);
+    if (c.dni != null && p.alt > 2) partes.push(`${miles(Math.round(c.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${miles(Math.round(dc / 10) * 10)} W/m², según el modelo sencillo de Meinel y Meinel, 1976)`);
     const ll = c.lluvia ?? 0;
     const txtLl = ll >= 0.1 ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : 'No llueve a esa hora.';
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? 'Es el pronóstico de modelo de Open-Meteo para ahora.' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer.'}`];
@@ -1905,7 +1907,7 @@ function pasosRecorrido() {
       pre: 'Cuando llueve con viento, el agua no cae derecha y moja unas paredes más que otras. ¿Cuál de las cuatro crees que se moja más?',
       antes: () => viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => { S.aguaModo = 'anio'; viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, fachada: 'no', lente: 'lluvia' }); } },
-    { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas dos de cada tres horas del año sopla entre el oeste noroeste y el norte, y la fachada noroeste lo recibe de frente unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
+    { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas dos de cada tres horas del año sopla entre el oeste noroeste y el norte, y la fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
       pre: 'Acabas de ver cuál pared se moja más con la lluvia. Con esa pista, ¿de qué lado crees que llega el viento cuando llueve? ¿Y qué pared lo recibe de frente?',
       antes: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'foto' }); },
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
