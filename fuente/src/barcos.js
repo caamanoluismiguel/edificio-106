@@ -9,14 +9,14 @@
 // Sin fuente primaria (estimados, solo para el dibujo): la altura sobre el agua (casco ~8 m, contenedores hasta ~24 m, puente
 // ~35 m), la velocidad (5 nudos en los canales de acceso, ~0,8 nudos de promedio dentro de las esclusas, con la espera del
 // llenado) y la mezcla de tipos (dos de cada tres, portacontenedores; el resto, un gasero como el de la foto del Holiday Inn).
-// El terreno del visor es plano: los barcos no suben ni bajan en las esclusas.
+// La altura del agua de cada punto de la ruta sale del Copernicus DEM GLO-30 (contexto.mjs): del nivel del mar al sur de
+// Miraflores al del Lago Miraflores al norte; en las esclusas el barco sube o baja de forma pareja mientras las cruza.
 import * as THREE from 'three/webgpu';
 import { RUTAS_CANAL } from './canal-rutas.js';
 
 const NUDO = 0.5144;                                  // m/s
 const V_CANAL = 5 * NUDO, V_ESCLUSA = 0.8 * NUDO;
 const Z_ESCLUSAS = [-670, 110];                       // las cámaras de Miraflores, en Z de la escena (entorno-osm.mjs)
-const AGUA = -0.45;                                   // el nivel del agua del entorno (contexto.mjs)
 const CADA = 60;                                      // min entre barcos en cada vía
 
 function mulberry(a) { return () => { a |= 0; a = a + 0x6d2b79f5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -115,12 +115,12 @@ export class Barcos {
         const tt = ida ? t : R.T - t;
         let j = 1; while (j < R.t.length - 1 && R.t[j] < tt) j++;
         const f = (tt - R.t[j - 1]) / (R.t[j] - R.t[j - 1] || 1), a = R.r[j - 1], b = R.r[j];
-        const x = a[0] + (b[0] - a[0]) * f, z = a[1] + (b[1] - a[1]) * f;
+        const x = a[0] + (b[0] - a[0]) * f, z = a[1] + (b[1] - a[1]) * f, y = a[2] + (b[2] - a[2]) * f;
         const tipo = ((n * 7 + v * 3 + dia) % 3 + 3) % 3 === 2 ? 'gas' : 'contenedores';
         const lista = this.modelos[tipo]; m.geometry = lista[((n % lista.length) + lista.length) % lista.length];
         // proa hacia donde va: atan2 en el plano x-z (la geometría tiene la proa en +X)
         const dx = (b[0] - a[0]) * (ida ? 1 : -1), dz = (b[1] - a[1]) * (ida ? 1 : -1);
-        m.position.set(x, AGUA, z); m.rotation.set(0, -Math.atan2(dz, dx), 0);
+        m.position.set(x, y, z); m.rotation.set(0, -Math.atan2(dz, dx), 0);
         m.visible = true;
       }
     }

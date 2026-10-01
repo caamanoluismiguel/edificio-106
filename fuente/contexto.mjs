@@ -40,7 +40,7 @@ import { dedup, prune, quantize, meshopt, weld } from '@gltf-transform/functions
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import { ShapeUtils, Vector2 } from 'three';
 import { osmRegistrado, distanciaPoligonos } from './contexto-osm.mjs';
-import { entornoRegistrado } from './entorno-osm.mjs';
+import { entornoRegistrado, relieve } from './entorno-osm.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const MODELO = path.join(AQUI, '..', 'modelo');
@@ -378,26 +378,60 @@ resumen.sombra.push(`estructura pequeña del cuadrángulo (a ${distanciaPoligono
 ML.quad('pasto', [-180, -0.12, -260], [-180, -0.12, -120], [180, -0.12, -120], [180, -0.12, -260], [0, 1, 0]);
 
 // ---------------- entorno ampliado: Ciudad del Saber entera, la avenida, el ferrocarril y el canal ----------------
-// Va en un nodo propio (su propia malla y su propia cuantización): los vecinos de arriba quedan exactamente como estaban.
-// El terreno es plano: el visor no tiene relieve. El agua, las calles y los edificios se apoyan en el suelo que haya en cada
-// lugar: el pasto del sitio (y ≈ 0, de ±180 m en X y ±160 m en Z), el pasto lejano del noroeste (−0,12) o el suelo lejano
-// de escena.js (−0,5). Dentro de las calles modeladas del sitio (X ±110, Z −135 a 95) no se agrega ninguna calle.
-const ent = entornoRegistrado();
-const ME = new Malla(), resEnt = { edificios: 0, alturaOB: 0, calles: 0, tren: 0, agua: 0 };
+// Va en nodos propios (su propia malla y su propia cuantización): los vecinos de arriba quedan exactamente como estaban.
+// Relieve: Copernicus DEM GLO-30 (relieve.py), relativo al suelo del 106. Alrededor del sitio y de los vecinos ya modelados
+// (MESETA) el terreno queda en −0,6 m, bajo el pasto del sitio; de ahí sube o baja hasta el relieve real en 200 m. Dentro
+// de las calles modeladas del sitio (X ±110, Z −135 a 95) no se agrega ninguna calle.
+const ent = entornoRegistrado(), rel = relieve();
+const ME = new Malla(), MT = new Malla(), resEnt = { edificios: 0, alturaOB: 0, calles: 0, tren: 0, agua: 0 };
 const enSitio = ([x, z]) => Math.abs(x) <= 180 && Math.abs(z) <= 160;
 const enPastoNO = ([x, z]) => Math.abs(x) <= 180 && z < -120 && z >= -260;
 const enCallesSitio = ([x, z]) => Math.abs(x) <= 110 && z >= -135 && z <= 95;
-const suelo = (p) => (enSitio(p) ? -0.015 : enPastoNO(p) ? -0.1 : -0.48);
-/** Cinta de ancho w sobre una línea (x, z), con uniones en inglete; cada tramo a la altura del suelo de su punto medio. */
+const MESETA = { x: 260, z0: -280, z1: 320, borde: 200 };
+const fueraMeseta = ([x, z]) => Math.max(Math.abs(x) - MESETA.x, MESETA.z0 - z, z - MESETA.z1, 0);
+const sst = (t) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
+// agua: el nivel de cada superficie (percentil 20 de la superficie del DEM dentro de ella, que sale pareja sobre el agua);
+// las cámaras de Miraflores van del nivel del mar (al sur) al del Lago Miraflores (al norte), en dos escalones
+const dentro = (P, x, z) => { let c = false; for (let i = 0, k = P.length - 1; i < P.length; k = i++) { const [xi, zi] = P[i], [xk, zk] = P[k]; if ((zi > z) !== (zk > z) && x < (xk - xi) * (z - zi) / (zk - zi) + xi) c = !c; } return c; };
+function nivel(P) {
+  const xs = P.map((p) => p[0]), zs = P.map((p) => p[1]), v = [];
+  const paso = Math.max(10, Math.min(60, (Math.max(...xs) - Math.min(...xs)) / 12));
+  for (let x = Math.min(...xs); x <= Math.max(...xs); x += paso) for (let z = Math.min(...zs); z <= Math.max(...zs); z += paso) if (dentro(P, x, z)) v.push(rel.superficie(x, z));
+  if (!v.length) v.push(...P.map(([x, z]) => rel.superficie(x, z)));
+  v.sort((a, b) => a - b); return v[Math.floor(v.length * 0.2)];
+}
+const ESCLUSAS = { z: [110, -668] };                     // sur y norte de las cámaras de Miraflores (OSM), en Z de la escena
+const aguas = ent.agua.map((a) => ({ ...a, nivel: nivel(a.exterior) }));
+const MAR = Math.min(...aguas.filter((a) => /^2314149$/.test(String(a.id)) || /Balboa/.test(a.nombre)).map((a) => a.nivel).concat([rel.superficie(-780, 993)]));
+const LAGO = aguas.find((a) => a.nombre === 'Lago Miraflores')?.nivel ?? rel.superficie(-1122, -1322);
+// el agua por tramos: el mar al sur, la cámara de abajo a medio camino, la de arriba y el lago al norte; en cada compuerta el
+// nivel pasa de uno a otro en 30 m (el barco sube o baja ahí, como si la cámara se llenara mientras cruza)
+const Z_MEDIO = (ESCLUSAS.z[0] + ESCLUSAS.z[1]) / 2, MEDIO = (MAR + LAGO) / 2;
+const rampa = (z, z0, a, b) => a + (b - a) * sst((z0 + 15 - z) / 30);
+const nivelCanal = (z) => z > Z_MEDIO + 100 ? rampa(z, ESCLUSAS.z[0], MAR, MEDIO) : rampa(z, Z_MEDIO, MEDIO, LAGO);
+// el terreno: mínimo entre el relieve y el agua de cada lugar (las orillas no tapan el agua)
+const terreno = (x, z) => {
+  const t = sst(fueraMeseta([x, z]) / MESETA.borde), real = rel.suelo(x, z);
+  let y = -0.6 * (1 - t) + real * t;
+  if (t > 0) for (const a of aguas) if (x >= a.caja[0] && x <= a.caja[1] && z >= a.caja[2] && z <= a.caja[3] && dentro(a.exterior, x, z)) y = Math.min(y, a.nivelY - 1.5);
+  return y;
+};
+for (const a of aguas) {
+  const xs = a.exterior.map((p) => p[0]), zs = a.exterior.map((p) => p[1]);
+  a.caja = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)];
+  a.nivelY = /Esclusas de Miraflores/.test(a.nombre) ? Math.min(nivelCanal(a.caja[2]), nivelCanal(a.caja[3])) : a.nivel;
+}
+const suelo = (p) => (enSitio(p) ? -0.015 : enPastoNO(p) ? -0.1 : terreno(p[0], p[1]) + 0.08);
+/** Cinta de ancho w sobre una línea (x, z), con uniones en inglete; cada punta a la altura del suelo de su lugar. */
 function cinta(M, mat, L, w, dy = 0) {
   for (let i = 0; i + 1 < L.length; i++) {
     const a = L[i], b = L[i + 1], m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     if (enCallesSitio(m)) continue;
     const dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz); if (l < 0.05) continue;
-    const nx = -dz / l * w / 2, nz = dx / l * w / 2, y = suelo(m) + dy;
+    const nx = -dz / l * w / 2, nz = dx / l * w / 2, ya = suelo(a) + dy, yb = suelo(b) + dy;
     // se alarga medio ancho en cada punta para que los tramos se solapen en las curvas (mismo color: no se nota)
     const ex = dx / l * w / 2, ez = dz / l * w / 2;
-    M.quad(mat, [a[0] - ex + nx, y, a[1] - ez + nz], [b[0] + ex + nx, y, b[1] + ez + nz], [b[0] + ex - nx, y, b[1] + ez - nz], [a[0] - ex - nx, y, a[1] - ez - nz], [0, 1, 0]);
+    M.quad(mat, [a[0] - ex + nx, ya, a[1] - ez + nz], [b[0] + ex + nx, yb, b[1] + ez + nz], [b[0] + ex - nx, yb, b[1] + ez - nz], [a[0] - ex - nx, ya, a[1] - ez - nz], [0, 1, 0]);
   }
 }
 const ANCHO = { primary: 7.5, primary_link: 5, tertiary: 7, tertiary_link: 5, secondary: 7, residential: 6, unclassified: 6, service: 4, footway: 1.6, steps: 1.6 };
@@ -407,20 +441,37 @@ for (const c of ent.calles) {
   cinta(ME, peaton ? 'acera' : 'asfalto', c.linea, w, peaton ? 0 : 0.004); resEnt.calles++;
 }
 for (const t of ent.tren) { cinta(ME, 'balasto', t.linea, 4.5, 0.002); resEnt.tren++; }
-// agua: el canal, el Lago Miraflores y las cámaras de las esclusas (polígonos de OSM recortados a la caja)
-for (const a of ent.agua) {
-  const P = orientar(a.exterior), H = a.huecos.map((h) => orientar(h).reverse());
-  const y = -0.45;
+// agua: el canal, el Lago Miraflores y las cámaras de las esclusas (polígonos de OSM recortados a la caja), cada una a su nivel
+const triAgua = (P, H, yDe) => {
   const T = ShapeUtils.triangulateShape(P.map(([x, z]) => new Vector2(x, z)), H.map((h) => h.map(([x, z]) => new Vector2(x, z))));
   const todos = P.concat(...H);
-  for (const [i, j, k] of T) ME.tri('agua', [todos[i][0], y, todos[i][1]], [todos[j][0], y, todos[j][1]], [todos[k][0], y, todos[k][1]], [0, 1, 0]);
-  // las cámaras de las esclusas: muros de concreto de 2 m alrededor (el muro real es mucho más alto; aquí el terreno es plano)
-  if (/Esclusas/.test(a.nombre)) for (let i = 0; i < P.length; i++) {
-    const p0 = P[i], p1 = P[(i + 1) % P.length], d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]); if (d < 0.5) continue;
-    const ux = (p1[0] - p0[0]) / d, uz = (p1[1] - p0[1]) / d, w = 1.2;
-    const Q = [[p0[0], p0[1]], [p1[0], p1[1]], [p1[0] - uz * w, p1[1] + ux * w], [p0[0] - uz * w, p0[1] + ux * w]];
-    ME.prisma('esclusa', Q, y, 2);
-  }
+  for (const [i, j, k] of T) ME.tri('agua', ...[todos[i], todos[j], todos[k]].map(([x, z]) => [x, yDe(x, z), z]), [0, 1, 0]);
+};
+for (const a of aguas) {
+  const P = orientar(a.exterior), H = a.huecos.map((h) => orientar(h).reverse());
+  if (/Esclusas de Miraflores/.test(a.nombre)) {
+    // dos cámaras: la de abajo (sur) a medio camino entre el mar y el lago, la de arriba (norte) al nivel del lago
+    const zm = Z_MEDIO, medio = MEDIO;
+    for (const [z0, z1, y] of [[zm, 1e5, medio], [-1e5, zm, LAGO]]) {
+      let R = P;      // recorte del polígono a la franja z0 ≤ z ≤ z1 (Sutherland–Hodgman en z)
+      for (const [lim, sentido] of [[z0, 1], [z1, -1]]) {
+        const E = R; R = [];
+        for (let i = 0; i < E.length; i++) {
+          const p = E[i], q = E[(i + 1) % E.length], dp = (p[1] - lim) * sentido >= 0, dq = (q[1] - lim) * sentido >= 0;
+          const corte = () => { const t = (lim - p[1]) / (q[1] - p[1]); return [p[0] + (q[0] - p[0]) * t, lim]; };
+          if (dq) { if (!dp) R.push(corte()); R.push(q); } else if (dp) R.push(corte());
+        }
+      }
+      if (R.length > 2) triAgua(orientar(R), [], () => y);
+    }
+    // muros de concreto alrededor, del agua hasta el suelo de alrededor (o 10 m sobre el agua si el suelo queda más bajo)
+    for (let i = 0; i < P.length; i++) {
+      const p0 = P[i], p1 = P[(i + 1) % P.length], d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]); if (d < 0.5) continue;
+      const ux = (p1[0] - p0[0]) / d, uz = (p1[1] - p0[1]) / d, w = 2.5, zc = (p0[1] + p1[1]) / 2;
+      const yAgua = Math.min(nivelCanal(zc), MEDIO) - 1, yTope = LAGO + 2;   // la corona de los muros, 2 m sobre el lago
+      ME.prisma('esclusa', [[p0[0], p0[1]], [p1[0], p1[1]], [p1[0] - uz * w, p1[1] + ux * w], [p0[0] - uz * w, p0[1] + ux * w]], yAgua, yTope);
+    }
+  } else triAgua(P, H, () => a.nivelY);
   resEnt.agua++;
 }
 // edificios: los de OSM que no están en osm.json, como maqueta con la altura de sus niveles, de Open Buildings o dos niveles
@@ -429,16 +480,30 @@ for (const b of ent.edificios) {
   const ob = !b.niveles && OB[b.id]?.cubre >= OB_CUBRE ? OB[b.id] : null;
   const h = b.niveles ? b.niveles * PISO + BASE : ob ? Math.max(ob.p90, 2.5) : NIVELES_SIN_DATO * PISO + BASE;
   const c = b.poly.reduce((a, p) => [a[0] + p[0] / b.poly.length, a[1] + p[1] / b.poly.length], [0, 0]);
-  ME.prisma('maqueta', b.poly, suelo(c) - 0.05, h);
+  const base = Math.min(...b.poly.map(suelo)) - 0.3;
+  ME.prisma('maqueta', b.poly, base, suelo(c) + h);
   resEnt.edificios++; if (ob) resEnt.alturaOB++;
 }
+// el terreno: rejilla de 40 m sobre toda la caja, con el relieve real fuera de la meseta
+{
+  const [x0, x1, z0, z1] = ent.caja, P = 40, nx = Math.ceil((x1 - x0) / P), nz = Math.ceil((z1 - z0) / P);
+  const Y = []; for (let i = 0; i <= nx; i++) { Y.push([]); for (let k = 0; k <= nz; k++) Y[i].push(terreno(x0 + i * P, z0 + k * P)); }
+  const v = (i, k) => [x0 + i * P, Y[i][k], z0 + k * P];
+  for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) {
+    if (Math.max(Y[i][k], Y[i + 1][k], Y[i][k + 1], Y[i + 1][k + 1]) < -0.59 && enSitio([x0 + (i + 0.5) * P, z0 + (k + 0.5) * P])) continue;   // bajo el sitio: no se ve
+    MT.quad('pasto', v(i, k), v(i, k + 1), v(i + 1, k + 1), v(i + 1, k), [0, 1, 0]);
+  }
+}
 const nE = doc.createNode('entorno: Ciudad del Saber, avenida y canal').setMesh(mallaDe('entorno', ME));
-raiz.addChild(nE);
+const nT = doc.createNode('entorno: terreno (Copernicus DEM GLO-30)').setMesh(mallaDe('terreno', MT));
+raiz.addChild(nE); raiz.addChild(nT);
 // los dos ejes del canal por las esclusas de Miraflores (uno por vía), para los barcos ilustrativos de escena.js
 {
-  const recorte = (r) => r.filter((p) => p[1] > ent.caja[2] && p[1] < ent.caja[3]).map((p) => p.map((v) => Math.round(v * 10) / 10));
+  // hasta el Lago Miraflores (al norte, antes de Pedro Miguel) y hasta el borde sur de la caja; con la altura del agua (y)
+  const recorte = (r) => r.filter((p) => p[1] > -1350 && p[1] < ent.caja[3]).map(([x, z]) => [x, z, nivelCanal(z)].map((v) => Math.round(v * 10) / 10));
   fs.writeFileSync(path.join(AQUI, 'src', 'canal-rutas.js'), '// Generado por fuente/contexto.mjs: ejes del canal (OSM, waterway=canal, «Canal de Panamá») por las dos vías de las\n'
-    + '// esclusas de Miraflores, en metros de la escena (+X noreste, +Z sureste), de sur a norte. © colaboradores de OpenStreetMap, ODbL.\n'
+    + '// esclusas de Miraflores, en metros de la escena (+X noreste, +Z sureste, y = nivel del agua relativo al suelo del 106, del\n'
+    + '// Copernicus DEM GLO-30), de sur a norte. © colaboradores de OpenStreetMap, ODbL.\n'
     + `export const RUTAS_CANAL = ${JSON.stringify(ent.rutas.slice(0, 2).map(recorte))};\n`);
 }
 
@@ -456,6 +521,7 @@ for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) 
 console.log('cuarteles (106 reducido, malla compartida):\n  ' + resumen.cuarteles.join('\n  '));
 console.log('volúmenes:\n  ' + resumen.volumenes.join('\n  '));
 console.log('proyectan sombra (< ' + RADIO_SOMBRA + ' m del 106):\n  ' + resumen.sombra.join('\n  '));
+console.log(`relieve: suelo del 106 a ${rel.Z0.toFixed(1)} m s. n. m.; agua al sur de Miraflores ${MAR.toFixed(1)} m y Lago Miraflores ${LAGO.toFixed(1)} m (relativos)`);
 console.log(`entorno ampliado (OSM ${ent.fecha}): ${resEnt.edificios} edificios (${resEnt.alturaOB} con altura de Open Buildings), ${resEnt.calles} calles, ${resEnt.tren} tramos de ferrocarril, ${resEnt.agua} superficies de agua`);
 console.log('triángulos guardados', Math.round(tris), '· 106 reducido:', Object.entries(tipo).map(([k, g]) => `${k} ${g.i.length / 3}`).join(', '));
 console.log('escrito', SALIDA, (fs.statSync(SALIDA).size / 1024).toFixed(0), 'KB');

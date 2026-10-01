@@ -212,7 +212,10 @@ export class Escena {
     gm.colorNode = mix(clayColor.mul(0.55), vec3(0.05, 0.085, 0.03), U.mat);
     gm.receivedShadowNode = sombraNubes;
     gm.emissiveNode = gm.colorNode.mul(vec3(U.cieloArriba));   // de noche, la bóveda completa sobre el terreno abierto
-    const suelo = new THREE.Mesh(g, gm); suelo.position.y = -0.5; suelo.receiveShadow = true; scene.add(suelo);
+    // Con el relieve del entorno (contexto.glb, Copernicus DEM) el canal queda hasta ~26 m bajo el 106: el suelo lejano va
+    // bajo todo eso, a −30 m, y solo asoma más allá de la caja del relieve (~3 km), ya en la niebla. Junto al sitio, el
+    // terreno del entorno está a −0,6 m, igual que antes estaba este suelo (a −0,5).
+    const suelo = new THREE.Mesh(g, gm); suelo.position.y = -30; suelo.receiveShadow = true; scene.add(suelo);
     this.suelo = suelo;
     // barcos ilustrativos por el canal (barcos.js); ?barcos=0 los quita (para comparar con la versión sin barcos)
     this.barcos = /[?&]barcos=0/.test(location.search) ? null : new Barcos(scene);

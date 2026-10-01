@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { aEscena, osmRegistrado } from './contexto-osm.mjs';
+import { LAT, LON, EJE_LARGO } from './src/sol.js';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const rad = Math.PI / 180;
@@ -113,4 +114,27 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (const r of o.rutas) console.log('ruta', r.length, 'puntos de', r[0].map((v) => v.toFixed(0)).join(','), 'a', r.at(-1).map((v) => v.toFixed(0)).join(','));
   console.log('caja', o.caja.map((v) => v.toFixed(0)).join(' '));
   if (0) for (const c of o.canal) console.log('canal', c.id, c.linea.length, 'de', c.linea[0].map((v) => v.toFixed(0)).join(','), 'a', c.linea.at(-1).map((v) => v.toFixed(0)).join(','));
+}
+
+/** El relieve de relieve.json (Copernicus DEM GLO-30) en coordenadas de la escena: `suelo(x, z)` y `superficie(x, z)` en
+ *  metros RELATIVOS al suelo del 106 (el filtrado en (0, 0)), con interpolación bilineal. Invierte aEscena y el registro. */
+export function relieve(archivo = path.join(AQUI, 'relieve.json')) {
+  const j = JSON.parse(fs.readFileSync(archivo, 'utf8'));
+  const { registro } = osmRegistrado();
+  const [cx, cz] = registro.centroOSM106, th = registro.rotacionGrados * rad, co = Math.cos(th), si = Math.sin(th);
+  const R = 6378137;
+  const aLatLon = (x, z) => {
+    const px = x * co + z * si + cx, pz = -x * si + z * co + cz;           // deshace el giro y la traslación del registro
+    const r = Math.hypot(px, pz), az = EJE_LARGO * rad - Math.atan2(-pz, px);
+    const E = r * Math.sin(az), N = r * Math.cos(az);
+    return [LAT + N / (R * rad), LON + E / (R * rad * Math.cos(LAT * rad))];
+  };
+  const muestra = (rej) => (x, z) => {
+    const [la, lo] = aLatLon(x, z);
+    const f = Math.min(j.filas - 1.001, Math.max(0, (j.lat0 - la) / j.d)), c = Math.min(j.columnas - 1.001, Math.max(0, (lo - j.lon0) / j.d));
+    const f0 = Math.floor(f), c0 = Math.floor(c), u = f - f0, v = c - c0, k = (a, b) => rej[a * j.columnas + b] / 10;
+    return (k(f0, c0) * (1 - v) + k(f0, c0 + 1) * v) * (1 - u) + (k(f0 + 1, c0) * (1 - v) + k(f0 + 1, c0 + 1) * v) * u;
+  };
+  const s0 = muestra(j.suelo_dm), p0 = muestra(j.superficie_dm), Z0 = s0(0, 0);
+  return { Z0, suelo: (x, z) => s0(x, z) - Z0, superficie: (x, z) => p0(x, z) - Z0, aLatLon, fuente: j.fuente };
 }
