@@ -8,7 +8,7 @@ import { puntosIntro, conVersion } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { posicionLuna } from './luna.js';
 import { Clima } from './clima.js';
-import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI } from './confort.js';
+import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
 
 const $ = (s) => document.querySelector(s);
@@ -2046,10 +2046,11 @@ function pintarCarta() {
 let confortClave = '';
 function confortHora(p, c) {
   if (!confortJ || $('#confort').hidden) return;
-  const ok = c && c.temp != null && c.humedad != null, k = ok ? [Math.round(c.temp * 10), Math.round(c.humedad), Math.round((c.dni ?? 0) / 10), Math.round((c.difusa ?? 0) / 10), Math.round(c.viento ?? 0), Math.round(p.alt)].join('|') : 'no';
+  const ok = c && c.temp != null && c.humedad != null, k = ok ? [Math.round(c.temp * 10), Math.round(c.humedad), Math.round((c.dni ?? 0) / 10), Math.round((c.difusa ?? 0) / 10), Math.round(c.viento ?? 0), Math.round(c.dir ?? -1), Math.round((c.lluvia ?? 0) * 10), Math.round(p.alt), Math.round(p.az)].join('|') : 'no';
   if (k === confortClave) return; confortClave = k;
   const g = $('#carta-punto');
-  if (!ok) { if (g) g.innerHTML = ''; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
+  if (!ok) { if (g) g.innerHTML = ''; $('#conviene').innerHTML = '<li class="neutro">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>'; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
+  $('#conviene').innerHTML = conviene(p, c).map(([cl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${t}</li>`).join('');
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
   if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
   const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
@@ -2062,6 +2063,55 @@ function confortHora(p, c) {
   const uA = utci(c.temp, tmrtSombra({ ta: c.temp, difusa: c.difusa ?? 0, altSol: p.alt, dni: c.dni }), va, c.humedad, { recortarViento: true });
   const nom = (u) => CATEGORIAS_UTCI[categoriaUTCI(u)]?.nombre.toLowerCase() ?? '—';
   $('#utci-hora').innerHTML = `A las ${hora}: al sol se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
+}
+/** Qué conviene a esta hora, a partir del clima de afuera. Reglas explícitas, con su fuente:
+ *  - ventilar o no: en qué zona de Givoni (1992, variante para países cálidos) cae la hora en la carta psicrométrica;
+ *  - entrada y salida del aire: la fachada que recibe el viento de frente (criterio del proyecto: ±60° y al menos 5 km/h) y la opuesta;
+ *  - sol: ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del 106 (vidrio en sombra desde
+ *    ~45°, todo al sol bajo ~9°: «Para qué sirve», hallazgo del alero);
+ *  - lluvia con viento: la fachada que la recibe de frente. No calcula el interior. */
+/** Temperatura media exterior predominante (ASHRAE 55): media de las medias diarias de los 7 días anteriores, de la serie. */
+function tpmaEn(f) {
+  if (!clima.horario) return null;
+  const i0 = clima.indice(f, 0); if (i0 < 7 * 24) return null;
+  let s = 0; for (let i = i0 - 7 * 24; i < i0; i++) s += clima.valor('temp', i);
+  return s / (7 * 24);
+}
+const CORTO = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
+const OPUESTA = { 'fachada-se': 'fachada-no', 'fachada-no': 'fachada-se', 'fachada-ne': 'fachada-so', 'fachada-so': 'fachada-ne' };
+function conviene(p, c) {
+  const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0;
+  // 1. ventilar o no
+  if (dentroPoligono(c.temp, w, GIVONI.quieto)) out.push(['', `<b>Según Givoni, ventilar es opcional.</b> Con ${Math.round(c.temp)} °C y ${f1(w)} g/kg se está en confort con el aire quieto: basta la sombra.`]);
+  else if (dentroPoligono(c.temp, w, GIVONI.ventilacion)) out.push(['', `<b>Según Givoni, conviene ventilar.</b> Con ${Math.round(c.temp)} °C y ${f1(w)} g/kg, el aire moviéndose a unos 2 m/s dentro del aula da confort.`]);
+  else if (c.temp < 20) out.push(['neutro', `<b>Está fresco</b> (${Math.round(c.temp)} °C): ventilar poco.`]);
+  else out.push(['aviso', `<b>Según Givoni, ni la brisa alcanza.</b> Con ${Math.round(c.temp)} °C y ${f1(w)} g/kg queda fuera de su zona de ventilación (hasta 32 °C y 19 g/kg)${w > 19 ? ': es la humedad' : ''}. Ventilar igual saca calor, pero para el confort pide ${w > 19 ? 'deshumidificar' : 'enfriar'}.`]);
+  // el modelo adaptativo de ASHRAE 55 (aulas ventiladas, sin techo de humedad): t_pma de los 7 días anteriores
+  const tp = tpmaEn(S.fecha) ?? confortJ.tpma.media, tc = 0.31 * tp + 17.8, lo = tc - 3.5, hi = tc + 3.5, ex = c.temp > 25 ? 2.2 : 0;
+  if (c.temp >= lo && c.temp <= hi) out.push(['', `<b>Según ASHRAE 55 adaptativo, aceptable</b> para un aula ventilada con aire quieto (rango de ${Math.round(lo)} a ${Math.round(hi)} °C para estos días).`]);
+  else if (c.temp >= lo && c.temp <= hi + ex) out.push(['', `<b>Según ASHRAE 55 adaptativo, aceptable con aire en movimiento</b> (~1,2 m/s, ventiladores de techo): hay ${f1(c.temp)} °C y, con el aire quieto, el límite de estos días es ${f1(hi)} °C.`]);
+  else if (c.temp > hi + ex) out.push(['aviso', `<b>Según ASHRAE 55 adaptativo, caluroso</b> aun con aire a 1,2 m/s (límite ${Math.round(hi + ex)} °C para estos días).`]);
+  // 2. por dónde entra y sale el aire
+  const v = c.viento ?? 0;
+  if (c.dir != null && v >= 5) {
+    let mejor = null, cm = -2;
+    for (const k of Object.keys(FACHADAS)) { const cs = Math.cos((c.dir - FACHADAS[k].rumbo) * Math.PI / 180); if (cs > cm) { cm = cs; mejor = k; } }
+    const frente = cm >= 0.5;                                    // dentro de ±60° de la perpendicular
+    out.push(['', `<b>Entrada por la ${CORTO[mejor]}, salida por la ${CORTO[OPUESTA[mejor]]}.</b> El viento viene del ${rumboTexto(c.dir)} a ${Math.round(v)} km/h${frente ? ' y le da de frente a la ' + CORTO[mejor] : ', oblicuo a todas las fachadas'}.`]);
+    if ((c.lluvia ?? 0) >= 1) out.push(['aviso', `<b>Llueve con viento</b> (${f1(c.lluvia)} mm/h): la ${CORTO[mejor]} recibe el agua; de ese lado, abrir solo lo que el alero protege.`]);
+  } else out.push(['neutro', `<b>Viento flojo</b> (${Math.round(v)} km/h): la ventilación cruzada rinde poco; ayudan las aberturas altas, por donde sale el aire caliente, o los ventiladores de techo.`]);
+  // 3. sol sobre las fachadas
+  if (dia && (c.dni ?? 0) >= 120) {
+    for (const k of Object.keys(FACHADAS)) {
+      const r = FACHADAS[k].rumbo, ca = Math.cos((p.az - r) * Math.PI / 180);
+      if (ca <= 0.05) continue;                                   // el sol está detrás de esa fachada
+      const perfil = Math.atan(Math.tan(p.alt * Math.PI / 180) / ca) * 180 / Math.PI;
+      if (perfil >= 45) continue;                                 // el alero ya cubre el vidrio
+      out.push([perfil < 9 ? 'aviso' : '', `<b>Sol en el vidrio de la ${CORTO[k]}</b> (ángulo de perfil ${Math.round(perfil)}°): ${perfil < 9 ? 'el alero no lo tapa; ' : 'entra por debajo del alero; '}conviene cerrar persianas o cortinas de ese lado.`]);
+    }
+    if (out.filter((x) => /Sol en el vidrio/.test(x[1])).length === 0) out.push(['', '<b>El alero cubre todo el vidrio</b> en esta hora: el sol llega con un perfil de más de 45° o por detrás.']);
+  } else if (!dia) out.push(['neutro', '<b>De noche</b> no hay sol que proteger: si conviene ventilar, también saca el calor que guardaron los muros durante el día.']);
+  return out;
 }
 function pintarUTCI() {
   const J = confortJ.utci, s = [], L = 38, R = 372, T = 8, B = 118, gw = (R - L) / 12, bw = gw * 0.36;

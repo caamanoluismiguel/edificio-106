@@ -426,6 +426,9 @@
   .conf-ley { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); font-size: 12px; }
   .conf-ley i, .conf-cifras i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
   .conf-hora { margin: 0; font: 500 13px/1.4 var(--texto); color: var(--cal); }
+  .conf-conviene { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font: 500 13px/1.4 var(--texto); color: var(--cal); }
+  .conf-conviene li { padding-left: 12px; border-left: 3px solid var(--sol); } .conf-conviene li.aviso { border-left-color: var(--teja); } .conf-conviene li.neutro { border-left-color: var(--linea-2); }
+  .conf-conviene b { font-weight: 650; }
   .conf-hora b { font-family: var(--datos); font-variant-numeric: tabular-nums; }
   html:has(#confort:not([hidden])) #rotulo, html:has(#confort:not([hidden])) #panel-fachada { display: none; }
   #ir-a { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px);
@@ -1009,6 +1012,11 @@
 
 <aside id="confort" hidden aria-labelledby="confort-t">
   <div class="ir-cab"><h3 id="confort-t">Confort térmico</h3><button class="boton" type="button" id="cerrar-confort">Cerrar</button></div>
+  <section aria-labelledby="conviene-t">
+    <h4 id="conviene-t">Qué conviene a esta hora</h4>
+    <ul class="conf-conviene" id="conviene" aria-live="polite"></ul>
+    <p class="nota">Son estrategias según el clima de afuera a esta hora (reanálisis ERA5 o pronóstico), no un cálculo del interior: no se conocen los tabiques, el tipo de ventanas ni cuánto abren. El viento es el de 10 m en terreno abierto; junto al edificio es más flojo. Zonas de Givoni (1992) y modelo adaptativo de ASHRAE 55-2017, que no siempre coinciden (ver la carta); ángulo de perfil del alero, Olgyay y Olgyay (1957).</p>
+  </section>
   <section aria-labelledby="carta-t">
     <h4 id="carta-t">Carta psicrométrica · cada hora de 2001 a 2025</h4>
     <svg id="carta" viewBox="0 0 380 262" role="img" aria-labelledby="carta-t carta-desc"><desc id="carta-desc"></desc></svg>
