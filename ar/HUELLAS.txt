@@ -1,7 +1,8 @@
 # Huellas md5 tomadas el 2026-10-01 09:36 desde origin/main ec97e20. Si alguna cambia, se para todo.
 ## modelo/*.glb del sitio
 c3de5cea492e47205c10bea567d9b233 modelo/arquitectura.glb
-7a19ecbf6b6fbe4585c7fdaceb05b765 modelo/contexto.glb
+# contexto.glb actualizado el 2026-10-01 (entorno ampliado y pasto del sitio, pedido por LM; la AR no lo usa)
+30cb6638c055456975ad6a0cdce938ad modelo/contexto.glb
 03391bb3c569c1232166fc8472c3bbb4 modelo/cubiertas.glb
 60449f2043bc3fdf2c8b79512086d845 modelo/cubiertas_sombra.glb
 e2ae61aee2b4e9144e23082c7a0a35ca modelo/detalles.glb
