@@ -706,8 +706,10 @@ export class Escena {
       m.lenteNode = lente;
     }
 
-    // Mojado: superficies porosas más oscuras y brillantes; charcos en superficies horizontales bajas
-    if (!glass && !leaf) {
+    // Mojado: superficies porosas más oscuras y brillantes; charcos en superficies horizontales bajas. El pasto del entorno
+    // (contexto.mjs, «V017 grass turf») se trata como el del sitio, que es vegetación y no se moja: si no, con lluvia los dos
+    // pastos se separaban de tono y la unión volvía a cruzar el cuadrángulo
+    if (!glass && !leaf && !/V017 grass turf/.test(src.name || '')) {
       const metal = nm.includes('alumin') || nm.includes('guardrail') || nm.includes('galvan') || nm.includes('cabinet');
       const poro = uniform(metal ? 0.25 : 1.0);
       const up = smoothstep(0.55, 0.95, normalWorld.y);
@@ -1266,8 +1268,11 @@ export class Escena {
 // Sombras de nubes proyectadas sobre todo lo que recibe sol
 const sombraNubes = Fn(([s]) => {
   sombraSol.assign(vec3(s).x);                 // la sombra geométrica, antes de sumar la de las nubes
-  const p = positionWorld.xz.mul(0.0045).add(U.viento.mul(time.mul(0.012)));
-  const n = mx_fractal_noise_float(vec3(p, 0.0), 2, 2.0, 0.5).mul(0.5).add(0.5);
+  // el ruido de Perlin se anula en su cuadrícula (cada 222 m): con el origen en el 106 y el corte en z = 0, sobre un plano de
+  // la propia cuadrícula, sus líneas cruzaban el edificio como una cruz de franjas rectas (más visible al cambiar las nubes
+  // en un viaje en el tiempo). Se corre la cuadrícula y se corta entre dos planos.
+  const p = positionWorld.xz.mul(0.0045).add(vec2(0.37, 0.61)).add(U.viento.mul(time.mul(0.012)));
+  const n = mx_fractal_noise_float(vec3(p, 0.43), 2, 2.0, 0.5).mul(0.5).add(0.5);
   const cov = U.nubeCob;
   const nube = smoothstep(float(1.0).sub(cov), float(1.0).sub(cov).add(0.18), n);
   return s.mul(float(1).sub(nube.mul(U.nubeSombra).mul(0.8)));

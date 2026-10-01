@@ -32723,7 +32723,7 @@ var MV = class {
 			let b = RL(X.calor, X.agua);
 			d.colorNode = K(d.colorNode, d.colorNode.mul(.04), b), d.roughnessNode = K(d.roughnessNode ?? LL, G(1), b), d.lenteNode = b;
 		}
-		if (!l && !u) {
+		if (!l && !u && !/V017 grass turf/.test(e.name || "")) {
 			let e = J(s.includes("alumin") || s.includes("guardrail") || s.includes("galvan") || s.includes("cabinet") ? .25 : 1), t = vR(.55, .95, XL.y), n = vR(.6, .7, qL(Y(aR.x.mul(.11), aR.z.mul(.11), 3.7)).mul(.5).add(.5)).mul(t).mul(q(aR.y, 1.2)), r = X.mojado.mul(e);
 			d.colorNode = d.colorNode.mul(K(G(1), K(G(.64), G(.4), n), r));
 			let i = LL, a = K(G(.45), G(.16), t).mul(G(1).sub(n.mul(.85)));
@@ -33254,7 +33254,7 @@ var MV = class {
 	}
 }, NV = eL(([e]) => {
 	TV.assign(Y(e).x);
-	let t = KL(Y(aR.xz.mul(.0045).add(X.viento.mul(CR.mul(.012))), 0), 2, 2, .5).mul(.5).add(.5), n = X.nubeCob, r = vR(G(1).sub(n), G(1).sub(n).add(.18), t);
+	let t = KL(Y(aR.xz.mul(.0045).add(kR(.37, .61)).add(X.viento.mul(CR.mul(.012))), .43), 2, 2, .5).mul(.5).add(.5), n = X.nubeCob, r = vR(G(1).sub(n), G(1).sub(n).add(.18), t);
 	return e.mul(G(1).sub(r.mul(X.nubeSombra).mul(.8)));
 }), PV = eL(([e]) => (TV.assign(Y(e).x), e));
 function FV(e) {
