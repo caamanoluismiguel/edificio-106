@@ -2,7 +2,9 @@
 // Comprueba que MindAR encuentra el plano, que el edificio se dibuja encima, que el sol apunta igual que en sol.js
 // (pasado al papel por un camino independiente), el peso del modelo y que no hay errores en la consola.
 // También prueba los controles de la versión de clase (fecha, hora, persona, norte, lente Sol, escala, enlace al visor,
-// pestaña oculta), el aviso para los navegadores de WhatsApp, Instagram, Facebook y TikTok, y el modo sin cámara.
+// pestaña oculta), el aviso para los navegadores dentro de aplicaciones (WhatsApp, Instagram, Facebook, TikTok, LinkedIn,
+// Snapchat, Telegram), el modo sin cámara, la ayuda a los 10 s si el plano no aparece (con el paso a sin cámara) y que tras
+// un error se suelta la cámara y «Intentar de nuevo» arranca limpio.
 // Uso: node ar/probar.mjs --video=tarjeta-camara.y4m [--captura=salida.png] [--capturas=carpeta] [--url=suave=0]
 //      node ar/probar.mjs --navegador=webkit [--capturas=carpeta]   (WebKit de Playwright con el perfil de un iPhone 13:
 //      no tiene cámara falsa, así que prueba el inicio, el aviso y el modo sin cámara; no es un iPhone de verdad)
@@ -26,7 +28,12 @@ const res = (pasa, txt) => { console.log(`${pasa ? '✓' : '✗'} ${txt}`); if (
 const NORTE = 90 - 56;                                     // giro del norte en el papel (el de la flecha de la tarjeta: 90° − EJE_LARGO)
 const UA_IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
 const EN_APP = { WhatsApp: UA_IPHONE + ' WhatsApp/24.10.75', Instagram: UA_IPHONE + ' Instagram 330.0.0.0.0 (iPhone14,5; iOS 17_5)',
-  Facebook: UA_IPHONE + ' [FBAN/FBIOS;FBAV/460.0.0.0]', TikTok: UA_IPHONE + ' musical_ly_34.0.0 BytedanceWebview/d8a21c6' };
+  Facebook: UA_IPHONE + ' [FBAN/FBIOS;FBAV/460.0.0.0]', TikTok: UA_IPHONE + ' musical_ly_34.0.0 BytedanceWebview/d8a21c6',
+  LinkedIn: UA_IPHONE + ' [LinkedInApp]/9.29.1', Snapchat: UA_IPHONE + ' Snapchat/12.80.0.32 (iPhone14,5; iOS 17.5)', Telegram: UA_IPHONE + ' Telegram-iOS/10.14' };
+// para ver que la cámara se suelta: se guardan las pistas que entrega getUserMedia
+const GUARDAR_PISTAS = () => { const g = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices); if (!g) return;
+  window.__pistas = []; navigator.mediaDevices.getUserMedia = async c => { const s = await g(c); window.__pistas.push(...s.getTracks()); return s; }; };
+const pistasVivas = p => p.evaluate(() => (window.__pistas ?? []).filter(t => t.readyState !== 'ended').length);
 
 // 1. peso: lo que baja el celular para ver la AR
 const MB = f => fs.statSync(path.join(raiz, 'ar', f)).size / 1048576;
@@ -101,6 +108,13 @@ async function probarControles(p, modo) {
   res(s.alt > 89.5 && s.min === z[0].h * 60 + z[0].min, `${pre} día sin sombra de abril (${z[0].d}/4): va a las ${Math.floor(s.min / 60)}:${String(s.min % 60).padStart(2, '0')}, sol a ${s.alt.toFixed(2)}° de altura`);
   await p.selectOption('#fecha', '0');
 
+  // el deslizador va de 5:50 a 18:50 y dice la hora a los lectores de pantalla
+  const rango = await p.evaluate(() => { const r = document.getElementById('hora'); return [r.min, r.max]; });
+  await ponerHora(p, 350); const vt1 = await p.getAttribute('#hora', 'aria-valuetext');
+  await ponerHora(p, 1130); const vt2 = await p.getAttribute('#hora', 'aria-valuetext'), alto = (await est()).sol.alt;
+  res(rango[0] === '350' && rango[1] === '1130' && vt1.startsWith('05:50') && vt2.startsWith('18:50') && !(await p.getAttribute('#hora-txt', 'aria-live')),
+    `${pre} deslizador de ${vt1} a ${vt2} (sol a ${alto.toFixed(1)}° a las 18:50), con aria-valuetext`);
+
   // la hora mueve la sombra
   await ponerHora(p, 8 * 60); await espera(300); const a8 = await png(p);
   await ponerHora(p, 16 * 60); await espera(300); const a16 = await png(p);
@@ -120,7 +134,9 @@ async function probarControles(p, modo) {
   const ley = await p.isVisible('#leyenda');
   res(e.lente && ley && dl > 0.02 && tCon > 0.005 && tCon > 5 * tSin + 0.001 && fCon > 0.002 && fCon > 5 * fSin + 0.001,
     `${pre} la lente Sol pinta: cambia ${(dl * 100).toFixed(1)} % de la pantalla; colores de la lente ${(tSin * 100).toFixed(1)} % → ${(tCon * 100).toFixed(1)} %, de ellos con sol directo ${(fSin * 100).toFixed(1)} % → ${(fCon * 100).toFixed(1)} %; leyenda ${ley ? 'visible' : 'oculta'}`);
-  const visorSol = e.visor;
+  const visorSol = e.visor, notaL = await p.textContent('#leyenda-nota'), cols = await p.$$eval('.franjas-txt span', s => s.map(x => x.textContent).join(' / '));
+  res(notaL.includes('ERA5') && notaL.includes('Inclina el celular') === (modo === 'ar') && cols === '0 / 0,25 / 0,5 / 0,75 / 1',
+    `${pre} leyenda: ${cols}; nota ${modo === 'ar' ? 'con' : 'sin'} «Inclina el celular»`);
   await p.click('#b-sol'); await espera(300);
   e = await est();
   res(!e.lente && !(await p.isVisible('#leyenda')), `${pre} la lente Sol se apaga`);
@@ -133,6 +149,8 @@ async function probarControles(p, modo) {
 
   // escala: el modelo crece alrededor del centro
   const t320 = e.medida.modelo, c320 = await cobertura(p);
+  const etq = await p.getAttribute('#b-escala', 'aria-label');
+  res(etq === 'Escala 1:320. Toca para cambiar a 1:200', `${pre} botón de escala: «${etq}»`);
   await p.click('#b-escala'); await p.click('#b-escala'); await espera(400);
   e = await est();
   const t100 = e.medida.modelo, c100 = await cobertura(p), k = t100[0] / t320[0];
@@ -214,7 +232,7 @@ try {
     // el deslizador arranca en la hora de ahora en Panamá (redondeada a 10 min) si es de día; si no, en las 15:00
     const ini = +(await p.inputValue('#hora'));
     const ya = new Date(Date.now() - 5 * 3600e3), minYa = Math.round((ya.getUTCHours() * 60 + ya.getUTCMinutes()) / 10) * 10;
-    const esperado = minYa >= 360 && minYa <= 1080 ? minYa : 900;
+    const esperado = minYa >= 350 && minYa <= 1130 ? minYa : 900;
     res(Math.abs(ini - esperado) <= 10, `el deslizador arranca en ${Math.floor(ini / 60)}:${String(ini % 60).padStart(2, '0')} (ahora en Panamá: ${ya.getUTCHours()}:${String(ya.getUTCMinutes()).padStart(2, '0')})`);
     await p.click('#empezar');
     const t0 = Date.now();
@@ -271,6 +289,60 @@ try {
       }
     }
     await ctx.close();
+  }
+
+  // 3b. error a mitad de camino (falla la descarga del plano): se suelta la cámara y «Intentar de nuevo» arranca limpio
+  if (!WEBKIT) {
+    const ctx = await nav.newContext({ viewport: { width: 1280, height: 720 }, permissions: ['camera'] });
+    await ctx.addInitScript(GUARDAR_PISTAS);
+    const p = await ctx.newPage();                          // sin vigilar: el error de esta prueba es a propósito
+    let cortar = true;
+    await p.route('**/tarjeta/plano.mind', r => cortar ? r.abort() : r.continue());
+    await p.goto(`${url}/ar/`);
+    await p.click('#empezar');
+    await p.waitForFunction(() => window.__ar.fase === 'error', null, { timeout: 60000 }).catch(() => {});
+    const e1 = await p.evaluate(() => ({ fase: window.__ar.fase, n: window.__pistas.length, video: !!document.querySelector('#ar video'), modo: window.__ar.modo,
+      b: document.getElementById('empezar').textContent, dis: document.getElementById('empezar').disabled, err: !document.getElementById('error').hidden }));
+    const vivas1 = await pistasVivas(p);
+    res(e1.fase === 'error' && e1.n > 0 && vivas1 === 0 && !e1.video && e1.modo === null && e1.b === 'Intentar de nuevo' && !e1.dis && e1.err,
+      `error al cargar: cámara suelta (${e1.n - vivas1} de ${e1.n} pistas paradas), sin video, botón «${e1.b}» ${e1.dis ? 'desactivado' : 'activo'}`);
+    cortar = false;
+    await p.click('#empezar');
+    const t0 = Date.now();
+    const ok2 = await p.waitForFunction(() => window.__ar.encontrado, null, { timeout: 90000, polling: 200 }).then(() => true, () => false);
+    const e2 = await p.evaluate(() => ({ fase: window.__ar.fase, videos: document.querySelectorAll('#ar video').length, err: !document.getElementById('error').hidden }));
+    res(ok2 && e2.fase === 'rastreando' && e2.videos === 1 && !e2.err && await pistasVivas(p) === 1,
+      `«Intentar de nuevo» arranca limpio: plano encontrado en ${((Date.now() - t0) / 1000).toFixed(1)} s, ${e2.videos} video, una pista de cámara viva`);
+    await ctx.close();
+  }
+
+  // 3c. la cámara no ve el plano (la cámara falsa de Chromium sin video: un patrón que no es la tarjeta): a los 10 s,
+  // la ayuda y el botón «Ver sin cámara», que apaga la cámara y pasa al modo sin cámara
+  if (!WEBKIT) {
+    const nav2 = await pw.chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--use-angle=metal', '--ignore-gpu-blocklist'] });
+    try {
+      const ctx = await nav2.newContext({ viewport: { width: 1280, height: 720 }, permissions: ['camera'] });
+      await ctx.addInitScript(GUARDAR_PISTAS);
+      const p = await ctx.newPage(); vigilar(p, 'sin plano');
+      await p.goto(`${url}/ar/`);
+      await p.click('#empezar');
+      await p.waitForFunction(() => window.__ar.fase === 'rastreando' || window.__ar.fase === 'error', null, { timeout: 60000 });
+      const t0 = Date.now();
+      const a5 = await espera(5000).then(() => p.evaluate(() => ({ ayuda: window.__ar.ayuda, b: !document.getElementById('b-sin-camara').hidden })));
+      const ok1 = await p.waitForFunction(() => window.__ar.ayuda, null, { timeout: 20000, polling: 100 }).then(() => true, () => false);
+      const dt = (Date.now() - t0) / 1000;
+      const txt = await p.textContent('#aviso-txt'), boton = await p.isVisible('#b-sin-camara');
+      res(ok1 && !a5.ayuda && !a5.b && dt >= 9.5 && dt < 12 && txt.startsWith('¿No aparece? Aleja el celular') && boton && await p.isVisible('#aviso'),
+        `sin plano: a los ${dt.toFixed(1)} s del rastreo aparece la ayuda «${txt.slice(0, 40)}…» y el botón «Ver sin cámara» (a los 5 s, todavía no)`);
+      await foto(p, 'sin-plano.png');
+      await p.click('#b-sin-camara');
+      const ok2 = await p.waitForFunction(() => window.__ar.fase === 'sin-camara' || window.__ar.fase === 'error', null, { timeout: 60000 }).then(() => true, () => false);
+      const e = await p.evaluate(() => ({ fase: window.__ar.fase, video: !!document.querySelector('#ar video'), b: !document.getElementById('b-sin-camara').hidden, av: !document.getElementById('aviso').hidden }));
+      const vivas = await pistasVivas(p);
+      res(ok2 && e.fase === 'sin-camara' && vivas === 0 && !e.video && !e.b && !e.av,
+        `«Ver sin cámara» desde la AR: fase «${e.fase}», cámara ${vivas ? 'TODAVÍA ENCENDIDA' : 'apagada'}, sin video ni aviso`);
+      await ctx.close();
+    } finally { await nav2.close(); }
   }
 
   // 6. sin cámara: el modelo sobre la tarjeta virtual

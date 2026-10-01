@@ -28,7 +28,7 @@ export function fechasClave(y) {
     { clave: 'equinoccio-sep', nombre: 'Equinoccio de septiembre', ...min(del(9), x => Math.abs(x.decl)) },
     { clave: 'solsticio-dic', nombre: 'Solsticio de diciembre', ...min(del(12), x => x.decl) },
   ];
-  diasCeroSombra(y).forEach((z, i) => lista.push({ clave: i ? 'sin-sombra-ago' : 'sin-sombra-abr', nombre: `Día sin sombra de ${i ? 'agosto' : 'abril'}`,
+  diasCeroSombra(y).forEach((z, i) => lista.push({ clave: i ? 'sin-sombra-ago' : 'sin-sombra-abr', nombre: 'Día sin sombra',
     y, m: z.m, d: z.d, h: z.h, min: z.min, alt: z.alt }));
   return lista.map(f => ({ y, ...f })).sort((a, b) => a.m - b.m || a.d - b.d);
 }

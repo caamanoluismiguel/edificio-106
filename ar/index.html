@@ -42,7 +42,8 @@
   .leyenda .t { font-size: 13px; font-weight: 600; }
   .franjas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
   .franjas i { height: 10px; border-radius: 2px; }
-  .franjas-txt { display: flex; justify-content: space-between; font-size: 12px; color: var(--suave); }
+  .franjas-txt { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; font-size: 12px; color: var(--suave); text-align: center; font-variant-numeric: tabular-nums; }
+  .ver-sin-camara { min-height: 44px; padding: 0 12px; border: 1px solid var(--borde); border-radius: 10px; background: transparent; font-size: 15px; }
 
   /* pantalla de inicio */
   .inicio { position: fixed; inset: 0; z-index: 4; overflow-y: auto; background: var(--tinta); -webkit-overflow-scrolling: touch; }
@@ -84,7 +85,7 @@
     </div>
     <ol>
       <li>Pon la tarjeta impresa sobre una mesa con buena luz.</li>
-      <li>Gira la tarjeta hasta que la flecha N apunte al norte (sirve la brújula del celular). Así la sombra del modelo cae hacia el mismo lado que las de afuera.</li>
+      <li>Gira la tarjeta hasta que la flecha N apunte al norte (sirve la brújula del celular). Así, a la hora de ahora, la sombra del modelo cae hacia el mismo lado que la sombra real.</li>
       <li>Toca «Abrir la cámara». El celular te pide permiso: acéptalo y apunta al plano entero.</li>
     </ol>
     <p>¿No tienes la tarjeta? <a href="tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descárgala (PDF)</a> e imprímela en A4 o carta al 100 %, o ábrela en la pantalla del computador.</p>
@@ -96,27 +97,28 @@
     <p id="error" role="alert" hidden></p>
   </div>
 </div>
-<div class="aviso" id="aviso" hidden><p id="aviso-txt">Apunta al plano entero de la tarjeta</p></div>
+<div class="aviso" id="aviso" role="status" hidden><p id="aviso-txt">Apunta al plano entero de la tarjeta</p></div>
 <div class="panel" id="panel" hidden>
   <div class="leyenda" id="leyenda" hidden>
-    <span class="t">Sol directo relativo, con cielo despejado</span>
+    <span class="t">Sol directo sobre cada pared (coseno de incidencia, cielo despejado)</span>
     <div class="franjas" id="franjas" aria-hidden="true"></div>
-    <div class="franjas-txt"><span>sin sol directo</span><span>rasante</span><span>de frente</span></div>
-    <p class="nota">Cuánto de frente le da el sol a cada pared ahora; el techo queda en gris. No es una medición: no cuenta nubes ni la luz del cielo.</p>
+    <div class="franjas-txt" aria-hidden="true"><span>0</span><span>0,25</span><span>0,5</span><span>0,75</span><span>1</span></div>
+    <p class="nota" id="leyenda-nota">Cuánto de frente le da el sol a cada pared a la hora elegida; el techo queda en gris. Es un cálculo geométrico: no cuenta nubes ni la luz del cielo. En el visor, la lente Sol usa la radiación de ERA5.</p>
   </div>
   <div class="fila">
     <select id="fecha" class="fecha" aria-label="Fecha"></select>
-    <span class="hora-txt" id="hora-txt" aria-live="polite"></span>
+    <span class="hora-txt" id="hora-txt"></span>
   </div>
-  <input id="hora" type="range" min="360" max="1080" step="10" value="900" aria-label="Hora" aria-describedby="hora-txt">
+  <input id="hora" type="range" min="350" max="1130" step="10" value="900" aria-label="Hora" aria-valuetext="15:00">
   <div class="herramientas" role="group" aria-label="Herramientas">
     <button type="button" id="b-persona" aria-pressed="false" title="Una persona de 1,70 m junto al edificio">Persona</button>
     <button type="button" id="b-norte" aria-pressed="false" title="Flecha del norte sobre el papel">Norte</button>
     <button type="button" id="b-sol" aria-pressed="false" title="Colorea las superficies según el sol directo">Sol</button>
-    <button type="button" id="b-escala" title="Agranda el modelo sobre la tarjeta">1:320</button>
+    <button type="button" id="b-escala" title="Cambia el tamaño del modelo sobre la tarjeta" aria-label="Escala 1:320. Toca para cambiar a 1:200">1:320</button>
     <a id="b-visor" class="boton" href="../" target="_blank" rel="noopener" aria-label="Abrir en el visor con esta fecha y hora">Visor</a>
   </div>
   <p class="nota" id="escala-nota" hidden></p>
+  <button type="button" id="b-sin-camara" class="ver-sin-camara" hidden>Ver sin cámara</button>
 </div>
 <script type="module" src="./ar.js"></script>
 </body>

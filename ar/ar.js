@@ -21,10 +21,11 @@ const S = { fecha: { ...HOY }, min: 900, persona: false, norte: false, lente: fa
 const dos = n => String(n).padStart(2, '0');
 const hhmm = m => `${dos(Math.floor(m / 60))}:${dos(Math.round(m) % 60)}`;
 
-// ---------- navegador dentro de una aplicación (WhatsApp, Instagram, Facebook, TikTok) ----------
+// ---------- navegador dentro de una aplicación (WhatsApp, Instagram, Facebook, TikTok, LinkedIn, Snapchat, Telegram, LINE) ----------
 const ua = navigator.userAgent;
 const app = /WhatsApp/i.test(ua) ? 'WhatsApp' : /Instagram/i.test(ua) ? 'Instagram' : /FBAN|FBAV|FB_IAB|FBIOS/.test(ua) ? 'Facebook'
-  : /TikTok|musical_ly|Bytedance|trill_/i.test(ua) ? 'TikTok' : null;
+  : /TikTok|musical_ly|Bytedance|trill_/i.test(ua) ? 'TikTok' : /LinkedInApp/i.test(ua) ? 'LinkedIn' : /Snapchat/i.test(ua) ? 'Snapchat'
+  : /Telegram/i.test(ua) ? 'Telegram' : /\bLine\//.test(ua) ? 'LINE' : null;
 estado.enApp = app;
 if (app) {
   $('en-app').hidden = false;
@@ -132,12 +133,14 @@ function ponerLente(si) {
 }
 
 // ---------- escala: 1:320 es la de la tarjeta; 1:200 y 1:100 agrandan el modelo sobre el papel ----------
+const SIGUIENTE = { 320: 200, 200: 100, 100: 320 };
 function ponerEscala(e) {
   S.escala = e; const k = ESCALA / e;
   uLente.uK.value = k; escalable.scale.setScalar(k); escalable.position.copy(centro).multiplyScalar(1 - k);
   Object.assign(sol.shadow.camera, { left: -70 * k, right: 70 * k, top: 70 * k, bottom: -70 * k, near: 1, far: 320 * k });
   sol.shadow.camera.updateProjectionMatrix(); sol.shadow.normalBias = 0.02 * k;
   $('b-escala').textContent = `1:${e}`;
+  $('b-escala').setAttribute('aria-label', `Escala 1:${e}. Toca para cambiar a 1:${SIGUIENTE[e]}`);
   const nota = $('escala-nota'); nota.hidden = e === ESCALA;
   nota.textContent = `La tarjeta está impresa a 1:${ESCALA}. Este botón agranda el modelo a 1:${e} (${String(k).replace('.', ',')} veces), así que ya no calza con el plano` + (e <= 100 ? ' y se sale de la tarjeta.' : '.');
   actualizar();
@@ -148,6 +151,7 @@ const FECHAS = [{ clave: 'hoy', nombre: 'Hoy', ...HOY }, ...fechasClave(HOY.y)];
 estado.fechas = FECHAS;
 $('fecha').innerHTML = FECHAS.map((f, i) => `<option value="${i}">${f.nombre}, ${f.d} ${MES3[f.m - 1]}</option>`).join('');
 const _dir = new THREE.Vector3();
+const NOTA_LENTE = $('leyenda-nota').textContent;
 function actualizar() {
   const s = solEscena({ ...S.fecha, h: 0, min: S.min }), k = ESCALA / S.escala;
   _dir.set(s.dir.x, s.dir.y, s.dir.z);
@@ -158,6 +162,8 @@ function actualizar() {
   const sel = FECHAS[+$('fecha').value];
   const extra = s.alt <= 0 ? 'sin sol' : sel?.h != null && Math.abs(S.min - (sel.h * 60 + sel.min)) < 1 ? 'mediodía solar' : '';
   $('hora-txt').innerHTML = hhmm(S.min) + (extra ? `<small>${extra}</small>` : '');
+  $('hora').setAttribute('aria-valuetext', hhmm(S.min) + (extra ? `, ${extra}` : ''));
+  $('leyenda-nota').textContent = NOTA_LENTE + (S.lente && estado.modo === 'ar' ? ' Inclina el celular para ver las paredes.' : '');
   // el mismo momento en el visor: #m-AAAAMMDD-HHMM&vista=aerea (y la lente de sol directo si está puesta)
   const f = S.fecha, m0 = Math.round(S.min);
   const href = `${VISOR}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}${S.lente ? '&lente=sol&modo=directa' : ''}&vista=aerea`;
@@ -176,11 +182,12 @@ const alternar = (id, clave, fn) => $(id).addEventListener('click', () => {
 alternar('b-persona', 'persona', si => { S.persona = si; persona.visible = si; actualizar(); });
 alternar('b-norte', 'norte', si => { S.norte = si; norte.visible = si; actualizar(); });
 alternar('b-sol', 'lente', ponerLente);
-$('b-escala').addEventListener('click', () => ponerEscala({ 320: 200, 200: 100, 100: 320 }[S.escala]));
+$('b-escala').addEventListener('click', () => ponerEscala(SIGUIENTE[S.escala]));
 
-// el deslizador arranca en la hora de ahora (redondeada a 10 min), para comparar con una sombra real; de noche, a las 15:00
+// el deslizador arranca en la hora de ahora (redondeada a 10 min), para comparar con una sombra real; fuera de su rango
+// (de 5:50 a 18:50, lo que dura el día en Panamá con un margen), a las 15:00
 const minAhora = Math.round((ahora.getUTCHours() * 60 + ahora.getUTCMinutes()) / 10) * 10;
-if (minAhora >= 360 && minAhora <= 1080) $('hora').value = minAhora;
+if (minAhora >= +$('hora').min && minAhora <= +$('hora').max) $('hora').value = minAhora;
 S.min = +$('hora').value;
 ponerEscala(ESCALA);
 
@@ -202,7 +209,7 @@ function cargarModelo() {
     persona.position.set(7, 0, b.max.z + 3.5);
     if (S.lente) ponerLente(true);
     return m;
-  });
+  }).catch(e => { cargaModelo = null; throw e; });      // si falla, «Intentar de nuevo» lo vuelve a pedir
   return cargaModelo;
 }
 
@@ -222,7 +229,7 @@ const _m = new THREE.Matrix4();
 
 function pose(worldMatrix) {
   if (estado.modo !== 'ar') return;
-  if (worldMatrix === null) { mundo.visible = false; aviso(true); estado.encontrado = false; return; }
+  if (worldMatrix === null) { if (estado.encontrado) buscandoDesde = performance.now(); mundo.visible = false; aviso(true); estado.encontrado = false; return; }
   _m.fromArray(worldMatrix).multiply(postMatrix).multiply(papel);   // escena (m) → cámara
   camera.matrix.copy(_m).invert(); camera.updateMatrixWorld(true);
   const e = camera.matrix.elements;                       // posición de la cámara, para medir el temblor en ar/probar.mjs
@@ -231,6 +238,27 @@ function pose(worldMatrix) {
   mundo.visible = true; aviso(false); estado.encontrado = true;
 }
 function aviso(ver) { $('aviso').hidden = !ver; }
+
+// si el plano no aparece en 10 s (desde que empieza el rastreo o desde que se perdió), una ayuda y la salida sin cámara
+const AVISO = $('aviso-txt').textContent, AYUDA_MS = 10000;
+let buscandoDesde = 0, reloj = 0;
+function vigilarBusqueda() {
+  clearInterval(reloj); buscandoDesde = performance.now(); estado.ayuda = false;
+  reloj = setInterval(() => {
+    if (estado.modo !== 'ar') { clearInterval(reloj); return; }
+    const ayuda = !estado.encontrado && !estado.pausado && performance.now() - buscandoDesde >= AYUDA_MS;
+    $('aviso-txt').textContent = ayuda ? '¿No aparece? Aleja el celular hasta que se vea toda la hoja, sin reflejos ni tu sombra encima.' : AVISO;
+    if (ayuda && !estado.ayuda) { estado.ayuda = true; $('b-sin-camara').hidden = false; }
+  }, 250);
+}
+function pararCamara() {
+  clearInterval(reloj);
+  controller?.stopProcessVideo(); controller = null;
+  video?.srcObject?.getTracks().forEach(t => t.stop());
+  if (video) { video.srcObject = null; video.remove(); }
+  estado.encontrado = false; mundo.visible = false;
+  $('aviso-txt').textContent = AVISO; aviso(false); $('b-sin-camara').hidden = true;
+}
 
 function ajustar() {
   const W = contenedor.clientWidth, H = contenedor.clientHeight;
@@ -255,11 +283,12 @@ addEventListener('resize', ajustar);
 function mostrarError(e) {
   console.error(e);
   estado.fase = 'error'; estado.errores.push(String(e?.message ?? e));
-  const msg = e?.name === 'NotAllowedError' ? 'El celular no dio permiso para usar la cámara. Puedes darlo en los ajustes del navegador y volver a intentar, o ver el modelo sin cámara.'
+  const msg = e?.name === 'NotAllowedError' ? 'El celular no dio permiso para usar la cámara. Puedes darlo en los ajustes del navegador y volver a intentar, o ver el modelo sin cámara. En iPhone: toca «aA» en la barra de direcciones, Configuración del sitio web, Cámara, Permitir.'
     : e?.name === 'NotFoundError' || e?.name === 'OverconstrainedError' ? 'No encontramos una cámara en este aparato. Puedes ver el modelo sin cámara.'
     : e?.name === 'NotReadableError' ? 'Otra aplicación está usando la cámara. Ciérrala y vuelve a intentar.'
     : e?.message === 'sin-camara' ? 'Este navegador no deja usar la cámara. Abre el enlace en Safari o Chrome, no dentro de WhatsApp ni Instagram.'
     : 'No se pudo abrir la cámara o cargar el modelo. Recarga la página para intentarlo de nuevo.';
+  $('inicio').hidden = false; $('panel').hidden = true;
   $('error').textContent = msg; $('error').hidden = false;
   $('empezar').disabled = false; $('empezar').textContent = 'Intentar de nuevo'; $('sin-camara').disabled = false;
 }
@@ -292,17 +321,25 @@ async function empezar() {
         else if (d.type === 'processDone') { estado.procesados = (estado.procesados ?? 0) + 1; ultimoProceso = performance.now(); }
       },
     });
-    const { dimensions } = await controller.addImageTargets('./tarjeta/plano.mind');
+    // el plano se baja aquí y no con controller.addImageTargets: esa función de MindAR se traga el error de la descarga y
+    // su promesa no termina nunca (se quedaba en «Cargando el edificio…» sin dar ningún aviso)
+    const rMind = await fetch('./tarjeta/plano.mind');
+    if (!rMind.ok) throw new Error(`plano.mind: ${rMind.status}`);
+    const { dimensions } = controller.addImageTargetsFromBuffer(await rMind.arrayBuffer());
     const [mw, mh] = dimensions[0];
     postMatrix = new THREE.Matrix4().compose(new THREE.Vector3(mw / 2, mh / 2, 0), new THREE.Quaternion(), new THREE.Vector3(mw, mw, mw));
     ajustar();
     controller.dummyRun(video);
     if (!document.hidden) controller.processVideo(video);
 
-    $('inicio').hidden = true; $('panel').hidden = false; aviso(true);
-    estado.fase = 'rastreando';
+    $('inicio').hidden = true; $('panel').hidden = false; aviso(true); $('fecha').focus();
+    estado.fase = 'rastreando'; vigilarBusqueda(); actualizar();
     if (!document.hidden) renderer.setAnimationLoop(bucle);
-  } catch (e) { mostrarError(e); }
+  } catch (e) {
+    // se suelta la cámara y se deja todo como al principio, para que «Intentar de nuevo» arranque limpio
+    pararCamara(); renderer.setAnimationLoop(null); estado.modo = null;
+    mostrarError(e);
+  }
 }
 
 // ---------- sin cámara: el modelo sobre una tarjeta virtual, con giro y zoom ----------
@@ -311,7 +348,7 @@ async function sinCamara() {
   try {
     estado.fase = 'cargando'; estado.modo = 'sin-camara';
     $('sin-camara').textContent = 'Cargando el edificio…';
-    if (video?.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.remove(); }
+    renderer.setAnimationLoop(null); pararCamara();                  // si viene de la AR, se apaga la cámara y MindAR
     const [{ OrbitControls }, , tex] = await Promise.all([
       import('three/addons/controls/OrbitControls.js'), cargarModelo(), new THREE.TextureLoader().loadAsync('./tarjeta/plano.png')]);
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -320,14 +357,14 @@ async function sinCamara() {
     document.body.classList.add('sin-camara');
     if (!renderer.domElement.parentNode) contenedor.appendChild(renderer.domElement);
     camActiva = new THREE.PerspectiveCamera(40, 1, 0.5, 3000);
-    $('inicio').hidden = true; $('panel').hidden = false; aviso(false);
+    $('inicio').hidden = true; $('panel').hidden = false; aviso(false); $('fecha').focus();
     const dist = encuadre(contenedor.clientWidth, contenedor.clientHeight);
     camActiva.position.copy(centro).add(new THREE.Vector3(0, 0.8, 0.6).multiplyScalar(dist));   // desde el borde de abajo de la tarjeta, como en la AR
     orbita = new OrbitControls(camActiva, renderer.domElement);
     orbita.target.copy(centro); orbita.enableDamping = true; orbita.maxPolarAngle = Math.PI * 0.47;
     orbita.minDistance = 12; orbita.maxDistance = Math.max(320, dist * 1.5); orbita.update();
     mundo.visible = true; ajustar();
-    estado.fase = 'sin-camara';
+    estado.fase = 'sin-camara'; actualizar();
     if (!document.hidden) renderer.setAnimationLoop(bucle);
   } catch (e) { estado.modo = null; mostrarError(e); }
 }
@@ -363,6 +400,7 @@ async function reanudar() {
     const t0 = performance.now();
     while (performance.now() - Math.max(ultimoProceso, t0) < 600) { await cuadro(); if (mio !== turno) return; }
     controller.processVideo(video);
+    buscandoDesde = performance.now();                     // los 10 s de la ayuda cuentan desde que vuelve
   }
   estado.pausado = false;
   renderer.setAnimationLoop(bucle);
@@ -371,4 +409,5 @@ document.addEventListener('visibilitychange', () => { document.hidden ? pausar()
 
 $('empezar').addEventListener('click', empezar);
 $('sin-camara').addEventListener('click', sinCamara);
+$('b-sin-camara').addEventListener('click', sinCamara);
 actualizar();
