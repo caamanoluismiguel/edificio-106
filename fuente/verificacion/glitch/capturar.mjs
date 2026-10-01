@@ -90,6 +90,13 @@ const todos = {
   nubladoSinContexto: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.grupos.contexto.root.visible = false;',
   sinTerreno: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.scene.traverse((o) => { if (/terreno|entorno/.test(o.name)) o.visible = false; });',
   sinPastoNO: 'U.cubierto.value = 1; U.nubeCob.value = 1; U.mojado.value = 1; E.scene.traverse((o) => { if (o.isMesh && /distant park turf/.test(o.material?.name || "")) o.visible = false; });',
+  nubesFuertes: 'U.nubeSombra.value = 1; U.nubeCob.value = 0.5; U.lluvia.value = 0; U.mojado.value = 0;',
+  nubesFuertes7: 'U.nubeSombra.value = 1; U.nubeCob.value = 0.7; U.lluvia.value = 0; U.mojado.value = 0;',
+  seco2: 'U.lluvia.value = 0; U.mojado.value = 0;',
+  secoSinSueloA: 'U.lluvia.value = 0; U.mojado.value = 0; E.suelo.visible = false;',
+  secoSinSueloB: 'U.lluvia.value = 0; U.mojado.value = 0; E.suelo.visible = false;',
+  secoSinNubesA: 'U.lluvia.value = 0; U.mojado.value = 0; U.nubeSombra.value = 0;',
+  secoSinNubesB: 'U.lluvia.value = 0; U.mojado.value = 0; U.nubeSombra.value = 0;',
   sinNiebla: 'U.lluvia.value = 0.25; U.mojado.value = 1; E.scene.fog.near = 1e5; E.scene.fog.far = 2e5;',
 };
 const lista = CASOS.length ? CASOS : Object.keys(todos);
