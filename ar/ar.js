@@ -6,6 +6,7 @@ import { PLANO_M, CENTRO, EDIFICIO, cargar, matrizPapel, solEscena } from './esc
 
 const $ = id => document.getElementById(id);
 const contenedor = $('ar');
+const SUAVE = new URLSearchParams(location.search).get('suave') === '1';
 const estado = { fase: 'inicio', encontrado: false, vecesEncontrado: 0, cuadros: 0, errores: [] };
 window.__ar = estado;                                     // para las pruebas automáticas (ar/probar.mjs)
 
@@ -101,7 +102,10 @@ async function empezar() {
     mundo.add(modelo);
     controller = new Controller({
       inputWidth: video.videoWidth, inputHeight: video.videoHeight, maxTrack: 1,
-      filterMinCF: 0.001, filterBeta: 1,                   // los valores de MindAR para un modelo quieto sobre la mesa
+      // filtro de MindAR (One Euro). Su documentación (docs/quick-start/tracking-config.md): bajar filterMinCF reduce el
+      // temblor y subir filterBeta reduce el retraso; por defecto 0,001 y 1000. ?suave=1 prueba un corte 10 veces menor
+      // para comparar en el celular, porque el temblor que ve LM no se reproduce con la cámara falsa.
+      filterMinCF: SUAVE ? 0.0001 : 0.001, filterBeta: 1,
       onUpdate: d => { if (d.type === 'updateMatrix') pose(d.worldMatrix); else if (d.type === 'processDone') estado.procesados = (estado.procesados ?? 0) + 1; },
     });
     const { dimensions } = await controller.addImageTargets('./tarjeta/plano.mind');
