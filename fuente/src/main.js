@@ -496,6 +496,15 @@ function paso(now) {
     controls.update(dt);
   }
 
+  // barcos ilustrativos: con «Ahora», el reloj real (al segundo); si no, la hora de la escena. Durante la intro no están.
+  if (escena.barcos) {
+    if (intro) { for (const b of escena.barcos.barcos) b.visible = false; escena.barcos.firma = ''; }
+    else {
+      const d = new Date(), real = ((d.getUTCHours() + 19) % 24) * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60;
+      const minB = S.modo === 'ahora' && !S.viaje ? real : S.min, dia = Math.floor(Date.UTC(S.fecha.y, S.fecha.m - 1, S.fecha.d) / 864e5);
+      if (escena.barcos.actualizar(minB, dia)) escena.sucio = true;
+    }
+  }
   // sol
   const p = S.solViaje ?? posicionSol({ ...S.fecha, h: 0, min: S.min });
   const c = climaEn(S.fecha, S.min);

@@ -40,6 +40,7 @@ import { dedup, prune, quantize, meshopt, weld } from '@gltf-transform/functions
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import { ShapeUtils, Vector2 } from 'three';
 import { osmRegistrado, distanciaPoligonos } from './contexto-osm.mjs';
+import { entornoRegistrado } from './entorno-osm.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const MODELO = path.join(AQUI, '..', 'modelo');
@@ -90,6 +91,10 @@ const MAT = {
   maqueta: { n: 'V016 massing model (estimated height)', c: [0.62, 0.61, 0.57], r: 0.9 },
   asfalto: { n: 'Weathered asphalt 02 — photographic 3m', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
   pasto: { n: 'V016 distant park turf', c: [0.09, 0.16, 0.05], r: 0.96 },
+  acera: { n: 'V017 distant concrete walk', c: [0.42, 0.41, 0.38], r: 0.9 },
+  balasto: { n: 'V017 rail ballast', c: [0.15, 0.13, 0.11], r: 0.95 },
+  agua: { n: 'V017 canal water', c: [0.035, 0.065, 0.06], r: 0.07 },
+  esclusa: { n: 'V017 lock wall concrete', c: [0.55, 0.54, 0.50], r: 0.88 },
   piedra: { n: 'Rubble stone plinth', c: [0.28, 0.24, 0.20], r: 0.92 },
   metal: { n: 'Blue-gray metal roof sheet', c: [0.22, 0.29, 0.36], r: 0.55, m: 0.25 },
 };
@@ -372,6 +377,71 @@ resumen.sombra.push(`estructura pequeña del cuadrángulo (a ${distanciaPoligono
 // pasto lejano al noroeste (más allá del terreno del sitio, como el contexto anterior)
 ML.quad('pasto', [-180, -0.12, -260], [-180, -0.12, -120], [180, -0.12, -120], [180, -0.12, -260], [0, 1, 0]);
 
+// ---------------- entorno ampliado: Ciudad del Saber entera, la avenida, el ferrocarril y el canal ----------------
+// Va en un nodo propio (su propia malla y su propia cuantización): los vecinos de arriba quedan exactamente como estaban.
+// El terreno es plano: el visor no tiene relieve. El agua, las calles y los edificios se apoyan en el suelo que haya en cada
+// lugar: el pasto del sitio (y ≈ 0, de ±180 m en X y ±160 m en Z), el pasto lejano del noroeste (−0,12) o el suelo lejano
+// de escena.js (−0,5). Dentro de las calles modeladas del sitio (X ±110, Z −135 a 95) no se agrega ninguna calle.
+const ent = entornoRegistrado();
+const ME = new Malla(), resEnt = { edificios: 0, alturaOB: 0, calles: 0, tren: 0, agua: 0 };
+const enSitio = ([x, z]) => Math.abs(x) <= 180 && Math.abs(z) <= 160;
+const enPastoNO = ([x, z]) => Math.abs(x) <= 180 && z < -120 && z >= -260;
+const enCallesSitio = ([x, z]) => Math.abs(x) <= 110 && z >= -135 && z <= 95;
+const suelo = (p) => (enSitio(p) ? -0.015 : enPastoNO(p) ? -0.1 : -0.48);
+/** Cinta de ancho w sobre una línea (x, z), con uniones en inglete; cada tramo a la altura del suelo de su punto medio. */
+function cinta(M, mat, L, w, dy = 0) {
+  for (let i = 0; i + 1 < L.length; i++) {
+    const a = L[i], b = L[i + 1], m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    if (enCallesSitio(m)) continue;
+    const dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz); if (l < 0.05) continue;
+    const nx = -dz / l * w / 2, nz = dx / l * w / 2, y = suelo(m) + dy;
+    // se alarga medio ancho en cada punta para que los tramos se solapen en las curvas (mismo color: no se nota)
+    const ex = dx / l * w / 2, ez = dz / l * w / 2;
+    M.quad(mat, [a[0] - ex + nx, y, a[1] - ez + nz], [b[0] + ex + nx, y, b[1] + ez + nz], [b[0] + ex - nx, y, b[1] + ez - nz], [a[0] - ex - nx, y, a[1] - ez - nz], [0, 1, 0]);
+  }
+}
+const ANCHO = { primary: 7.5, primary_link: 5, tertiary: 7, tertiary_link: 5, secondary: 7, residential: 6, unclassified: 6, service: 4, footway: 1.6, steps: 1.6 };
+for (const c of ent.calles) {
+  const w = ANCHO[c.tipo]; if (!w) continue;                    // senderos, trochas y el ascensor no se dibujan
+  const peaton = c.tipo === 'footway' || c.tipo === 'steps';
+  cinta(ME, peaton ? 'acera' : 'asfalto', c.linea, w, peaton ? 0 : 0.004); resEnt.calles++;
+}
+for (const t of ent.tren) { cinta(ME, 'balasto', t.linea, 4.5, 0.002); resEnt.tren++; }
+// agua: el canal, el Lago Miraflores y las cámaras de las esclusas (polígonos de OSM recortados a la caja)
+for (const a of ent.agua) {
+  const P = orientar(a.exterior), H = a.huecos.map((h) => orientar(h).reverse());
+  const y = -0.45;
+  const T = ShapeUtils.triangulateShape(P.map(([x, z]) => new Vector2(x, z)), H.map((h) => h.map(([x, z]) => new Vector2(x, z))));
+  const todos = P.concat(...H);
+  for (const [i, j, k] of T) ME.tri('agua', [todos[i][0], y, todos[i][1]], [todos[j][0], y, todos[j][1]], [todos[k][0], y, todos[k][1]], [0, 1, 0]);
+  // las cámaras de las esclusas: muros de concreto de 2 m alrededor (el muro real es mucho más alto; aquí el terreno es plano)
+  if (/Esclusas/.test(a.nombre)) for (let i = 0; i < P.length; i++) {
+    const p0 = P[i], p1 = P[(i + 1) % P.length], d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]); if (d < 0.5) continue;
+    const ux = (p1[0] - p0[0]) / d, uz = (p1[1] - p0[1]) / d, w = 1.2;
+    const Q = [[p0[0], p0[1]], [p1[0], p1[1]], [p1[0] - uz * w, p1[1] + ux * w], [p0[0] - uz * w, p0[1] + ux * w]];
+    ME.prisma('esclusa', Q, y, 2);
+  }
+  resEnt.agua++;
+}
+// edificios: los de OSM que no están en osm.json, como maqueta con la altura de sus niveles, de Open Buildings o dos niveles
+for (const b of ent.edificios) {
+  if (b.poly.length < 3) continue;
+  const ob = !b.niveles && OB[b.id]?.cubre >= OB_CUBRE ? OB[b.id] : null;
+  const h = b.niveles ? b.niveles * PISO + BASE : ob ? Math.max(ob.p90, 2.5) : NIVELES_SIN_DATO * PISO + BASE;
+  const c = b.poly.reduce((a, p) => [a[0] + p[0] / b.poly.length, a[1] + p[1] / b.poly.length], [0, 0]);
+  ME.prisma('maqueta', b.poly, suelo(c) - 0.05, h);
+  resEnt.edificios++; if (ob) resEnt.alturaOB++;
+}
+const nE = doc.createNode('entorno: Ciudad del Saber, avenida y canal').setMesh(mallaDe('entorno', ME));
+raiz.addChild(nE);
+// los dos ejes del canal por las esclusas de Miraflores (uno por vía), para los barcos ilustrativos de escena.js
+{
+  const recorte = (r) => r.filter((p) => p[1] > ent.caja[2] && p[1] < ent.caja[3]).map((p) => p.map((v) => Math.round(v * 10) / 10));
+  fs.writeFileSync(path.join(AQUI, 'src', 'canal-rutas.js'), '// Generado por fuente/contexto.mjs: ejes del canal (OSM, waterway=canal, «Canal de Panamá») por las dos vías de las\n'
+    + '// esclusas de Miraflores, en metros de la escena (+X noreste, +Z sureste), de sur a norte. © colaboradores de OpenStreetMap, ODbL.\n'
+    + `export const RUTAS_CANAL = ${JSON.stringify(ent.rutas.slice(0, 2).map(recorte))};\n`);
+}
+
 const nC = doc.createNode('vecinos cercanos (proyectan sombra)').setMesh(mallaDe('vecinos cercanos', MC)).setExtras({ sombra: true });
 const nL = doc.createNode('vecinos lejanos').setMesh(mallaDe('vecinos lejanos', ML));
 raiz.addChild(nC); raiz.addChild(nL);
@@ -386,5 +456,6 @@ for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) 
 console.log('cuarteles (106 reducido, malla compartida):\n  ' + resumen.cuarteles.join('\n  '));
 console.log('volúmenes:\n  ' + resumen.volumenes.join('\n  '));
 console.log('proyectan sombra (< ' + RADIO_SOMBRA + ' m del 106):\n  ' + resumen.sombra.join('\n  '));
+console.log(`entorno ampliado (OSM ${ent.fecha}): ${resEnt.edificios} edificios (${resEnt.alturaOB} con altura de Open Buildings), ${resEnt.calles} calles, ${resEnt.tren} tramos de ferrocarril, ${resEnt.agua} superficies de agua`);
 console.log('triángulos guardados', Math.round(tris), '· 106 reducido:', Object.entries(tipo).map(([k, g]) => `${k} ${g.i.length / 3}`).join(', '));
 console.log('escrito', SALIDA, (fs.statSync(SALIDA).size / 1024).toFixed(0), 'KB');

@@ -18,6 +18,7 @@ import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
 import { vectorSol, FACHADAS, posicionSol, saleYPone } from './sol.js';
 import { binario, conVersion } from './datos.js';
+import { Barcos } from './barcos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
 
 export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto'];
@@ -213,6 +214,8 @@ export class Escena {
     gm.emissiveNode = gm.colorNode.mul(vec3(U.cieloArriba));   // de noche, la bóveda completa sobre el terreno abierto
     const suelo = new THREE.Mesh(g, gm); suelo.position.y = -0.5; suelo.receiveShadow = true; scene.add(suelo);
     this.suelo = suelo;
+    // barcos ilustrativos por el canal (barcos.js); ?barcos=0 los quita (para comparar con la versión sin barcos)
+    this.barcos = /[?&]barcos=0/.test(location.search) ? null : new Barcos(scene);
 
     this.#reticula();
     this.#lluvia();
@@ -764,7 +767,8 @@ export class Escena {
     const ruido = mx_noise_float(positionWorld.mul(0.6)).mul(0.6);
     if (grupo === 'contexto') {
       const r = length(positionWorld.xz);
-      const cut = mix(0.0, 900.0, reveal.mul(reveal));
+      // el frente avanza hasta 900 m durante el armado; ya armado, se suelta para que se vea el entorno ampliado (el canal)
+      const cut = mix(0.0, 900.0, reveal.mul(reveal)).add(step(0.999, reveal).mul(1e5));
       m.maskNode = r.add(ruido.mul(8)).lessThan(cut);
       const band = smoothstep(cut.sub(6), cut, r).mul(step(reveal, 0.999));
       m.emissiveNode = (m.emissiveNode ? m.emissiveNode.add(vec3(1.0, 0.7, 0.35).mul(band).mul(0.6)) : vec3(1.0, 0.7, 0.35).mul(band).mul(0.6));
