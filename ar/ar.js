@@ -54,6 +54,8 @@ function pose(worldMatrix) {
   if (worldMatrix === null) { mundo.visible = false; aviso(true); estado.encontrado = false; return; }
   _m.fromArray(worldMatrix).multiply(postMatrix).multiply(papel);   // escena (m) → cámara
   camera.matrix.copy(_m).invert(); camera.updateMatrixWorld(true);
+  const e = camera.matrix.elements;                       // posición de la cámara, para medir el temblor en ar/probar.mjs
+  (estado.camara ??= []).push([e[12], e[13], e[14]]); if (estado.camara.length > 600) estado.camara.shift();
   if (!estado.encontrado) estado.vecesEncontrado++;
   mundo.visible = true; aviso(false); estado.encontrado = true;
 }

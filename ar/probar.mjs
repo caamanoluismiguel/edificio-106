@@ -33,7 +33,7 @@ try {
   const p = await ctx.newPage();
   p.on('pageerror', e => errores.push(String(e)));
   p.on('console', m => { if (m.type() === 'error') errores.push(m.text()); });
-  await p.goto(`${url}/ar/`);
+  await p.goto(`${url}/ar/${arg('url') ? '?' + arg('url') : ''}`);
   await p.click('#empezar');
   const t0 = Date.now();
   const hallado = await p.waitForFunction(() => window.__ar.encontrado || window.__ar.fase === 'error', null, { timeout: 90000, polling: 200 }).then(() => true, () => false);
@@ -41,11 +41,24 @@ try {
   res(hallado && est.encontrado, `MindAR encuentra el plano (${((Date.now() - t0) / 1000).toFixed(1)} s, fase «${est.fase}»)`);
 
   if (est.encontrado) {
+    await p.waitForTimeout(4000);                          // que el filtro se asiente: la deriva inicial no es temblor
     const c0 = await p.evaluate(() => window.__ar.cuadros); await p.waitForTimeout(3000);
     const e2 = await p.evaluate(() => window.__ar);
     const fps = (e2.cuadros - c0) / 3;
     res(fps >= 15, `fluidez en este Mac: ${fps.toFixed(0)} cuadros por segundo (tope 30; meta ≥ 15)`);
-    res(e2.encontrado, `sigue rastreando después de 3 s (encontrado ${e2.vecesEncontrado} vez/veces)`);
+    // temblor: con la tarjeta quieta, el salto de la cámara de una medición a la siguiente (lo que el ojo ve como
+    // temblor), en mm del papel real (1 m del modelo = 1000/300 mm). La deriva lenta mientras el filtro se asienta no cuenta.
+    const cam = e2.camara.slice(-60), mm = 1000 / 300;
+    let suma = 0; for (let i = 1; i < cam.length; i++) suma += (cam[i][0] - cam[i - 1][0]) ** 2 + (cam[i][1] - cam[i - 1][1]) ** 2 + (cam[i][2] - cam[i - 1][2]) ** 2;
+    const salto = Math.sqrt(suma / (cam.length - 1)) * mm;
+    const dist = Math.hypot(...[0, 1, 2].map(k => cam.reduce((s, c) => s + c[k], 0) / cam.length)) * mm;
+    // vaivén: cuánto se pasea la cámara alrededor de su posición media en esos ~2 s (el temblor lento que se ve en el celular)
+    const media = [0, 1, 2].map(k => cam.reduce((s, c) => s + c[k], 0) / cam.length);
+    const vaiven = Math.sqrt(cam.reduce((s, c) => s + [0, 1, 2].reduce((t, k) => t + (c[k] - media[k]) ** 2, 0), 0) / cam.length) * mm;
+    // solo informativo: el video sintético no reproduce el temblor de un celular real (con el estabilizador probado el
+    // 2026-10-01 dio más vaivén que sin él, y de una corrida a otra varía). El temblor se juzga con un video del celular.
+    console.log(`· temblor con la tarjeta quieta: ${salto.toFixed(2)} mm por cuadro y ${vaiven.toFixed(2)} mm de vaivén (cámara a ${dist.toFixed(0)} mm; informativo)`);
+    res(e2.encontrado, `sigue rastreando después de 7 s (encontrado ${e2.vecesEncontrado} vez/veces)`);
     // ¿el edificio está dibujado encima del plano? se compara la pantalla con y sin la capa 3D (leer el lienzo WebGL
     // directamente da vacío después de dibujar), en el navegador mismo para no depender de una librería de imágenes
     const con = (await p.screenshot()).toString('base64');
