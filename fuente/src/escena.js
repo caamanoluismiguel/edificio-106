@@ -17,7 +17,7 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
 import { vectorSol, FACHADAS, posicionSol, saleYPone } from './sol.js';
-import { binario } from './datos.js';
+import { binario, conVersion } from './datos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
 
 export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto'];
@@ -521,7 +521,7 @@ export class Escena {
     try { await MeshoptDecoder.ready; loader.setMeshoptDecoder(MeshoptDecoder); } catch (e) { /* sin meshopt no hay modelo */ }
     const tex = new THREE.TextureLoader();
     const texturas = {};
-    const cargaTex = (f) => texturas[f] ??= tex.loadAsync(base + 'texturas/' + f).then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
+    const cargaTex = (f) => texturas[f] ??= tex.loadAsync(conVersion(base + 'texturas/' + f)).then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
     const lista = this.calidad.grupos ?? GRUPOS;
     const leerGLB = async (nombre) => {
       const bytes = await binario(base + 'modelo/' + nombre + '.glb', (l, t) => onProgress?.(nombre, l, t));

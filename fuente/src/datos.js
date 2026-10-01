@@ -2,6 +2,11 @@
 // en el Artifact de claude.ai cada archivo viaja como texto base64 de su versión gzip (nombre + '.gz.b64.txt'),
 // porque ese servidor solo entrega tipos de archivo web y precarga todo antes de abrir la página.
 
+// Versión del sitio para que el navegador no use archivos viejos de su caché: el armado escribe js/app.js?v=<huella> en
+// index.html (ver armar-raiz.sh), y aquí se lee del propio import.meta.url y se agrega a cada archivo del sitio que se pide.
+export const VER = (() => { try { return new URL(import.meta.url).searchParams.get('v') || ''; } catch (e) { return ''; } })();
+export const conVersion = (u) => VER ? u + (u.includes('?') ? '&' : '?') + 'v=' + VER : u;
+
 const esGzip = (b) => b.length > 2 && b[0] === 0x1f && b[1] === 0x8b;
 
 async function gunzip(bytes) {
@@ -19,7 +24,7 @@ function desdeBase64(txt) {
 }
 
 async function leer(url, onProgress) {
-  const r = await fetch(url);
+  const r = await fetch(conVersion(url));
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
   const total = +r.headers.get('content-length') || 0;
   if (!r.body || !onProgress) return new Uint8Array(await r.arrayBuffer());

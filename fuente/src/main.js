@@ -4,7 +4,7 @@ import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Escena, U, GRUPOS, RAMPA_SOL } from './escena.js';
 import { Sonido } from './sonido.js';
-import { puntosIntro } from './datos.js';
+import { puntosIntro, conVersion } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { posicionLuna } from './luna.js';
 import { Clima } from './clima.js';
@@ -186,8 +186,8 @@ async function arrancar() {
     if (l === 1 && t === 1) compilarPronto();
   });
   const pIntro = puntosIntro(BASE).catch((e) => { console.warn(e); return null; });
-  clima.cargarResumen(BASE + 'datos/clima_resumen.json').then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
-  fetch(BASE + 'datos/consultas.json').then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
+  clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
+  fetch(conVersion(BASE + 'datos/consultas.json')).then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
   setInterval(() => { if (S.modo === 'ahora') clima.cargarVivo(); }, 10 * 60e3);
 
@@ -1995,7 +1995,7 @@ async function abrirConfort(abrir) {
   $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false');
   $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false');
   if (!confortJ) {
-    try { confortJ = await (await fetch(BASE + 'datos/confort.json')).json(); }
+    try { confortJ = await (await fetch(conVersion(BASE + 'datos/confort.json'))).json(); }
     catch (e) { anotar('aviso', 'confort: ' + e); $('#carta-cifras').textContent = 'No se pudieron cargar los datos de confort.'; return; }
     pintarCarta(); pintarUTCI();
   }
