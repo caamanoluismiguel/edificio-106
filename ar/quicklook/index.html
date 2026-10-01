@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Edificio 106 en Quick Look</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --tinta: #1d1d1b; --papel: #fbfaf6; --acento: #b4532a; --suave: #5b5850; --linea: #dedad0; }
+  html, body { margin: 0; background: var(--papel); color: var(--tinta); font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; }
+  main { max-width: 34em; margin: 0 auto; padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); }
+  h1 { margin: 0 0 12px; font-size: 22px; }
+  p { margin: 0 0 14px; font-size: 16px; line-height: 1.45; }
+  .modelo { display: block; margin: 8px 0 18px; border: 1px solid var(--linea); border-radius: 12px; overflow: hidden; background: #eceae4; }
+  .modelo img { display: block; width: 100%; height: auto; }
+  .modelo:focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
+  .nota { color: var(--suave); font-size: 15px; }
+  a { color: var(--acento); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Edificio 106 sobre la mesa</h1>
+  <p id="con-ar">Toca la imagen para abrir el modelo. Apunta la cámara a una mesa o al piso y espera a que el iPhone reconozca la superficie: el edificio se coloca encima a escala 1:200, de unos 34 por 22&nbsp;cm. No necesitas la tarjeta.</p>
+  <p id="sin-ar" hidden>Este navegador no abre modelos de AR Quick Look. Ábrelo desde Safari en un iPhone o un iPad.</p>
+  <a class="modelo" rel="ar" href="edificio-106.usdz"><img src="vista.jpg" width="620" height="380" alt="El Edificio 106 visto desde arriba, con la cubierta de tejas y la entrada"></a>
+  <p class="nota">Con un dedo lo mueves y con dos lo giras. Si lo agrandas o lo achicas con los dedos, deja de estar a 1:200.</p>
+  <p class="nota">Funciona en iPhone y iPad con Safari. En Android usa la <a href="../">versión con la tarjeta impresa</a>.</p>
+</main>
+<script>
+  // AR Quick Look existe si el enlace acepta rel="ar" (Safari en iOS y iPadOS)
+  var a = document.createElement('a');
+  if (!(a.relList && a.relList.supports && a.relList.supports('ar'))) {
+    document.getElementById('con-ar').hidden = true;
+    document.getElementById('sin-ar').hidden = false;
+  }
+</script>
+</body>
+</html>
