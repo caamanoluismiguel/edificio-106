@@ -34,6 +34,11 @@ try {
   p.on('pageerror', e => errores.push(String(e)));
   p.on('console', m => { if (m.type() === 'error') errores.push(m.text()); });
   await p.goto(`${url}/ar/${arg('url') ? '?' + arg('url') : ''}`);
+  // el deslizador arranca en la hora de ahora en Panamá (redondeada a 10 min) si es de día; si no, en las 15:00
+  const ini = +(await p.inputValue('#hora'));
+  const ya = new Date(Date.now() - 5 * 3600e3), minYa = Math.round((ya.getUTCHours() * 60 + ya.getUTCMinutes()) / 10) * 10;
+  const esperado = minYa >= 360 && minYa <= 1080 ? minYa : 900;
+  res(Math.abs(ini - esperado) <= 10, `el deslizador arranca en ${Math.floor(ini / 60)}:${String(ini % 60).padStart(2, '0')} (ahora en Panamá: ${ya.getUTCHours()}:${String(ya.getUTCMinutes()).padStart(2, '0')})`);
   await p.click('#empezar');
   const t0 = Date.now();
   const hallado = await p.waitForFunction(() => window.__ar.encontrado || window.__ar.fase === 'error', null, { timeout: 90000, polling: 200 }).then(() => true, () => false);
@@ -47,8 +52,8 @@ try {
     const fps = (e2.cuadros - c0) / 3;
     res(fps >= 15, `fluidez en este Mac: ${fps.toFixed(0)} cuadros por segundo (tope 30; meta ≥ 15)`);
     // temblor: con la tarjeta quieta, el salto de la cámara de una medición a la siguiente (lo que el ojo ve como
-    // temblor), en mm del papel real (1 m del modelo = 1000/300 mm). La deriva lenta mientras el filtro se asienta no cuenta.
-    const cam = e2.camara.slice(-60), mm = 1000 / 300;
+    // temblor), en mm del papel real a 1:320 (1 m del modelo = 1000/320 mm; ESCALA de escena-ar.js). La deriva lenta mientras el filtro se asienta no cuenta.
+    const cam = e2.camara.slice(-60), mm = 1000 / 320;
     let suma = 0; for (let i = 1; i < cam.length; i++) suma += (cam[i][0] - cam[i - 1][0]) ** 2 + (cam[i][1] - cam[i - 1][1]) ** 2 + (cam[i][2] - cam[i - 1][2]) ** 2;
     const salto = Math.sqrt(suma / (cam.length - 1)) * mm;
     const dist = Math.hypot(...[0, 1, 2].map(k => cam.reduce((s, c) => s + c[k], 0) / cam.length)) * mm;

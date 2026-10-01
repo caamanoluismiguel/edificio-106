@@ -23,6 +23,7 @@
   .inicio h1 { margin: 0; font-size: 22px; }
   .inicio p { margin: 0; max-width: 34em; font-size: 16px; line-height: 1.45; color: #d9d6cc; }
   .inicio button { font: inherit; font-size: 17px; padding: 12px 22px; border: 0; border-radius: 10px; background: var(--acento); color: #fff; }
+  .inicio a { color: #fff; }
   .inicio button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
   [hidden] { display: none !important; }
 </style>
@@ -32,6 +33,8 @@
 <div class="inicio" id="inicio">
   <h1>Edificio 106 sobre la mesa</h1>
   <p>Pon la tarjeta impresa sobre una mesa con buena luz. Al tocar el botón, el celular te pide la cámara: apunta al plano entero y el edificio aparece encima.</p>
+  <p>Gira la tarjeta hasta que la N apunte al norte. Así la sombra del modelo cae hacia el mismo lado que las de afuera.</p>
+  <p>¿No tienes la tarjeta? <a href="tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descárgala (PDF)</a> e imprímela en A4 o carta al 100 %, o ábrela en la pantalla del computador.</p>
   <button id="empezar" type="button">Abrir la cámara</button>
   <p id="error" role="alert" hidden></p>
 </div>

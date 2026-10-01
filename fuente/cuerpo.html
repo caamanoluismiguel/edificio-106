@@ -484,6 +484,10 @@
   #guardar-img { min-height: 44px; padding: 10px 16px; border-color: var(--sol); color: var(--sol); }
   #guardar-img[aria-busy="true"] { opacity: .7; cursor: progress; }
   .lamina-nota { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--cal-2); }
+  a.boton { text-decoration: none; }
+  /* «Abrir la cámara» lleva a la AR (ar/): solo en pantallas táctiles, donde hay cámara trasera; en el computador, el PDF */
+  #abrir-ar { display: none; min-height: 44px; padding: 10px 16px; border-color: var(--sol); color: var(--sol); }
+  @media (pointer: coarse) { #abrir-ar { display: inline-flex; } }
   #img-estado:empty { display: none; } #img-estado { color: var(--cal); }
   #capas h3 { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
   .interruptores { display: grid; gap: 6px; }
@@ -912,7 +916,7 @@
     <h3 id="todos-t" class="sirve-h">En pocas palabras</h3>
     <p>Es una maqueta digital del Edificio 106 de Isthmus, en Ciudad del Saber. En ella puedes ver cómo inciden el sol, la lluvia y el viento sobre el edificio a cualquier hora de cualquier día, con el clima de cada hora entre 2001 y 2025.</p>
     <p><b>¿Por qué importa?</b> Un edificio no está quieto frente al clima: el sol incide primero sobre una fachada y después sobre otra, los aguaceros mojan más una pared que las otras y el viento sopla casi siempre desde la misma dirección. Eso decide si adentro hace calor, si las paredes se manchan de humedad o si entra la brisa por las ventanas. Los arquitectos tienen que pensarlo antes de construir, y en un plano cuesta imaginarlo. Aquí se ve.</p>
-    <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, aprender cómo se llama cada parte del edificio, ver en «Confort» qué conviene abrir o tapar a esa hora e ir a días especiales, como el más lluvioso en 25 años.</p>
+    <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, aprender cómo se llama cada parte del edificio, ver en «Confort» qué conviene abrir o tapar a esa hora e ir a días especiales, como el más lluvioso en 25 años. En «Capas» hay además una tarjeta para imprimir: con el celular, el edificio aparece en 3D sobre tu mesa.</p>
     <p><button class="boton primario" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
     <h3 class="sirve-h">Lo que se aprende en pocos minutos</h3>
     <div class="aprende">
@@ -1085,6 +1089,12 @@
     <div class="lamina-botones"><button class="boton" id="guardar-img" type="button">Guardar imagen (PNG)</button><button class="boton" id="copiar-enlace" type="button">Copiar enlace</button></div>
     <p class="lamina-nota">Descarga lo que ves en la escena, a 2.400 px en el lado largo aunque tu pantalla sea pequeña, con un pie: fecha y hora, forma de ver, fachada o vista, la leyenda de color y un código QR que abre este mismo momento. «Copiar enlace» da la dirección de lo que ves: fecha y hora, forma de ver, vista o fachada y el encuadre, para proyectarlo en clase o entregarlo como evidencia.</p>
     <p id="img-estado" class="lamina-nota" role="status"></p>
+  </div>
+  <div class="lamina" id="sobre-la-mesa">
+    <h3 title="Realidad aumentada">Sobre la mesa</h3>
+    <p class="lamina-nota">Imprime la tarjeta y escanea su código con el celular. El edificio aparece en 3D sobre el plano, con la sombra de hoy.</p>
+    <div class="lamina-botones"><a class="boton" id="abrir-ar" href="ar/">Abrir la cámara</a><a class="boton" id="bajar-tarjeta" href="ar/tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descargar la tarjeta (PDF)</a></div>
+    <p class="lamina-nota">Imprímela en A4 o carta, al 100 %, en papel mate. Sin impresora, ábrela en la pantalla del computador y apunta el celular ahí.</p>
   </div>
   <p class="capas-pie">Motor de dibujo en este navegador: <span id="motor">…</span></p>
 </div>

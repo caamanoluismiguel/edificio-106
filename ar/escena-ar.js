@@ -6,9 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { posicionSol, vectorSol } from './sol.js';
 
-export const ESCALA = 300;                              // 1:300 sobre el papel
-export const PLANO_MM = [277, 160];                     // la parte rastreada de la tarjeta (el plano), en mm
-export const PLANO_M = PLANO_MM.map(v => v * ESCALA / 1000);   // lo que cubre del sitio, en metros: 83,1 × 48
+export const ESCALA = 320;                              // 1:320 al imprimir al 100 %: así la hoja cabe en A4 y en carta
+export const PLANO_M = [83.1, 48];                      // lo que cubre del sitio, en metros (el mismo encuadre que a 1:300)
+export const PLANO_MM = PLANO_M.map(v => v * 1000 / ESCALA);   // la parte rastreada de la tarjeta (el plano): 259,7 × 150 mm
 export const CENTRO = [10.05, 8.3];                     // centro del plano en la escena (x, z): el centro de la caja del 106
 // grupos del 106: los mismos GLB del sitio, copiados tal cual; las tejas, en su versión liviana (cubiertas_sombra)
 export const EDIFICIO = ['arquitectura', 'cubiertas', 'detalles', 'entrada', 'ventanas'];

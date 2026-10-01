@@ -44,6 +44,9 @@ function ponerSol(min) {
   $('hora-txt').textContent = `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}` + (s.alt > 0 ? '' : ' · sin sol');
 }
 $('hora').addEventListener('input', e => ponerSol(+e.target.value));
+// el deslizador arranca en la hora de ahora (redondeada a 10 min), para comparar con una sombra real; de noche, a las 15:00
+const minAhora = Math.round((ahora.getUTCHours() * 60 + ahora.getUTCMinutes()) / 10) * 10;
+if (minAhora >= 360 && minAhora <= 1080) $('hora').value = minAhora;
 ponerSol(+$('hora').value);
 
 // ---------- cámara del celular y MindAR ----------

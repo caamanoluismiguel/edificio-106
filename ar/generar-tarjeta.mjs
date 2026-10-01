@@ -1,5 +1,5 @@
 // Genera la tarjeta de AR: ar/tarjeta/plano.png (el plano a 300 ppp), plano.mind (el archivo de rastreo de MindAR),
-// qr.svg, tarjeta.pdf (A4 apaisada, para imprimir al 100 %) y tarjeta.png (la hoja entera, para la prueba con cámara falsa).
+// qr.svg, tarjeta.pdf (carta apaisada que también cabe en A4, para imprimir al 100 %) y tarjeta.png (la hoja entera, para la prueba con cámara falsa).
 // Uso: node ar/generar-tarjeta.mjs [--url=https://…/ar/]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,11 +45,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     // encuentra en menos de un segundo. Por debajo de 1.000 el techo queda demasiado liso: no sirve como tarjeta
     if (!(puntos[0]?.puntos >= 1000)) errores.push(`el plano tiene ${puntos[0]?.puntos} puntos de rastreo (mínimo 1.000)`);
 
-    const h = await nav.newPage({ viewport: { width: 1123, height: 794 }, deviceScaleFactor: 2 });
+    const h = await nav.newPage({ viewport: { width: 1056, height: 816 }, deviceScaleFactor: 2 });   // carta apaisada a 96 ppp
     h.on('pageerror', e => errores.push(String(e)));
     await h.goto(`${url}/ar/tarjeta.html?paso=hoja`);
     await h.waitForFunction(() => window.__listo, null, { timeout: 60000 });
-    await h.pdf({ path: path.join(salida, 'tarjeta.pdf'), width: '297mm', height: '210mm', printBackground: true, pageRanges: '1' });
+    await h.pdf({ path: path.join(salida, 'tarjeta.pdf'), width: '279.4mm', height: '215.9mm', printBackground: true, pageRanges: '1' });
     await h.screenshot({ path: path.join(salida, 'tarjeta.png') });
   } finally { await nav.close(); srv.close(); }
   for (const f of ['plano.png', 'plano.mind', 'qr.svg', 'tarjeta.pdf', 'tarjeta.png']) console.log(f.padEnd(12), (fs.statSync(path.join(salida, f)).size / 1024).toFixed(0), 'KB');

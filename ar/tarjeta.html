@@ -10,20 +10,23 @@
 { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
 </script>
 <style>
-  @page { size: 297mm 210mm; margin: 0; }
+  /* hoja carta apaisada (279,4 × 215,9 mm) con todo dentro de 260 × 188 mm: impresa al 100 % sirve en carta y en A4
+     (en A4 sobran 9 mm a los lados y faltan 3 mm arriba y abajo, que caen en el margen en blanco) */
+  @page { size: 279.4mm 215.9mm; margin: 0; }
   html, body { margin: 0; background: #fff; color: #1d1d1b; font-family: 'Helvetica Neue', Arial, sans-serif; }
-  .hoja { position: relative; width: 297mm; height: 210mm; overflow: hidden; }
-  .plano { position: absolute; left: 10mm; top: 10mm; width: 277mm; height: 160mm; display: block; }
-  .pie { position: absolute; left: 10mm; right: 10mm; top: 175mm; height: 27mm; display: flex; align-items: center; gap: 8mm; }
-  .qr { width: 27mm; height: 27mm; flex: none; }
+  .hoja { position: relative; width: 279.4mm; height: 215.9mm; overflow: hidden; }
+  .plano { position: absolute; left: 9.85mm; top: 13.95mm; width: 259.69mm; height: 150mm; display: block; }
+  .pie { position: absolute; left: 9.85mm; right: 9.85mm; top: 168.95mm; height: 33mm; display: flex; align-items: center; gap: 6mm; }
+  .qr { width: 28mm; height: 28mm; flex: none; }
   .qr svg { width: 100%; height: 100%; display: block; }
   .texto { flex: 1; }
-  .texto h1 { font-size: 13pt; margin: 0 0 1.5mm; font-weight: 700; }
-  .texto p { font-size: 10pt; margin: 0; line-height: 1.35; }
-  .texto .chico { font-size: 7.5pt; color: #555; margin-top: 1.5mm; }
+  .texto h1 { font-size: 12pt; margin: 0 0 1.2mm; font-weight: 700; }
+  .texto p { font-size: 8.6pt; margin: 0; line-height: 1.3; }
+  .texto .clase { margin-top: 1.2mm; }
+  .texto .chico { font-size: 7pt; color: #555; margin-top: 1.2mm; }
   .escala { flex: none; font-size: 7.5pt; text-align: center; }
   .escala .barra { display: flex; height: 2mm; border: 0.3mm solid #1d1d1b; margin-bottom: 1mm; }
-  .escala .barra i { width: 6.667mm; }
+  .escala .barra i { width: 6.25mm; }                  /* 5 tramos de 2 m: 10 m a 1:320 = 31,25 mm */
   .escala .barra i:nth-child(odd) { background: #1d1d1b; }
   .norte { flex: none; width: 16mm; text-align: center; font-size: 8pt; font-weight: 700; }
   .norte svg { width: 11mm; height: 11mm; display: block; margin: 0 auto 0.5mm; }
@@ -82,10 +85,11 @@ if (paso === 'hoja') {
       <div class="qr">${qr}</div>
       <div class="texto">
         <h1>Edificio 106 · Isthmus · Ciudad del Saber</h1>
-        <p>Escanea el código, permite la cámara y apunta el celular al plano entero. El edificio aparece encima, con el sol de verdad.</p>
-        <p class="chico">Imprime en papel mate, sin ajustar a la página (100 %). La tarjeta tiene que verse completa y plana.</p>
+        <p>Escanea el código, permite la cámara y apunta el celular al plano entero: el edificio aparece encima, con el sol de hoy. Antes, gira la hoja hasta que la flecha N apunte al norte (sirve la brújula del celular).</p>
+        <p class="clase"><b>Para conversar:</b> mueve la hora. ¿Qué fachada recibe sol en la mañana y cuál en la tarde? Busca una sombra de verdad en el patio, deja la hora en la de ahora y mira si apunta hacia el mismo lado que la del modelo.</p>
+        <p class="chico">Imprime en A4 o carta al 100 %, sin ajustar a la página, en papel mate. Un celular sirve para tres o cuatro personas.</p>
       </div>
-      <div class="escala"><div class="barra"><i></i><i></i><i></i><i></i><i></i></div>0 · 10 m · Escala 1:${ESCALA}</div>
+      <div class="escala"><div class="barra"><i></i><i></i><i></i><i></i><i></i></div>0 · 10 m · 1:${ESCALA} al 100 %</div>
       <div class="norte"><svg viewBox="-10 -10 20 20"><g transform="rotate(${giro.toFixed(1)})"><path d="M0 -9 L5 7 L0 4 L-5 7 Z" fill="#1d1d1b"/></g></svg>N</div>
     </div>
   </div>`;
