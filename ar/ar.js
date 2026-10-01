@@ -6,7 +6,7 @@ import { PLANO_M, CENTRO, EDIFICIO, cargar, matrizPapel, solEscena } from './esc
 
 const $ = id => document.getElementById(id);
 const contenedor = $('ar');
-const SUAVE = new URLSearchParams(location.search).get('suave') === '1';
+const SUAVE = new URLSearchParams(location.search).get('suave') !== '0';   // por defecto el filtro suave; ?suave=0, el anterior
 const estado = { fase: 'inicio', encontrado: false, vecesEncontrado: 0, cuadros: 0, errores: [] };
 window.__ar = estado;                                     // para las pruebas automáticas (ar/probar.mjs)
 
@@ -103,8 +103,8 @@ async function empezar() {
     controller = new Controller({
       inputWidth: video.videoWidth, inputHeight: video.videoHeight, maxTrack: 1,
       // filtro de MindAR (One Euro). Su documentación (docs/quick-start/tracking-config.md): bajar filterMinCF reduce el
-      // temblor y subir filterBeta reduce el retraso; por defecto 0,001 y 1000. ?suave=1 prueba un corte 10 veces menor
-      // para comparar en el celular, porque el temblor que ve LM no se reproduce con la cámara falsa.
+      // temblor y subir filterBeta reduce el retraso; por defecto 0,001 y 1000. Aquí va un corte 10 veces menor, elegido por
+      // LM (2026-10-01) porque el edificio temblaba con el celular quieto; ?suave=0 vuelve al 0,001 para comparar.
       filterMinCF: SUAVE ? 0.0001 : 0.001, filterBeta: 1,
       onUpdate: d => { if (d.type === 'updateMatrix') pose(d.worldMatrix); else if (d.type === 'processDone') estado.procesados = (estado.procesados ?? 0) + 1; },
     });
