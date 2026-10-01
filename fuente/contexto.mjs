@@ -91,7 +91,8 @@ const MAT = {
   maqueta: { n: 'V016 massing model (estimated height)', c: [0.62, 0.61, 0.57], r: 0.9 },
   asfalto: { n: 'Weathered asphalt 02 — photographic 3m', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
   pasto: { n: 'V016 distant park turf', c: [0.09, 0.16, 0.05], r: 0.96 },
-  calle: { n: 'V017 street asphalt (OSM)', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
+  calle: { n: 'V017 street asphalt (OSM)', c: [0.23, 0.23, 0.22], r: 0.751,   // r distinto: si no, dedup() lo junta con el asfalto del sitio y pierde el adelanto en profundidad
+    image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
   acera: { n: 'V017 street concrete walk (OSM)', c: [0.42, 0.41, 0.38], r: 0.9 },
   balasto: { n: 'V017 street rail ballast (OSM)', c: [0.15, 0.13, 0.11], r: 0.95 },
   agua: { n: 'V017 canal water', c: [0.035, 0.065, 0.06], r: 0.07 },
