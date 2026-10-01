@@ -385,6 +385,10 @@ ML.quad('pasto', [-180, -0.12, -260], [-180, -0.12, -120], [180, -0.12, -120], [
 // (MESETA) el terreno queda en −0,6 m, bajo el pasto del sitio; de ahí sube o baja hasta el relieve real en 200 m. Dentro
 // de las calles modeladas del sitio (X ±110, Z −135 a 95) no se agrega ninguna calle.
 const ent = entornoRegistrado(), rel = relieve();
+// dos mallas por cada cosa: cerca del sitio (a menos de 400 m, con precisión de milímetros al cuantizar) y lejos (la cuantización
+// de 16 bits reparte la caja de ~6 km: unos 17 cm por paso, que de lejos no se notan)
+const CERCA = 400, cerca400 = ([x, z]) => Math.abs(x) < CERCA && Math.abs(z) < CERCA;
+const MEc = new Malla(), MTc = new Malla();
 const ME = new Malla(), MT = new Malla(), resEnt = { edificios: 0, alturaOB: 0, calles: 0, tren: 0, agua: 0 };
 const enSitio = ([x, z]) => Math.abs(x) <= 180 && Math.abs(z) <= 160;
 const enPastoNO = ([x, z]) => Math.abs(x) <= 180 && z < -120 && z >= -260;
@@ -409,7 +413,8 @@ const MASCARA = await (async () => {
     for (let u = -R; u <= R; u++) for (let v = -R; v <= R; v++) { const x = gx + u, z = gz + v; if (x >= 0 && z >= 0 && x < W && z < H && u * u + v * v <= R * R) d[z * W + x] = 1; }
   return ([x, z]) => { const gx = Math.floor(x - X0), gz = Math.floor(z - Z0); return gx >= 0 && gz >= 0 && gx < W && gz < H && d[gz * W + gx] === 1; };
 })();
-const enCallesSitio = (p) => MASCARA(p);
+// junto al 106 manda el modelo (hecho con las fotos): ahí no se agrega ninguna calle de OSM, aunque OSM traiga accesos
+const enCallesSitio = (p) => MASCARA(p) || (Math.abs(p[0]) < 75 && Math.abs(p[1]) < 60);
 const MESETA = { x: 260, z0: -280, z1: 320, borde: 200 };
 const fueraMeseta = ([x, z]) => Math.max(Math.abs(x) - MESETA.x, MESETA.z0 - z, z - MESETA.z1, 0);
 const sst = (t) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
@@ -444,9 +449,28 @@ for (const a of aguas) {
   a.caja = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)];
   a.nivelY = /Esclusas de Miraflores/.test(a.nombre) ? Math.min(nivelCanal(a.caja[2]), nivelCanal(a.caja[3])) : a.nivel;
 }
-const suelo = (p) => (enSitio(p) ? -0.015 : enPastoNO(p) ? -0.1 : terreno(p[0], p[1]) + 0.08);
+const suelo = (p) => (enSitio(p) ? -0.015 : enPastoNO(p) ? -0.1 : terreno(p[0], p[1]) + (cerca400(p) ? 0.08 : 0.3));
 /** Cinta de ancho w sobre una línea (x, z), con uniones en inglete; cada punta a la altura del suelo de su lugar. */
+// las dos calles modeladas en sitio.glb (medidas en su asfalto): Jorge Gil, a lo largo de X con el eje en z = 23,5, y Carlos
+// Lara, a lo largo de Z con el eje en x = 52,25; las dos de 8 m. En OSM pasan 2 a 5 m corridas: cerca del sitio, los puntos
+// de OSM que siguen una de ellas (a menos de 12 m de su eje y paralelos) se llevan a ese eje, y 120 m más allá de la calle
+// modelada vuelven del todo a su lugar de OSM
+const EJES_SITIO = [{ eje: 'z', valor: 23.5, de: -110, a: 110 }, { eje: 'x', valor: 52.25, de: -135, a: 95 }];
+function alinear(L) {
+  return L.map((p, i) => {
+    const q = L[Math.min(i + 1, L.length - 1)], r = L[Math.max(i - 1, 0)], dx = q[0] - r[0], dz = q[1] - r[1], l = Math.hypot(dx, dz) || 1;
+    let [x, z] = p;
+    for (const e of EJES_SITIO) {
+      const [a, b, paralelo] = e.eje === 'z' ? [p[1], p[0], Math.abs(dz / l) < 0.2] : [p[0], p[1], Math.abs(dx / l) < 0.2];
+      if (!paralelo || Math.abs(a - e.valor) > 12) continue;
+      const fuera = Math.max(e.de - b, b - e.a, 0), peso = 1 - sst(fuera / 120);
+      if (e.eje === 'z') z += (e.valor - z) * peso; else x += (e.valor - x) * peso;
+    }
+    return [x, z];
+  });
+}
 function cinta(M, mat, L0, w, dy = 0) {
+  L0 = alinear(L0);
   // tramos de 3 m como máximo: cada uno se apoya en el suelo de su lugar y se quita solo donde ya hay calle modelada
   const L = [L0[0]];
   for (let i = 1; i < L0.length; i++) {
@@ -460,10 +484,12 @@ function cinta(M, mat, L0, w, dy = 0) {
     const nx = -dz / l * w / 2, nz = dx / l * w / 2, ya = suelo(a) + dy, yb = suelo(b) + dy;
     // se alarga medio ancho en cada punta para que los tramos se solapen en las curvas (mismo color: no se nota)
     const ex = dx / l * w / 2, ez = dz / l * w / 2;
-    M.quad(mat, [a[0] - ex + nx, ya, a[1] - ez + nz], [b[0] + ex + nx, yb, b[1] + ez + nz], [b[0] + ex - nx, yb, b[1] + ez - nz], [a[0] - ex - nx, ya, a[1] - ez - nz], [0, 1, 0]);
+    (cerca400(m) ? MEc : M).quad(mat, [a[0] - ex + nx, ya, a[1] - ez + nz], [b[0] + ex + nx, yb, b[1] + ez + nz], [b[0] + ex - nx, yb, b[1] + ez - nz], [a[0] - ex - nx, ya, a[1] - ez - nz], [0, 1, 0]);
   }
 }
-const ANCHO = { primary: 7.5, primary_link: 5, tertiary: 7, tertiary_link: 5, secondary: 7, residential: 6, unclassified: 6, service: 4, footway: 1.6, steps: 1.6 };
+// anchos: las calles de Ciudad del Saber como las dos modeladas en el sitio (8 m); la avenida, por calzada (OSM la dibuja con
+// una vía por sentido); los accesos y estacionamientos, 4 m; las aceras, 1,6 m
+const ANCHO = { primary: 7.5, primary_link: 5, tertiary: 8, tertiary_link: 5, secondary: 8, residential: 8, unclassified: 8, service: 4, footway: 1.6, steps: 1.6 };
 for (const c of ent.calles) {
   const w = ANCHO[c.tipo]; if (!w) continue;                    // senderos, trochas y el ascensor no se dibujan
   const peaton = c.tipo === 'footway' || c.tipo === 'steps';
@@ -510,7 +536,7 @@ for (const b of ent.edificios) {
   const h = b.niveles ? b.niveles * PISO + BASE : ob ? Math.max(ob.p90, 2.5) : NIVELES_SIN_DATO * PISO + BASE;
   const c = b.poly.reduce((a, p) => [a[0] + p[0] / b.poly.length, a[1] + p[1] / b.poly.length], [0, 0]);
   const base = Math.min(...b.poly.map(suelo)) - 0.3;
-  ME.prisma('maqueta', b.poly, base, suelo(c) + h);
+  (cerca400(c) ? MEc : ME).prisma('maqueta', b.poly, base, suelo(c) + h);
   resEnt.edificios++; if (ob) resEnt.alturaOB++;
 }
 // el terreno: rejilla de 40 m sobre toda la caja, con el relieve real fuera de la meseta
@@ -520,12 +546,14 @@ for (const b of ent.edificios) {
   const v = (i, k) => [x0 + i * P, Y[i][k], z0 + k * P];
   for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) {
     if (Math.max(Y[i][k], Y[i + 1][k], Y[i][k + 1], Y[i + 1][k + 1]) < -0.59 && enSitio([x0 + (i + 0.5) * P, z0 + (k + 0.5) * P])) continue;   // bajo el sitio: no se ve
-    MT.quad('pasto', v(i, k), v(i, k + 1), v(i + 1, k + 1), v(i + 1, k), [0, 1, 0]);
+    (cerca400([x0 + (i + 0.5) * P, z0 + (k + 0.5) * P]) ? MTc : MT).quad('pasto', v(i, k), v(i, k + 1), v(i + 1, k + 1), v(i + 1, k), [0, 1, 0]);
   }
 }
 const nE = doc.createNode('entorno: Ciudad del Saber, avenida y canal').setMesh(mallaDe('entorno', ME));
 const nT = doc.createNode('entorno: terreno (Copernicus DEM GLO-30)').setMesh(mallaDe('terreno', MT));
-raiz.addChild(nE); raiz.addChild(nT);
+const nEc = doc.createNode('entorno cercano (a menos de 400 m)').setMesh(mallaDe('entorno cercano', MEc));
+const nTc = doc.createNode('entorno: terreno cercano').setMesh(mallaDe('terreno cercano', MTc));
+raiz.addChild(nE); raiz.addChild(nT); raiz.addChild(nEc); raiz.addChild(nTc);
 // los dos ejes del canal por las esclusas de Miraflores (uno por vía), para los barcos ilustrativos de escena.js
 {
   // hasta el Lago Miraflores (al norte, antes de Pedro Miguel) y hasta el borde sur de la caja; con la altura del agua (y)
