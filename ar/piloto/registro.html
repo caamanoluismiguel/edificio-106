@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro del piloto AR</title>
+<meta name="robots" content="noindex">
+<!-- Hoja de observación del piloto (F2) de la AR sobre la tarjeta. Funciona sin conexión: todo va en este archivo.
+     Se imprime en A4 o carta (vertical) o se llena en pantalla; en pantalla calcula el resumen y exporta CSV. -->
+<style>
+  :root { --tinta: #1d1d1b; --gris: #5f5d57; --linea: #c9c5ba; --suave: #f1efe8; --papel: #fff; --acento: #b4532a; --bien: #2f6b3a; --mal: #a3361f; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--papel); color: var(--tinta); font: 15px/1.4 -apple-system, 'Helvetica Neue', Arial, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  .sub { margin: 0 0 14px; color: var(--gris); font-size: 13px; }
+  input, select, textarea, button { font: inherit; color: inherit; }
+  input, select, textarea { width: 100%; border: 1px solid var(--linea); border-radius: 6px; padding: 6px 8px; background: var(--papel); }
+  textarea { resize: vertical; min-height: 52px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+
+  .datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px 12px; margin-bottom: 14px; }
+  .datos label { display: block; font-size: 12px; color: var(--gris); }
+
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th, td { border: 1px solid var(--linea); padding: 5px; vertical-align: top; text-align: left; }
+  th { font-size: 12px; font-weight: 600; background: var(--suave); line-height: 1.25; }
+  th small { display: block; font-weight: 400; color: var(--gris); }
+  td.p { font-weight: 700; text-align: center; }
+  td.centro { text-align: center; }
+  td input[type=checkbox] { width: 20px; height: 20px; margin: 4px auto; display: block; accent-color: var(--acento); }
+  .c-p { width: 6%; } .c-cel { width: 18%; } .c-tc { width: 9%; } .c-te { width: 10%; } .c-no { width: 7%; } .c-ay { width: 9%; } .c-tb { width: 9%; } .c-com { width: 32%; }
+
+  .crono { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+  .crono button { border: 1px solid var(--linea); background: var(--suave); border-radius: 6px; padding: 4px 2px; font-size: 12px; cursor: pointer; }
+  .crono button:disabled { opacity: .45; cursor: default; }
+  .crono output { font-size: 12px; text-align: center; font-variant-numeric: tabular-nums; color: var(--acento); min-height: 1.3em; }
+
+  .resumen { margin-top: 16px; border: 1px solid var(--tinta); border-radius: 8px; padding: 12px 14px; }
+  .resumen h2 { font-size: 15px; margin: 0 0 8px; }
+  .resumen dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px 16px; margin: 0; }
+  .resumen dt { font-size: 12px; color: var(--gris); }
+  .resumen dd { margin: 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; min-height: 1.4em; border-bottom: 1px solid var(--linea); }
+  .bien { color: var(--bien); } .mal { color: var(--mal); }
+  .regla { margin: 10px 0 0; font-size: 12px; color: var(--gris); }
+
+  .acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .acciones button { border: 0; border-radius: 8px; padding: 9px 14px; background: var(--tinta); color: #fff; cursor: pointer; }
+  .acciones button.sec { background: var(--suave); color: var(--tinta); border: 1px solid var(--linea); }
+  .nota { font-size: 12px; color: var(--gris); margin: 8px 0 0; }
+
+  /* celular: cada participante como una ficha, sin desplazamiento lateral */
+  @media (max-width: 720px) {
+    table, thead, tbody, tr, td { display: block; width: 100%; }
+    thead { display: none; }
+    tr { border: 1px solid var(--linea); border-radius: 8px; padding: 8px; margin-bottom: 10px; }
+    td { border: 0; padding: 4px 0; }
+    td::before { content: attr(data-label); display: block; font-size: 12px; color: var(--gris); }
+    td.p { text-align: left; font-size: 17px; }
+    td.p::before { display: none; }
+    td.centro { text-align: left; }
+    td input[type=checkbox] { margin: 4px 0; }
+    .crono { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .crono button { padding: 8px 12px; font-size: 14px; }
+  }
+
+  /* impresión: cabe en A4 (210 × 297 mm) y en carta (215,9 × 279,4 mm) con márgenes de 12 mm */
+  @page { margin: 12mm; }
+  @media print {
+    body { font-size: 10pt; }
+    main { max-width: none; padding: 0; }
+    h1 { font-size: 14pt; }
+    .sub { margin-bottom: 3mm; font-size: 8.5pt; }
+    .datos { grid-template-columns: repeat(5, 1fr); gap: 2mm 3mm; margin-bottom: 3mm; }
+    .datos label { font-size: 7.5pt; }
+    input, select, textarea { border: 0; border-bottom: 0.3mm solid var(--tinta); border-radius: 0; padding: 1mm 0; background: none; appearance: none; -webkit-appearance: none; }
+    td input, td select, td textarea { border: 0; }
+    textarea { min-height: 0; resize: none; overflow: hidden; }
+    th { font-size: 7.5pt; background: none; }
+    th small { font-size: 6.5pt; }
+    th, td { border-color: var(--tinta); border-width: 0.25mm; }
+    tbody tr { height: 24mm; break-inside: avoid; }
+    td input[type=checkbox] { appearance: auto; -webkit-appearance: checkbox; width: 4mm; height: 4mm; }
+    .crono, .acciones, .nota, .solo-pantalla { display: none !important; }
+    .resumen { margin-top: 4mm; padding: 3mm 4mm; break-inside: avoid; }
+    .resumen h2 { font-size: 10pt; margin-bottom: 2mm; }
+    .resumen dl { grid-template-columns: repeat(3, 1fr); }
+    .resumen dd { font-size: 11pt; min-height: 6mm; }
+    .bien, .mal { color: var(--tinta); }
+    .regla { font-size: 7.5pt; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Piloto de la AR · Edificio 106 · hoja de observación</h1>
+  <p class="sub">Guion y protocolo en <b>guion.md</b>. Sin nombres: P1, P2… Tiempo desde el final del guion hasta que el edificio aparece sobre el plano. Temblor con el celular quieto: 0 quieto, 1 un poco si lo buscas, 2 se nota, 3 salta o molesta.</p>
+
+  <div class="datos">
+    <div><label for="fecha">Fecha</label><input id="fecha" data-campo></div>
+    <div><label for="lugar">Lugar</label><input id="lugar" data-campo></div>
+    <div><label for="luz">Luz (ventana, salón, lámpara)</label><input id="luz" data-campo></div>
+    <div><label for="papel">Papel y tamaño (mate, A4 o carta)</label><input id="papel" data-campo></div>
+    <div><label for="facilita">Facilita / anota</label><input id="facilita" data-campo></div>
+  </div>
+
+  <table>
+    <colgroup><col class="c-p"><col class="c-cel"><col class="c-tc"><col class="c-te"><col class="c-no"><col class="c-ay"><col class="c-tb"><col class="c-com"></colgroup>
+    <thead><tr>
+      <th>P</th>
+      <th>Celular y navegador<small>modelo · Chrome, Safari, otro</small></th>
+      <th>Cámara (s)<small>tocó «Abrir la cámara», opcional</small></th>
+      <th>Edificio (s)<small>lo ve sobre el plano</small></th>
+      <th>No lo vio</th>
+      <th>Pedidos de ayuda<small>preguntas y pistas</small></th>
+      <th>Temblor<small>0 a 3</small></th>
+      <th>Comentarios<small>primer gesto, dudas, sus palabras</small></th>
+    </tr></thead>
+    <tbody id="filas"></tbody>
+  </table>
+
+  <section class="resumen" aria-live="polite">
+    <h2>Resumen</h2>
+    <dl>
+      <div><dt>Participantes con datos</dt><dd id="r-n"></dd></div>
+      <div><dt>Lo ven sin ayuda en 30 s o menos</dt><dd id="r-30"></dd></div>
+      <div><dt>Meta del plan: 80 %</dt><dd id="r-meta"></dd></div>
+      <div><dt>Tiempo al edificio, mediana (s)</dt><dd id="r-med"></dd></div>
+      <div><dt>Pedidos de ayuda, total</dt><dd id="r-ay"></dd></div>
+      <div><dt>Temblor, promedio y máximo</dt><dd id="r-tb"></dd></div>
+    </dl>
+    <p class="regla">Cuenta como «sin ayuda en 30 s» quien tiene un tiempo de 30 s o menos y 0 pedidos de ayuda. Con 5 personas, cada una vale 20 puntos: la meta pide 4 de 5.</p>
+  </section>
+
+  <div class="acciones">
+    <button type="button" id="csv">Exportar CSV</button>
+    <button type="button" id="imprimir" class="sec">Imprimir</button>
+    <button type="button" id="borrar" class="sec">Borrar todo</button>
+  </div>
+  <p class="nota">En pantalla, lo que escribes se guarda en este navegador (si el navegador lo permite). El cronómetro de cada fila llena los tiempos: Empezar al final del guion, Cámara cuando toca el botón, Lo vio cuando aparece el edificio. Se aceptan decimales con coma.</p>
+</main>
+
+<script>
+(() => {
+  const FILAS = 6, CLAVE = 'e106-piloto-ar-registro';
+  const COLS = [
+    ['cel', 'Celular y navegador', 'texto'],
+    ['tc', 'Cámara (s)', 'num'],
+    ['te', 'Edificio (s)', 'num'],
+    ['no', 'No lo vio', 'check'],
+    ['ay', 'Pedidos de ayuda', 'num'],
+    ['tb', 'Temblor (0 a 3)', 'temblor'],
+    ['com', 'Comentarios', 'area'],
+  ];
+  const $ = id => document.getElementById(id);
+  const cuerpo = $('filas');
+
+  // ---------- filas ----------
+  for (let i = 1; i <= FILAS; i++) {
+    const tr = document.createElement('tr');
+    tr.dataset.p = i;
+    const tdP = document.createElement('td');
+    tdP.className = 'p';
+    tdP.innerHTML = `P${i}<div class="crono" aria-label="Cronómetro de P${i}">
+      <button type="button" data-acc="empezar">Empezar</button>
+      <button type="button" data-acc="camara" disabled>Cámara</button>
+      <button type="button" data-acc="vio" disabled>Lo vio</button>
+      <output></output></div>`;
+    tr.appendChild(tdP);
+    for (const [k, nombre, tipo] of COLS) {
+      const td = document.createElement('td');
+      td.dataset.label = nombre;
+      const id = `f${i}-${k}`;
+      let el;
+      if (tipo === 'area') el = document.createElement('textarea');
+      else if (tipo === 'temblor') {
+        el = document.createElement('select');
+        el.innerHTML = '<option value=""></option><option>0</option><option>1</option><option>2</option><option>3</option>';
+      } else {
+        el = document.createElement('input');
+        if (tipo === 'check') { el.type = 'checkbox'; td.className = 'centro'; }
+        if (tipo === 'num') { el.inputMode = 'decimal'; el.autocomplete = 'off'; }
+      }
+      el.id = id; el.dataset.campo = ''; el.setAttribute('aria-label', `${nombre}, P${i}`);
+      td.appendChild(el); tr.appendChild(td);
+    }
+    cuerpo.appendChild(tr);
+  }
+
+  // ---------- números con coma decimal ----------
+  const leer = v => { const s = String(v).trim().replace(',', '.'); if (s === '' || !/^\d+(\.\d+)?$/.test(s)) return null; return +s; };
+  const coma = (x, d = 1) => (Math.round(x * 10 ** d) / 10 ** d).toFixed(d).replace('.', ',').replace(/,0+$/, '');
+  const mediana = a => { const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; };
+
+  // ---------- resumen ----------
+  function filas() {
+    return [...cuerpo.rows].map(tr => {
+      const i = tr.dataset.p, v = k => $(`f${i}-${k}`);
+      return { p: `P${i}`, cel: v('cel').value.trim(), tc: leer(v('tc').value), te: leer(v('te').value), no: v('no').checked,
+               ay: leer(v('ay').value), tb: leer(v('tb').value), com: v('com').value.trim(), tcTxt: v('tc').value.trim(), teTxt: v('te').value.trim(), ayTxt: v('ay').value.trim() };
+    });
+  }
+  function resumir() {
+    const todas = filas();
+    const con = todas.filter(f => f.te !== null || f.no);
+    const ids = ['r-n', 'r-30', 'r-meta', 'r-med', 'r-ay', 'r-tb'];
+    if (!con.length) { ids.forEach(id => { $(id).textContent = ''; $(id).className = ''; }); return; }
+    const logran = con.filter(f => !f.no && f.te !== null && f.te <= 30 && (f.ay ?? 0) === 0).length;
+    const pct = logran / con.length * 100;
+    $('r-n').textContent = con.length;
+    $('r-30').textContent = `${logran} de ${con.length} · ${coma(pct, 0)} %`;
+    const cumple = pct >= 80;
+    $('r-meta').textContent = cumple ? 'Se cumple' : 'No se cumple';
+    $('r-meta').className = cumple ? 'bien' : 'mal';
+    const tiempos = con.filter(f => !f.no && f.te !== null).map(f => f.te);
+    const sinVer = con.filter(f => f.no).length;
+    $('r-med').textContent = tiempos.length ? coma(mediana(tiempos)) + (sinVer ? ` · ${sinVer} no lo vio` : '') : (sinVer ? `${sinVer} no lo vio` : '');
+    $('r-ay').textContent = con.reduce((s, f) => s + (f.ay ?? 0), 0);
+    const tb = con.map(f => f.tb).filter(x => x !== null);
+    $('r-tb').textContent = tb.length ? `${coma(tb.reduce((s, x) => s + x, 0) / tb.length)} · máx. ${Math.max(...tb)}` : '';
+  }
+
+  // ---------- guardar en este navegador (opcional) ----------
+  const campos = () => [...document.querySelectorAll('[data-campo]')];
+  function guardar() {
+    try {
+      const d = {};
+      for (const el of campos()) d[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+      localStorage.setItem(CLAVE, JSON.stringify(d));
+    } catch (e) { /* sin almacenamiento: la hoja sigue funcionando */ }
+  }
+  function cargar() {
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); } catch (e) { d = null; }
+    if (!d) return;
+    for (const el of campos()) if (el.id in d) { if (el.type === 'checkbox') el.checked = !!d[el.id]; else el.value = d[el.id]; }
+  }
+  document.addEventListener('input', e => { if (e.target.matches('[data-campo]')) { resumir(); guardar(); } });
+  document.addEventListener('change', e => { if (e.target.matches('[data-campo]')) { resumir(); guardar(); } });
+
+  // ---------- cronómetro por fila ----------
+  const relojes = new Map();
+  const seg = t0 => (performance.now() - t0) / 1000;
+  cuerpo.addEventListener('click', e => {
+    const b = e.target.closest('button[data-acc]'); if (!b) return;
+    const tr = b.closest('tr'), i = tr.dataset.p, out = tr.querySelector('output');
+    const [bE, bC, bV] = tr.querySelectorAll('.crono button');
+    const poner = (k, s) => { const el = $(`f${i}-${k}`); el.value = coma(s); el.dispatchEvent(new Event('input', { bubbles: true })); };
+    if (b.dataset.acc === 'empezar') {
+      const r = relojes.get(i); if (r) cancelAnimationFrame(r.raf);
+      const t0 = performance.now();
+      const tic = () => { out.textContent = coma(seg(t0)) + ' s'; reloj.raf = requestAnimationFrame(tic); };
+      const reloj = { t0, raf: 0 }; relojes.set(i, reloj); tic();
+      bE.textContent = 'Reiniciar'; bC.disabled = false; bV.disabled = false;
+    } else {
+      const r = relojes.get(i); if (!r) return;
+      if (b.dataset.acc === 'camara') { poner('tc', seg(r.t0)); bC.disabled = true; }
+      else { poner('te', seg(r.t0)); cancelAnimationFrame(r.raf); relojes.delete(i); out.textContent = 'parado'; bC.disabled = true; bV.disabled = true; bE.textContent = 'Empezar'; }
+    }
+  });
+
+  // ---------- CSV (punto y coma, para Excel en español) ----------
+  $('csv').addEventListener('click', () => {
+    const q = v => { const s = String(v ?? ''); return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+    const cab = ['fecha', 'lugar', 'luz', 'papel', 'facilita'].map(id => $(id).value.trim());
+    const lineas = [
+      ['fecha', 'lugar', 'luz', 'papel', 'facilita', 'participante', 'celular_navegador', 'camara_s', 'edificio_s', 'no_lo_vio', 'pedidos_ayuda', 'temblor_0a3', 'sin_ayuda_30s', 'comentarios'].join(';'),
+      ...filas().filter(f => f.cel || f.tcTxt || f.teTxt || f.no || f.ayTxt || f.tb !== null || f.com).map(f => [
+        ...cab, f.p, f.cel, f.tcTxt, f.teTxt, f.no ? 'sí' : 'no', f.ayTxt, f.tb ?? '',
+        (!f.no && f.te !== null && f.te <= 30 && (f.ay ?? 0) === 0) ? 'sí' : 'no', f.com,
+      ].map(q).join(';')),
+    ];
+    const blob = new Blob(['﻿' + lineas.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    const hoy = new Date();
+    a.href = URL.createObjectURL(blob);
+    a.download = `piloto-ar-${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  $('imprimir').addEventListener('click', () => print());
+  $('borrar').addEventListener('click', () => {
+    if (!confirm('¿Borrar todos los datos de esta hoja?')) return;
+    for (const el of campos()) { if (el.type === 'checkbox') el.checked = false; else el.value = ''; }
+    try { localStorage.removeItem(CLAVE); } catch (e) { /* nada */ }
+    resumir();
+  });
+
+  cargar(); resumir();
+})();
+</script>
+</body>
+</html>
