@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Edificio 106 en AR</title>
+<meta name="robots" content="noindex">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+</script>
+<style>
+  :root { --tinta: #1d1d1b; --papel: #fbfaf6; --acento: #b4532a; }
+  html, body { margin: 0; height: 100%; background: #000; color: var(--papel); font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+  #ar { position: fixed; inset: 0; overflow: hidden; }
+  #ar video { position: absolute; z-index: 0; object-fit: cover; }
+  #ar canvas { position: absolute; z-index: 1; }
+  .aviso { position: fixed; left: 16px; right: 16px; top: max(16px, env(safe-area-inset-top)); z-index: 3; text-align: center; }
+  .aviso p { display: inline-block; margin: 0; padding: 8px 14px; border-radius: 10px; background: rgba(29,29,27,.82); font-size: 15px; line-height: 1.35; }
+  .panel { position: fixed; left: 16px; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 3; padding: 10px 14px 12px; border-radius: 12px; background: rgba(29,29,27,.82); }
+  .panel label { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 6px; }
+  .panel input { width: 100%; accent-color: var(--acento); }
+  .inicio { position: fixed; inset: 0; z-index: 4; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; padding: 24px; background: var(--tinta); text-align: center; }
+  .inicio h1 { margin: 0; font-size: 22px; }
+  .inicio p { margin: 0; max-width: 34em; font-size: 16px; line-height: 1.45; color: #d9d6cc; }
+  .inicio button { font: inherit; font-size: 17px; padding: 12px 22px; border: 0; border-radius: 10px; background: var(--acento); color: #fff; }
+  .inicio button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="ar"></div>
+<div class="inicio" id="inicio">
+  <h1>Edificio 106 sobre la mesa</h1>
+  <p>Pon la tarjeta impresa sobre una mesa con buena luz. Al tocar el botón, el celular te pide la cámara: apunta al plano entero y el edificio aparece encima.</p>
+  <button id="empezar" type="button">Abrir la cámara</button>
+  <p id="error" role="alert" hidden></p>
+</div>
+<div class="aviso" id="aviso" hidden><p id="aviso-txt">Apunta al plano entero de la tarjeta</p></div>
+<div class="panel" id="panel" hidden>
+  <label for="hora"><span>Hora</span><span id="hora-txt"></span></label>
+  <input id="hora" type="range" min="360" max="1080" step="10" value="900" aria-describedby="hora-txt">
+</div>
+<script type="module" src="./ar.js"></script>
+</body>
+</html>
