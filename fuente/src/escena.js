@@ -785,6 +785,9 @@ export class Escena {
     m.receivedShadowNode = /[?&]sinnubes/.test(location.search) ? soloSombraSol : sombraNubes;
     const cn = m.colorNode;
     m.colorNode = Fn(() => { sombraSol.assign(1.0); return cn; })();   // valor por defecto, antes de la iluminación
+    // las calles, aceras y vías del entorno ampliado (contexto.mjs, «V017 street…») van a 2 cm del pasto del sitio: de lejos
+    // el búfer de profundidad no los distingue y el pasto se las comía; se adelantan un poco en profundidad para que ganen
+    if (/^V017 street/.test(src.name || '')) { m.polygonOffset = true; m.polygonOffsetFactor = -2; m.polygonOffsetUnits = -4; }
     if (src.map) m.map = src.map;
     return m;
   }

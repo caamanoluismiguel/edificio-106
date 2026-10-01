@@ -171,7 +171,7 @@ async function arrancar() {
 
   controls = new OrbitControls(escena.camera, escena.renderer.domElement);
   controls.enabled = false; controls.enableDamping = true; controls.dampingFactor = 0.075; controls.enablePan = false;
-  controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.8; controls.minDistance = 12; controls.maxDistance = 360; controls.minPolarAngle = 0.01;
+  controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.8; controls.minDistance = 12; controls.maxDistance = 800;   // desde lejos se ve Ciudad del Saber entera con el canal y las esclusas de Miraflores controls.minPolarAngle = 0.01;
   controls.target.set(...ESQUINA.tgt);
   controls.addEventListener('start', alTomar);
   U.vaiven.value = reduce ? 0 : 1;

@@ -91,8 +91,9 @@ const MAT = {
   maqueta: { n: 'V016 massing model (estimated height)', c: [0.62, 0.61, 0.57], r: 0.9 },
   asfalto: { n: 'Weathered asphalt 02 — photographic 3m', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
   pasto: { n: 'V016 distant park turf', c: [0.09, 0.16, 0.05], r: 0.96 },
-  acera: { n: 'V017 distant concrete walk', c: [0.42, 0.41, 0.38], r: 0.9 },
-  balasto: { n: 'V017 rail ballast', c: [0.15, 0.13, 0.11], r: 0.95 },
+  calle: { n: 'V017 street asphalt (OSM)', c: [0.23, 0.23, 0.22], r: 0.75, image: 'asphalt_02_diff_4k.jpg', ground_uv: 3 },
+  acera: { n: 'V017 street concrete walk (OSM)', c: [0.42, 0.41, 0.38], r: 0.9 },
+  balasto: { n: 'V017 street rail ballast (OSM)', c: [0.15, 0.13, 0.11], r: 0.95 },
   agua: { n: 'V017 canal water', c: [0.035, 0.065, 0.06], r: 0.07 },
   esclusa: { n: 'V017 lock wall concrete', c: [0.55, 0.54, 0.50], r: 0.88 },
   piedra: { n: 'Rubble stone plinth', c: [0.28, 0.24, 0.20], r: 0.92 },
@@ -386,7 +387,28 @@ const ent = entornoRegistrado(), rel = relieve();
 const ME = new Malla(), MT = new Malla(), resEnt = { edificios: 0, alturaOB: 0, calles: 0, tren: 0, agua: 0 };
 const enSitio = ([x, z]) => Math.abs(x) <= 180 && Math.abs(z) <= 160;
 const enPastoNO = ([x, z]) => Math.abs(x) <= 180 && z < -120 && z >= -260;
-const enCallesSitio = ([x, z]) => Math.abs(x) <= 110 && z >= -135 && z <= 95;
+// las calles, cunetas y aceras que ya están modeladas en sitio.glb: una máscara de 1 m vista desde arriba, ensanchada 3 m;
+// las calles de OSM se dibujan hasta ahí y se unen con ellas (antes se quitaban todas en un rectángulo y quedaban cortadas)
+const MASCARA = await (async () => {
+  const { p, i } = await extraer('sitio', /asphalt|kerb|road paint|paving|access pav|access concrete/i);
+  const X0 = -190, Z0 = -170, W = 380, H = 340, m = new Uint8Array(W * H);
+  for (let t = 0; t < i.length; t += 3) {
+    const a = [p[i[t] * 3], p[i[t] * 3 + 2]], b = [p[i[t + 1] * 3], p[i[t + 1] * 3 + 2]], c = [p[i[t + 2] * 3], p[i[t + 2] * 3 + 2]];
+    const x0 = Math.floor(Math.min(a[0], b[0], c[0])) - X0, x1 = Math.ceil(Math.max(a[0], b[0], c[0])) - X0;
+    const z0 = Math.floor(Math.min(a[1], b[1], c[1])) - Z0, z1 = Math.ceil(Math.max(a[1], b[1], c[1])) - Z0;
+    const ar = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]); if (Math.abs(ar) < 1e-6) continue;
+    for (let gx = Math.max(0, x0); gx <= Math.min(W - 1, x1); gx++) for (let gz = Math.max(0, z0); gz <= Math.min(H - 1, z1); gz++) {
+      const q = [gx + X0 + 0.5, gz + Z0 + 0.5];
+      const w0 = ((b[0] - q[0]) * (c[1] - q[1]) - (c[0] - q[0]) * (b[1] - q[1])) / ar, w1 = ((c[0] - q[0]) * (a[1] - q[1]) - (a[0] - q[0]) * (c[1] - q[1])) / ar;
+      if (w0 >= -0.02 && w1 >= -0.02 && w0 + w1 <= 1.02) m[gz * W + gx] = 1;
+    }
+  }
+  const d = new Uint8Array(W * H), R = 3;
+  for (let gz = 0; gz < H; gz++) for (let gx = 0; gx < W; gx++) if (m[gz * W + gx])
+    for (let u = -R; u <= R; u++) for (let v = -R; v <= R; v++) { const x = gx + u, z = gz + v; if (x >= 0 && z >= 0 && x < W && z < H && u * u + v * v <= R * R) d[z * W + x] = 1; }
+  return ([x, z]) => { const gx = Math.floor(x - X0), gz = Math.floor(z - Z0); return gx >= 0 && gz >= 0 && gx < W && gz < H && d[gz * W + gx] === 1; };
+})();
+const enCallesSitio = (p) => MASCARA(p);
 const MESETA = { x: 260, z0: -280, z1: 320, borde: 200 };
 const fueraMeseta = ([x, z]) => Math.max(Math.abs(x) - MESETA.x, MESETA.z0 - z, z - MESETA.z1, 0);
 const sst = (t) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
@@ -423,7 +445,13 @@ for (const a of aguas) {
 }
 const suelo = (p) => (enSitio(p) ? -0.015 : enPastoNO(p) ? -0.1 : terreno(p[0], p[1]) + 0.08);
 /** Cinta de ancho w sobre una línea (x, z), con uniones en inglete; cada punta a la altura del suelo de su lugar. */
-function cinta(M, mat, L, w, dy = 0) {
+function cinta(M, mat, L0, w, dy = 0) {
+  // tramos de 3 m como máximo: cada uno se apoya en el suelo de su lugar y se quita solo donde ya hay calle modelada
+  const L = [L0[0]];
+  for (let i = 1; i < L0.length; i++) {
+    const a = L0[i - 1], b = L0[i], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3));
+    for (let k = 1; k <= n; k++) L.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
+  }
   for (let i = 0; i + 1 < L.length; i++) {
     const a = L[i], b = L[i + 1], m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     if (enCallesSitio(m)) continue;
@@ -438,7 +466,7 @@ const ANCHO = { primary: 7.5, primary_link: 5, tertiary: 7, tertiary_link: 5, se
 for (const c of ent.calles) {
   const w = ANCHO[c.tipo]; if (!w) continue;                    // senderos, trochas y el ascensor no se dibujan
   const peaton = c.tipo === 'footway' || c.tipo === 'steps';
-  cinta(ME, peaton ? 'acera' : 'asfalto', c.linea, w, peaton ? 0 : 0.004); resEnt.calles++;
+  cinta(ME, peaton ? 'acera' : 'calle', c.linea, w, peaton ? 0 : 0.004); resEnt.calles++;
 }
 for (const t of ent.tren) { cinta(ME, 'balasto', t.linea, 4.5, 0.002); resEnt.tren++; }
 // agua: el canal, el Lago Miraflores y las cámaras de las esclusas (polígonos de OSM recortados a la caja), cada una a su nivel
