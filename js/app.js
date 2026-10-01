@@ -38766,7 +38766,7 @@ function IG() {
 		},
 		{
 			t: "Ahora te toca",
-			txt: "Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes.",
+			txt: "Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes. En «Confort», abajo a la derecha, ves qué ventanas abrir y qué persianas bajar a cada hora.",
 			dis: "«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.",
 			ir: () => {
 				Q.aguaModo = "hora", WW(!0), sG("foto", !1);
@@ -39140,30 +39140,31 @@ function XG(e, t) {
 	YG = r;
 	let i = Z("#carta-punto");
 	if (!n) {
-		i && (i.innerHTML = ""), Z("#conviene").innerHTML = "<li class=\"neutro\">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>", Z("#utci-hora").textContent = "Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).";
+		i && (i.innerHTML = ""), Z("#conviene").innerHTML = "<li class=\"accion\">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>", Z("#conviene-porque").innerHTML = "", Z("#conviene-resumen").textContent = "Por qué", Z("#utci-hora").textContent = "Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).";
 		return;
 	}
-	Z("#conviene").innerHTML = eK(e, t).map(([e, t, n]) => `<li${e ? ` class="${e}"` : ""}>${t ? `<i aria-hidden="true">${t}</i>` : ""}<span>${t ? `<span class="sr">${t === "●" ? "Sí: " : t === "◐" ? "Con condición: " : "No alcanza: "}</span>` : ""}${n}</span></li>`).join(""), Z("#conviene-sello").textContent = `Clima de afuera, no del aula · ${t.fuente === "vivo" ? `pronóstico ${t.hora ?? ""}`.trim() : t.fuente === "serie" || t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "modelo" : "típico"} · viento a 10 m`;
-	let a = aH(t.temp, t.humedad), o = HG.carta, s = t.temp >= o.t0 && t.temp <= o.t1 && a >= o.w0 && a <= o.w1;
-	i && (i.innerHTML = s ? `<circle cx="${KG(t.temp).toFixed(1)}" cy="${qG(a).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${GH(t.temp)} °C, ${GH(a)} g/kg</title></circle>` : "");
-	let c = (t.viento ?? 0) / 3.6, l = `${JH(Q.min)}`;
+	let a = eK(e, t), o = (e) => `<span class="sr">${e === "●" ? "Sí: " : e === "◐" ? "Con condición: " : "No alcanza: "}</span>`;
+	Z("#conviene").innerHTML = a.hacer.map((e) => `<li class="accion">${e}</li>`).join(""), Z("#conviene-porque").innerHTML = a.porque.map(([e, t, n]) => `<li${e ? ` class="${e}"` : ""}>${t ? `<i aria-hidden="true">${t}</i>` : ""}<span>${t ? o(t) : ""}${n}</span></li>`).join("") + a.datos.map((e) => `<li class="cierre">${e}</li>`).join(""), Z("#conviene-resumen").textContent = `Por qué · Givoni ${a.porque[0][1]} · Guía de Panamá ${a.porque[1][1]}`, Z("#conviene-sello").textContent = `Clima de afuera, no del aula · ${t.fuente === "vivo" ? `pronóstico ${t.hora ?? ""}`.trim() : t.fuente === "serie" || t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "modelo" : "típico"} · viento a 10 m`;
+	let s = aH(t.temp, t.humedad), c = HG.carta, l = t.temp >= c.t0 && t.temp <= c.t1 && s >= c.w0 && s <= c.w1;
+	i && (i.innerHTML = l ? `<circle cx="${KG(t.temp).toFixed(1)}" cy="${qG(s).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${GH(t.temp)} °C, ${GH(s)} g/kg</title></circle>` : "");
+	let u = (t.viento ?? 0) / 3.6, d = `${JH(Q.min)}`;
 	if (e.alt <= 0 || t.dni == null) {
-		let e = GV(t.temp, t.temp, c, t.humedad, { recortarViento: !0 }), n = qV(e);
-		Z("#utci-hora").innerHTML = `A las ${l} (de noche o sin radiación): UTCI <b>${Math.round(e)} °C</b>, ${KV[n]?.nombre.toLowerCase() ?? "—"}. Aire ${GH(t.temp)} °C · ${GH(a)} g/kg.`;
+		let e = GV(t.temp, t.temp, u, t.humedad, { recortarViento: !0 }), n = qV(e);
+		Z("#utci-hora").innerHTML = `A las ${d} (de noche o sin radiación): UTCI <b>${Math.round(e)} °C</b>, ${KV[n]?.nombre.toLowerCase() ?? "—"}. Aire ${GH(t.temp)} °C · ${GH(s)} g/kg.`;
 		return;
 	}
-	let u = GV(t.temp, rH({
+	let f = GV(t.temp, rH({
 		ta: t.temp,
 		altSol: e.alt,
 		dni: t.dni,
 		difusa: t.difusa ?? 0
-	}), c, t.humedad, { recortarViento: !0 }), d = GV(t.temp, iH({
+	}), u, t.humedad, { recortarViento: !0 }), p = GV(t.temp, iH({
 		ta: t.temp,
 		difusa: t.difusa ?? 0,
 		altSol: e.alt,
 		dni: t.dni
-	}), c, t.humedad, { recortarViento: !0 }), f = (e) => KV[qV(e)]?.nombre.toLowerCase() ?? "—";
-	Z("#utci-hora").innerHTML = `A las ${l}: al sol se siente <b>${Math.round(u)} °C</b> (${f(u)}); bajo el alero <b>${Math.round(d)} °C</b> (${f(d)}). Aire ${GH(t.temp)} °C · ${GH(a)} g/kg.`;
+	}), u, t.humedad, { recortarViento: !0 }), m = (e) => KV[qV(e)]?.nombre.toLowerCase() ?? "—";
+	Z("#utci-hora").innerHTML = `A las ${d}: al sol se siente <b>${Math.round(f)} °C</b> (${m(f)}); bajo el alero <b>${Math.round(p)} °C</b> (${m(p)}). Aire ${GH(t.temp)} °C · ${GH(s)} g/kg.`;
 }
 var ZG = {
 	"fachada-se": "SE",
@@ -39190,7 +39191,7 @@ function eK(e, t) {
 		"",
 		m[0] === h[0] ? "Coinciden." : "No coinciden porque Givoni mira la humedad y la Guía solo la temperatura."
 	]);
-	let g = [];
+	let g = [], _ = [];
 	if (i && (t.dni ?? 0) >= 120) {
 		let t = [];
 		for (let n of Object.keys(zB)) {
@@ -39199,32 +39200,24 @@ function eK(e, t) {
 			let i = Math.atan(Math.tan(e.alt * Math.PI / 180) / r) * 180 / Math.PI;
 			i < 45 && t.push(`${ZG[n]} (perfil ${Math.round(i)}°)`);
 		}
-		t.length && g.push(`<b>Sol en el vidrio ${t.join(" y ")}.</b> Baja la persiana o la cortina de ${t.length > 1 ? "esos lados" : "ese lado"}; la ventana puede quedar abierta.${s >= 13 && s < 16 ? " A esta hora es lo que más importa." : ""}`);
+		t.length && (g.push(`<b>Baja las persianas o cortinas de la ${t.map((e) => e.split(" ")[0]).join(" y la ")}.</b> El sol entra por debajo del alero; las ventanas pueden seguir abiertas.${s >= 13 && s < 16 ? " A esta hora es lo que más importa." : ""}`), _.push(`Sol en el vidrio con ángulo de perfil ${t.map((e) => e.replace(" (perfil ", " ").replace("°)", "°")).join(" y ")}; el alero tapa el vidrio desde unos 45°.`));
 	}
-	let _ = t.viento ?? 0, v = a >= 5 && a <= 11 ? " (en esta época la dirección cambia de hora en hora)" : "";
-	if (t.dir == null || _ < 6) g.push(`<b>Casi sin viento</b> (${Math.round(_)} km/h a 10 m). La ventilación cruzada rinde poco; ayudan las aberturas altas o el ventilador.`);
+	let v = t.viento ?? 0, y = a >= 5 && a <= 11 ? " (en esta época la dirección cambia de hora en hora)" : "";
+	if (t.dir == null || v < 6) g.push("<b>Prende los ventiladores.</b> Casi no hay viento; si hay ventanas altas, ábrelas para que salga el aire caliente."), _.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`);
 	else {
 		let e = QG[0], n = 180;
 		for (let r of QG) {
 			let i = Math.abs((t.dir - zB[r].rumbo + 540) % 360 - 180);
 			i < n && (n = i, e = r);
 		}
-		n <= 30 ? g.push(`<b>Brisa de frente a la ${ZG[e]}</b> (del ${RB(t.dir)}, ${Math.round(_)} km/h). Abre esa y la ${ZG[$G[e]]}; la salida igual o mayor que la entrada${v}.`) : n <= 60 ? g.push(`<b>Brisa oblicua a la ${ZG[e]}</b> (del ${RB(t.dir)}, ${Math.round(_)} km/h). Abre las dos fachadas largas; entra más o menos la mitad del aire${v}.`) : g.push(`<b>Brisa paralela a las fachadas largas</b> (del ${RB(t.dir)}, ${Math.round(_)} km/h). Mueve poco aire; ayuda el ventilador${v}.`), o && s >= 5 && s < 9 && (g[g.length - 1] += " Es la hora más fresca del día: abrir temprano saca el calor de la noche.");
+		n <= 30 ? g.push(`<b>Abre las ventanas de la ${ZG[e]} y de la ${ZG[$G[e]]}.</b> La brisa entra de frente por la ${ZG[e]} y sale por la otra.`) : n <= 60 ? g.push("<b>Abre las ventanas de las dos fachadas largas, NO y SE.</b> La brisa llega de lado y entra más o menos la mitad del aire.") : g.push("<b>Prende los ventiladores.</b> La brisa corre paralela a las fachadas largas y casi no entra."), o && s >= 5 && s < 9 && (g[g.length - 1] += " Aprovecha: es la hora más fresca del día."), _.push(`Viento del ${RB(t.dir)} a ${Math.round(v)} km/h a 10 m de altura, a ${Math.round(n)}° de la perpendicular de la ${ZG[e]}${y}. Conviene que la salida sea igual o mayor que la entrada.`);
 	}
-	for (let e of g.slice(0, 2)) n.push([
-		"accion",
-		"",
-		e
-	]);
-	return (t.lluvia ?? 0) >= 1 && n.push([
-		"accion",
-		"",
-		"<b>Llueve.</b> Puede entrar por cualquier lado: deja abiertas las persianas de vidrio y lo que cubre el alero, y cierra lo demás."
-	]), i || n.push([
-		"accion",
-		"",
-		"<b>De noche</b> el aula está vacía; si queda ventilada de forma segura, saca el calor que guardaron los muros."
-	]), n;
+	let b = g.slice(0, 2);
+	return (t.lluvia ?? 0) >= 1 && b.push("<b>Cierra lo que el alero no protege.</b> Llueve y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas."), i || b.push("<b>Si el aula puede quedar ventilada sin riesgo, déjala así.</b> De noche saca el calor que guardaron los muros."), {
+		hacer: b,
+		porque: n,
+		datos: _
+	};
 }
 function tK() {
 	let e = HG.utci, t = [], n = 334 / 12, r = [

@@ -1873,7 +1873,7 @@ function pasosRecorrido() {
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
     { t: 'Las partes del edificio', txt: 'La forma de ver «Partes» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. Toca una etiqueta para saber qué es, cómo es en este edificio y qué hace. La persona de 1,70 m junto a la esquina sirve para comparar tamaños.', dis: 'El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('partes', false); elegirParte('alero'); } },
-    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
+    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes. En «Confort», abajo a la derecha, ves qué ventanas abrir y qué persianas bajar a cada hora.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
       ir: () => { S.aguaModo = 'hora'; irAAhora(true); ponerLente('foto', false); } },
   ];
 }
@@ -2050,8 +2050,11 @@ function confortHora(p, c) {
   const ok = c && c.temp != null && c.humedad != null, k = ok ? [Math.round(c.temp * 10), Math.round(c.humedad), Math.round((c.dni ?? 0) / 10), Math.round((c.difusa ?? 0) / 10), Math.round(c.viento ?? 0), Math.round(c.dir ?? -1), Math.round((c.lluvia ?? 0) * 10), Math.round(p.alt), Math.round(p.az)].join('|') : 'no';
   if (k === confortClave) return; confortClave = k;
   const g = $('#carta-punto');
-  if (!ok) { if (g) g.innerHTML = ''; $('#conviene').innerHTML = '<li class="neutro">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>'; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
-  $('#conviene').innerHTML = conviene(p, c).map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? `<span class="sr">${gl === '●' ? 'Sí: ' : gl === '◐' ? 'Con condición: ' : 'No alcanza: '}</span>` : ''}${t}</span></li>`).join('');
+  if (!ok) { if (g) g.innerHTML = ''; $('#conviene').innerHTML = '<li class="accion">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>'; $('#conviene-porque').innerHTML = ''; $('#conviene-resumen').textContent = 'Por qué'; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
+  const R = conviene(p, c), sr = (gl) => `<span class="sr">${gl === '●' ? 'Sí: ' : gl === '◐' ? 'Con condición: ' : 'No alcanza: '}</span>`;
+  $('#conviene').innerHTML = R.hacer.map((t) => `<li class="accion">${t}</li>`).join('');
+  $('#conviene-porque').innerHTML = R.porque.map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? sr(gl) : ''}${t}</span></li>`).join('') + R.datos.map((t) => `<li class="cierre">${t}</li>`).join('');
+  $('#conviene-resumen').textContent = `Por qué · Givoni ${R.porque[0][1]} · Guía de Panamá ${R.porque[1][1]}`;
   $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? `pronóstico ${c.hora ?? ''}`.trim() : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
   if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
@@ -2096,7 +2099,7 @@ function conviene(p, c) {
   out.push(['', ...pa]);
   out.push(['cierre', '', g[0] === pa[0] ? 'Coinciden.' : 'No coinciden porque Givoni mira la humedad y la Guía solo la temperatura.']);
   // 3. Sol en el vidrio (de día, con sol directo, perfil bajo el corte del alero)
-  const acciones = [];
+  const acciones = [], datos = [];
   if (dia && (c.dni ?? 0) >= 120) {
     const al = [];
     for (const k of Object.keys(FACHADAS)) {
@@ -2104,24 +2107,26 @@ function conviene(p, c) {
       const perfil = Math.atan(Math.tan(p.alt * Math.PI / 180) / ca) * 180 / Math.PI;
       if (perfil < 45) al.push(`${CORTO[k]} (perfil ${Math.round(perfil)}°)`);
     }
-    if (al.length) acciones.push(`<b>Sol en el vidrio ${al.join(' y ')}.</b> Baja la persiana o la cortina de ${al.length > 1 ? 'esos lados' : 'ese lado'}; la ventana puede quedar abierta.${h >= 13 && h < 16 ? ' A esta hora es lo que más importa.' : ''}`);
+    if (al.length) { acciones.push(`<b>Baja las persianas o cortinas de la ${al.map((x) => x.split(' ')[0]).join(' y la ')}.</b> El sol entra por debajo del alero; las ventanas pueden seguir abiertas.${h >= 13 && h < 16 ? ' A esta hora es lo que más importa.' : ''}`);
+      datos.push(`Sol en el vidrio con ángulo de perfil ${al.map((x) => x.replace(' (perfil ', ' ').replace('°)', '°')).join(' y ')}; el alero tapa el vidrio desde unos 45°.`); }
   }
   // 4. Aire: con las fachadas largas como eje
   const v = c.viento ?? 0, variable = mes >= 5 && mes <= 11 ? ' (en esta época la dirección cambia de hora en hora)' : '';
-  if (c.dir == null || v < 6) acciones.push(`<b>Casi sin viento</b> (${Math.round(v)} km/h a 10 m). La ventilación cruzada rinde poco; ayudan las aberturas altas o el ventilador.`);
+  if (c.dir == null || v < 6) { acciones.push('<b>Prende los ventiladores.</b> Casi no hay viento; si hay ventanas altas, ábrelas para que salga el aire caliente.'); datos.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`); }
   else {
     let k = LARGAS[0], ang = 180;
     for (const f of LARGAS) { const a = Math.abs(((c.dir - FACHADAS[f].rumbo + 540) % 360) - 180); if (a < ang) { ang = a; k = f; } }
-    if (ang <= 30) acciones.push(`<b>Brisa de frente a la ${CORTO[k]}</b> (del ${rumboTexto(c.dir)}, ${Math.round(v)} km/h). Abre esa y la ${CORTO[OPUESTA[k]]}; la salida igual o mayor que la entrada${variable}.`);
-    else if (ang <= 60) acciones.push(`<b>Brisa oblicua a la ${CORTO[k]}</b> (del ${rumboTexto(c.dir)}, ${Math.round(v)} km/h). Abre las dos fachadas largas; entra más o menos la mitad del aire${variable}.`);
-    else acciones.push(`<b>Brisa paralela a las fachadas largas</b> (del ${rumboTexto(c.dir)}, ${Math.round(v)} km/h). Mueve poco aire; ayuda el ventilador${variable}.`);
-    if (seca && h >= 5 && h < 9) acciones[acciones.length - 1] += ' Es la hora más fresca del día: abrir temprano saca el calor de la noche.';
+    if (ang <= 30) acciones.push(`<b>Abre las ventanas de la ${CORTO[k]} y de la ${CORTO[OPUESTA[k]]}.</b> La brisa entra de frente por la ${CORTO[k]} y sale por la otra.`);
+    else if (ang <= 60) acciones.push(`<b>Abre las ventanas de las dos fachadas largas, NO y SE.</b> La brisa llega de lado y entra más o menos la mitad del aire.`);
+    else acciones.push('<b>Prende los ventiladores.</b> La brisa corre paralela a las fachadas largas y casi no entra.');
+    if (seca && h >= 5 && h < 9) acciones[acciones.length - 1] += ' Aprovecha: es la hora más fresca del día.';
+    datos.push(`Viento del ${rumboTexto(c.dir)} a ${Math.round(v)} km/h a 10 m de altura, a ${Math.round(ang)}° de la perpendicular de la ${CORTO[k]}${variable}. Conviene que la salida sea igual o mayor que la entrada.`);
   }
-  for (const a of acciones.slice(0, 2)) out.push(['accion', '', a]);
+  const hacer = acciones.slice(0, 2);
   // 5. Lluvia, solo si llueve
-  if ((c.lluvia ?? 0) >= 1) out.push(['accion', '', '<b>Llueve.</b> Puede entrar por cualquier lado: deja abiertas las persianas de vidrio y lo que cubre el alero, y cierra lo demás.']);
-  if (!dia) out.push(['accion', '', '<b>De noche</b> el aula está vacía; si queda ventilada de forma segura, saca el calor que guardaron los muros.']);
-  return out;
+  if ((c.lluvia ?? 0) >= 1) hacer.push('<b>Cierra lo que el alero no protege.</b> Llueve y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.');
+  if (!dia) hacer.push('<b>Si el aula puede quedar ventilada sin riesgo, déjala así.</b> De noche saca el calor que guardaron los muros.');
+  return { hacer, porque: out, datos };
 }
 function pintarUTCI() {
   const J = confortJ.utci, s = [], L = 38, R = 372, T = 8, B = 118, gw = (R - L) / 12, bw = gw * 0.36;
