@@ -28,6 +28,7 @@ Algunos resultados que salen del propio visor, con su momento para verlo en la e
 - **Confort:** la carta psicrométrica con cada hora de 2001 a 2025 sobre las zonas de Givoni y el modelo adaptativo de ASHRAE 55, el UTCI al sol y a la sombra, y «A esta hora conviene»: qué conviene abrir, tapar o ventilar a esa hora según el clima de afuera, con la fuente de cada regla.
 - **Para la lámina:** guardar la escena en PNG a 2.400 px con un pie y un código QR, o copiar el enlace exacto del momento (fecha, hora, forma de ver y encuadre).
 - **Sobre la mesa:** la tarjeta de realidad aumentada (abajo).
+- **El entorno:** Ciudad del Saber entera con sus calles y edificios, la Avenida Omar Torrijos Herrera, el ferrocarril y el canal con las esclusas de Miraflores, sobre el relieve real fuera del sitio. Por el canal pasan barcos ilustrativos, uno cada dos horas por cada vía de las esclusas. La cámara se aleja hasta 800 m para ver el conjunto; desde la calle frente al 106 se ven al fondo los contenedores.
 - **Recorrido guiado** de 11 pasos. Cada dato de la barra de abajo se puede tocar para ver qué significa.
 
 Enlaces directos: `#fachada-se`, `#fachada-no`, `#fachada-ne` y `#fachada-so` abren la página frente a cada fachada (son los de los QR en el sitio); `#m-AAAAMMDD-HHMM` abre un momento, por ejemplo `#m-20240724-1745`. Si WebGPU falla, la página pasa sola a WebGL 2; `#webgl` lo fuerza y `#depurar` muestra el diagnóstico.
@@ -49,6 +50,7 @@ Cómo está hecho: MindAR solo reconoce el plano y three.js dibuja la escena en 
 - **No es un levantamiento.** La escala del modelo tiene ±12 % y las ventanas de los pisos 2 y 3 son inferidas.
 - **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta la lluvia de la tarde y achica la diferencia entre el día y la noche (en la estación seca oscila de 4 a 6 °C, y Tocumen, de 11 a 16 °C).
 - **No calcula el interior.** Ni temperatura, ni confort, ni ventilación dentro del aula (eso pide una simulación de fluidos). La página dice qué usar en cada caso: EnergyPlus o Ladybug Tools con el archivo de clima de Albrook.
+- **No es el canal en vivo.** Los barcos no son la posición real de ningún barco: siguen el eje del canal de OpenStreetMap a un ritmo cercano al promedio de la ACP. Los edificios del entorno son volúmenes con altura estimada (OpenStreetMap, Open Buildings o Street View) y el relieve lejano tiene errores de algunos metros.
 - **No dimensiona desagües.** Para eso hacen falta curvas de intensidad de lluvia de una estación cercana.
 
 ## Cómo está hecho
@@ -56,6 +58,29 @@ Cómo está hecho: MindAR solo reconoce el plano y three.js dibuja la escena en 
 - La raíz del repositorio es el sitio publicado en GitHub Pages: `index.html`, `js/app.js` (compilado), `modelo/*.glb`, `datos/` (el clima empaquetado) y `texturas/`.
 - `fuente/` tiene el código (Vite, three.js con WebGPU y WebGL 2) y los scripts que preparan el modelo, el clima y la intro. `fuente/cuerpo.html` es la página; `fuente/armar-raiz.sh` compila y escribe `index.html`.
 - `ar/` es la realidad aumentada, con sus propias pruebas.
+
+### El entorno (`modelo/contexto.glb`)
+
+Lo genera `cd fuente && node contexto.mjs`, siempre igual a partir de los datos guardados en el repositorio (no lee el GLB anterior ni Blender):
+
+| Pieza | Datos | Script |
+|---|---|---|
+| Vecinos cercanos (cuarteles, La Casa, Innova, Ateneo, Fundación) | `fuente/osm.json` + lecturas de Street View | `contexto.mjs`, `contexto-osm.mjs` |
+| Ciudad del Saber entera, avenida, ferrocarril, agua del canal y esclusas | `fuente/osm-amplio.json` (Overpass, 1 oct 2026) | `entorno-osm.mjs` |
+| Alturas sin niveles en OSM | `fuente/alturas_ob.json` | `alturas_ob.py` (Google Open Buildings 2.5D, 2023) |
+| Relieve | `fuente/relieve.json` | `relieve.py` (Copernicus DEM GLO-30, filtrado a suelo) |
+| Ejes del canal para los barcos | `fuente/src/canal-rutas.js` (lo escribe `contexto.mjs`) | `src/barcos.js` |
+
+Decisiones que hay que respetar al tocarlo:
+
+- **El registro de OSM es el del 106:** todo el entorno usa el mismo giro y traslado que `contexto-osm.mjs` calcula con la huella del 106, así nada se mueve respecto a los vecinos.
+- **Junto al sitio el terreno es plano** (−0,6 m, bajo el pasto de `sitio.glb`, en una meseta de ±260 × −280/+320 m) y sube o baja al relieve real en 200 m. En 75 × 60 m alrededor del 106 no se agrega ninguna calle de OSM: ahí manda el modelo hecho con las fotos.
+- **Las calles de OSM empalman con las del sitio:** se quitan solo donde ya hay asfalto modelado (una máscara leída de `sitio.glb`) y cerca del sitio se alinean con los ejes de Jorge Gil (z = 23,5 m) y Carlos Lara (x = 52,25 m). Miden 8 m como las modeladas; la avenida, 7,5 m por calzada.
+- **Dos mallas por cada cosa, cerca y lejos.** `quantize` usa una sola escala por malla: en una malla de 6 km cada paso de altura mide 17 cm y las calles se hundían bajo el pasto. Lo que está a menos de 400 m va en mallas propias, con pasos de 1,25 cm.
+- **Los materiales del entorno empiezan con «V017 street…»** y `escena.js` los adelanta en profundidad (polygonOffset) para que ganen al pasto del sitio. `dedup` junta materiales con los mismos parámetros aunque tengan otro nombre, por eso el asfalto de OSM lleva una rugosidad de 0,751 y no 0,75.
+- **El agua** va a su nivel: el del mar al sur de Miraflores, el del Lago Miraflores al norte y, en la esclusa, dos cámaras. Los barcos suben o bajan en las compuertas.
+- **Los barcos** usan una malla por modelo y lugar: cambiar la geometría de una malla ya dibujada deja a WebGPU con el búfer anterior. `?barcos=0` los quita.
+- **La cámara** se aleja hasta 800 m y, pasados 360 m, la neblina se corre en proporción para que se siga viendo el canal.
 
 Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para bajar de nuevo la serie de clima: `python3 fuente/descargar_era5.py` (reproduce los datos byte a byte).
 

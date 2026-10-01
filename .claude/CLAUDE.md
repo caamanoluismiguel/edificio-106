@@ -91,6 +91,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 
 ## Gotchas
 
+- **Entorno (`contexto.glb`):** se rehace con `node contexto.mjs` (ver README, «El entorno»). Una malla grande pierde precisión al cuantizar (17 cm en 6 km): lo cercano va en mallas propias. `dedup` funde materiales iguales aunque cambie el nombre. En WebGPU no cambiar `mesh.geometry` de algo ya dibujado. Los barcos son ilustrativos (1 cada 2 h por vía).
 - Los `.bin.gz` se sirven como `application/gzip` sin `Content-Encoding`, y la app los abre con `DecompressionStream`. Las rutas son siempre relativas (`/edificio-106/`).
 - `?prueba` expone `window.__e106` y `?rapido` acorta la intro. En las capturas, fijar el momento (`#m-…`) y esperar a que aparezca la fecha.
 - La comprobación 5 («en reposo») toma el peor cuadro: no es fps. Nunca correr dos pruebas de rendimiento en paralelo.
