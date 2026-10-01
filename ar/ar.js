@@ -1,53 +1,219 @@
 // Edificio 106 en AR sobre la tarjeta impresa. MindAR (copia local, 1.2.5) solo rastrea el plano; la escena es three.js
 // en metros, igual que en el sitio: en vez de colgar el modelo del ancla, se mueve la cámara con la inversa de la pose.
 // Así la luz, la sombra y el sol usan las mismas coordenadas y la misma fórmula (sol.js) que el visor.
+// Sin cámara, la misma escena se ve sobre una tarjeta virtual (el plano impreso) y se gira con el dedo.
 import * as THREE from 'three';
-import { PLANO_M, CENTRO, EDIFICIO, cargar, matrizPapel, solEscena } from './escena-ar.js';
+import { PLANO_M, CENTRO, ESCALA, EDIFICIO, cargar, matrizPapel, solEscena, nortePapel } from './escena-ar.js';
+import { vectorSol } from './sol.js';
+import { fechasClave, MES3 } from './fechas.js';
 
 const $ = id => document.getElementById(id);
 const contenedor = $('ar');
 const SUAVE = new URLSearchParams(location.search).get('suave') !== '0';   // por defecto el filtro suave; ?suave=0, el anterior
-const estado = { fase: 'inicio', encontrado: false, vecesEncontrado: 0, cuadros: 0, errores: [] };
+const VISOR = '../';                                       // el visor está un nivel arriba (…/edificio-106/)
+const estado = { fase: 'inicio', modo: null, encontrado: false, vecesEncontrado: 0, cuadros: 0, errores: [], pausado: false };
 window.__ar = estado;                                     // para las pruebas automáticas (ar/probar.mjs)
 
 // hoy, en hora de Panamá (UTC−5 todo el año)
 const ahora = new Date(Date.now() - 5 * 3600e3);
 const HOY = { y: ahora.getUTCFullYear(), m: ahora.getUTCMonth() + 1, d: ahora.getUTCDate() };
+const S = { fecha: { ...HOY }, min: 900, persona: false, norte: false, lente: false, escala: ESCALA };
+const dos = n => String(n).padStart(2, '0');
+const hhmm = m => `${dos(Math.floor(m / 60))}:${dos(Math.round(m) % 60)}`;
 
+// ---------- navegador dentro de una aplicación (WhatsApp, Instagram, Facebook, TikTok) ----------
+const ua = navigator.userAgent;
+const app = /WhatsApp/i.test(ua) ? 'WhatsApp' : /Instagram/i.test(ua) ? 'Instagram' : /FBAN|FBAV|FB_IAB|FBIOS/.test(ua) ? 'Facebook'
+  : /TikTok|musical_ly|Bytedance|trill_/i.test(ua) ? 'TikTok' : null;
+estado.enApp = app;
+if (app) {
+  $('en-app').hidden = false;
+  $('en-app-txt').textContent = `Dentro de ${app} la cámara suele no funcionar. Toca el menú de ${app} y elige abrir en el navegador, o copia el enlace y pégalo en Safari o Chrome.`;
+}
+$('copiar').addEventListener('click', async () => {
+  const url = location.href.split('#')[0];
+  try { await navigator.clipboard.writeText(url); $('copiado').hidden = false; }
+  catch { const i = $('enlace'); i.value = url; i.hidden = false; i.focus(); i.select(); $('copiado').textContent = 'Mantén el dedo sobre el enlace para copiarlo.'; $('copiado').hidden = false; }
+});
+
+// ---------- escena ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.setClearColor(0x000000, 0);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera();
+const camera = new THREE.PerspectiveCamera();             // la de la AR: la mueve la pose de MindAR
 camera.matrixAutoUpdate = false;
 
 const mundo = new THREE.Group(); mundo.visible = false; scene.add(mundo);
+// lo que crece con el botón de escala: el edificio, la persona y el piso que recibe la sombra (la flecha del norte no:
+// está dibujada sobre el papel)
+const escalable = new THREE.Group(); mundo.add(escalable);
 scene.add(new THREE.HemisphereLight(0xf4f1ea, 0x6b6656, 1.3));
-const sol = new THREE.DirectionalLight(0xfff4e0, 2.6);
+const SOL_I = 2.6;
+const sol = new THREE.DirectionalLight(0xfff4e0, SOL_I);
 const centro = new THREE.Vector3(CENTRO[0], 0, CENTRO[1]);
 sol.target.position.copy(centro); mundo.add(sol, sol.target);
 sol.castShadow = true;
-Object.assign(sol.shadow.camera, { left: -70, right: 70, top: 70, bottom: -70, near: 1, far: 320 });
-sol.shadow.mapSize.set(2048, 2048); sol.shadow.bias = -0.0005; sol.shadow.normalBias = 0.02;
+sol.shadow.mapSize.set(2048, 2048); sol.shadow.bias = -0.0005;
 // la sombra cae sobre el papel: un plano invisible del tamaño del plano que solo recibe sombra
 const piso = new THREE.Mesh(new THREE.PlaneGeometry(PLANO_M[0], PLANO_M[1]), new THREE.ShadowMaterial({ opacity: 0.38 }));
-piso.rotation.x = -Math.PI / 2; piso.position.copy(centro); piso.receiveShadow = true; mundo.add(piso);
+piso.rotation.x = -Math.PI / 2; piso.position.copy(centro); piso.receiveShadow = true; escalable.add(piso);
 
-const _dir = new THREE.Vector3();
-function ponerSol(min) {
-  const s = solEscena({ ...HOY, h: 0, min });
-  _dir.set(s.dir.x, s.dir.y, s.dir.z);
-  sol.position.copy(centro).addScaledVector(_dir, 150);
-  sol.visible = s.alt > 0;
-  estado.sol = { min, alt: s.alt, az: s.az, dir: [s.dir.x, s.dir.y, s.dir.z] };
-  $('hora-txt').textContent = `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}` + (s.alt > 0 ? '' : ' · sin sol');
+// ---------- persona de 1,70 m (la escena está en metros: a 1:320 mide 5,3 mm) ----------
+const persona = new THREE.Group(); persona.name = 'persona'; persona.visible = false;
+{
+  const mat = new THREE.MeshLambertMaterial({ color: 0x1d1d1b });   // tinta: no se confunde con los colores de la lente
+  const cuerpo = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 1.08, 4, 12), mat);   // 0,2 + 1,08 + 0,2 = 1,48 m
+  cuerpo.position.y = 0.74;
+  const cabeza = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8), mat);       // coronilla a 1,70 m
+  cabeza.position.y = 1.59;
+  for (const m of [cuerpo, cabeza]) { m.castShadow = true; persona.add(m); }
+  escalable.add(persona);
 }
-$('hora').addEventListener('input', e => ponerSol(+e.target.value));
+
+// ---------- flecha del norte, sobre el papel ----------
+const norte = new THREE.Group(); norte.name = 'norte'; norte.visible = false; mundo.add(norte);
+{
+  const n = vectorSol(0, 0), d = new THREE.Vector2(n.x, n.z).normalize(), p = new THREE.Vector2(-d.y, d.x);
+  // en la esquina de abajo a la derecha del plano, sobre la calle: lejos del edificio, que no la tape
+  const c = new THREE.Vector2(CENTRO[0] + PLANO_M[0] / 2 - 7, CENTRO[1] + PLANO_M[1] / 2 - 7);
+  const L = 3, pt = (a, b) => [c.x + d.x * a + p.x * b, 0.03, c.y + d.y * a + p.y * b];
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([...pt(L, 0), ...pt(-L * 0.8, L * 0.6), ...pt(-L * 0.4, 0), ...pt(L, 0), ...pt(-L * 0.4, 0), ...pt(-L * 0.8, -L * 0.6)], 3));
+  const tinta = new THREE.MeshBasicMaterial({ color: 0x1d1d1b, side: THREE.DoubleSide });
+  const disco = new THREE.Mesh(new THREE.CircleGeometry(L * 1.35, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 }));
+  disco.rotation.x = -Math.PI / 2; disco.position.set(c.x, 0.02, c.y);
+  // la N, más allá de la punta y siempre derecha sobre el papel
+  const lienzo = document.createElement('canvas'); lienzo.width = lienzo.height = 128;
+  const x = lienzo.getContext('2d'); x.fillStyle = '#1d1d1b'; x.font = 'bold 110px Helvetica, Arial, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('N', 64, 70);
+  const tex = new THREE.CanvasTexture(lienzo); tex.colorSpace = THREE.SRGBColorSpace;
+  const letra = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+  letra.rotation.x = -Math.PI / 2; const pl = pt(L * 1.35 + 2, 0); letra.position.set(pl[0], 0.04, pl[2]);
+  const fondoN = new THREE.Mesh(new THREE.CircleGeometry(1.9, 24), disco.material); fondoN.rotation.x = -Math.PI / 2; fondoN.position.set(pl[0], 0.02, pl[2]);
+  norte.add(disco, new THREE.Mesh(g, tinta), fondoN, letra);
+  norte.userData.angulo = Math.atan2(d.x, -d.y) * 180 / Math.PI;   // desde arriba del papel, horario (para la prueba)
+}
+
+// ---------- lente Sol: el coseno de incidencia del sol directo, con su sombra, en cinco franjas planas ----------
+// Pinta las paredes, que es lo que se pregunta en clase (qué fachada recibe sol y cuándo). Las tejas no: cada una tiene su
+// propia inclinación y el techo quedaba moteado, así que con la lente el techo va en gris.
+// Se usa el sombreado de Lambert de three con el material blanco: la parte directa vale cos(incidencia) × sombra × intensidad / π.
+// Se divide por la intensidad y se multiplica por π, y queda el coseno de incidencia donde da el sol y 0 en la sombra.
+const FRANJAS = ['#22305e', '#8e2a3c', '#d2401c', '#ef8a1f', '#f8d23a'], GRIS = 0x9a968c;
+// lo que queda arriba de las paredes (a más de 11,75 m: el remate de las paredes llega a 11,71) va en gris, como el techo
+const ALTO_PAREDES = 11.75;
+const uLente = { uIntens: { value: SOL_I }, uC: { value: FRANJAS.map(c => new THREE.Color(c)) }, uGris: { value: new THREE.Color(GRIS) }, uK: { value: 1 } };
+const matLente = new THREE.MeshLambertMaterial({ color: 0xffffff });
+matLente.onBeforeCompile = sh => {
+  Object.assign(sh.uniforms, uLente);
+  sh.vertexShader = 'varying float vAlto;\n' + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n\tvAlto = (modelMatrix * vec4(transformed, 1.0)).y;');
+  sh.fragmentShader = `varying float vAlto;\nuniform float uIntens, uK;\nuniform vec3 uC[5], uGris;\n` + sh.fragmentShader.replace('#include <opaque_fragment>',
+    `float e = clamp(reflectedLight.directDiffuse.r * PI / uIntens, 0.0, 1.0);
+    vec3 c = e < 0.02 ? uC[0] : e < 0.25 ? uC[1] : e < 0.5 ? uC[2] : e < 0.75 ? uC[3] : uC[4];
+    if (vAlto / uK > ${ALTO_PAREDES.toFixed(2)}) c = outgoingLight * uGris;
+    gl_FragColor = vec4(c, 1.0);`);
+};
+$('franjas').innerHTML = FRANJAS.map(c => `<i style="background:${c}"></i>`).join('');
+const matTecho = new THREE.MeshLambertMaterial({ color: GRIS });
+// en gris: las tejas del techo y las del pórtico, y el interior, que se ve por la abertura del centro del techo
+const esTecho = o => o.userData.grupo === 'cubiertas' || /^Clay_terracotta|interior|ceiling/i.test(o.name);
+let modelo = null;
+function ponerLente(si) {
+  S.lente = si;
+  modelo?.traverse(o => {
+    if (!o.isMesh) return;
+    o.userData.mat ??= o.material;
+    if (o.userData.mat.transparent) return;                // el vidrio queda como está
+    o.material = !si ? o.userData.mat : esTecho(o) ? matTecho : matLente;
+  });
+  $('leyenda').hidden = !si;
+  actualizar();
+}
+
+// ---------- escala: 1:320 es la de la tarjeta; 1:200 y 1:100 agrandan el modelo sobre el papel ----------
+function ponerEscala(e) {
+  S.escala = e; const k = ESCALA / e;
+  uLente.uK.value = k; escalable.scale.setScalar(k); escalable.position.copy(centro).multiplyScalar(1 - k);
+  Object.assign(sol.shadow.camera, { left: -70 * k, right: 70 * k, top: 70 * k, bottom: -70 * k, near: 1, far: 320 * k });
+  sol.shadow.camera.updateProjectionMatrix(); sol.shadow.normalBias = 0.02 * k;
+  $('b-escala').textContent = `1:${e}`;
+  const nota = $('escala-nota'); nota.hidden = e === ESCALA;
+  nota.textContent = `La tarjeta está impresa a 1:${ESCALA}. Este botón agranda el modelo a 1:${e} (${String(k).replace('.', ',')} veces), así que ya no calza con el plano` + (e <= 100 ? ' y se sale de la tarjeta.' : '.');
+  actualizar();
+}
+
+// ---------- fecha y hora ----------
+const FECHAS = [{ clave: 'hoy', nombre: 'Hoy', ...HOY }, ...fechasClave(HOY.y)];
+estado.fechas = FECHAS;
+$('fecha').innerHTML = FECHAS.map((f, i) => `<option value="${i}">${f.nombre}, ${f.d} ${MES3[f.m - 1]}</option>`).join('');
+const _dir = new THREE.Vector3();
+function actualizar() {
+  const s = solEscena({ ...S.fecha, h: 0, min: S.min }), k = ESCALA / S.escala;
+  _dir.set(s.dir.x, s.dir.y, s.dir.z);
+  sol.position.copy(centro).addScaledVector(_dir, 150 * k);
+  sol.visible = s.alt > 0;
+  estado.sol = { fecha: { ...S.fecha }, min: S.min, alt: s.alt, az: s.az, dir: [s.dir.x, s.dir.y, s.dir.z] };
+  Object.assign(estado, { escala: S.escala, lente: S.lente, persona: S.persona, norte: S.norte });
+  const sel = FECHAS[+$('fecha').value];
+  const extra = s.alt <= 0 ? 'sin sol' : sel?.h != null && Math.abs(S.min - (sel.h * 60 + sel.min)) < 1 ? 'mediodía solar' : '';
+  $('hora-txt').innerHTML = hhmm(S.min) + (extra ? `<small>${extra}</small>` : '');
+  // el mismo momento en el visor: #m-AAAAMMDD-HHMM&vista=aerea (y la lente de sol directo si está puesta)
+  const f = S.fecha, m0 = Math.round(S.min);
+  const href = `${VISOR}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}${S.lente ? '&lente=sol&modo=directa' : ''}&vista=aerea`;
+  $('b-visor').href = href; estado.visor = href;
+}
+$('hora').addEventListener('input', e => { S.min = +e.target.value; actualizar(); });
+$('fecha').addEventListener('change', e => {
+  const f = FECHAS[+e.target.value];
+  S.fecha = { y: f.y, m: f.m, d: f.d };
+  if (f.h != null) { S.min = f.h * 60 + f.min; $('hora').value = S.min; }   // día sin sombra: al mediodía solar
+  actualizar();
+});
+const alternar = (id, clave, fn) => $(id).addEventListener('click', () => {
+  const si = !S[clave]; $(id).setAttribute('aria-pressed', String(si)); fn(si);
+});
+alternar('b-persona', 'persona', si => { S.persona = si; persona.visible = si; actualizar(); });
+alternar('b-norte', 'norte', si => { S.norte = si; norte.visible = si; actualizar(); });
+alternar('b-sol', 'lente', ponerLente);
+$('b-escala').addEventListener('click', () => ponerEscala({ 320: 200, 200: 100, 100: 320 }[S.escala]));
+
 // el deslizador arranca en la hora de ahora (redondeada a 10 min), para comparar con una sombra real; de noche, a las 15:00
 const minAhora = Math.round((ahora.getUTCHours() * 60 + ahora.getUTCMinutes()) / 10) * 10;
 if (minAhora >= 360 && minAhora <= 1080) $('hora').value = minAhora;
-ponerSol(+$('hora').value);
+S.min = +$('hora').value;
+ponerEscala(ESCALA);
+
+/** Medidas para las pruebas: el tamaño del modelo en la escena, la altura de la persona y el giro de la flecha. */
+estado.medir = () => {
+  mundo.updateMatrixWorld(true);
+  const b = modelo ? new THREE.Box3().setFromObject(modelo) : null, bp = new THREE.Box3().setFromObject(persona, true);
+  return { modelo: b && b.getSize(new THREE.Vector3()).toArray(), persona: bp.max.y - bp.min.y, norte: norte.userData.angulo, nortePapel: nortePapel() };
+};
+
+let cargaModelo = null;
+function cargarModelo() {
+  cargaModelo ??= cargar('./modelo', EDIFICIO).then(m => {
+    modelo = m; escalable.add(m);
+    for (const g of m.children) g.traverse(o => { o.userData.grupo = g.name; });
+    // la persona, delante de la fachada sureste (+z de la escena, hacia la calle), a 3,5 m de la pared (fuera del alero,
+    // para que se vea desde arriba) y a la izquierda de la escalera de la entrada, que empieza en x ≈ 10 m
+    const b = new THREE.Box3().setFromObject(m.getObjectByName('arquitectura'));
+    persona.position.set(7, 0, b.max.z + 3.5);
+    if (S.lente) ponerLente(true);
+    return m;
+  });
+  return cargaModelo;
+}
+
+// ---------- dibujo, hasta 30 cuadros por segundo: alcanza y no calienta el celular ----------
+let camActiva = camera, orbita = null, ultimo = 0;
+function bucle(t) {
+  if (t - ultimo < 1000 / 31) return;
+  ultimo = t; estado.cuadros++;
+  orbita?.update();
+  renderer.render(scene, camActiva);
+}
 
 // ---------- cámara del celular y MindAR ----------
 let video, controller, postMatrix;
@@ -55,6 +221,7 @@ const papel = matrizPapel();
 const _m = new THREE.Matrix4();
 
 function pose(worldMatrix) {
+  if (estado.modo !== 'ar') return;
   if (worldMatrix === null) { mundo.visible = false; aviso(true); estado.encontrado = false; return; }
   _m.fromArray(worldMatrix).multiply(postMatrix).multiply(papel);   // escena (m) → cámara
   camera.matrix.copy(_m).invert(); camera.updateMatrixWorld(true);
@@ -66,9 +233,12 @@ function pose(worldMatrix) {
 function aviso(ver) { $('aviso').hidden = !ver; }
 
 function ajustar() {
+  const W = contenedor.clientWidth, H = contenedor.clientHeight;
+  renderer.setSize(W, H);
+  if (estado.modo === 'sin-camara') { if (orbita) encuadre(W, H); return; }
   if (!controller) return;
   // misma cuenta que MindARThree.resize (mind-ar 1.2.5, src/image-target/three.js): video en modo «cubrir»
-  const W = contenedor.clientWidth, H = contenedor.clientHeight, vw0 = video.videoWidth, vh0 = video.videoHeight;
+  const vw0 = video.videoWidth, vh0 = video.videoHeight;
   // MindAR lee el tamaño del video de los atributos width y height (no de videoWidth): sin ellos dibuja 0 × 0 y no encuentra nada
   video.setAttribute('width', vw0); video.setAttribute('height', vh0);
   const rv = vw0 / vh0, rc = W / H;
@@ -79,15 +249,27 @@ function ajustar() {
   camera.fov = 2 * Math.atan(1 / proj[5] * fovAjuste) * 180 / Math.PI;
   camera.near = proj[14] / (proj[10] - 1); camera.far = proj[14] / (proj[10] + 1);
   camera.aspect = W / H; camera.updateProjectionMatrix();
-  renderer.setSize(W, H);
+}
+addEventListener('resize', ajustar);
+
+function mostrarError(e) {
+  console.error(e);
+  estado.fase = 'error'; estado.errores.push(String(e?.message ?? e));
+  const msg = e?.name === 'NotAllowedError' ? 'El celular no dio permiso para usar la cámara. Puedes darlo en los ajustes del navegador y volver a intentar, o ver el modelo sin cámara.'
+    : e?.name === 'NotFoundError' || e?.name === 'OverconstrainedError' ? 'No encontramos una cámara en este aparato. Puedes ver el modelo sin cámara.'
+    : e?.name === 'NotReadableError' ? 'Otra aplicación está usando la cámara. Ciérrala y vuelve a intentar.'
+    : e?.message === 'sin-camara' ? 'Este navegador no deja usar la cámara. Abre el enlace en Safari o Chrome, no dentro de WhatsApp ni Instagram.'
+    : 'No se pudo abrir la cámara o cargar el modelo. Recarga la página para intentarlo de nuevo.';
+  $('error').textContent = msg; $('error').hidden = false;
+  $('empezar').disabled = false; $('empezar').textContent = 'Intentar de nuevo'; $('sin-camara').disabled = false;
 }
 
 async function empezar() {
   $('empezar').disabled = true; $('error').hidden = true;
   try {
-    estado.fase = 'camara';
+    estado.fase = 'camara'; estado.modo = 'ar';
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('sin-camara');
-    video = document.createElement('video');
+    video ??= document.createElement('video');
     video.setAttribute('autoplay', ''); video.setAttribute('muted', ''); video.setAttribute('playsinline', ''); video.muted = true;
     contenedor.appendChild(video); contenedor.appendChild(renderer.domElement);
     const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } });
@@ -98,42 +280,95 @@ async function empezar() {
 
     estado.fase = 'cargando';
     $('empezar').textContent = 'Cargando el edificio…';
-    const [{ Controller }, modelo] = await Promise.all([
-      import('./vendor/mindar/mindar-image.prod.js'),
-      cargar('./modelo', EDIFICIO),
-    ]);
-    mundo.add(modelo);
+    const [{ Controller }] = await Promise.all([import('./vendor/mindar/mindar-image.prod.js'), cargarModelo()]);
     controller = new Controller({
       inputWidth: video.videoWidth, inputHeight: video.videoHeight, maxTrack: 1,
       // filtro de MindAR (One Euro). Su documentación (docs/quick-start/tracking-config.md): bajar filterMinCF reduce el
       // temblor y subir filterBeta reduce el retraso; por defecto 0,001 y 1000. Aquí va un corte 10 veces menor, elegido por
       // LM (2026-10-01) porque el edificio temblaba con el celular quieto; ?suave=0 vuelve al 0,001 para comparar.
       filterMinCF: SUAVE ? 0.0001 : 0.001, filterBeta: 1,
-      onUpdate: d => { if (d.type === 'updateMatrix') pose(d.worldMatrix); else if (d.type === 'processDone') estado.procesados = (estado.procesados ?? 0) + 1; },
+      onUpdate: d => {
+        if (d.type === 'updateMatrix') pose(d.worldMatrix);
+        else if (d.type === 'processDone') { estado.procesados = (estado.procesados ?? 0) + 1; ultimoProceso = performance.now(); }
+      },
     });
     const { dimensions } = await controller.addImageTargets('./tarjeta/plano.mind');
     const [mw, mh] = dimensions[0];
     postMatrix = new THREE.Matrix4().compose(new THREE.Vector3(mw / 2, mh / 2, 0), new THREE.Quaternion(), new THREE.Vector3(mw, mw, mw));
-    ajustar(); addEventListener('resize', ajustar);
+    ajustar();
     controller.dummyRun(video);
-    controller.processVideo(video);
+    if (!document.hidden) controller.processVideo(video);
 
     $('inicio').hidden = true; $('panel').hidden = false; aviso(true);
     estado.fase = 'rastreando';
-    let ultimo = 0;
-    renderer.setAnimationLoop(t => {
-      if (t - ultimo < 1000 / 31) return;                  // hasta 30 cuadros por segundo: alcanza y no calienta el celular
-      ultimo = t; estado.cuadros++;
-      renderer.render(scene, camera);
-    });
-  } catch (e) {
-    console.error(e);
-    estado.fase = 'error'; estado.errores.push(String(e?.message ?? e));
-    const msg = e?.name === 'NotAllowedError' ? 'El celular no dio permiso para usar la cámara. Puedes darlo en los ajustes del navegador y volver a intentar.'
-      : e?.message === 'sin-camara' ? 'Este navegador no deja usar la cámara. Abre el enlace en Safari o Chrome, no dentro de WhatsApp ni Instagram.'
-      : 'No se pudo abrir la cámara o cargar el modelo. Recarga la página para intentarlo de nuevo.';
-    $('error').textContent = msg; $('error').hidden = false;
-    $('empezar').disabled = false; $('empezar').textContent = 'Intentar de nuevo';
-  }
+    if (!document.hidden) renderer.setAnimationLoop(bucle);
+  } catch (e) { mostrarError(e); }
 }
+
+// ---------- sin cámara: el modelo sobre una tarjeta virtual, con giro y zoom ----------
+async function sinCamara() {
+  $('sin-camara').disabled = true; $('empezar').disabled = true; $('error').hidden = true;
+  try {
+    estado.fase = 'cargando'; estado.modo = 'sin-camara';
+    $('sin-camara').textContent = 'Cargando el edificio…';
+    if (video?.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.remove(); }
+    const [{ OrbitControls }, , tex] = await Promise.all([
+      import('three/addons/controls/OrbitControls.js'), cargarModelo(), new THREE.TextureLoader().loadAsync('./tarjeta/plano.png')]);
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const hoja = new THREE.Mesh(new THREE.PlaneGeometry(PLANO_M[0], PLANO_M[1]), new THREE.MeshBasicMaterial({ map: tex }));
+    hoja.rotation.x = -Math.PI / 2; hoja.position.set(CENTRO[0], -0.05, CENTRO[1]); hoja.name = 'tarjeta-virtual'; mundo.add(hoja);
+    document.body.classList.add('sin-camara');
+    if (!renderer.domElement.parentNode) contenedor.appendChild(renderer.domElement);
+    camActiva = new THREE.PerspectiveCamera(40, 1, 0.5, 3000);
+    $('inicio').hidden = true; $('panel').hidden = false; aviso(false);
+    const dist = encuadre(contenedor.clientWidth, contenedor.clientHeight);
+    camActiva.position.copy(centro).add(new THREE.Vector3(0, 0.8, 0.6).multiplyScalar(dist));   // desde el borde de abajo de la tarjeta, como en la AR
+    orbita = new OrbitControls(camActiva, renderer.domElement);
+    orbita.target.copy(centro); orbita.enableDamping = true; orbita.maxPolarAngle = Math.PI * 0.47;
+    orbita.minDistance = 12; orbita.maxDistance = Math.max(320, dist * 1.5); orbita.update();
+    mundo.visible = true; ajustar();
+    estado.fase = 'sin-camara';
+    if (!document.hidden) renderer.setAnimationLoop(bucle);
+  } catch (e) { estado.modo = null; mostrarError(e); }
+}
+
+/** Sin cámara: el centro de la vista se corre para que el panel no tape el edificio. Devuelve la distancia que muestra
+ *  la tarjeta a lo ancho y el plano a lo alto en lo que queda libre de pantalla. */
+function encuadre(W, H) {
+  const r = $('panel').getBoundingClientRect(), abajo = r.top > H / 2;
+  const libreW = abajo ? W : W - r.width - 12, libreH = abajo ? H - r.height - 12 : H;
+  camActiva.aspect = W / H;
+  camActiva.setViewOffset(W, H, abajo ? 0 : (W - libreW) / 2, abajo ? (H - libreH) / 2 : 0, W, H);
+  camActiva.updateProjectionMatrix();
+  const t = Math.tan(camActiva.fov / 2 * Math.PI / 180);
+  return Math.max(0.53 * PLANO_M[0] / (t * libreW / H), 0.5 * PLANO_M[1] / t * H / libreH);
+}
+
+// ---------- pestaña oculta: se para la cámara, MindAR y el dibujo; al volver, siguen ----------
+let ultimoProceso = 0, turno = 0;
+const cuadro = () => new Promise(r => requestAnimationFrame(r));
+async function pausar() {
+  turno++; estado.pausado = true;
+  renderer.setAnimationLoop(null);
+  if (controller) { controller.stopProcessVideo(); pose(null); }
+  video?.pause();
+}
+async function reanudar() {
+  const mio = ++turno;
+  if (estado.fase !== 'rastreando' && estado.fase !== 'sin-camara') { estado.pausado = false; return; }
+  if (estado.modo === 'ar' && controller) {
+    await video.play().catch(() => {});
+    // el bucle de MindAR termina en la vuelta siguiente a stopProcessVideo; si se lo vuelve a arrancar antes, quedan dos.
+    // Se espera a que deje de avisar «processDone» por 600 ms.
+    const t0 = performance.now();
+    while (performance.now() - Math.max(ultimoProceso, t0) < 600) { await cuadro(); if (mio !== turno) return; }
+    controller.processVideo(video);
+  }
+  estado.pausado = false;
+  renderer.setAnimationLoop(bucle);
+}
+document.addEventListener('visibilitychange', () => { document.hidden ? pausar() : reanudar(); });
+
 $('empezar').addEventListener('click', empezar);
+$('sin-camara').addEventListener('click', sinCamara);
+actualizar();
