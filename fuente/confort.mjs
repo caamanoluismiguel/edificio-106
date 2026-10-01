@@ -57,6 +57,15 @@ for (let i = 0; i < n; i++) {
   if (t >= lo && t <= hi + extra(2.2)) cuenta.a80_12++;
 }
 const pct = (x) => Math.round(1000 * x / cuenta.horas) / 10;
+// contraste con la estación de Tocumen (ETESA, Caracterización climática del distrito de Panamá, 1977–2010): tensión de vapor
+// media de cada mes (hPa). ERA5 da más humedad que Tocumen; aquí se resta esa diferencia mes por mes para ver cuánto depende
+// la carta de ese sesgo. No es una corrección para el sitio: Tocumen queda a ~25 km, en otro entorno.
+const E_TOCUMEN = [25.9, 25.7, 25.8, 27.3, 29.6, 29.9, 29.5, 29.4, 29.5, 29.3, 29.1, 27.9];
+const wToc = E_TOCUMEN.map((e) => 622 * e * 100 / (101325 - e * 100)), wMes = new Array(12).fill(0), nMes = new Array(12).fill(0);
+for (let i = 0; i < n; i++) { const m = new Date(T0 + i * 3.6e6).getUTCMonth(); wMes[m] += humedadAbs(Tc[i] / 6 + 10, Hc[i]); nMes[m]++; }
+const sesgo = wMes.map((w, m) => w / nMes[m] - wToc[m]);
+let qT = 0, vT = 0, nT = 0;
+for (let i = 7 * 24; i < n; i++) { const m = new Date(T0 + i * 3.6e6).getUTCMonth(), t = Tc[i] / 6 + 10, w = humedadAbs(t, Hc[i]) - sesgo[m]; nT++; if (dentro(t, w, QUIETO)) qT++; if (dentro(t, w, VENTILACION)) vT++; }
 
 // ---------- UTCI al sol y bajo el alero, horas de día, por mes ----------
 // la radiación de la hora H es el promedio de H−1 a H (Open-Meteo): el sol se toma a H−0:30; la temperatura, la humedad y el
@@ -84,12 +93,14 @@ const salida = {
   zonas: { quieto: QUIETO, ventilacion: VENTILACION },
   pct: { quieto: pct(cuenta.quieto), ventilacion: pct(cuenta.ventilacion), adaptativo80: pct(cuenta.a80), adaptativo80_06: pct(cuenta.a80_06), adaptativo80_09: pct(cuenta.a80_09), adaptativo80_12: pct(cuenta.a80_12) },
   tpma: { min: +tpmaMin.toFixed(1), max: +tpmaMax.toFixed(1), media: +(tpmaSum / tpmaN).toFixed(1) },
+  tocumen: { sesgoGkg: sesgo.map((x) => +x.toFixed(1)), quieto: Math.round(1000 * qT / nT) / 10, ventilacion: Math.round(1000 * vT / nT) / 10 },
   utci: { categorias: CATEGORIAS_UTCI.map((c) => c.nombre), meses, anual, alivioMedioAlero: +(alivioSum / alivioN).toFixed(1), solMin: 5 },
   fuentes: [
     'Givoni, B. (1992). Comfort, climate analysis and building design guidelines. Energy and Buildings 18(1), 11–23. doi:10.1016/0378-7788(92)90047-K',
     'ASHRAE 55-2017. Thermal Environmental Conditions for Human Occupancy, §5.4 (modelo adaptativo) y apéndice C (SolarCal).',
     'Bröde, P. et al. (2012). Deriving the operational procedure for the Universal Thermal Climate Index (UTCI). Int J Biometeorol 56, 481–494. doi:10.1007/s00484-011-0454-1',
     'Arens, E. et al. (2015). Modeling the comfort effects of short-wave solar radiation indoors. Building and Environment 88, 3–9. doi:10.1016/j.buildenv.2014.09.004',
+    'ETESA, Centro del Clima. Caracterización climática de los distritos de Panamá y San Miguelito, estación Tocumen 1977–2010 (imhpa.gob.pa).',
     'Tartarini, F. y Schiavon, S. (2020). pythermalcomfort. SoftwareX 12, 100578. doi:10.1016/j.softx.2020.100578 (implementación de referencia; errores < 1e-11 °C)',
   ],
 };
@@ -98,4 +109,5 @@ for (const out of destinos) fs.writeFileSync(out, JSON.stringify(salida));
 console.log(`${cuenta.horas} horas · Givoni quieto ${salida.pct.quieto} % · ventilación ${salida.pct.ventilacion} % · adaptativo 80 % ${salida.pct.adaptativo80} % (1,2 m/s: ${salida.pct.adaptativo80_12} %) · t_pma ${tpmaMin.toFixed(1)}–${tpmaMax.toFixed(1)} °C`);
 console.log(`UTCI de día (${anual.horas} h): al sol`, anual.sol.map((x, k) => x && `${CATEGORIAS_UTCI[k].nombre} ${Math.round(100 * x / anual.horas)} %`).filter(Boolean).join(' · '));
 console.log('              bajo el alero', anual.sombra.map((x, k) => x && `${CATEGORIAS_UTCI[k].nombre} ${Math.round(100 * x / anual.horas)} %`).filter(Boolean).join(' · '), `· alivio medio del alero ${salida.utci.alivioMedioAlero} °C`);
+console.log(`con la humedad de Tocumen: quieto ${salida.tocumen.quieto} % · ventilación ${salida.tocumen.ventilacion} % · sesgo ${salida.tocumen.sesgoGkg.join(' ')}`);
 console.log(`fuera de la rejilla de la carta: ${fuera} h · ${(fs.statSync(destinos[0]).size / 1024).toFixed(1)} KB`);

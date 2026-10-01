@@ -2034,13 +2034,14 @@ function pintarCarta() {
   s.push(`<text x="${(CARTA.x0 + CARTA.x1) / 2}" y="${CARTA.y1 + 31}" fill="#b6bdb9" font-size="10" text-anchor="middle">temperatura del aire (°C)</text>`);
   s.push(`<text x="10" y="${(CARTA.y0 + CARTA.y1) / 2}" fill="#b6bdb9" font-size="10" text-anchor="middle" transform="rotate(-90 10 ${(CARTA.y0 + CARTA.y1) / 2})">humedad (g/kg)</text>`);
   s.push('<g id="carta-punto"></g>');
-  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas en temperatura y humedad; la mayoría cae arriba de 17 g/kg, fuera del aire quieto de Givoni.</desc>` + s.join('');
+  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas en temperatura y humedad; la mayoría cae arriba de 17 g/kg con la humedad de ERA5, que es algo más alta que la medida en Tocumen.</desc>` + s.join('');
   const P = J.pct, li = (col, dash, txt) => `<li><i style="border:2px ${dash} ${col};background:none"></i>${txt}</li>`;
   $('#carta-cifras').innerHTML = [
     // en enteros: ERA5 no sostiene décimas en la humedad de una celda de ~28 km
     li('#f4b545', 'solid', `Givoni, aire quieto: <b>${Math.round(P.quieto)} %</b> de las horas`),
     li('#f4b545', 'dashed', `Givoni, con ventilación de ~2 m/s: <b>${Math.round(P.ventilacion)} %</b>`),
     li('#b6bdb9', 'dotted', `ASHRAE 55 adaptativo, aire quieto: <b>${Math.round(P.adaptativo80)} %</b> · con aire a 0,6 m/s: <b>${Math.round(P.adaptativo80_06)} %</b>`),
+    J.tocumen ? `<li><i style="background:none"></i>Con la humedad de Tocumen (ETESA) en lugar de la de ERA5, Givoni da <b>${Math.round(J.tocumen.quieto)} %</b> con aire quieto y <b>${Math.round(J.tocumen.ventilacion)} %</b> con brisa.</li>` : '',
   ].join('');
 }
 let confortClave = '';
@@ -2050,7 +2051,8 @@ function confortHora(p, c) {
   if (k === confortClave) return; confortClave = k;
   const g = $('#carta-punto');
   if (!ok) { if (g) g.innerHTML = ''; $('#conviene').innerHTML = '<li class="neutro">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>'; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
-  $('#conviene').innerHTML = conviene(p, c).map(([cl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${t}</li>`).join('');
+  $('#conviene').innerHTML = conviene(p, c).map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? `<span class="sr">${gl === '●' ? 'Sí: ' : gl === '◐' ? 'Con condición: ' : 'No alcanza: '}</span>` : ''}${t}</span></li>`).join('');
+  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? `pronóstico ${c.hora ?? ''}`.trim() : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
   if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
   const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
@@ -2064,53 +2066,61 @@ function confortHora(p, c) {
   const nom = (u) => CATEGORIAS_UTCI[categoriaUTCI(u)]?.nombre.toLowerCase() ?? '—';
   $('#utci-hora').innerHTML = `A las ${hora}: al sol se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
 }
-/** Qué conviene a esta hora, a partir del clima de afuera. Reglas explícitas, con su fuente:
- *  - ventilar o no: en qué zona de Givoni (1992, variante para países cálidos) cae la hora en la carta psicrométrica;
- *  - entrada y salida del aire: la fachada que recibe el viento de frente (criterio del proyecto: ±60° y al menos 5 km/h) y la opuesta;
- *  - sol: ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del 106 (vidrio en sombra desde
- *    ~45°, todo al sol bajo ~9°: «Para qué sirve», hallazgo del alero);
- *  - lluvia con viento: la fachada que la recibe de frente. No calcula el interior. */
-/** Temperatura media exterior predominante (ASHRAE 55): media de las medias diarias de los 7 días anteriores, de la serie. */
-function tpmaEn(f) {
-  if (!clima.horario) return null;
-  const i0 = clima.indice(f, 0); if (i0 < 7 * 24) return null;
-  let s = 0; for (let i = i0 - 7 * 24; i < i0; i++) s += clima.valor('temp', i);
-  return s / (7 * 24);
-}
+/** Qué conviene a esta hora, a partir del clima de afuera (especificación revisada por el panel de expertos, 30/09/2026).
+ *  Dos marcos de confort (Givoni 1992; Guía de Construcción Sostenible de Panamá 2016, p. 8, con la extensión de ASHRAE 55
+ *  por aire en movimiento) y hasta dos acciones (sol, aire) más la lluvia si llueve. Fuentes y límites en «¿De dónde sale?». */
 const CORTO = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
+const LARGAS = ['fachada-no', 'fachada-se'];
 const OPUESTA = { 'fachada-se': 'fachada-no', 'fachada-no': 'fachada-se', 'fachada-ne': 'fachada-so', 'fachada-so': 'fachada-ne' };
 function conviene(p, c) {
-  const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0;
-  // 1. ventilar o no
-  if (dentroPoligono(c.temp, w, GIVONI.quieto)) out.push(['', `<b>Según Givoni, ventilar es opcional.</b> Con ${Math.round(c.temp)} °C y ${f1(w)} g/kg se está en confort con el aire quieto: basta la sombra.`]);
-  else if (dentroPoligono(c.temp, w, GIVONI.ventilacion)) out.push(['', `<b>Según Givoni, conviene ventilar.</b> Con ${Math.round(c.temp)} °C y ${f1(w)} g/kg, el aire moviéndose a unos 2 m/s dentro del aula da confort.`]);
-  else if (c.temp < 20) out.push(['neutro', `<b>Está fresco</b> (${Math.round(c.temp)} °C): ventilar poco.`]);
-  else out.push(['aviso', `<b>Según Givoni, ni la brisa alcanza.</b> Con ${Math.round(c.temp)} °C y ${f1(w)} g/kg queda fuera de su zona de ventilación (hasta 32 °C y 19 g/kg)${w > 19 ? ': es la humedad' : ''}. Ventilar igual saca calor, pero para el confort pide ${w > 19 ? 'deshumidificar' : 'enfriar'}.`]);
-  // el modelo adaptativo de ASHRAE 55 (aulas ventiladas, sin techo de humedad): t_pma de los 7 días anteriores
-  const tp = tpmaEn(S.fecha) ?? confortJ.tpma.media, tc = 0.31 * tp + 17.8, lo = tc - 3.5, hi = tc + 3.5, ex = c.temp > 25 ? 2.2 : 0;
-  if (c.temp >= lo && c.temp <= hi) out.push(['', `<b>Según ASHRAE 55 adaptativo, aceptable</b> para un aula ventilada con aire quieto (rango de ${Math.round(lo)} a ${Math.round(hi)} °C para estos días).`]);
-  else if (c.temp >= lo && c.temp <= hi + ex) out.push(['', `<b>Según ASHRAE 55 adaptativo, aceptable con aire en movimiento</b> (~1,2 m/s, ventiladores de techo): hay ${f1(c.temp)} °C y, con el aire quieto, el límite de estos días es ${f1(hi)} °C.`]);
-  else if (c.temp > hi + ex) out.push(['aviso', `<b>Según ASHRAE 55 adaptativo, caluroso</b> aun con aire a 1,2 m/s (límite ${Math.round(hi + ex)} °C para estos días).`]);
-  // 2. por dónde entra y sale el aire
-  const v = c.viento ?? 0;
-  if (c.dir != null && v >= 5) {
-    let mejor = null, cm = -2;
-    for (const k of Object.keys(FACHADAS)) { const cs = Math.cos((c.dir - FACHADAS[k].rumbo) * Math.PI / 180); if (cs > cm) { cm = cs; mejor = k; } }
-    const frente = cm >= 0.5;                                    // dentro de ±60° de la perpendicular
-    out.push(['', `<b>Entrada por la ${CORTO[mejor]}, salida por la ${CORTO[OPUESTA[mejor]]}.</b> El viento viene del ${rumboTexto(c.dir)} a ${Math.round(v)} km/h${frente ? ' y le da de frente a la ' + CORTO[mejor] : ', oblicuo a todas las fachadas'}.`]);
-    if ((c.lluvia ?? 0) >= 1) out.push(['aviso', `<b>Llueve con viento</b> (${f1(c.lluvia)} mm/h): la ${CORTO[mejor]} recibe el agua; de ese lado, abrir solo lo que el alero protege.`]);
-  } else out.push(['neutro', `<b>Viento flojo</b> (${Math.round(v)} km/h): la ventilación cruzada rinde poco; ayudan las aberturas altas, por donde sale el aire caliente, o los ventiladores de techo.`]);
-  // 3. sol sobre las fachadas
+  const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0, mes = S.fecha.m, seca = mes === 12 || mes <= 4, h = S.min / 60;
+  const T = f1(c.temp), W = f1(w), banda = seca ? 1 : 0.5;
+  // 1. Givoni (con la banda «en el borde»: ERA5 marca algo más de humedad que Tocumen)
+  const enQ = dentroPoligono(c.temp, w, GIVONI.quieto), enV = dentroPoligono(c.temp, w, GIVONI.ventilacion);
+  // «en el borde»: el veredicto cambiaría con ±1 °C o con ±banda g/kg (la diferencia entre ERA5 y Tocumen)
+  const borde = [[1, 0], [-1, 0], [0, banda], [0, -banda]].some(([dt, dw]) => dentroPoligono(c.temp + dt, w + dw, GIVONI.ventilacion) !== enV);
+  let g;
+  if (c.temp < 20) g = ['●', '<b>Givoni: fresco.</b> Ventilar poco.'];
+  else if (enQ) g = ['●', '<b>Givoni: confort con el aire quieto.</b> Basta la sombra.'];
+  else if (borde) g = ['◐', `<b>Givoni: en el borde.</b> Con ${T} °C y ${W} g/kg, y la humedad de ERA5 algo alta, puede quedar dentro o fuera de la zona con brisa.`];
+  else if (enV) g = ['◐', `<b>Givoni: confort si se mueve el aire</b> (${T} °C, ${W} g/kg).`];
+  else if (w > 19) g = seca ? ['◐', `<b>Givoni: fuera por poco</b> (${W} g/kg). En esta época la humedad real suele ser algo menor que la de ERA5.`] : ['○', `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${W} g/kg). Mover el aire igual ayuda.`];
+  else g = ['○', `<b>Givoni: demasiado caluroso</b> (${T} °C).`];
+  out.push(['', ...g]);
+  // 2. Guía de Panamá: 23,5 a 28,5 °C; con aire a ~0,6 m/s, ASHRAE 55 acepta 1,2 °C más (solo sobre 25 °C)
+  let pa;
+  if (c.temp < 23.5) pa = ['●', '<b>Guía de Panamá: fresco para su rango</b> (23,5 a 28,5 °C).'];
+  else if (c.temp <= 28.5) pa = ['●', '<b>Guía de Panamá: dentro del rango</b> (23,5 a 28,5 °C).'];
+  else if (c.temp <= 29.7) pa = ['◐', `<b>Guía de Panamá: aceptable con ventilador o brisa suave</b> (${T} °C, el rango llega a 28,5).`];
+  else pa = ['○', `<b>Guía de Panamá: caluroso</b> (${T} °C, aun con el aire en movimiento).`];
+  out.push(['', ...pa]);
+  out.push(['cierre', '', g[0] === pa[0] ? 'Coinciden.' : 'No coinciden porque Givoni mira la humedad y la Guía solo la temperatura.']);
+  // 3. Sol en el vidrio (de día, con sol directo, perfil bajo el corte del alero)
+  const acciones = [];
   if (dia && (c.dni ?? 0) >= 120) {
+    const al = [];
     for (const k of Object.keys(FACHADAS)) {
-      const r = FACHADAS[k].rumbo, ca = Math.cos((p.az - r) * Math.PI / 180);
-      if (ca <= 0.05) continue;                                   // el sol está detrás de esa fachada
+      const ca = Math.cos((p.az - FACHADAS[k].rumbo) * Math.PI / 180); if (ca <= 0.05) continue;
       const perfil = Math.atan(Math.tan(p.alt * Math.PI / 180) / ca) * 180 / Math.PI;
-      if (perfil >= 45) continue;                                 // el alero ya cubre el vidrio
-      out.push([perfil < 9 ? 'aviso' : '', `<b>Sol en el vidrio de la ${CORTO[k]}</b> (ángulo de perfil ${Math.round(perfil)}°): ${perfil < 9 ? 'el alero no lo tapa; ' : 'entra por debajo del alero; '}conviene cerrar persianas o cortinas de ese lado.`]);
+      if (perfil < 45) al.push(`${CORTO[k]} (perfil ${Math.round(perfil)}°)`);
     }
-    if (out.filter((x) => /Sol en el vidrio/.test(x[1])).length === 0) out.push(['', '<b>El alero cubre todo el vidrio</b> en esta hora: el sol llega con un perfil de más de 45° o por detrás.']);
-  } else if (!dia) out.push(['neutro', '<b>De noche</b> no hay sol que proteger: si conviene ventilar, también saca el calor que guardaron los muros durante el día.']);
+    if (al.length) acciones.push(`<b>Sol en el vidrio ${al.join(' y ')}.</b> Baja la persiana o la cortina de ${al.length > 1 ? 'esos lados' : 'ese lado'}; la ventana puede quedar abierta.${h >= 13 && h < 16 ? ' A esta hora es lo que más importa.' : ''}`);
+  }
+  // 4. Aire: con las fachadas largas como eje
+  const v = c.viento ?? 0, variable = mes >= 5 && mes <= 11 ? ' (en esta época la dirección cambia de hora en hora)' : '';
+  if (c.dir == null || v < 6) acciones.push(`<b>Casi sin viento</b> (${Math.round(v)} km/h a 10 m). La ventilación cruzada rinde poco; ayudan las aberturas altas o el ventilador.`);
+  else {
+    let k = LARGAS[0], ang = 180;
+    for (const f of LARGAS) { const a = Math.abs(((c.dir - FACHADAS[f].rumbo + 540) % 360) - 180); if (a < ang) { ang = a; k = f; } }
+    if (ang <= 30) acciones.push(`<b>Brisa de frente a la ${CORTO[k]}</b> (del ${rumboTexto(c.dir)}, ${Math.round(v)} km/h). Abre esa y la ${CORTO[OPUESTA[k]]}; la salida igual o mayor que la entrada${variable}.`);
+    else if (ang <= 60) acciones.push(`<b>Brisa oblicua a la ${CORTO[k]}</b> (del ${rumboTexto(c.dir)}, ${Math.round(v)} km/h). Abre las dos fachadas largas; entra más o menos la mitad del aire${variable}.`);
+    else acciones.push(`<b>Brisa paralela a las fachadas largas</b> (del ${rumboTexto(c.dir)}, ${Math.round(v)} km/h). Mueve poco aire; ayuda el ventilador${variable}.`);
+    if (seca && h >= 5 && h < 9) acciones[acciones.length - 1] += ' Es la hora más fresca del día: abrir temprano saca el calor de la noche.';
+  }
+  for (const a of acciones.slice(0, 2)) out.push(['accion', '', a]);
+  // 5. Lluvia, solo si llueve
+  if ((c.lluvia ?? 0) >= 1) out.push(['accion', '', '<b>Llueve.</b> Puede entrar por cualquier lado: deja abiertas las persianas de vidrio y lo que cubre el alero, y cierra lo demás.']);
+  if (!dia) out.push(['accion', '', '<b>De noche</b> el aula está vacía; si queda ventilada de forma segura, saca el calor que guardaron los muros.']);
   return out;
 }
 function pintarUTCI() {

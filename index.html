@@ -428,7 +428,10 @@
   .conf-ley i, .conf-cifras i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
   .conf-hora { margin: 0; font: 500 13px/1.4 var(--texto); color: var(--cal); }
   .conf-conviene { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font: 500 13px/1.4 var(--texto); color: var(--cal); }
-  .conf-conviene li { padding-left: 12px; border-left: 3px solid var(--sol); } .conf-conviene li.aviso { border-left-color: var(--teja); } .conf-conviene li.neutro { border-left-color: var(--linea-2); }
+  .conf-conviene li { display: grid; grid-template-columns: 16px 1fr; gap: 6px; } .conf-conviene li i { font-style: normal; color: var(--sol); }
+  .conf-conviene li.accion { grid-template-columns: 1fr; padding-left: 10px; border-left: 2px solid var(--linea-2); } .conf-conviene li.cierre { grid-template-columns: 1fr; color: var(--cal-2); font-size: 12.5px; }
+  .conf-sello { margin: 0; font: 500 11.5px/1.3 var(--datos); color: var(--cal-2); letter-spacing: .02em; }
+  .conf-detalle summary { cursor: pointer; font: 600 12.5px/1.3 var(--texto); color: var(--sol); } .conf-detalle p { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--cal-2); }
   .conf-conviene b { font-weight: 650; }
   .conf-hora b { font-family: var(--datos); font-variant-numeric: tabular-nums; }
   html:has(#confort:not([hidden])) #rotulo, html:has(#confort:not([hidden])) #panel-fachada { display: none; }
@@ -1016,14 +1019,20 @@
   <div class="ir-cab"><h3 id="confort-t">Confort térmico</h3><button class="boton" type="button" id="cerrar-confort">Cerrar</button></div>
   <section aria-labelledby="conviene-t">
     <h4 id="conviene-t">Qué conviene a esta hora</h4>
+    <p class="conf-sello" id="conviene-sello"></p>
     <ul class="conf-conviene" id="conviene" aria-live="polite"></ul>
-    <p class="nota">Son estrategias según el clima de afuera a esta hora (reanálisis ERA5 o pronóstico), no un cálculo del interior: no se conocen los tabiques, el tipo de ventanas ni cuánto abren. El viento es el de 10 m en terreno abierto; junto al edificio es más flojo. Zonas de Givoni (1992) y modelo adaptativo de ASHRAE 55-2017, que no siempre coinciden (ver la carta); ángulo de perfil del alero, Olgyay y Olgyay (1957).</p>
+    <details class="conf-detalle"><summary>¿De dónde sale?</summary>
+      <p>Son estrategias según el clima de afuera a esta hora, no un cálculo del interior: no se conocen los tabiques, el tipo de ventanas ni cuánto abren, y el tercer piso suele estar más caliente por el techo.</p>
+      <p><b>Givoni</b> (1992, zonas para países cálidos): confort con aire quieto o con brisa según temperatura y humedad. Cerca de un límite dice «en el borde»: ERA5 marca entre 0,6 y 1,4 g/kg más de humedad que la estación de Tocumen (ETESA, 1977–2010). <b>Guía de Panamá</b> (Secretaría Nacional de Energía, 2016, p. 8): confort de 23,5 a 28,5 °C; con aire a unos 0,6 m/s, ASHRAE 55-2017 acepta 1,2 °C más. Las dos suponen la temperatura del aula.</p>
+      <p><b>Sol:</b> ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del modelo, ~45°; mejor la persiana por fuera (Guía, p. 36), y el control solar importa más al principio de la tarde (p. 37). <b>Aire:</b> de frente si el viento llega a menos de 30° de la perpendicular de una fachada larga; de 30 a 60°, entra cerca de la mitad (UN-Habitat, 2014, p. 71); la salida igual o mayor que la entrada (p. 70). ERA5 da el viento a 10 m en terreno abierto, y en esta celda más fuerte que en Tocumen; junto a la ventana es bastante menor (p. 29). De mayo a noviembre su dirección cambia de hora en hora. <b>Lluvia:</b> las persianas de vidrio ventilan sin dejar pasar el agua (p. 115).</p>
+      <p>No se usa la simulación de aulas de Cedeño et al. (2022, <i>Novasinergia</i>): probó de 0,1 a 2 renovaciones de aire por hora, menos de la mitad del mínimo que ella misma calcula, y su relación entre ventilar y sentir calor es una correlación, no una causa.</p>
+    </details>
   </section>
   <section aria-labelledby="carta-t">
     <h4 id="carta-t">Carta psicrométrica · cada hora de 2001 a 2025</h4>
     <svg id="carta" viewBox="0 0 380 262" role="img" aria-labelledby="carta-t carta-desc"><desc id="carta-desc"></desc></svg>
     <ul class="conf-cifras" id="carta-cifras"></ul>
-    <p class="nota">Es el aire exterior a la sombra, no el interior del aula: las zonas suponen un aula liviana y ventilada que sigue al aire de afuera, como el 106. Givoni pone un techo de humedad; el modelo adaptativo de ASHRAE, medido en edificios ventilados, no. Por eso no coinciden.</p>
+    <p class="nota">Es el aire exterior a la sombra, no el interior del aula: las zonas suponen un aula liviana y ventilada que sigue al aire de afuera, como el 106. Givoni pone un techo de humedad; el modelo adaptativo de ASHRAE, medido en edificios ventilados, no. Por eso no coinciden. Ojo con la humedad: ERA5 marca entre 0,6 y 1,4 g/kg más que la estación de Tocumen (ETESA, 1977–2010), y muchas horas caen cerca del límite, así que las cifras de Givoni cambian mucho con ese ajuste. En la temporada de lluvias la humedad es el límite de todos modos; en la seca, ERA5 alisa el día (oscila de 4 a 6 °C, y Tocumen de 11 a 16 °C según ETESA), y lo que más pesa son las tardes calientes. Clayton no es Tocumen: toma la carta como un orden de magnitud.</p>
   </section>
   <section aria-labelledby="utci-t">
     <h4 id="utci-t">Sensación térmica de día (UTCI) · al sol y bajo el alero</h4>
