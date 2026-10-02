@@ -167,7 +167,7 @@ export class Clima {
 
   async #vivoModelo() {
     const u = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,direct_normal_irradiance,diffuse_radiation,is_day&timezone=America%2FPanama`;
-    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000);
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);   // 12 s: mientras la escena compila, el navegador tarda en atender la respuesta
     try {
       const r = await fetch(u, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status);
       const j = await r.json(), c = j.current;
@@ -198,7 +198,7 @@ const ALBROOK_MMH = { ligera: 1, moderada: 5, fuerte: 20, llovizna: 0.3 };
 
 async function leerAlbrook() {
   if (globalThis.MODELO_B64) return null;
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000);
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);   // 12 s: mientras la escena compila, el navegador tarda en atender la respuesta
   try {
     const r = await fetch(ALBROOK_URL, { signal: ctl.signal }); if (!r.ok) return null;
     const d = (await r.json())?.data?.[0]; if (!d?.raw || !d.utc_valid) return null;

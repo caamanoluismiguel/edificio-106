@@ -201,6 +201,9 @@ async function arrancar() {
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
   fetch(conVersion(BASE + 'datos/consultas.json')).then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
+  // si el primer intento falla (red lenta o el navegador ocupado compilando la escena), se reintenta a los 20 s y al minuto
+  // en vez de esperar al refresco de los 10 min
+  pVivo.then((v) => { if (v) return; [20e3, 60e3].forEach((ms) => setTimeout(() => { if (S.modo === 'ahora' && !clima.vivo) clima.cargarVivo().then(() => { lastLect = ''; }); }, ms)); });
   setInterval(() => { if (S.modo === 'ahora') clima.cargarVivo(); }, 10 * 60e3);
 
   prepararUI();
