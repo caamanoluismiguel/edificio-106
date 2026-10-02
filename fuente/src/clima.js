@@ -5,8 +5,8 @@ import { binario } from './datos.js';
 import { LAT, LON } from './sol.js';
 import { ajustarT, ajustarHR, ruidoT } from './ajuste.js';
 // Umbral con que un dato de modelo (ERA5 o pronóstico) cuenta como lluvia en la escena y en los textos: 1 mm en la hora de
-// diciembre a marzo y 1,5 mm de abril a noviembre. Con esos valores, las horas de lluvia de ERA5 2017–2025 quedan entre 1,05 y
-// 1,16 veces las que informa el observador del aeropuerto de Albrook de día (panel de expertos, 2 de octubre de 2026; ERA5 junta
+// diciembre a marzo y 1,5 mm de abril a noviembre. Con esos valores, ERA5 2017–2025 tiene unas 0,81 veces las horas con lluvia que
+// informa el observador del aeropuerto de Albrook de diciembre a marzo y 1,15 de abril a noviembre (verificador, 2 de octubre) (panel de expertos, 2 de octubre de 2026; ERA5 junta
 // la lluvia en la tarde y reparte llovizna de modelo, así que con 0,1 mm llovía unas 3.000 horas al año). Abril va con las lluvias.
 export const umbralLluvia = (m) => (m >= 4 && m <= 11 ? 1.5 : 1);
 
@@ -209,12 +209,13 @@ async function leerAlbrook() {
 
 /** Tiempo presente del parte: solo el grupo de la observación (antes de TEMPO, BECMG, NOSIG o RMK). */
 export function tiempoPresente(raw) {
-  const g = raw.split(/\s+/), fin = g.findIndex((x) => /^(TEMPO|BECMG|NOSIG|RMK)$/.test(x));
+  const g = raw.split(/\s+/), fin = g.findIndex((x) => /^(TEMPO|BECMG|NOSIG|RMK)$/.test(x) || /^[QA]\d{4}$/.test(x));   // lo que va después de la presión son notas
   const obs = fin < 0 ? g : g.slice(0, fin), auto = obs.includes('AUTO');
-  const wx = obs.filter((x) => /^(\+|-|VC)?(MI|BC|PR|DR|BL|SH|TS|FZ)?(DZ|RA|SN|SG|PL|GR|GS|UP|FG|BR|HZ)*$/.test(x) && /(DZ|RA|SH|TS|SN|GR|GS|PL|SG|UP)/.test(x));
+  const wx = obs.filter((x) => /^(\+|-)?(VC)?(MI|BC|PR|DR|BL|SH|TS|FZ|VC){0,3}(DZ|RA|SN|SG|PL|GR|GS|UP|FG|BR|HZ)*$/.test(x) && /(DZ|RA|SH|TS|SN|GR|GS|PL|SG|UP)/.test(x));
   let lluvia = null, cerca = null, truena = false;
   for (const x of wx) {
     if (x.startsWith('VC')) { cerca = x.includes('TS') ? 'tormenta' : 'chubascos'; continue; }
+    if (x.includes('VC')) { if (x.includes('TS')) truena = true; cerca = 'chubascos'; continue; }     // TSVCSH: truena aquí, chubascos cerca
     if (x.includes('TS')) truena = true;
     if (/RA|GR|GS|PL|UP/.test(x) || (/SH/.test(x) && !/DZ/.test(x))) {
       const clase = x.startsWith('+') ? 'fuerte' : x.startsWith('-') ? 'ligera' : 'moderada';
