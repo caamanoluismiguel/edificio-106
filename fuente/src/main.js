@@ -7,7 +7,7 @@ import { Sonido } from './sonido.js';
 import { puntosIntro, conVersion } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { posicionLuna } from './luna.js';
-import { Clima } from './clima.js';
+import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
 
@@ -499,6 +499,11 @@ function climaEn(f, min) {
   return clima.registroDia(f, min) ?? { ...clima.tipico(f.m, min), buscando: p instanceof Promise };
 }
 const intensidad = (mm) => mm < 0.2 ? 0 : Math.min(1, 0.25 + 0.75 * Math.log1p(mm) / Math.log1p(15));
+/** ¿Cuenta como lluvia? Con un parte de observador de Albrook, lo que dice el parte; con un dato de modelo, el umbral del mes. */
+const llueve = (c, m = S.fecha.m) => c?.albrook && !c.albrook.auto ? !!c.albrook.lluvia : (c?.lluvia ?? 0) >= umbralLluvia(m);
+/** Intensidad de la lluvia que dibuja la escena: nada por debajo del umbral (la llovizna de Albrook sí se dibuja, apenas). */
+const lluviaEscena = (c) => llueve(c) ? intensidad(c.lluvia ?? 0) : 0;
+const UMBRAL_TXT = '1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre';
 
 // ---------------- Bucle ----------------
 let last = performance.now(), lastHour = -1;
@@ -553,7 +558,7 @@ function paso(now) {
   document.documentElement.classList.toggle('de-noche', p.alt < -4);   // los interruptores y el rótulo de los modos de noche
   if (!S.viaje) escena.setRuta(S.fecha);
   // lluvia: la de los datos (o la del mes en el paso de 25 años), o el aguacero de la capa
-  let objetivo = c ? (c.fuente === 'mes' ? Math.min(1, (c.lluviaMes ?? 0) / 380) : intensidad(c.lluvia ?? 0)) : 0;
+  let objetivo = c ? (c.fuente === 'mes' ? Math.min(1, (c.lluviaMes ?? 0) / 380) : lluviaEscena(c)) : 0;
   if (S.aguacero) objetivo = 1;
   if (intro || S.viaje) objetivo = 0;
   // al llegar de un viaje la lluvia entra rápido (~0,6 s); en el resto, suave
@@ -805,7 +810,7 @@ function actualizarAgua(c) {
     S.agua = ks.map((k) => L[k.slice(8)].anual); U.aguaF.value.set(...S.agua.map((v) => v / m));
   } else {
     const ok = c && c.lluvia != null && c.viento != null && c.dir != null && (c.fuente === 'serie' || c.fuente === 'dia' || c.fuente === 'vivo');
-    S.agua = ks.map((k) => ok ? lluviaBatiente(c.lluvia, c.viento, c.dir, FACHADAS[k].rumbo) : 0);
+    S.agua = ks.map((k) => ok ? lluviaBatiente(c.lluviaMm ?? c.lluvia, c.viento, c.dir, FACHADAS[k].rumbo) : 0);   // con Albrook, los mm siguen siendo del modelo
     S.aguaDato = ok;
     U.aguaF.value.set(...S.agua.map((v) => Math.min(1, v / 5)));
   }
@@ -872,14 +877,18 @@ function lecturas(p, c) {
     if (c.dni != null && p.alt > 2) cielo.push(`sol ${miles(Math.round(c.dni / 10) * 10)} W/m²`);
     let agua = '';
     if (c.fuente === 'mes') { temp = `${Math.round(c.lluviaMes)} mm`; agua = 'de lluvia en el mes'; }
-    else if (c.fuente === 'tipico') agua = `llueve en ${Math.round(c.probLluvia)} % de estas horas`;
-    else agua = (c.lluvia ?? 0) >= 0.1 ? `lluvia ${f1(c.lluvia)} mm/h` : c.llovizna ? 'llovizna leve en la zona' : 'sin lluvia';
-    if (c.fuente === 'vivo') {
+    else if (c.fuente === 'tipico') agua = `llueve 1 mm o más en ${Math.round(c.probLluvia)} % de estas horas`;
+    else if (c.albrook && !c.albrook.auto) agua = textoAlbrook(c.albrook).replace(/^Albrook /, 'Albrook: ').replace(/ a las \d\d:\d\d$/, '');
+    else agua = llueve(c) ? `lluvia ${f1(c.lluvia)} mm/h` : (c.lluvia ?? 0) >= 0.1 ? `lluvia débil en la celda (${f1(c.lluvia)} mm)` : c.llovizna ? 'lluvia débil en la zona' : 'sin lluvia';
+    if (c.fuente === 'vivo' && !c.albrook) {
       const tip = clima.tipico(S.fecha.m, S.min);
       if (tip) { const dT = c.temp - tip.temp; if (Math.abs(dT) >= 1) agua += ` · ${dT >= 0 ? '+' : '−'}${Math.round(Math.abs(dT))} °C vs. típico (pronóstico frente a la mediana de ERA5)`; }
     }
     det = cielo.join(' · ') + '\n' + agua;
-    if (c.fuente === 'vivo') fuente = `Pronóstico de modelo (Open-Meteo), ${c.hora}. El sol es calculado.`;
+    if (c.fuente === 'vivo') fuente = c.albrook ? (c.albrook.auto
+        ? `Temperatura, humedad y viento: parte automático del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora}. De noche ese parte no dice si llueve: la lluvia, las nubes y la luz son del pronóstico de modelo (Open-Meteo). El sol es calculado.`
+        : `Temperatura, humedad, viento y lluvia: parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora}. Nubes y luz: pronóstico de modelo (Open-Meteo). El sol es calculado.`)
+      : `Pronóstico de modelo (Open-Meteo), ${c.hora}. El sol es calculado.`;
     else if (c.fuente === 'serie') fuente = `Dato de esa hora: ${clima.r?.era5 ? 'reanálisis ERA5' : 'archivo histórico'} (Open-Meteo), celda de ~28 km.`;
     else if (c.fuente === 'dia') fuente = c.modelo === 'era5' ? 'Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km.' : 'Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea.';
     else if (c.fuente === 'mes') fuente = `Total del mes en la serie 2001–2025 (Open-Meteo).`;
@@ -889,12 +898,12 @@ function lecturas(p, c) {
   $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
   // resumen de una línea para el teléfono: solo los valores
   // sello corto de procedencia, siempre visible (en el teléfono la línea larga de la fuente no se muestra)
-  const sello = !c || V ? '' : c.fuente === 'vivo' ? 'pronóstico' : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : c.fuente === 'mes' ? 'ERA5, mes' : 'típico';
-  $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol bajo el horizonte · ${temp}`) + (sello ? ` · ${sello}` : '');
+  const sello = !c || V ? '' : c.fuente === 'vivo' ? (c.albrook ? 'Albrook' : 'pronóstico') : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : c.fuente === 'mes' ? 'ERA5, mes' : 'típico';
+  $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol bajo el horizonte · ${temp}`);   // la procedencia primero: en el teléfono el final se corta
   // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
   const est = $('#estado-txt');
   if (V) { /* se actualiza al llegar */ }
-  else if (vivo) est.textContent = c?.fuente === 'vivo' ? `En vivo · ${hhmm(S.min)} · ${f1(c.temp)} °C · ${Math.round(c.nubes)} % nubes` : `Ahora · ${hhmm(S.min)} en Panamá`;
+  else if (vivo) est.textContent = c?.fuente === 'vivo' ? `En vivo · ${hhmm(S.min)} · ${c.albrook ? Math.round(c.temp) : f1(c.temp)} °C · ${Math.round(c.nubes)} % nubes` : `Ahora · ${hhmm(S.min)} en Panamá`;
   else est.textContent = `Explorando · ${S.mesSerie !== null ? MESES[S.fecha.m - 1] + ' de ' + S.fecha.y : fechaTexto(S.fecha)}`;
   // agujas y controles
   $('#hora').value = Math.round(S.min) % 1440;
@@ -931,11 +940,11 @@ function marcaSol(p) {
 /** Qué luz hay de noche, en dos frases: depende de si la luna está arriba, de su fase y de las nubes de esa hora. Lo que es
  *  supuesto (las ventanas encendidas, la lámpara del poste) se explica en la lente Foto, no aquí. */
 function textoNoche(c) {
-  const L = escena.luna, nub = c?.nubes ?? 30, llueve = (c?.lluvia ?? 0) >= 0.1;
+  const L = escena.luna, nub = c?.nubes ?? 30, llueveYa = llueve(c);
   const fase = !L ? '' : L.frac > 0.95 ? 'la luna llena' : L.frac < 0.45 ? `una luna ${L.fase < 180 ? 'creciente' : 'menguante'} delgada` : `la luna ${L.fase < 180 ? 'creciente' : 'menguante'}`;
   if (!L || L.alt <= 0) return 'Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y el poste de la esquina.';
   if (L.frac < 0.05) return 'Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y el poste de la esquina.';
-  if (llueve || nub >= 70) return `Es de noche y ${llueve ? 'llueve; ' : ''}las nubes tapan ${fase}. Alumbran el resplandor de la ciudad en las nubes y el poste de la esquina.`;
+  if (llueveYa || nub >= 70) return `Es de noche y ${llueveYa ? 'llueve; ' : ''}las nubes tapan ${fase}. Alumbran el resplandor de la ciudad en las nubes y el poste de la esquina.`;
   return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo el cielo de la ciudad y el poste de la esquina.`;
 }
 
@@ -959,9 +968,10 @@ function rotulo(p, c, sp) {
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y se proyecta hacia el ${rumboTexto(sp.rumbo)}.`
     : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : textoNoche(c);
   let clTxt = '';
-  if (c?.fuente === 'vivo') clTxt = (c.lluvia ?? 0) >= 0.1 ? ` El modelo da lluvia en la zona (${f1(c.lluvia)} mm/h).` : c.llovizna ? ` Cielo con ${Math.round(c.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${f1(c.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
+  if (c?.fuente === 'vivo' && c.albrook && !c.albrook.auto) clTxt = ` ${textoAlbrook(c.albrook).replace(/^Albrook /, 'El aeropuerto de Albrook, a 4 km, ')}. Cielo con ${Math.round(c.nubes)} % de nubes, según el modelo.`;
+  else if (c?.fuente === 'vivo') clTxt = llueve(c) ? ` El modelo da lluvia en la zona (${f1(c.lluvia)} mm/h).` : c.llovizna ? ` Cielo con ${Math.round(c.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${f1(c.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
   else if (c?.fuente === 'serie' || c?.fuente === 'dia') {
-    clTxt = (c.lluvia ?? 0) >= 0.1 ? ` Entre las ${hhmm(Math.floor(S.min / 60) * 60)} y las ${hhmm(Math.floor(S.min / 60) * 60 + 60)} llovieron ${f1(c.lluvia)} mm.` : ` A esa hora no llovía; ${Math.round(c.nubes)} % de nubes.`;
+    clTxt = llueve(c) ? ` Entre las ${hhmm(Math.floor(S.min / 60) * 60)} y las ${hhmm(Math.floor(S.min / 60) * 60 + 60)} llovieron ${f1(c.lluvia)} mm.` : (c.lluvia ?? 0) >= 0.1 ? ` A esa hora ERA5 da una lluvia débil en la celda (${f1(c.lluvia)} mm), que la escena no dibuja; ${Math.round(c.nubes)} % de nubes.` : ` A esa hora no llovía; ${Math.round(c.nubes)} % de nubes.`;
     clTxt += ` ${f1(c.temp)} °C, humedad ${Math.round(c.humedad)} %, viento ${Math.round(c.viento)} km/h desde el ${rumboTexto(c.dir)}.`;
   }
   else if (c?.fuente === 'mes') clTxt = ` En ${MESES[S.fecha.m - 1]} de ${S.fecha.y} llovieron ${Math.round(c.lluviaMes)} mm (un ${MESES[S.fecha.m - 1]} típico: ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm).`;
@@ -1410,7 +1420,7 @@ const LENTES = {
     leer: '«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril; para el IMHPA, diciembre y abril son meses de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.',
     prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 12 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.',
     porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
-    ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). En las superficies oblicuas el color mezcla el de dos fachadas vecinas.',
+    ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). En las superficies oblicuas el color mezcla el de dos fachadas vecinas. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste queda casi igual (unas 5.200 horas al año) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos.' },
   sombras: { t: 'Sombras: la proyección de sombra del edificio en cada hora', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
     que: 'Sobre el terreno se dibuja el contorno de la sombra del edificio en cada hora en punto, de 6 a 18 h: turquesa en la mañana, blanco al mediodía y naranja en la tarde. Donde se enciman más contornos, ese pedazo de suelo pasa más horas a la sombra.',
@@ -2009,14 +2019,14 @@ function explicacion(k, p, c) {
     : 'Ahora no hay sol, así que no hay sombra solar. Mueve la regla del día a una hora con sol.'];
   if (k === 'clima') {
     if (!c || c.fuente === 'viaje') return ['El tiempo', 'Se está cargando el dato del tiempo.'];
-    if (c.fuente === 'tipico') return ['El tiempo: valores típicos', `Para esta fecha no hay dato de esa hora, así que se muestra lo típico: la mediana de 2001–2025 para ${MESES[S.fecha.m - 1]} a esta hora. ${f1(c.temp)} °C y ${Math.round(c.nubes)} % del cielo con nubes; llueve en el ${Math.round(c.probLluvia)} % de estas horas. Entre 2001 y 2025 hay dato de cada hora; desde 1940 se consulta en línea.`];
+    if (c.fuente === 'tipico') return ['El tiempo: valores típicos', `Para esta fecha no hay dato de esa hora, así que se muestra lo típico: la mediana de 2001–2025 para ${MESES[S.fecha.m - 1]} a esta hora. ${f1(c.temp)} °C y ${Math.round(c.nubes)} % del cielo con nubes; llueve 1 mm o más en el ${Math.round(c.probLluvia)} % de estas horas. Entre 2001 y 2025 hay dato de cada hora; desde 1940 se consulta en línea.`];
     if (c.fuente === 'mes') return ['La lluvia del mes', `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(c.lluviaMes)} mm, es decir, ${Math.round(c.lluviaMes)} litros por metro cuadrado. Un ${MESES[S.fecha.m - 1]} típico tiene ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm.`];
     const dc = dniDespejado(p.alt);
     const partes = [`${f1(c.temp)} °C de temperatura del aire`, `${Math.round(c.nubes)} % del cielo cubierto de nubes`];
     if (c.dni != null && p.alt > 2) partes.push(`${miles(Math.round(c.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${miles(Math.round(dc / 10) * 10)} W/m², según el modelo sencillo de Meinel y Meinel, 1976)`);
     const ll = c.lluvia ?? 0;
-    const txtLl = ll >= 0.1 ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : 'No llueve a esa hora.';
-    return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? 'Es el pronóstico de modelo de Open-Meteo para ahora.' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer.'}`];
+    const txtLl = c.albrook && !c.albrook.auto ? '' : ll >= 0.1 && !llueve(c) ? `Da ${f1(ll)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${UMBRAL_TXT}).` : llueve(c) ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : 'No llueve a esa hora.';
+    return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, ERA5 marca lluvia en la misma hora una de cada cuatro veces que allí llovió. La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, las horas de lluvia de ERA5 quedan entre 1,05 y 1,16 veces las que informa el observador de Albrook (2017–2025).'}`];
   }
   if (k === 'tab-dia') return ['La regla del día', 'Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras azules son la lluvia de cada hora y lo gris, las horas en que las nubes tapan el sol. Arrástrala para recorrer el día.'];
   if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
@@ -2056,7 +2066,7 @@ function pasosRecorrido() {
       pre: 'Cuando llueve con viento, el agua no cae derecha y moja unas paredes más que otras. ¿Cuál de las cuatro crees que se moja más?',
       antes: () => viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => { S.aguaModo = 'anio'; viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, fachada: 'no', lente: 'lluvia' }); } },
-    { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas dos de cada tres horas del año sopla entre el oeste noroeste y el norte, y la fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
+    { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas seis de cada diez horas del año sopla entre el oeste noroeste y el norte (ERA5 y el aeropuerto de Albrook, 2020–2025), y la fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
       pre: 'Acabas de ver cuál pared se moja más con la lluvia. Con esa pista, ¿de qué lado crees que llega el viento cuando llueve? ¿Y qué pared lo recibe de frente?',
       antes: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'foto' }); },
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
@@ -2247,7 +2257,7 @@ function confortHora(p, c) {
   $('#conviene').innerHTML = R.hacer.map((t) => `<li class="accion">${t}</li>`).join('');
   $('#conviene-porque').innerHTML = R.porque.map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? sr(gl) : ''}${t}</span></li>`).join('') + R.datos.map((t) => `<li class="cierre">${t}</li>`).join('');
   $('#conviene-resumen').textContent = `Por qué · Givoni ${R.porque[0][1]} · Guía de Panamá ${R.porque[1][1]}`;
-  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? `pronóstico ${c.hora ?? ''}`.trim() : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
+  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? (c.albrook ? `Albrook ${c.albrook.hora}, a 4 km` : `pronóstico ${c.hora ?? ''}`.trim()) : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
   if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
   const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
@@ -2316,12 +2326,13 @@ function conviene(p, c) {
   }
   const hacer = acciones.slice(0, 2);
   // 5. Lluvia, solo si llueve
-  if ((c.lluvia ?? 0) >= 1) hacer.push('<b>Cierra lo que el alero no protege.</b> Llueve y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.');
+  if (llueve(c)) hacer.push('<b>Cierra lo que el alero no protege.</b> Llueve y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.');
   // de noche: en clima cálido húmedo conviene ventilar todo el día (UN-Habitat 2014, p. 68); enfriar la masa de noche es una
   // estrategia de regiones áridas (Givoni 1992, §4.6.1, p. 17): baja la máxima de adentro un 45 a 55 % de la oscilación de afuera,
-  // con el aula cerrada y en sombra de día. Oscilación media: Tocumen 11 a 15 °C (ETESA 1977–2010, p. 3); ERA5 de 4 a 6 °C.
+  // con el aula cerrada y en sombra de día. Oscilación diaria media: Albrook (METAR 2001–2025) de 5,2 a 8,3 °C según el mes; ERA5 de 4 a 6 °C. (La «oscilación térmica
+  // promedio» de ETESA para Tocumen, 11 a 15 °C, es del tamaño del rango de los extremos del mes, no de la diferencia de cada día.)
   if (!dia) { hacer.push('<b>Si el aula puede quedar abierta de noche sin riesgo, déjala ventilada.</b> En clima cálido húmedo conviene ventilar a toda hora. Cuánto se enfrían los muros depende de cuánto refresque la noche: mira «Por qué».');
-    datos.push('Givoni (1992, p. 17) considera el enfriamiento nocturno de los muros aplicable sobre todo en regiones áridas: en un edificio pesado, aislado y en sombra, cerrado de día y ventilado solo de noche, la máxima de adentro puede bajar un 45 a 55 % de la diferencia entre la máxima y la mínima de afuera. En Tocumen esa diferencia es de 11 a 15 °C en promedio (ETESA, 1977–2010); ERA5 la aplana a unos 4 a 6 °C. Clayton no es Tocumen: sin una medición en el sitio no se sabe cuánto rendiría aquí.'); }
+    datos.push('Givoni (1992, p. 17) considera el enfriamiento nocturno de los muros aplicable sobre todo en regiones áridas: en un edificio pesado, aislado y en sombra, cerrado de día y ventilado solo de noche, la máxima de adentro puede bajar un 45 a 55 % de la diferencia entre la máxima y la mínima de afuera. En el aeropuerto de Albrook, a 4 km, esa diferencia es de unos 5 a 8 °C según el mes (partes METAR, 2001–2025); ERA5 la aplana a unos 4 a 6 °C. Sin una medición en el sitio no se sabe cuánto rendiría aquí.'); }
   return { hacer, porque: out, datos };
 }
 function pintarUTCI() {

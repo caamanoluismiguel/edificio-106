@@ -3,7 +3,11 @@
 // pero el modelo corre varias veces al día, no cada 15 min.
 import { binario } from './datos.js';
 import { LAT, LON } from './sol.js';
-const LLUVIA_VIVO_MIN = 1;   // mm/h: umbral para que el pronóstico en vivo cuente como lluvia (ver cargarVivo)
+// Umbral con que un dato de modelo (ERA5 o pronóstico) cuenta como lluvia en la escena y en los textos: 1 mm en la hora de
+// diciembre a marzo y 1,5 mm de abril a noviembre. Con esos valores, las horas de lluvia de ERA5 2017–2025 quedan entre 1,05 y
+// 1,16 veces las que informa el observador del aeropuerto de Albrook de día (panel de expertos, 2 de octubre de 2026; ERA5 junta
+// la lluvia en la tarde y reparte llovizna de modelo, así que con 0,1 mm llovía unas 3.000 horas al año). Abril va con las lluvias.
+export const umbralLluvia = (m) => (m >= 4 && m <= 11 ? 1.5 : 1);
 
 const T0 = Date.UTC(2001, 0, 1, 0);            // primera hora de la serie (hora de Panamá tratada como UTC)
 // datos/clima_horario.bin, formato 'C107' (fuente/clima_bin.py): firma, n (uint32) y columnas de n horas seguidas;
@@ -137,8 +141,15 @@ export class Clima {
       difusa: D.h.diffuse_radiation ? v('diffuse_radiation', i0) * (1 - u) + v('diffuse_radiation', i1) * u : null, viento: v('wind_speed_10m', b), dir: v('wind_direction_10m', b) };
   }
 
-  /** Tiempo real: pronóstico de modelo de Open-Meteo para las coordenadas del edificio. */
+  /** Tiempo real: el pronóstico de modelo de Open-Meteo para las coordenadas del edificio y, encima, el último parte (METAR)
+   *  del aeropuerto de Albrook (MPMG), a 4,1 km, leído del Iowa Environmental Mesonet (deja leerlo desde el navegador). */
   async cargarVivo() {
+    const [modelo, parte] = await Promise.all([this.#vivoModelo(), leerAlbrook()]);
+    this.vivo = modelo ? conAlbrook(modelo, parte) : null;
+    return this.vivo;
+  }
+
+  async #vivoModelo() {
     const u = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,direct_normal_irradiance,diffuse_radiation,is_day&timezone=America%2FPanama`;
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000);
     try {
@@ -147,13 +158,83 @@ export class Clima {
       // la precipitación actual es la suma de los últimos `interval` segundos (15 min): se lleva a mm por hora
       const k = 3600 / (c.interval || 900);
       // el modelo reparte trazas de lluvia por toda su celda (la más cercana cae ~4 km al sur del edificio): 0,1 mm en 15 min, su
-      // unidad mínima, son 0,4 mm/h y casi nunca se notan en la calle. En vivo solo se cuenta como lluvia desde 1 mm/h; por debajo
+      // unidad mínima, son 0,4 mm/h y casi nunca se notan en la calle. En vivo solo se cuenta como lluvia desde el umbral del mes (umbralLluvia); por debajo
       // queda como «llovizna del modelo» (se dice en el texto, la escena no la dibuja ni moja)
-      const mmh = c.precipitation * k, llueve = mmh >= LLUVIA_VIVO_MIN;
-      this.vivo = { fuente: 'vivo', hora: c.time.slice(11, 16), fecha: c.time.slice(0, 10), nubes: c.cloud_cover, lluvia: llueve ? mmh : 0, lluviaModelo: mmh, llovizna: !llueve && mmh > 0, lluvia15: c.precipitation, temp: c.temperature_2m,
+      const mmh = c.precipitation * k, llueve = mmh >= umbralLluvia(+c.time.slice(5, 7));
+      return { fuente: 'vivo', hora: c.time.slice(11, 16), fecha: c.time.slice(0, 10), nubes: c.cloud_cover, lluvia: llueve ? mmh : 0, lluviaModelo: mmh, llovizna: !llueve && mmh > 0, lluvia15: c.precipitation, temp: c.temperature_2m,
         humedad: c.relative_humidity_2m, viento: c.wind_speed_10m, dir: c.wind_direction_10m, dni: c.direct_normal_irradiance ?? null, difusa: c.diffuse_radiation ?? null, recibido: Date.now() };
-    } catch (e) { this.vivo = null; }
+    } catch (e) { return null; }
     finally { clearTimeout(to); }
-    return this.vivo;
   }
+}
+
+// ---------------- Albrook (METAR) ----------------
+// Un parte vale hasta 90 min después de su hora (provisional: el de las 20:00 UTC estaba en IEM a las 20:23; hay que medir la
+// latencia unos días). Albrook emite un parte de rutina cada hora; de 23 a 5 h casi siempre es automático (AUTO) y no informa
+// si llueve. Fuentes de las reglas: WMO-No. 306, vol. I.1, FM 15 (15.8.4 y 15.8.5: «-» ligera, sin signo moderada, «+» fuerte;
+// 15.8.8: TS solo, truena sin precipitación; 15.8.10, nota 1: VC, a entre unos 8 y 16 km del aeródromo; 15.11.1: temperatura y
+// punto de rocío redondeados al grado entero).
+const ALBROOK_URL = 'https://mesonet.agron.iastate.edu/api/1/currents.json?station=MPMG';
+const ALBROOK_VIGENTE = 90 * 60e3;
+// intensidad que dibuja la escena para cada clase del parte (mm/h ilustrativos, dentro de las clases de la OMM: WMO-No. 8, 2023,
+// vol. I, p. 484; no se muestran como dato). La llovizna ligera se dibuja apenas.
+const ALBROOK_MMH = { ligera: 1, moderada: 5, fuerte: 20, llovizna: 0.3 };
+
+async function leerAlbrook() {
+  if (globalThis.MODELO_B64) return null;
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 5000);
+  try {
+    const r = await fetch(ALBROOK_URL, { signal: ctl.signal }); if (!r.ok) return null;
+    const d = (await r.json())?.data?.[0]; if (!d?.raw || !d.utc_valid) return null;
+    return { t: Date.parse(d.utc_valid), raw: d.raw, tmpf: d.tmpf, dwpf: d.dwpf, relh: d.relh, sknt: d.sknt, drct: d.drct };
+  } catch (e) { return null; }
+  finally { clearTimeout(to); }
+}
+
+/** Tiempo presente del parte: solo el grupo de la observación (antes de TEMPO, BECMG, NOSIG o RMK). */
+export function tiempoPresente(raw) {
+  const g = raw.split(/\s+/), fin = g.findIndex((x) => /^(TEMPO|BECMG|NOSIG|RMK)$/.test(x));
+  const obs = fin < 0 ? g : g.slice(0, fin), auto = obs.includes('AUTO');
+  const wx = obs.filter((x) => /^(\+|-|VC)?(MI|BC|PR|DR|BL|SH|TS|FZ)?(DZ|RA|SN|SG|PL|GR|GS|UP|FG|BR|HZ)*$/.test(x) && /(DZ|RA|SH|TS|SN|GR|GS|PL|SG|UP)/.test(x));
+  let lluvia = null, cerca = null, truena = false;
+  for (const x of wx) {
+    if (x.startsWith('VC')) { cerca = x.includes('TS') ? 'tormenta' : 'chubascos'; continue; }
+    if (x.includes('TS')) truena = true;
+    if (/RA|GR|GS|PL|UP/.test(x) || (/SH/.test(x) && !/DZ/.test(x))) {
+      const clase = x.startsWith('+') ? 'fuerte' : x.startsWith('-') ? 'ligera' : 'moderada';
+      if (!lluvia || ['ligera', 'moderada', 'fuerte'].indexOf(clase) > ['ligera', 'moderada', 'fuerte'].indexOf(lluvia.clase)) lluvia = { clase, tormenta: x.includes('TS') };
+    } else if (/DZ/.test(x) && !lluvia) lluvia = { clase: x.startsWith('+') ? 'fuerte' : x.startsWith('-') ? 'ligera' : 'moderada', tormenta: false, llovizna: true };
+  }
+  return { auto, lluvia, cerca, truena: truena && !lluvia };
+}
+
+/** El «ahora» con el parte de Albrook: temperatura, humedad y viento medidos; si el parte lo hizo un observador, también si llueve.
+ *  Las nubes y la luz del sol siguen siendo del modelo (el METAR no mide radiación). Los mm de lluvia para los cálculos (la
+ *  lluvia con viento por fachada) siguen siendo los del modelo: el parte no da milímetros. */
+function conAlbrook(v, a) {
+  const edad = a ? Date.now() - a.t : Infinity;
+  if (!a || edad > ALBROOK_VIGENTE || edad < -15 * 60e3 || a.tmpf == null) return { ...v, albrook: null, albrookViejo: a && a.tmpf != null ? a : null };
+  const wx = tiempoPresente(a.raw), hora = new Date(a.t - 5 * 3600e3).toISOString().slice(11, 16);
+  const temp = Math.round((a.tmpf - 32) / 1.8), x = { ...v, temp, recibido: Date.now() };
+  if (a.relh != null) x.humedad = a.relh;
+  if (a.sknt != null) { x.viento = a.sknt * 1.852; if (a.drct != null && a.sknt > 0) x.dir = a.drct; }
+  x.lluviaMm = v.lluvia;                                   // la del modelo, para la lluvia con viento por fachada
+  if (!wx.auto) {
+    x.lluvia = wx.lluvia ? ALBROOK_MMH[wx.lluvia.llovizna ? 'llovizna' : wx.lluvia.clase] : 0;
+    x.llovizna = false;
+    if (!wx.lluvia) x.lluviaMm = 0;
+  }
+  x.albrook = { hora, auto: wx.auto, lluvia: wx.lluvia, cerca: wx.cerca, truena: wx.truena, raw: a.raw };
+  return x;
+}
+
+/** Cómo se dice lo que informa el parte, sin afirmar que llueve en el edificio. */
+export function textoAlbrook(A) {
+  if (!A) return '';
+  if (A.auto) return `el parte automático de las ${A.hora} no informa si llueve`;
+  if (A.lluvia) return A.lluvia.llovizna ? `Albrook informó llovizna ${A.lluvia.clase} a las ${A.hora}`
+    : `Albrook informó lluvia ${A.lluvia.clase}${A.lluvia.tormenta ? ' con tormenta' : ''} a las ${A.hora}`;
+  if (A.truena) return `Albrook informó tormenta sin lluvia en el aeropuerto a las ${A.hora}`;
+  if (A.cerca) return `Albrook informó ${A.cerca === 'tormenta' ? 'tormenta' : 'chubascos'} en las cercanías (a entre 8 y 16 km del aeropuerto) a las ${A.hora}`;
+  return `Albrook no informó lluvia a las ${A.hora}`;
 }
