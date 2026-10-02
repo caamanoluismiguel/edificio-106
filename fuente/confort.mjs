@@ -9,7 +9,14 @@
 //  - ASHRAE 55-2017 §5.4, modelo adaptativo: t_confort = 0,31·t_pma + 17,8 °C, aceptabilidad 80 % = ±3,5 °C; con aire en
 //    movimiento se suma 1,2 / 1,8 / 2,2 °C a 0,6 / 0,9 / 1,2 m/s cuando la temperatura operativa pasa de 25 °C. t_pma: media de
 //    las medias diarias de los 7 días anteriores (la norma admite de 7 a 30). Aquí la temperatura operativa se toma igual a la
-//    del aire exterior a la sombra: es la suposición de un aula ventilada y liviana que sigue al aire de afuera.
+//    del aire exterior a la sombra: es la suposición de un aula ventilada y liviana que sigue al aire de afuera. Adentro el sol
+//    en muros y techo y la gente la suben, así que el porcentaje de ASHRAE es una cota superior.
+//    Aplicabilidad: espacios naturalmente acondicionados controlados por los ocupantes, con ventanas que ellos abren y
+//    cierran; sin refrigeración mecánica ni calefacción en marcha; actividad casi sedentaria; ropa que pueden adaptar
+//    libremente (de Dear y Brager 2002, Energy and Buildings 34(6):549–561, §4.1, p. 556, doi:10.1016/S0378-7788(02)00005-1);
+//    t_pma entre 10 y 33,5 °C (§5.4.1, citado en Simmonds 2022, CLIMA 2022; aquí, de ~25 a ~29 °C).
+//  - Horas que cuentan: un horario de clase diurno, de 7:00 a 17:00 (11 lecturas por día). En ese
+//    tramo el sol está sobre el horizonte todo el año (sale entre 5:58 y 6:39 y se pone entre 17:54 y 18:42, según src/sol.js).
 import fs from 'node:fs';
 import zlib from 'node:zlib';
 import path from 'node:path';
@@ -27,6 +34,8 @@ const INICIO = {}; { let o = 8; for (const k of COLS) { INICIO[k] = o; o += (ANC
 const col = (k) => b.subarray(INICIO[k], INICIO[k] + (ANCHO[k] ?? 1) * n);
 const Tc = col('temp'), Hc = col('humedad'), DNIc = col('dni'), DIFc = col('difusa'), Vc = col('viento');
 const T0 = Date.UTC(2001, 0, 1, 0);          // primera hora de la serie (hora de Panamá tratada como UTC, como en clima.js)
+const OCUPADA = { desde: 7, hasta: 17 };     // lecturas de las 7:00 a las 17:00, ambas incluidas (la serie empieza a medianoche)
+const enClase = (i) => { const h = i % 24; return h >= OCUPADA.desde && h <= OCUPADA.hasta; };
 
 const { quieto: QUIETO, ventilacion: VENTILACION } = GIVONI;
 
@@ -38,18 +47,21 @@ let fuera = 0;
 const dias = Math.floor(n / 24), mediaDia = new Float64Array(dias);
 for (let d = 0; d < dias; d++) { let s = 0; for (let h = 0; h < 24; h++) s += Tc[d * 24 + h] / 6 + 10; mediaDia[d] = s / 24; }
 const cuenta = { horas: 0, quieto: 0, ventilacion: 0, a80: 0, a80_06: 0, a80_09: 0, a80_12: 0 };
+const todas = { horas: 0, quieto: 0, ventilacion: 0, a80: 0 };   // las 24 horas, solo como referencia en el JSON
 let tpmaMin = 99, tpmaMax = -99, tpmaSum = 0, tpmaN = 0;
 for (let i = 0; i < n; i++) {
   const t = Tc[i] / 6 + 10, rh = Hc[i], w = humedadAbs(t, rh), d = Math.floor(i / 24);
   if (d < 7) continue;                                         // la primera semana no tiene t_pma
+  let tp = 0; for (let k = 1; k <= 7; k++) tp += mediaDia[d - k]; tp /= 7;
+  const tc = 0.31 * tp + 17.8, lo = tc - 3.5, hi = tc + 3.5;
+  todas.horas++; if (dentro(t, w, QUIETO)) todas.quieto++; if (dentro(t, w, VENTILACION)) todas.ventilacion++; if (t >= lo && t <= hi) todas.a80++;
+  if (!enClase(i)) continue;
   cuenta.horas++;
   const ci = Math.floor(t - C.t0), cj = Math.floor(w - C.w0);
   if (ci >= 0 && ci < C.t1 - C.t0 && cj >= 0 && cj < C.w1 - C.w0) celdas[cj][ci]++; else fuera++;
   if (dentro(t, w, QUIETO)) cuenta.quieto++;
   if (dentro(t, w, VENTILACION)) cuenta.ventilacion++;
-  let tp = 0; for (let k = 1; k <= 7; k++) tp += mediaDia[d - k]; tp /= 7;
   tpmaMin = Math.min(tpmaMin, tp); tpmaMax = Math.max(tpmaMax, tp); tpmaSum += tp; tpmaN++;
-  const tc = 0.31 * tp + 17.8, lo = tc - 3.5, hi = tc + 3.5;
   const extra = (dv) => (t > 25 ? dv : 0);
   if (t >= lo && t <= hi) cuenta.a80++;
   if (t >= lo && t <= hi + extra(1.2)) cuenta.a80_06++;
@@ -65,7 +77,7 @@ const wToc = E_TOCUMEN.map((e) => 622 * e * 100 / (101325 - e * 100)), wMes = ne
 for (let i = 0; i < n; i++) { const m = new Date(T0 + i * 3.6e6).getUTCMonth(); wMes[m] += humedadAbs(Tc[i] / 6 + 10, Hc[i]); nMes[m]++; }
 const sesgo = wMes.map((w, m) => w / nMes[m] - wToc[m]);
 let qT = 0, vT = 0, nT = 0;
-for (let i = 7 * 24; i < n; i++) { const m = new Date(T0 + i * 3.6e6).getUTCMonth(), t = Tc[i] / 6 + 10, w = humedadAbs(t, Hc[i]) - sesgo[m]; nT++; if (dentro(t, w, QUIETO)) qT++; if (dentro(t, w, VENTILACION)) vT++; }
+for (let i = 7 * 24; i < n; i++) { if (!enClase(i)) continue; const m = new Date(T0 + i * 3.6e6).getUTCMonth(), t = Tc[i] / 6 + 10, w = humedadAbs(t, Hc[i]) - sesgo[m]; nT++; if (dentro(t, w, QUIETO)) qT++; if (dentro(t, w, VENTILACION)) vT++; }
 
 // ---------- UTCI al sol y bajo el alero, horas de día, por mes ----------
 // la radiación de la hora H es el promedio de H−1 a H (Open-Meteo): el sol se toma a H−0:30; la temperatura, la humedad y el
@@ -89,15 +101,17 @@ for (const M of meses) { anual.horas += M.horas; for (let k = 0; k < NC; k++) { 
 
 const salida = {
   generado: 'fuente/confort.mjs, a partir de datos/clima_horario.bin (ERA5 2001–2025 vía Open-Meteo, celda de ~28 km)',
-  horas: cuenta.horas, carta: { ...C, celdas, fueraDeRejilla: fuera },
+  horas: cuenta.horas, ocupacion: OCUPADA, carta: { ...C, celdas, fueraDeRejilla: fuera },
   zonas: { quieto: QUIETO, ventilacion: VENTILACION },
   pct: { quieto: pct(cuenta.quieto), ventilacion: pct(cuenta.ventilacion), adaptativo80: pct(cuenta.a80), adaptativo80_06: pct(cuenta.a80_06), adaptativo80_09: pct(cuenta.a80_09), adaptativo80_12: pct(cuenta.a80_12) },
+  todasLasHoras: { horas: todas.horas, quieto: Math.round(1000 * todas.quieto / todas.horas) / 10, ventilacion: Math.round(1000 * todas.ventilacion / todas.horas) / 10, adaptativo80: Math.round(1000 * todas.a80 / todas.horas) / 10 },
   tpma: { min: +tpmaMin.toFixed(1), max: +tpmaMax.toFixed(1), media: +(tpmaSum / tpmaN).toFixed(1) },
   tocumen: { sesgoGkg: sesgo.map((x) => +x.toFixed(1)), quieto: Math.round(1000 * qT / nT) / 10, ventilacion: Math.round(1000 * vT / nT) / 10 },
   utci: { categorias: CATEGORIAS_UTCI.map((c) => c.nombre), meses, anual, alivioMedioAlero: +(alivioSum / alivioN).toFixed(1), solMin: 5 },
   fuentes: [
     'Givoni, B. (1992). Comfort, climate analysis and building design guidelines. Energy and Buildings 18(1), 11–23. doi:10.1016/0378-7788(92)90047-K',
     'ASHRAE 55-2017. Thermal Environmental Conditions for Human Occupancy, §5.4 (modelo adaptativo) y apéndice C (SolarCal).',
+    'de Dear, R. J. y Brager, G. S. (2002). Thermal comfort in naturally ventilated buildings: revisions to ASHRAE Standard 55. Energy and Buildings 34(6), 549–561. doi:10.1016/S0378-7788(02)00005-1',
     'Bröde, P. et al. (2012). Deriving the operational procedure for the Universal Thermal Climate Index (UTCI). Int J Biometeorol 56, 481–494. doi:10.1007/s00484-011-0454-1',
     'Arens, E. et al. (2015). Modeling the comfort effects of short-wave solar radiation indoors. Building and Environment 88, 3–9. doi:10.1016/j.buildenv.2014.09.004',
     'ETESA, Centro del Clima. Caracterización climática de los distritos de Panamá y San Miguelito, estación Tocumen 1977–2010 (imhpa.gob.pa).',
@@ -106,8 +120,9 @@ const salida = {
 };
 const destinos = [path.join(AQUI, '../datos/confort.json'), ...(fs.existsSync(path.join(AQUI, 'public/datos')) ? [path.join(AQUI, 'public/datos/confort.json')] : [])];
 for (const out of destinos) fs.writeFileSync(out, JSON.stringify(salida));
-console.log(`${cuenta.horas} horas · Givoni quieto ${salida.pct.quieto} % · ventilación ${salida.pct.ventilacion} % · adaptativo 80 % ${salida.pct.adaptativo80} % (1,2 m/s: ${salida.pct.adaptativo80_12} %) · t_pma ${tpmaMin.toFixed(1)}–${tpmaMax.toFixed(1)} °C`);
+console.log(`${cuenta.horas} horas de clase (${OCUPADA.desde}:00 a ${OCUPADA.hasta}:00) · Givoni quieto ${salida.pct.quieto} % · ventilación ${salida.pct.ventilacion} % · adaptativo 80 % ${salida.pct.adaptativo80} % (1,2 m/s: ${salida.pct.adaptativo80_12} %) · t_pma ${tpmaMin.toFixed(1)}–${tpmaMax.toFixed(1)} °C`);
 console.log(`UTCI de día (${anual.horas} h): al sol`, anual.sol.map((x, k) => x && `${CATEGORIAS_UTCI[k].nombre} ${Math.round(100 * x / anual.horas)} %`).filter(Boolean).join(' · '));
 console.log('              bajo el alero', anual.sombra.map((x, k) => x && `${CATEGORIAS_UTCI[k].nombre} ${Math.round(100 * x / anual.horas)} %`).filter(Boolean).join(' · '), `· alivio medio del alero ${salida.utci.alivioMedioAlero} °C`);
 console.log(`con la humedad de Tocumen: quieto ${salida.tocumen.quieto} % · ventilación ${salida.tocumen.ventilacion} % · sesgo ${salida.tocumen.sesgoGkg.join(' ')}`);
+console.log(`las 24 horas (${todas.horas}): Givoni quieto ${salida.todasLasHoras.quieto} % · ventilación ${salida.todasLasHoras.ventilacion} % · adaptativo 80 % ${salida.todasLasHoras.adaptativo80} %`);
 console.log(`fuera de la rejilla de la carta: ${fuera} h · ${(fs.statSync(destinos[0]).size / 1024).toFixed(1)} KB`);

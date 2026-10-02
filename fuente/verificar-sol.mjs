@@ -40,3 +40,31 @@ export function separacion(a1, z1, a2, z2) {
   const c = Math.sin(a1 * rad) * Math.sin(a2 * rad) + Math.cos(a1 * rad) * Math.cos(a2 * rad) * Math.cos((z1 - z2) * rad);
   return Math.acos(Math.max(-1, Math.min(1, c))) * deg;
 }
+
+// ---------- Comprobación contra NREL SPA (solo al correr este archivo: node fuente/verificar-sol.mjs) ----------
+// Compara src/sol.js con fuente/spa_referencia.csv, que escribe fuente/spa_referencia.py con pvlib (spa_python). Tolerancias
+// publicadas en «Qué es · fuentes»: altura ≤ 0,03° con el sol sobre 3°, azimut ≤ 0,11° (redondeado a centésimas) y salida y
+// puesta a ±1 min. Sale con código 1 si alguna no se cumple.
+import { fileURLToPath } from 'node:url';
+if (process.argv[1] && fileURLToPath(import.meta.url) === (await import('node:path')).resolve(process.argv[1])) {
+  const fs = await import('node:fs'), path = await import('node:path');
+  const { posicionSol, saleYPone } = await import('./src/sol.js');
+  const csv = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'spa_referencia.csv'), 'utf8');
+  let nPos = 0, dAlt = 0, dAz = 0, nDia = 0, dSale = 0, dPone = 0;
+  for (const linea of csv.split('\n')) {
+    const [tipo, a, b, c] = linea.split(',');
+    if (tipo === 'pos') {
+      const ms = +a, altS = +b, azS = +c; if (altS <= 3) continue;
+      const p = new Date(ms - 5 * 3600e3);                       // hora de Panamá como campos UTC (UTC−5 todo el año)
+      const r = posicionSol({ y: p.getUTCFullYear(), m: p.getUTCMonth() + 1, d: p.getUTCDate(), h: p.getUTCHours(), min: p.getUTCMinutes(), s: p.getUTCSeconds() });
+      nPos++; dAlt = Math.max(dAlt, Math.abs(r.alt - altS)); dAz = Math.max(dAz, Math.abs(mod(r.az - azS + 180, 360) - 180));
+    } else if (tipo === 'dia') {
+      const [y, m, d] = a.split('-').map(Number), r = saleYPone(y, m, d);
+      nDia++; dSale = Math.max(dSale, Math.abs(r.sale - +b)); dPone = Math.max(dPone, Math.abs(r.pone - +c));
+    }
+  }
+  const ok = { alt: dAlt <= 0.03, az: +dAz.toFixed(2) <= 0.11, sol: dSale <= 1 && dPone <= 1 };
+  console.log(`NREL SPA (pvlib), ${nPos} momentos con el sol sobre 3°: altura máx ${dAlt.toFixed(4)}° ${ok.alt ? 'ok' : 'FALLA'} (≤ 0,03°) · azimut máx ${dAz.toFixed(4)}° ${ok.az ? 'ok' : 'FALLA'} (≤ 0,11°)`);
+  console.log(`${nDia} días: salida máx ${dSale.toFixed(2)} min · puesta máx ${dPone.toFixed(2)} min ${ok.sol ? 'ok' : 'FALLA'} (≤ 1 min)`);
+  if (!nPos || !nDia || !ok.alt || !ok.az || !ok.sol) process.exit(1);
+}

@@ -866,7 +866,7 @@ function lecturas(p, c) {
   rotulo(p, c, sp);
   leyenda(c);
   marcaSol(p);
-  if (S.fachada) { if (V) $('#fachada-texto').textContent = `Viajando al ${fechaTexto(V.f1)}, a las ${hhmm(V.m1)}.`; else textoFachada(p); }
+  if (S.fachada) { if (V) $('#fachada-texto').textContent = `Viajando al ${fechaTexto(V.f1)}, a las ${hhmm(V.m1)}.`; else textoFachada(p, c); }
   // fachadas: irradiancia
   Object.keys(FACHADAS).forEach((k, i) => {
     const el = document.querySelector(`[data-fachada="${k}"]`); if (!el) return;
@@ -1278,12 +1278,22 @@ function cerrarQR(devolverFoco) {
   el.hidden = true;
   if (devolverFoco) $('#salir-fachada')?.focus({ preventScroll: true });
 }
-function textoFachada(p) {
+/** Umbral de sol directo: la OMM cuenta horas de sol cuando la irradiancia directa normal pasa de 120 W/m² (WMO-No. 8,
+ *  vol. I, ed. 2023, cap. 8, §8.1.1, p. 309; la misma sección asocia el sol con «la aparición de sombras»). Con el dato horario
+ *  de ERA5 es una aproximación: una hora con nubes que pasan puede promediar menos y tener ratos de sol. */
+const UMBRAL_SOL = 120;
+function textoFachada(p, c) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
   // con el sol a menos de 0,5° no hay sombra del poste que comparar (sombraPoste da null): se dice solo la hora
-  $('#fachada-texto').textContent = !sp
-    ? `Son las ${hhmm(S.min)} en Panamá y el sol está ${p.alt <= 0 ? 'bajo el horizonte' : 'en el horizonte'}.`
-    : `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${inc > 0.02 ? 'Esta fachada recibe sol directo.' : 'Esta fachada está en sombra.'} Tu sombra debería proyectarse hacia el ${rumboTexto(sp.rumbo)} y medir ${f1(sp.largo, 2)} veces tu estatura: compárala con la del modelo.`;
+  if (!sp) { $('#fachada-texto').textContent = `Son las ${hhmm(S.min)} en Panamá y el sol está ${p.alt <= 0 ? 'bajo el horizonte' : 'en el horizonte'}.`; return; }
+  // la geometría dice si el sol mira a la fachada; el dato de esa hora (DNI) dice si su rayo llega con fuerza
+  const dni = c?.dni, debil = dni != null && dni < UMBRAL_SOL, hacia = `hacia el ${rumboTexto(sp.rumbo)}`, largo = `${f1(sp.largo, 2)} veces tu estatura`;
+  const frente = inc <= 0.02 ? 'Esta fachada está en sombra.'
+    : dni == null ? 'El sol mira a esta fachada; si el cielo está despejado, incide sobre ella.'
+    : debil ? `El sol mira a esta fachada, pero ${dniDespejado(p.alt) < UMBRAL_SOL ? 'está tan bajo que su rayo llega débil' : dni < 20 ? 'las nubes lo tapan' : 'las nubes casi lo tapan'}: la radiación directa es de ${miles(Math.round(dni))} W/m², menos de los 120 W/m² con que la OMM cuenta horas de sol, y las sombras ${dni < 20 ? 'no se marcan' : 'apenas se marcan'}.`
+    : 'Esta fachada recibe sol directo.';
+  $('#fachada-texto').textContent = `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${frente} `
+    + (debil ? `Si el sol se asoma, tu sombra se proyectará ${hacia} y medirá ${largo}.` : `Tu sombra debería proyectarse ${hacia} y medir ${largo}: compárala con la del modelo.`);
 }
 
 function refrescar() { lastLect = ''; S.kClimaDia = ''; }
@@ -1923,7 +1933,7 @@ function pasosRecorrido() {
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
     { t: 'Las partes del edificio', txt: 'La forma de ver «Partes» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. Toca una etiqueta para saber qué es, cómo es en este edificio y qué hace. La persona de 1,70 m junto a la esquina sirve para comparar tamaños.', dis: 'El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('partes', false); elegirParte('alero'); } },
-    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes. En «Confort», abajo a la derecha, ves qué ventanas abrir y qué persianas bajar a cada hora.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
+    { t: 'Ahora te toca', txt: 'Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes. En «Confort», abajo a la derecha, ves qué sugiere el clima de afuera a cada hora: por dónde entraría la brisa y en qué vidrios incide el sol.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
       ir: () => { S.aguaModo = 'hora'; irAAhora(true); ponerLente('foto', false); } },
   ];
 }
@@ -2088,13 +2098,13 @@ function pintarCarta() {
   s.push(`<text x="${(CARTA.x0 + CARTA.x1) / 2}" y="${CARTA.y1 + 31}" fill="#b6bdb9" font-size="10" text-anchor="middle">temperatura del aire (°C)</text>`);
   s.push(`<text x="10" y="${(CARTA.y0 + CARTA.y1) / 2}" fill="#b6bdb9" font-size="10" text-anchor="middle" transform="rotate(-90 10 ${(CARTA.y0 + CARTA.y1) / 2})">humedad (g/kg)</text>`);
   s.push('<g id="carta-punto"></g>');
-  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas en temperatura y humedad; la mayoría cae arriba de 17 g/kg con la humedad de ERA5, que es algo más alta que la medida en Tocumen.</desc>` + s.join('');
+  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas de clase en temperatura y humedad; la mayoría cae arriba de 17 g/kg con la humedad de ERA5, que es algo más alta que la medida en Tocumen.</desc>` + s.join('');
   const P = J.pct, li = (col, dash, txt) => `<li><i style="border:2px ${dash} ${col};background:none"></i>${txt}</li>`;
   $('#carta-cifras').innerHTML = [
     // en enteros: ERA5 no sostiene décimas en la humedad de una celda de ~28 km
-    li('#f4b545', 'solid', `Givoni, aire quieto: <b>${Math.round(P.quieto)} %</b> de las horas`),
+    li('#f4b545', 'solid', `Givoni, aire quieto: <b>${Math.round(P.quieto)} %</b> de las horas de clase`),
     li('#f4b545', 'dashed', `Givoni, con ventilación de ~2 m/s: <b>${Math.round(P.ventilacion)} %</b>`),
-    li('#b6bdb9', 'dotted', `ASHRAE 55 adaptativo, aire quieto: <b>${Math.round(P.adaptativo80)} %</b> · con aire a 0,6 m/s: <b>${Math.round(P.adaptativo80_06)} %</b>`),
+    li('#b6bdb9', 'dotted', `ASHRAE 55 adaptativo, aire quieto: <b>hasta ${Math.round(P.adaptativo80)} %</b> · con aire a 0,6 m/s: <b>hasta ${Math.round(P.adaptativo80_06)} %</b> (cota superior: usa el aire de afuera a la sombra)`),
     J.tocumen ? `<li><i style="background:none"></i>Con la humedad de Tocumen (ETESA) en lugar de la de ERA5, Givoni da <b>${Math.round(J.tocumen.quieto)} %</b> con aire quieto y <b>${Math.round(J.tocumen.ventilacion)} %</b> con brisa.</li>` : '',
   ].join('');
 }
@@ -2154,7 +2164,7 @@ function conviene(p, c) {
   out.push(['cierre', '', g[0] === pa[0] ? 'Coinciden.' : 'No coinciden porque Givoni mira la humedad y la Guía solo la temperatura.']);
   // 3. Sol en el vidrio (de día, con sol directo, perfil bajo el corte del alero)
   const acciones = [], datos = [];
-  if (dia && (c.dni ?? 0) >= 120) {
+  if (dia && (c.dni ?? 0) >= UMBRAL_SOL) {
     const al = [];
     for (const k of Object.keys(FACHADAS)) {
       const ca = Math.cos((p.az - FACHADAS[k].rumbo) * Math.PI / 180); if (ca <= 0.05) continue;
@@ -2166,20 +2176,24 @@ function conviene(p, c) {
   }
   // 4. Aire: con las fachadas largas como eje
   const v = c.viento ?? 0, variable = mes >= 5 && mes <= 11 ? ' (en esta época la dirección cambia de hora en hora)' : '';
-  if (c.dir == null || v < 6) { acciones.push('<b>Prende los ventiladores.</b> Casi no hay viento; si hay ventanas altas, ábrelas para que salga el aire caliente.'); datos.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`); }
+  if (c.dir == null || v < 6) { acciones.push('<b>Si hay ventiladores, préndelos.</b> Casi no hay viento; si hay ventanas altas, ábrelas para que salga el aire caliente.'); datos.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`); }
   else {
     let k = LARGAS[0], ang = 180;
     for (const f of LARGAS) { const a = Math.abs(((c.dir - FACHADAS[f].rumbo + 540) % 360) - 180); if (a < ang) { ang = a; k = f; } }
     if (ang <= 30) acciones.push(`<b>Abre las ventanas de la ${CORTO[k]} y de la ${CORTO[OPUESTA[k]]}.</b> La brisa entra de frente por la ${CORTO[k]} y sale por la otra.`);
     else if (ang <= 60) acciones.push(`<b>Abre las ventanas de las dos fachadas largas, NO y SE.</b> La brisa llega de lado y entra más o menos la mitad del aire.`);
-    else acciones.push('<b>Prende los ventiladores.</b> La brisa corre paralela a las fachadas largas y casi no entra.');
+    else acciones.push('<b>Si hay ventiladores, préndelos.</b> La brisa corre paralela a las fachadas largas y casi no entra.');
     if (seca && h >= 5 && h < 9) acciones[acciones.length - 1] += ' Aprovecha: es la hora más fresca del día.';
     datos.push(`Viento del ${rumboTexto(c.dir)} a ${Math.round(v)} km/h a 10 m de altura, a ${Math.round(ang)}° de la perpendicular de la ${CORTO[k]}${variable}. Conviene que la salida sea igual o mayor que la entrada.`);
   }
   const hacer = acciones.slice(0, 2);
   // 5. Lluvia, solo si llueve
   if ((c.lluvia ?? 0) >= 1) hacer.push('<b>Cierra lo que el alero no protege.</b> Llueve y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.');
-  if (!dia) hacer.push('<b>Si el aula puede quedar ventilada sin riesgo, déjala así.</b> De noche saca el calor que guardaron los muros.');
+  // de noche: en clima cálido húmedo conviene ventilar todo el día (UN-Habitat 2014, p. 68); enfriar la masa de noche es una
+  // estrategia de regiones áridas (Givoni 1992, §4.6.1, p. 17): baja la máxima de adentro un 45 a 55 % de la oscilación de afuera,
+  // con el aula cerrada y en sombra de día. Oscilación media: Tocumen 11 a 15 °C (ETESA 1977–2010, p. 3); ERA5 de 4 a 6 °C.
+  if (!dia) { hacer.push('<b>Si el aula puede quedar abierta de noche sin riesgo, déjala ventilada.</b> En clima cálido húmedo conviene ventilar a toda hora. Cuánto se enfrían los muros depende de cuánto refresque la noche: mira «Por qué».');
+    datos.push('Givoni (1992, p. 17) considera el enfriamiento nocturno de los muros aplicable sobre todo en regiones áridas: en un edificio pesado, aislado y en sombra, cerrado de día y ventilado solo de noche, la máxima de adentro puede bajar un 45 a 55 % de la diferencia entre la máxima y la mínima de afuera. En Tocumen esa diferencia es de 11 a 15 °C en promedio (ETESA, 1977–2010); ERA5 la aplana a unos 4 a 6 °C. Clayton no es Tocumen: sin una medición en el sitio no se sabe cuánto rendiría aquí.'); }
   return { hacer, porque: out, datos };
 }
 function pintarUTCI() {
