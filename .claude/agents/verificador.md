@@ -16,7 +16,7 @@ Antes de empezar lee `.claude/CLAUDE.md` del repo (reglas, fuentes preferidas, l
 2. **Fuentes.** Abre el original: DOI, URL oficial, documento y página. Comprueba que existe, que el autor, año y título son los citados y que dice exactamente lo que se le atribuye, no algo parecido. Una fuente que no puedes abrir queda NO VERIFICABLE. Una cita de segunda mano no vale.
 3. **Coherencia.** La misma cifra debe decir lo mismo en todos los lugares del visor (`fuente/cuerpo.html`, los textos de `fuente/src/main.js`, `confort.js`, el recorrido, los hallazgos, «Qué es · fuentes», el README). Busca con grep cada número que cambie y lista todos los lugares donde aparece.
 4. **Subjetividad.** Marca todo adjetivo o juicio sin medida («mucho», «fuerte», «cómodo», «ideal», «la mejor fachada»), toda recomendación de diseño que no salga de una regla con fuente, y toda generalización que los datos no sostienen. Una recomendación es válida solo si se puede trazar: dato del visor, regla publicada con página, conclusión.
-5. **Honestidad del alcance.** Comprueba que se dice de dónde sale cada dato (modelo, estación, cálculo), qué representa (celda de 28 km, aeropuerto a 3 km, un punto) y qué no puede decir. Marca toda frase que presente un modelo como medición, o una estación lejana como si fuera el sitio.
+5. **Honestidad del alcance.** Comprueba que se dice de dónde sale cada dato (modelo, estación, cálculo), qué representa (celda de 28 km, aeropuerto a 4,1 km, un punto) y qué no puede decir. Marca toda frase que presente un modelo como medición, o una estación lejana como si fuera el sitio.
 6. **Lo descartado.** Marca cualquier propuesta que reabra algo descartado por LM en el CLAUDE.md.
 
 ## Cómo entregas
