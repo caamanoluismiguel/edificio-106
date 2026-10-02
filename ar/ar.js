@@ -358,10 +358,11 @@ async function sinCamara() {
     if (!renderer.domElement.parentNode) contenedor.appendChild(renderer.domElement);
     camActiva = new THREE.PerspectiveCamera(40, 1, 0.5, 3000);
     $('inicio').hidden = true; $('panel').hidden = false; aviso(false); $('fecha').focus();
+    orbita?.dispose(); orbita = null; vistaVertical = null; tocado = false;
     const dist = encuadre(contenedor.clientWidth, contenedor.clientHeight);
-    camActiva.position.copy(centro).add(new THREE.Vector3(0, 0.8, 0.6).multiplyScalar(dist));   // desde el borde de abajo de la tarjeta, como en la AR
     orbita = new OrbitControls(camActiva, renderer.domElement);
-    orbita.target.copy(centro); orbita.enableDamping = true; orbita.maxPolarAngle = Math.PI * 0.47;
+    orbita.addEventListener('start', () => { tocado = true; });
+    orbita.target.copy(objetivo); orbita.enableDamping = true; orbita.maxPolarAngle = Math.PI * 0.47;
     orbita.minDistance = 12; orbita.maxDistance = Math.max(320, dist * 1.5); orbita.update();
     mundo.visible = true; ajustar();
     estado.fase = 'sin-camara'; actualizar();
@@ -369,17 +370,55 @@ async function sinCamara() {
   } catch (e) { estado.modo = null; mostrarError(e); }
 }
 
-/** Sin cámara: el centro de la vista se corre para que el panel no tape el edificio. Devuelve la distancia que muestra
- *  la tarjeta a lo ancho y el plano a lo alto en lo que queda libre de pantalla. */
-function encuadre(W, H) {
+/** Sin cámara: el centro de la vista se corre para que el panel no tape el edificio, y la cámara se acerca hasta que el
+ *  plano llena lo que queda libre de pantalla. En una pantalla ancha se mira desde el borde de abajo, como en la AR, con
+ *  la tarjeta entera o apenas recortada si así el edificio crece (hasta 1,15 veces la distancia que lo llena). En el celular vertical la tarjeta, que es apaisada, dejaba el edificio chico: ahí manda el edificio
+ *  (con 6 m de tarjeta alrededor) y se mira en diagonal desde la esquina de abajo a la derecha, que llena mejor una
+ *  pantalla alta. La distancia se elige al entrar y al girar el celular, no en cada cambio de tamaño, para no
+ *  perder el zoom de quien está mirando; si el panel crece (la leyenda de la lente Sol), la vista se corre hacia arriba
+ *  y, si nadie la tocó todavía, también se vuelve a encuadrar. Devuelve la distancia. */
+const objetivo = new THREE.Vector3(), _p = new THREE.Vector3();
+let vistaVertical = null, distVista = 0, tocado = false;
+function encuadre(W, H, rehacer = false) {
   const r = $('panel').getBoundingClientRect(), abajo = r.top > H / 2;
   const libreW = abajo ? W : W - r.width - 12, libreH = abajo ? H - r.height - 12 : H;
   camActiva.aspect = W / H;
   camActiva.setViewOffset(W, H, abajo ? 0 : (W - libreW) / 2, abajo ? (H - libreH) / 2 : 0, W, H);
   camActiva.updateProjectionMatrix();
-  const t = Math.tan(camActiva.fov / 2 * Math.PI / 180);
-  return Math.max(0.53 * PLANO_M[0] / (t * libreW / H), 0.5 * PLANO_M[1] / t * H / libreH);
+  const vertical = libreW < libreH;
+  if ((orbita && vertical === vistaVertical && !rehacer) || !modelo) return distVista;
+  vistaVertical = vertical;
+  const dir = orbita ? camActiva.position.clone().sub(orbita.target).normalize() : new THREE.Vector3(vertical ? 0.42 : 0, 0.8, 0.6).normalize();
+  mundo.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(modelo.getObjectByName('arquitectura') ?? modelo);
+  b.getCenter(objetivo); objetivo.y = b.min.y + (b.max.y - b.min.y) * 0.3;
+  const M = 6, esquinas = (x0, x1, y0, y1, z0, z1) => [x0, x1].flatMap(x => [y0, y1].flatMap(y => [z0, z1].map(z => new THREE.Vector3(x, y, z))));
+  const edif = esquinas(b.min.x - M, b.max.x + M, 0, b.max.y, b.min.z - M, b.max.z + M);
+  const [cx, cz] = CENTRO, [aw, ah] = PLANO_M.map(v => v / 2);
+  const hoja = [...edif, ...esquinas(cx - aw, cx + aw, 0, 0, cz - ah, cz + ah)];
+  const m = 16, x1 = abajo ? W : libreW, y1 = abajo ? libreH : H;
+  const cabe = (pts, d) => {
+    camActiva.position.copy(objetivo).addScaledVector(dir, d); camActiva.lookAt(objetivo); camActiva.updateMatrixWorld(true);
+    return pts.every(q => {
+      if (_p.copy(q).applyMatrix4(camActiva.matrixWorldInverse).z > -camActiva.near) return false;   // detrás de la cámara
+      _p.copy(q).project(camActiva);
+      const x = (_p.x + 1) / 2 * W, y = (1 - _p.y) / 2 * H;
+      return x >= m && x <= x1 - m && y >= m && y <= y1 - m;
+    });
+  };
+  const ajusta = pts => { let lo = 5, hi = 3000; for (let i = 0; i < 40; i++) { const d = (lo + hi) / 2; cabe(pts, d) ? hi = d : lo = d; } return hi; };
+  const dE = ajusta(edif), dH = ajusta(hoja);
+  distVista = vertical ? dE : Math.min(dH, dE * 1.15);
+  camActiva.position.copy(objetivo).addScaledVector(dir, distVista); camActiva.lookAt(objetivo);
+  if (orbita) { orbita.target.copy(objetivo); orbita.update(); }
+  estado.vista = { vertical, distancia: distVista };
+  return distVista;
 }
+
+// sin cámara, el panel cambia de alto con la leyenda y la nota de escala: que no tape el edificio
+new ResizeObserver(() => {
+  if (estado.modo === 'sin-camara' && orbita) encuadre(contenedor.clientWidth, contenedor.clientHeight, !tocado);
+}).observe($('panel'));
 
 // ---------- pestaña oculta: se para la cámara, MindAR y el dibujo; al volver, siguen ----------
 let ultimoProceso = 0, turno = 0;

@@ -8,64 +8,130 @@
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root { --tinta: #1d1d1b; --papel: #fbfaf6; --acento: #b4532a; --velo: rgba(29,29,27,.86); --borde: rgba(251,250,246,.22); --suave: #d9d6cc; }
-  html, body { margin: 0; height: 100%; background: #000; color: var(--papel); font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; overflow: hidden; -webkit-text-size-adjust: 100%; }
-  body.sin-camara { background: #34322d; }
+  /* los mismos tokens y letras del visor (fuente/cuerpo.html), sin degradados: paneles planos */
+  :root {
+    color-scheme: dark;
+    --noche: #0a1216; --fondo: #101b21; --panel-2: rgba(10, 17, 21, 0.86); --solido: #0e171b; --mesa: #18252b;
+    --cal: #efe9de; --cal-2: #b6bdb9; --cal-3: #7f8a86;
+    --sol: #f4b545; --sol-tinta: #1d1405; --teja: #c9653f;
+    --linea: rgba(239, 233, 222, 0.13); --linea-2: rgba(239, 233, 222, 0.2);
+    --display: "Bricolage Grotesque", "Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif;
+    --texto: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --datos: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --velo: var(--panel-2); --borde: var(--linea-2); --suave: var(--cal-2);
+  }
+  html, body { margin: 0; height: 100%; background: var(--noche); color: var(--cal); font: 16px/1.5 var(--texto); overflow: hidden; -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; }
+  body.sin-camara { background: var(--fondo); }
   #ar { position: fixed; inset: 0; overflow: hidden; touch-action: none; }
   #ar video { position: absolute; z-index: 0; object-fit: cover; }
   #ar canvas { position: absolute; z-index: 1; }
   button, select, a.boton { font: inherit; color: inherit; }
-  :focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  button { cursor: pointer; }
+  a { color: var(--sol); }
+  :focus-visible { outline: 2px solid var(--sol); outline-offset: 3px; }
 
   .aviso { position: fixed; left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); top: max(16px, env(safe-area-inset-top)); z-index: 3; text-align: center; pointer-events: none; }
-  .aviso p { display: inline-block; margin: 0; padding: 8px 14px; border-radius: 10px; background: var(--velo); font-size: 15px; line-height: 1.35; }
+  .aviso p { display: inline-block; margin: 0; padding: 9px 14px; border-radius: 14px; background: var(--velo); border: 1px solid var(--linea-2); font-size: 15px; font-weight: 600; line-height: 1.35; }
 
   /* panel de abajo: fecha y hora, deslizador y herramientas */
   .panel { position: fixed; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); z-index: 3;
-    padding: 10px 12px; border-radius: 12px; background: var(--velo); display: flex; flex-direction: column; gap: 6px; max-width: 560px; margin: 0 auto; box-sizing: border-box; }
+    padding: 10px 12px; border-radius: 16px; background: var(--velo); border: 1px solid var(--linea); display: flex; flex-direction: column; gap: 6px; max-width: 560px; margin: 0 auto; box-sizing: border-box; }
   .fila { display: flex; align-items: center; gap: 10px; }
-  .fecha { flex: 1; min-width: 0; height: 44px; padding: 0 34px 0 10px; border: 1px solid var(--borde); border-radius: 10px; font-size: 16px;
+  .fecha { flex: 1; min-width: 0; height: 44px; padding: 0 34px 0 12px; border: 1px solid var(--borde); border-radius: 12px; font-size: 16px;
     -webkit-appearance: none; appearance: none;   /* Safari no deja dar alto a un select con su aspecto propio */
-    background: #2b2a27 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23fbfaf6' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center; }
-  .hora-txt { flex: none; min-width: 4.2em; text-align: right; font-size: 17px; font-variant-numeric: tabular-nums; line-height: 1.15; }
-  .hora-txt small { display: block; font-size: 12px; color: var(--suave); }
-  #hora { width: 100%; height: 44px; margin: 0; accent-color: var(--acento); }
+    background: var(--solido) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23efe9de' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center; }
+  .hora-txt { flex: none; min-width: 4.2em; text-align: right; font: 500 17px/1.15 var(--datos); font-variant-numeric: tabular-nums; }
+  .hora-txt small { display: block; font: 12px var(--texto); color: var(--suave); }
+  #hora { width: 100%; height: 44px; margin: 0; accent-color: var(--sol); }
   .herramientas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .herramientas button, .herramientas a { min-height: 44px; padding: 0 4px; border: 1px solid var(--borde); border-radius: 10px; background: transparent; font-size: 14px;
+  .herramientas button, .herramientas a { min-height: 44px; padding: 0 4px; border: 1px solid var(--borde); border-radius: 12px; background: transparent; font-size: 14px; font-weight: 600;
     display: flex; align-items: center; justify-content: center; text-decoration: none; white-space: nowrap; }
-  .herramientas [aria-pressed="true"] { background: var(--papel); color: var(--tinta); border-color: var(--papel); }
+  .herramientas #b-escala { font-family: var(--datos); font-weight: 500; }
+  .herramientas [aria-pressed="true"] { background: var(--cal); color: var(--noche); border-color: var(--cal); }
   .nota { margin: 0; font-size: 13px; line-height: 1.35; color: var(--suave); }
 
   /* leyenda de la lente Sol: cinco franjas planas */
   .leyenda { display: flex; flex-direction: column; gap: 4px; }
   .leyenda .t { font-size: 13px; font-weight: 600; }
   .franjas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
-  .franjas i { height: 10px; border-radius: 2px; }
-  .franjas-txt { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; font-size: 12px; color: var(--suave); text-align: center; font-variant-numeric: tabular-nums; }
-  .ver-sin-camara { min-height: 44px; padding: 0 12px; border: 1px solid var(--borde); border-radius: 10px; background: transparent; font-size: 15px; }
+  .franjas i { height: 12px; border-radius: 2px; }
+  .franjas-txt { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; font: 12px var(--datos); color: var(--suave); text-align: center; font-variant-numeric: tabular-nums; }
+  .ver-sin-camara { min-height: 44px; padding: 0 12px; border: 1px solid var(--borde); border-radius: 999px; background: transparent; font-size: 15px; font-weight: 600; }
 
   /* pantalla de inicio */
-  .inicio { position: fixed; inset: 0; z-index: 4; overflow-y: auto; background: var(--tinta); -webkit-overflow-scrolling: touch; }
-  .inicio .caja { max-width: 30em; margin: 0 auto; box-sizing: border-box; min-height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 14px;
-    padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
-  .inicio h1 { margin: 0; font-size: 23px; line-height: 1.2; }
-  .inicio p, .inicio li { margin: 0; font-size: 16px; line-height: 1.45; color: var(--suave); }
-  .inicio ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; }
-  .inicio a { color: #fff; }
-  .botones { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-  .botones button { min-height: 48px; padding: 0 20px; border-radius: 10px; font-size: 17px; border: 1px solid var(--borde); background: transparent; }
-  .botones .principal { background: var(--acento); border-color: var(--acento); color: #fff; }
-  .alerta { padding: 12px 14px; border-radius: 10px; background: #3a2a22; border: 1px solid var(--acento); display: flex; flex-direction: column; gap: 10px; }
-  .alerta b { color: #fff; font-size: 17px; }
-  .alerta p { color: var(--papel); }
-  .alerta button { align-self: flex-start; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--papel); color: var(--tinta); font-size: 16px; }
-  .alerta input { font: inherit; font-size: 14px; min-height: 40px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--borde); background: #2b2a27; color: var(--papel); }
-  #error { color: #ffd9c7; }
+  .inicio { position: fixed; inset: 0; z-index: 4; overflow-y: auto; background: var(--noche); -webkit-overflow-scrolling: touch; }
+  .inicio .caja { max-width: 1040px; margin: 0 auto; box-sizing: border-box; min-height: 100%; display: flex; flex-direction: column; gap: 20px;
+    padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .cabeza { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .marca { display: flex; gap: 10px; align-items: center; min-width: 0; }
+  .marca svg { flex: none; width: 38px; height: 22px; overflow: visible; }
+  .marca .arco { fill: none; stroke: var(--cal-3); stroke-width: 1.5; }
+  .marca .horizonte { stroke: var(--cal-3); stroke-width: 1.5; }
+  .marca circle { fill: var(--sol); }
+  .marca b { font: 760 19px/1 var(--display); letter-spacing: -0.01em; white-space: nowrap; }
+  .marca small { display: block; margin-top: 4px; font: 500 10.5px/1 var(--datos); color: var(--cal-2); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  .volver { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px 0 11px; box-sizing: border-box; border: 1px solid var(--linea-2); border-radius: 999px;
+    color: var(--cal); text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .volver svg { width: 14px; height: 14px; }
+  .volver:hover { border-color: rgba(239, 233, 222, .42); }
+
+  .portada { flex: 1; display: grid; gap: 22px; align-content: center; }
+  /* la tarjeta impresa sobre una mesa: una superficie plana y la hoja apenas girada, con su sombra */
+  .mesa { margin: 0; background: var(--mesa); border: 1px solid var(--linea); border-radius: 18px; padding: 22px 26px 26px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .mesa img { display: block; width: 100%; max-width: 520px; height: auto; transform: rotate(-3deg); border-radius: 2px; box-shadow: 0 10px 22px rgba(0, 0, 0, .45), 0 1px 2px rgba(0, 0, 0, .5); }
+  .mesa figcaption { font: 500 11px/1.4 var(--datos); color: var(--cal-2); letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+
+  .texto { display: flex; flex-direction: column; gap: 16px; max-width: 34em; }
+  .antetitulo { margin: 0; font: 500 11px/1 var(--datos); color: var(--sol); letter-spacing: 0.12em; text-transform: uppercase; }
+  .inicio h1 { margin: -6px 0 0; font: 760 clamp(30px, 8vw, 44px)/1.04 var(--display); letter-spacing: -0.02em; color: var(--cal); }
+  .inicio p, .inicio li { margin: 0; font-size: 16px; line-height: 1.5; color: var(--suave); }
+  .pasos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: paso; }
+  .pasos li { counter-increment: paso; display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; color: var(--cal); }
+  .pasos li::before { content: counter(paso); width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--sol); color: var(--sol); font: 500 14px/26px var(--datos); text-align: center; box-sizing: border-box; }
+  .extra { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--linea); }
+  .extra p { font-size: 15px; }
+  .botones { display: flex; flex-direction: column; gap: 10px; }
+  .botones button { min-height: 50px; padding: 0 22px; border-radius: 999px; font-size: 17px; font-weight: 600; border: 1px solid var(--linea-2); background: transparent; }
+  .botones button:disabled { opacity: .7; cursor: progress; }
+  .botones .principal { background: var(--sol); border-color: var(--sol); color: var(--sol-tinta); }
+  .alerta { padding: 12px 14px; border-radius: 14px; background: var(--solido); border: 1px solid var(--teja); display: flex; flex-direction: column; gap: 10px; }
+  .alerta b { color: var(--cal); font-size: 17px; }
+  .alerta p { color: var(--cal); }
+  .alerta button { align-self: flex-start; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--cal); color: var(--noche); font-size: 16px; font-weight: 600; }
+  .alerta input { font: inherit; font-size: 14px; min-height: 40px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--borde); background: var(--noche); color: var(--cal); }
+  #error { color: #ffd9c7; padding: 10px 12px; border-left: 3px solid var(--teja); background: var(--solido); border-radius: 4px; }
+
+  @media (max-width: 440px) { .marca small { display: none; } }
+  /* en el celular vertical la tarjeta va arriba y chica, para que los pasos y los botones queden cerca */
+  @media (max-width: 759px) and (orientation: portrait) {
+    .mesa { padding: 16px 18px 18px; gap: 10px; }
+    .mesa img { max-width: 300px; }
+  }
+  /* pantalla ancha o celular apaisado: la tarjeta a la izquierda y los pasos a la derecha */
+  @media (min-width: 760px), (orientation: landscape) and (max-height: 520px) {
+    .portada { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 36px; }
+    .mesa { align-self: stretch; justify-content: center; padding: 34px; }
+    .botones { flex-direction: row; flex-wrap: wrap; }
+    .botones button { flex: 1 1 12em; }
+  }
+  @media (orientation: landscape) and (max-height: 520px) {
+    .portada { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 24px; align-content: start; }
+    .mesa { padding: 16px; gap: 8px; align-self: start; }
+    .mesa img { max-width: 280px; }
+    .inicio .caja { gap: 14px; }
+    .texto { gap: 12px; }
+    .inicio h1 { font-size: 28px; }
+    .pasos { gap: 8px; }
+    .pasos li, .extra p { font-size: 15px; line-height: 1.4; }
+  }
 
   /* celular apaisado: el panel va a la derecha para dejar ver la tarjeta */
   @media (orientation: landscape) and (max-height: 520px) {
-    .panel { left: auto; top: max(12px, env(safe-area-inset-top)); width: 300px; margin: 0; overflow-y: auto; justify-content: flex-end; }
+    .panel { left: auto; top: max(12px, env(safe-area-inset-top)); bottom: auto; width: 300px; max-height: calc(100% - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); margin: 0; overflow-y: auto; }
     .aviso { right: calc(324px + env(safe-area-inset-right)); }
   }
   [hidden] { display: none !important; }
@@ -75,26 +141,44 @@
 <div id="ar"></div>
 <div class="inicio" id="inicio">
   <div class="caja">
-    <h1>Edificio 106 sobre la mesa</h1>
-    <div class="alerta" id="en-app" role="alert" hidden>
-      <b>Abre este enlace en Safari o Chrome</b>
-      <p id="en-app-txt">Dentro de esta aplicación la cámara suele no funcionar. Toca el menú de la aplicación y elige abrir en el navegador, o copia el enlace y pégalo en Safari o Chrome.</p>
-      <button type="button" id="copiar">Copiar el enlace</button>
-      <input id="enlace" type="text" readonly hidden aria-label="Enlace de esta página">
-      <p id="copiado" role="status" hidden>Enlace copiado. Pégalo en Safari o Chrome.</p>
+    <div class="cabeza">
+      <span class="marca" aria-label="Isthmus · Edificio 106">
+        <svg viewBox="0 0 38 22" aria-hidden="true"><path class="arco" d="M3 20 A16 16 0 0 1 35 20"></path><line class="horizonte" x1="0" y1="20" x2="38" y2="20"></line><circle cx="19" cy="4" r="3"></circle></svg>
+        <span><b>Edificio 106</b><small>Isthmus · Ciudad del Saber</small></span>
+      </span>
+      <a class="volver" href="../"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 4 7l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Volver al visor</a>
     </div>
-    <ol>
-      <li>Pon la tarjeta impresa sobre una mesa con buena luz.</li>
-      <li>Gira la tarjeta hasta que la flecha N apunte al norte (sirve la brújula del celular). Así, a la hora de ahora, la sombra del modelo cae hacia el mismo lado que la sombra real.</li>
-      <li>Toca «Abrir la cámara». El celular te pide permiso: acéptalo y apunta al plano entero.</li>
-    </ol>
-    <p>¿No tienes la tarjeta? <a href="tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descárgala (PDF)</a> e imprímela en A4 o carta al 100 %, o ábrela en la pantalla del computador.</p>
-    <p>¿Tienes iPhone o iPad? También puedes <a href="quicklook/">ponerlo sobre la mesa sin tarjeta</a>.</p>
-    <div class="botones">
-      <button id="empezar" class="principal" type="button">Abrir la cámara</button>
-      <button id="sin-camara" type="button">Ver sin cámara</button>
+    <div class="portada">
+      <figure class="mesa">
+        <img src="tarjeta/tarjeta.png" width="2112" height="1632" decoding="async" alt="La tarjeta impresa: el plano del sitio visto desde arriba, con el código QR, la escala y la flecha del norte.">
+        <figcaption>La tarjeta impresa, plano a 1:320</figcaption>
+      </figure>
+      <div class="texto">
+        <p class="antetitulo">Realidad aumentada</p>
+        <h1>Edificio 106 sobre la mesa</h1>
+        <div class="alerta" id="en-app" role="alert" hidden>
+          <b>Abre este enlace en Safari o Chrome</b>
+          <p id="en-app-txt">Dentro de esta aplicación la cámara suele no funcionar. Toca el menú de la aplicación y elige abrir en el navegador, o copia el enlace y pégalo en Safari o Chrome.</p>
+          <button type="button" id="copiar">Copiar el enlace</button>
+          <input id="enlace" type="text" readonly hidden aria-label="Enlace de esta página">
+          <p id="copiado" role="status" hidden>Enlace copiado. Pégalo en Safari o Chrome.</p>
+        </div>
+        <ol class="pasos">
+          <li>Pon la tarjeta impresa sobre una mesa con buena luz.</li>
+          <li>Gira la tarjeta hasta que la flecha N apunte al norte (sirve la brújula del celular). Así, a la hora de ahora, la sombra del modelo cae hacia el mismo lado que la sombra real.</li>
+          <li>Toca «Abrir la cámara». El celular te pide permiso: acéptalo y apunta al plano entero.</li>
+        </ol>
+        <div class="botones">
+          <button id="empezar" class="principal" type="button">Abrir la cámara</button>
+          <button id="sin-camara" type="button">Ver sin cámara</button>
+        </div>
+        <p id="error" role="alert" hidden></p>
+        <div class="extra">
+          <p>¿No tienes la tarjeta? <a href="tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descárgala (PDF)</a> e imprímela en A4 o carta al 100 %, o ábrela en la pantalla del computador.</p>
+          <p>¿Tienes iPhone o iPad? También puedes <a href="quicklook/">ponerlo sobre la mesa sin tarjeta</a>.</p>
+        </div>
+      </div>
     </div>
-    <p id="error" role="alert" hidden></p>
   </div>
 </div>
 <div class="aviso" id="aviso" role="status" hidden><p id="aviso-txt">Apunta al plano entero de la tarjeta</p></div>
