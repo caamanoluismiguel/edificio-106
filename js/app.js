@@ -35419,7 +35419,7 @@ var mH = (e) => e >= 4 && e <= 11 ? 1.5 : 1, hH = Date.UTC(2001, 0, 1, 0), gH = 
 		return this.vivo = e ? EH(e, t) : null, this.vivo;
 	}
 	async #t() {
-		let e = `https://api.open-meteo.com/v1/forecast?latitude=${OB}&longitude=${kB}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,direct_normal_irradiance,diffuse_radiation,is_day&timezone=America%2FPanama`, t = new AbortController(), n = setTimeout(() => t.abort(), 5e3);
+		let e = `https://api.open-meteo.com/v1/forecast?latitude=${OB}&longitude=${kB}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,direct_normal_irradiance,diffuse_radiation,is_day&timezone=America%2FPanama`, t = new AbortController(), n = setTimeout(() => t.abort(), 12e3);
 		try {
 			let n = await fetch(e, { signal: t.signal });
 			if (!n.ok) throw Error(n.status);
@@ -35455,7 +35455,7 @@ var mH = (e) => e >= 4 && e <= 11 ? 1.5 : 1, hH = Date.UTC(2001, 0, 1, 0), gH = 
 };
 async function wH() {
 	if (globalThis.MODELO_B64) return null;
-	let e = new AbortController(), t = setTimeout(() => e.abort(), 5e3);
+	let e = new AbortController(), t = setTimeout(() => e.abort(), 12e3);
 	try {
 		let t = await fetch(xH, { signal: e.signal });
 		if (!t.ok) return null;
@@ -37128,7 +37128,13 @@ async function qU() {
 		FU = e, UK(), VG(), sG = "";
 	}).catch((e) => iU("aviso", "consultas: " + e));
 	let s = LU.cargarVivo();
-	setInterval(() => {
+	s.then((e) => {
+		e || [2e4, 6e4].forEach((e) => setTimeout(() => {
+			Q.modo === "ahora" && !LU.vivo && LU.cargarVivo().then(() => {
+				sG = "";
+			});
+		}, e));
+	}), setInterval(() => {
 		Q.modo === "ahora" && LU.cargarVivo();
 	}, 6e5), CG();
 	let c = o.then((e) => e.promesas[CV.find((t) => (e.calidad.grupos ?? CV).includes(t))]).catch(() => {}), l = await Promise.race([
