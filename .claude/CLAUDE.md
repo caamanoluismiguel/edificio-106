@@ -66,7 +66,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
   - ámbar (`--sol`) solo para lo que es el sol (brújula, regla, lente Sol), la acción primaria (`.primario`, play), los enlaces y los eyebrows de los paneles; lo seleccionado o encendido va en crema (`--cal`) y los bordes de panel en `--linea-2`;
   - escala de letra: 11 · 12 · 13 · 14 · 15 · 16 · 18 · 22 px (26, 30 y 46 para títulos y la hora); radios: 8 chips · 12 tarjetas · 18 paneles · 999 píldoras. Nada de medios píxeles;
   - las fuentes de Google se cargan en los pesos que el CSS pide (Plex Mono 400/500/600): un peso que no está cargado sale como negrita sintética.
-- **Honestidad:** decir lo que no hace (interior, CFD, desagües). ERA5 es una celda de ~28 km: marca 0,6 a 1,4 g/kg más de humedad que Tocumen y aplana la oscilación del día. No afirmar el año de construcción, el uso original ni el autor del 106: en los planos de CERL de los años 30, el «106» era un galpón de madera.
+- **Honestidad:** decir lo que no hace (interior, CFD, desagües). ERA5 es una celda de ~28 km: marca de 0,2 a 0,9 g/kg más de humedad que Albrook (2017–2025) y aplana la oscilación del día (4 a 6 °C; Albrook, 5 a 8). Albrook es un aeropuerto a 4,1 km: nunca decir «medido en Clayton» ni «llueve aquí» por un parte de Albrook. No afirmar el año de construcción, el uso original ni el autor del 106: en los planos de CERL de los años 30, el «106» era un galpón de madera.
 - **Descartado por LM, no proponer de nuevo:** recorridos con sombra, lluvia de la ACP, consumo eléctrico, captación de agua, el catálogo retocado con IA, la reexportación desde Blender y la AO horneada (+842 KB, casi invisible).
 
 ## Datos
@@ -80,6 +80,9 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
   - viento en km/h;
   - dirección ×2.
 - `descargar_era5.py` reproduce el binario byte a byte.
+- **Ajuste a Albrook (`fuente/ajuste_albrook.py` → `datos/ajuste_albrook.json`, aplicado al leer en `src/ajuste.js` y en `confort.mjs`):** temperatura por cuantiles por mes y hora, humedad menos el sesgo de cada mes; calibración 2017–2025; ERA5 y METAR desredondeados con ruido fijo (sin eso, los empates de los pasos de 1/6 °C mueven el resultado un 5 %). Solo 2001–2025. El binario C107 no cambia. `?era5=crudo` lo apaga en la lectura por hora (la carta de 25 años va ajustada y muestra lo crudo como referencia). Los METAR (IEM) están en `~/projects/edificio-106-estaciones/metar/`; al archivo le faltan las lluvias de 2011, 2015 y 2016, así que las cifras de lluvia contra Albrook usan 2017–2025.
+- **«Ahora» con Albrook (`cargarVivo` en clima.js):** último parte de MPMG en `mesonet.agron.iastate.edu/api/1/currents.json` (deja leer desde el navegador), vigente 90 min (provisional: medir la latencia). Temperatura, humedad y viento del parte; lluvia solo si lo hizo un observador (de 23 a 5 h es AUTO). VC y TS solo no son lluvia (WMO-No. 306). Nubes, luz y los mm para la lluvia con viento, del modelo.
+- **Umbral de lluvia (`umbralLluvia` en clima.js):** 1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre, el mismo en escena, textos y Confort. Por debajo, «lluvia débil en la celda».
 - **Sol:** NOAA/Meeus, verificado contra Michalsky y SPA. `Date.UTC` trunca los minutos fraccionarios: se suman aparte.
 
 ## Realidad aumentada (`ar/`)

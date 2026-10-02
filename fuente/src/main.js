@@ -197,6 +197,7 @@ async function arrancar() {
     if (T) estadoCarga(`Modelo · ${f1(L / 1e6)} MB`);
     if (l === 1 && t === 1) compilarPronto();
   });
+  clima.cargarAjuste(conVersion(BASE + 'datos/ajuste_albrook.json')).then(() => { lastLect = ''; });
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
   fetch(conVersion(BASE + 'datos/consultas.json')).then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
@@ -882,14 +883,14 @@ function lecturas(p, c) {
     else agua = llueve(c) ? `lluvia ${f1(c.lluvia)} mm/h` : (c.lluvia ?? 0) >= 0.1 ? `lluvia débil en la celda (${f1(c.lluvia)} mm)` : c.llovizna ? 'lluvia débil en la zona' : 'sin lluvia';
     if (c.fuente === 'vivo' && !c.albrook) {
       const tip = clima.tipico(S.fecha.m, S.min);
-      if (tip) { const dT = c.temp - tip.temp; if (Math.abs(dT) >= 1) agua += ` · ${dT >= 0 ? '+' : '−'}${Math.round(Math.abs(dT))} °C vs. típico (pronóstico frente a la mediana de ERA5)`; }
+      if (tip) { const dT = c.temp - tip.temp; if (Math.abs(dT) >= 1) agua += ` · ${dT >= 0 ? '+' : '−'}${Math.round(Math.abs(dT))} °C vs. típico (pronóstico frente a la mediana 2001–2025)`; }
     }
     det = cielo.join(' · ') + '\n' + agua;
     if (c.fuente === 'vivo') fuente = c.albrook ? (c.albrook.auto
         ? `Temperatura, humedad y viento: parte automático del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora}. De noche ese parte no dice si llueve: la lluvia, las nubes y la luz son del pronóstico de modelo (Open-Meteo). El sol es calculado.`
         : `Temperatura, humedad, viento y lluvia: parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora}. Nubes y luz: pronóstico de modelo (Open-Meteo). El sol es calculado.`)
       : `Pronóstico de modelo (Open-Meteo), ${c.hora}. El sol es calculado.`;
-    else if (c.fuente === 'serie') fuente = `Dato de esa hora: ${clima.r?.era5 ? 'reanálisis ERA5' : 'archivo histórico'} (Open-Meteo), celda de ~28 km.`;
+    else if (c.fuente === 'serie') fuente = `Dato de esa hora: ${clima.r?.era5 ? 'reanálisis ERA5' : 'archivo histórico'} (Open-Meteo), celda de ~28 km${c.ajustado ? '; temperatura y humedad ajustadas al aeropuerto de Albrook, a 4 km (2017–2025)' : ''}.`;
     else if (c.fuente === 'dia') fuente = c.modelo === 'era5' ? 'Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km.' : 'Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea.';
     else if (c.fuente === 'mes') fuente = `Total del mes en la serie 2001–2025 (Open-Meteo).`;
     else fuente = vivo ? (globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (2001–2025). En esta vista previa no hay conexión al tiempo real.' : 'Típico para esta fecha y hora (2001–2025): no se pudo leer el tiempo real.')
@@ -898,7 +899,7 @@ function lecturas(p, c) {
   $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
   // resumen de una línea para el teléfono: solo los valores
   // sello corto de procedencia, siempre visible (en el teléfono la línea larga de la fuente no se muestra)
-  const sello = !c || V ? '' : c.fuente === 'vivo' ? (c.albrook ? 'Albrook' : 'pronóstico') : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : c.fuente === 'mes' ? 'ERA5, mes' : 'típico';
+  const sello = !c || V ? '' : c.fuente === 'vivo' ? (c.albrook ? 'Albrook' : 'pronóstico') : c.fuente === 'serie' ? (c.ajustado ? 'ERA5 ajustado' : 'ERA5') : c.fuente === 'dia' && c.modelo === 'era5' ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : c.fuente === 'mes' ? 'ERA5, mes' : 'típico';
   $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol bajo el horizonte · ${temp}`);   // la procedencia primero: en el teléfono el final se corta
   // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
   const est = $('#estado-txt');
@@ -2026,7 +2027,7 @@ function explicacion(k, p, c) {
     if (c.dni != null && p.alt > 2) partes.push(`${miles(Math.round(c.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${miles(Math.round(dc / 10) * 10)} W/m², según el modelo sencillo de Meinel y Meinel, 1976)`);
     const ll = c.lluvia ?? 0;
     const txtLl = c.albrook && !c.albrook.auto ? '' : ll >= 0.1 && !llueve(c) ? `Da ${f1(ll)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${UMBRAL_TXT}).` : llueve(c) ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : 'No llueve a esa hora.';
-    return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, ERA5 marca lluvia en la misma hora una de cada cuatro veces que allí llovió. La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, las horas de lluvia de ERA5 quedan entre 1,05 y 1,16 veces las que informa el observador de Albrook (2017–2025).'}`];
+    return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : (c.ajustado ? 'Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero')+' muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, ERA5 marca lluvia en la misma hora una de cada cinco veces que allí llovió (2017–2025). La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, las horas de lluvia de ERA5 quedan entre 1,05 y 1,16 veces las que informa el observador de Albrook (2017–2025).'}`];
   }
   if (k === 'tab-dia') return ['La regla del día', 'Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras azules son la lluvia de cada hora y lo gris, las horas en que las nubes tapan el sol. Arrástrala para recorrer el día.'];
   if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
@@ -2236,14 +2237,14 @@ function pintarCarta() {
   s.push(`<text x="${(CARTA.x0 + CARTA.x1) / 2}" y="${CARTA.y1 + 31}" fill="#b6bdb9" font-size="10" text-anchor="middle">temperatura del aire (°C)</text>`);
   s.push(`<text x="10" y="${(CARTA.y0 + CARTA.y1) / 2}" fill="#b6bdb9" font-size="10" text-anchor="middle" transform="rotate(-90 10 ${(CARTA.y0 + CARTA.y1) / 2})">humedad (g/kg)</text>`);
   s.push('<g id="carta-punto"></g>');
-  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas de clase en temperatura y humedad; la mayoría cae arriba de 17 g/kg con la humedad de ERA5, que es algo más alta que la medida en Tocumen.</desc>` + s.join('');
+  $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas de clase en temperatura y humedad, con ERA5 ajustado al aeropuerto de Albrook.</desc>` + s.join('');
   const P = J.pct, li = (col, dash, txt) => `<li><i style="border:2px ${dash} ${col};background:none"></i>${txt}</li>`;
   $('#carta-cifras').innerHTML = [
     // en enteros: ERA5 no sostiene décimas en la humedad de una celda de ~28 km
     li('#f4b545', 'solid', `Givoni, aire quieto: <b>${Math.round(P.quieto)} %</b> de las horas de clase`),
     li('#f4b545', 'dashed', `Givoni, con ventilación de ~2 m/s: <b>${Math.round(P.ventilacion)} %</b>`),
     li('#b6bdb9', 'dotted', `ASHRAE 55 adaptativo, aire quieto: <b>hasta ${Math.round(P.adaptativo80)} %</b> · con aire a 0,6 m/s: <b>hasta ${Math.round(P.adaptativo80_06)} %</b> (cota superior: usa el aire de afuera a la sombra)`),
-    J.tocumen ? `<li><i style="background:none"></i>Con la humedad de Tocumen (ETESA) en lugar de la de ERA5, Givoni da <b>${Math.round(J.tocumen.quieto)} %</b> con aire quieto y <b>${Math.round(J.tocumen.ventilacion)} %</b> con brisa.</li>` : '',
+    J.crudo ? `<li><i style="background:none"></i>Con ERA5 sin ajustar a Albrook: Givoni ${Math.round(J.crudo.quieto)} % y ${Math.round(J.crudo.ventilacion)} %; ASHRAE hasta ${Math.round(J.crudo.adaptativo80)} % y ${Math.round(J.crudo.adaptativo80_06)} %.</li>` : '',
   ].join('');
 }
 let confortClave = '';
@@ -2257,7 +2258,7 @@ function confortHora(p, c) {
   $('#conviene').innerHTML = R.hacer.map((t) => `<li class="accion">${t}</li>`).join('');
   $('#conviene-porque').innerHTML = R.porque.map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? sr(gl) : ''}${t}</span></li>`).join('') + R.datos.map((t) => `<li class="cierre">${t}</li>`).join('');
   $('#conviene-resumen').textContent = `Por qué · Givoni ${R.porque[0][1]} · Guía de Panamá ${R.porque[1][1]}`;
-  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? (c.albrook ? `Albrook ${c.albrook.hora}, a 4 km` : `pronóstico ${c.hora ?? ''}`.trim()) : c.fuente === 'serie' || (c.fuente === 'dia' && c.modelo === 'era5') ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
+  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? (c.albrook ? `Albrook ${c.albrook.hora}, a 4 km` : `pronóstico ${c.hora ?? ''}`.trim()) : c.fuente === 'serie' ? (c.ajustado ? 'ERA5 ajustado a Albrook' : 'ERA5') : c.fuente === 'dia' && c.modelo === 'era5' ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
   if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
   const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
@@ -2279,17 +2280,19 @@ const LARGAS = ['fachada-no', 'fachada-se'];
 const OPUESTA = { 'fachada-se': 'fachada-no', 'fachada-no': 'fachada-se', 'fachada-ne': 'fachada-so', 'fachada-so': 'fachada-ne' };
 function conviene(p, c) {
   const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0, mes = S.fecha.m, seca = mes === 12 || mes <= 4, h = S.min / 60;
-  const T = f1(c.temp), W = f1(w), banda = seca ? 1 : 0.5;
-  // 1. Givoni (con la banda «en el borde»: ERA5 marca algo más de humedad que Tocumen)
+  // banda «en el borde»: con ERA5 crudo, la diferencia de humedad con las estaciones (1 g/kg en la seca, 0,5 en lluvias) y 1 °C;
+  // con el parte de Albrook o la serie ajustada, lo que deja el redondeo del parte al grado entero: 0,5 °C y 0,6 g/kg
+  const fino = !!(c.albrook || c.ajustado), T = f1(c.temp), W = f1(w), banda = fino ? 0.6 : seca ? 1 : 0.5, dT = fino ? 0.5 : 1;
+  // 1. Givoni (con la banda «en el borde»)
   const enQ = dentroPoligono(c.temp, w, GIVONI.quieto), enV = dentroPoligono(c.temp, w, GIVONI.ventilacion);
-  // «en el borde»: el veredicto cambiaría con ±1 °C o con ±banda g/kg (la diferencia entre ERA5 y Tocumen)
-  const borde = [[1, 0], [-1, 0], [0, banda], [0, -banda]].some(([dt, dw]) => dentroPoligono(c.temp + dt, w + dw, GIVONI.ventilacion) !== enV);
+  // «en el borde»: el veredicto cambiaría con ±dT °C o con ±banda g/kg
+  const borde = [[dT, 0], [-dT, 0], [0, banda], [0, -banda]].some(([dt, dw]) => dentroPoligono(c.temp + dt, w + dw, GIVONI.ventilacion) !== enV);
   let g;
   if (c.temp < 20) g = ['●', '<b>Givoni: fresco.</b> Ventilar poco.'];
   else if (enQ) g = ['●', '<b>Givoni: confort con el aire quieto.</b> Basta la sombra.'];
-  else if (borde) g = ['◐', `<b>Givoni: en el borde.</b> Con ${T} °C y ${W} g/kg, y la humedad de ERA5 algo alta, puede quedar dentro o fuera de la zona con brisa.`];
+  else if (borde) g = ['◐', `<b>Givoni: en el borde.</b> Con ${T} °C y ${W} g/kg, ${fino ? '' : ' y la humedad de ERA5 algo alta,'} puede quedar dentro o fuera de la zona con brisa.`];
   else if (enV) g = ['◐', `<b>Givoni: confort si se mueve el aire</b> (${T} °C, ${W} g/kg).`];
-  else if (w > 19) g = seca ? ['◐', `<b>Givoni: fuera por poco</b> (${W} g/kg). En esta época la humedad real suele ser algo menor que la de ERA5.`] : ['○', `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${W} g/kg). Mover el aire igual ayuda.`];
+  else if (w > 19) g = seca ? ['◐', `<b>Givoni: fuera por poco</b> (${W} g/kg).${fino ? '' : ' En esta época la humedad medida en tierra suele ser algo menor que la de ERA5.'}`] : ['○', `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${W} g/kg). Mover el aire igual ayuda.`];
   else g = ['○', `<b>Givoni: demasiado caluroso</b> (${T} °C).`];
   out.push(['', ...g]);
   // 2. Guía de Panamá: 23,5 a 28,5 °C; con aire a ~0,6 m/s, ASHRAE 55 acepta 1,2 °C más (solo sobre 25 °C)

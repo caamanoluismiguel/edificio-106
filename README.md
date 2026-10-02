@@ -15,7 +15,7 @@ Algunos resultados que salen del propio visor, con su momento para verlo en la e
 - **Dos días al año el sol del mediodía casi no deja sombra.** A 9° N pasa por el cenit en abril y en agosto (en 2026, el 12 de abril y el 29 de agosto, a las 12:19). Entre esas dos fechas el sol del mediodía va por el norte, así que de abril a agosto las caras NO y NE también necesitan protección.
 - **Ninguna fachada se libra del sol.** Por el giro de 56° del edificio, las cuatro reciben sol de frente todos los días del año. Sin descontar nubes, la sureste unas 2.500 horas al año y la noroeste unas 1.900.
 - **El alero de 1,65 m hace lo que promete con el sol alto.** Con el sol cerca del cenit, el vidrio bajo el alero queda en sombra mientras la pared sigue al sol.
-- **El calor de la tarde llega por la fachada lateral suroeste.** En las horas de 30 °C o más (unas 440 al año), el sol está del lado de la SO en el 78 % de ellas.
+- **El calor de la tarde llega por la fachada lateral suroeste.** En las horas de 30 °C o más (unas 1.300 al año con ERA5 ajustado al aeropuerto de Albrook; unas 440 sin ajustar), el sol está del lado de la SO en el 71 % de ellas.
 - **El viento llega casi siempre del norte y el noroeste.** La fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la entrada natural para ventilar de forma cruzada.
 - **Llueve unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En 2001–2010 ERA5 da entre 6 y 9 % más que Balboa y Albrook; con Tocumen coincide (0,4 %) si se deja fuera 2009, que el INEC da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
 
@@ -48,7 +48,7 @@ Cómo está hecho: MindAR solo reconoce el plano y three.js dibuja la escena en 
 ## Qué no es
 
 - **No es un levantamiento.** La escala del modelo tiene ±12 % y las ventanas de los pisos 2 y 3 son inferidas.
-- **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta la lluvia de la tarde y achica la diferencia entre el día y la noche: en la estación seca su máxima y su mínima diarias se separan de 4 a 6 °C, menos de lo que mide una estación en tierra.
+- **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta la lluvia de la tarde y achica la diferencia entre el día y la noche: su máxima y su mínima diarias se separan de 4 a 6 °C, y en el aeropuerto de Albrook, a 4 km, de 5 a 8 °C. Por eso la temperatura y la humedad de 2001–2025 van ajustadas a Albrook (`fuente/ajuste_albrook.py`), que tampoco es el sitio.
 - **No calcula el interior.** Ni temperatura, ni confort, ni ventilación dentro del aula (eso pide una simulación de fluidos). La página dice qué usar en cada caso: EnergyPlus o Ladybug Tools con el archivo de clima de Albrook.
 - **No es el canal en vivo.** Los barcos no son la posición real de ningún barco: siguen el eje del canal de OpenStreetMap a un ritmo cercano al promedio de la ACP. Los edificios del entorno son volúmenes con altura estimada (OpenStreetMap, Open Buildings o Street View) y el relieve lejano tiene errores de algunos metros.
 - **No dimensiona desagües.** Para eso hacen falta curvas de intensidad de lluvia de una estación cercana.

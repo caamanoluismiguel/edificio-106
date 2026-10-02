@@ -3,6 +3,7 @@
 // pero el modelo corre varias veces al día, no cada 15 min.
 import { binario } from './datos.js';
 import { LAT, LON } from './sol.js';
+import { ajustarT, ajustarHR, ruidoT } from './ajuste.js';
 // Umbral con que un dato de modelo (ERA5 o pronóstico) cuenta como lluvia en la escena y en los textos: 1 mm en la hora de
 // diciembre a marzo y 1,5 mm de abril a noviembre. Con esos valores, las horas de lluvia de ERA5 2017–2025 quedan entre 1,05 y
 // 1,16 veces las que informa el observador del aeropuerto de Albrook de día (panel de expertos, 2 de octubre de 2026; ERA5 junta
@@ -18,7 +19,20 @@ const ANCHO = { lluvia: 2 };                  // bytes por hora (1 si no está)
 const ESC = { nubes: [1, 0], lluvia: [10, 0], temp: [6, 10], humedad: [1, 0], dni: [0.25, 0], difusa: [0.25, 0], viento: [1, 0], dir: [0.5, 0] };
 
 export class Clima {
-  constructor() { this.ok = false; this.horario = null; this.vivo = null; this.dias = {}; }
+  constructor() { this.ok = false; this.horario = null; this.vivo = null; this.dias = {}; this.ajuste = null; }
+
+  /** ERA5 ajustado a Albrook (src/ajuste.js), salvo con ?era5=crudo en la URL. */
+  async cargarAjuste(url) {
+    if (/[?&]era5=crudo/.test(globalThis.location?.search ?? '')) return false;
+    try { this.ajuste = await (await fetch(url)).json(); } catch (e) { this.ajuste = null; }
+    return !!this.ajuste;
+  }
+  /** Temperatura y humedad de la hora i de la serie, ajustadas si hay ajuste. */
+  th(i) {
+    const t = this.valor('temp', i), rh = this.valor('humedad', i), A = this.ajuste; if (!A) return [t, rh];
+    const m = new Date(T0 + i * 3.6e6).getUTCMonth() + 1, h = i % 24, tj = t + ruidoT(i), ta = ajustarT(A, tj, m, h);
+    return [ta, ajustarHR(A, tj, rh, ta, m)];
+  }
 
   async cargarResumen(url) {
     try { this.r = await (await fetch(url)).json(); this.ok = true; } catch (e) { this.ok = false; }
@@ -57,7 +71,8 @@ export class Clima {
     // la radiación de la hora H es el promedio de H−1 a H (centrada en H−0,5): se interpola entre centros
     const x = a + t + 0.5, i0 = Math.min(this.n - 1, Math.floor(x)), i1 = Math.min(this.n - 1, i0 + 1), u = x - Math.floor(x);
     const R = (k) => this.valor(k, i0) * (1 - u) + this.valor(k, i1) * u;
-    return { fuente: 'serie', nubes: L('nubes'), lluvia: this.valor('lluvia', b), temp: L('temp'), humedad: L('humedad'),
+    const [ta, ha] = this.th(a), [tb, hb] = this.th(b);
+    return { fuente: 'serie', ajustado: !!this.ajuste, nubes: L('nubes'), lluvia: this.valor('lluvia', b), temp: ta * (1 - t) + tb * t, humedad: ha * (1 - t) + hb * t,
       dni: R('dni'), difusa: R('difusa'), viento: this.valor('viento', b), dir: this.valor('dir', b) };
   }
 
@@ -93,7 +108,8 @@ export class Clima {
     if (!this.ok) return null;
     const r = this.r, h = Math.min(23, Math.floor(min / 60)), g = (v, q = 'p50') => v[q][m - 1][h];
     const hl = (h + 1) % 24;                  // la probabilidad de lluvia de la marca H es la de H−1 a H
-    return { fuente: 'tipico', nubes: g(r.nubes), temp: g(r.temp), tempBaja: g(r.temp, 'p10'), tempAlta: g(r.temp, 'p90'), humedad: g(r.humedad),
+    const A = this.ajuste, aj = (t) => A ? ajustarT(A, t, m, h) : t, t50 = g(r.temp);
+    return { fuente: 'tipico', ajustado: !!A, nubes: g(r.nubes), temp: aj(t50), tempBaja: aj(g(r.temp, 'p10')), tempAlta: aj(g(r.temp, 'p90')), humedad: A ? ajustarHR(A, t50, g(r.humedad), aj(t50), m) : g(r.humedad),
       viento: g(r.viento), dni: r.dni ? g(r.dni) : null, probLluvia: r.probLluvia[m - 1][hl], lluvia: 0 };
   }
 
