@@ -6,7 +6,7 @@ import { LAT, LON } from './sol.js';
 import { ajustarT, ajustarHR, ruidoT } from './ajuste.js';
 // Umbral con que un dato de modelo (ERA5 o pronóstico) cuenta como lluvia en la escena y en los textos: 1 mm en la hora de
 // diciembre a marzo y 1,5 mm de abril a noviembre. Con esos valores, ERA5 2017–2025 tiene unas 0,81 veces las horas con lluvia que
-// informa el observador del aeropuerto de Albrook de diciembre a marzo y 1,15 de abril a noviembre (verificador, 2 de octubre) (panel de expertos, 2 de octubre de 2026; ERA5 junta
+// informa el observador del aeropuerto de Albrook de diciembre a marzo y 1,15 de abril a noviembre (panel de expertos y verificador, 2 de octubre de 2026; ERA5 junta
 // la lluvia en la tarde y reparte llovizna de modelo, así que con 0,1 mm llovía unas 3.000 horas al año). Abril va con las lluvias.
 export const umbralLluvia = (m) => (m >= 4 && m <= 11 ? 1.5 : 1);
 
