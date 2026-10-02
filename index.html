@@ -1,6 +1,81 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=3cefa7ea40" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
+<link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
+<link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="img/icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a1216">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_PA">
+<meta property="og:url" content="https://caamanoluismiguel.github.io/edificio-106/">
+<meta property="og:title" content="Edificio 106: sol y lluvia">
+<meta property="og:description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
+<meta property="og:image" content="https://caamanoluismiguel.github.io/edificio-106/img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Captura del visor: el Edificio 106 en Ciudad del Saber el 15 de enero de 2024 a las 9:00, con el título Edificio 106: sol y lluvia.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://caamanoluismiguel.github.io/edificio-106/#visor",
+      "name": "Edificio 106 · Isthmus: visor de sol y clima",
+      "alternateName": "Edificio 106: sol y lluvia",
+      "url": "https://caamanoluismiguel.github.io/edificio-106/",
+      "description": "Maqueta digital del Edificio 106 (Ciudad del Saber, Panamá) para ver cómo inciden el sol, la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025). Proyecto académico experimental, no oficial de Isthmus ni de Ciudad del Saber.",
+      "applicationCategory": "EducationalApplication",
+      "inLanguage": "es",
+      "author": { "@type": "Person", "familyName": "Caamaño", "givenName": "Luis Miguel", "name": "Caamaño, L. M." },
+      "softwareVersion": "2026-10-01",
+      "datePublished": "2026-10-01",
+      "license": "https://opensource.org/licenses/MIT",
+      "sameAs": "https://github.com/caamanoluismiguel/edificio-106",
+      "keywords": "arquitectura bioclimática, trópico húmedo, ERA5, radiación solar, lluvia batiente, confort térmico, Panamá",
+      "contentLocation": {
+        "@type": "Place",
+        "name": "Edificio 106, Ciudad del Saber, Panamá",
+        "geo": { "@type": "GeoCoordinates", "latitude": 8.9993, "longitude": -79.5827 }
+      },
+      "citation": [
+        { "@type": "ScholarlyArticle", "name": "The ERA5 global reanalysis", "sameAs": "https://doi.org/10.1002/qj.3803" },
+        { "@type": "SoftwareApplication", "name": "Open-Meteo.com Weather API", "sameAs": "https://doi.org/10.5281/zenodo.7970649" }
+      ]
+    },
+    {
+      "@type": "Dataset",
+      "@id": "https://caamanoluismiguel.github.io/edificio-106/#clima",
+      "name": "Clima de cada hora entre 2001 y 2025 en el Edificio 106 (ERA5)",
+      "description": "Reanálisis ERA5 leído con la API de archivo de Open-Meteo para la celda de 9,000° N, 79,500° O (24 m), en hora de Panamá. La lluvia y la radiación de cada hora son el total o el promedio de la hora anterior. Resolución guardada: lluvia 0,1 mm, temperatura 1/6 °C, radiación 4 W/m², viento 1 km/h, dirección 2°. Es dato de modelo para una celda de ~28 km, no una medición en el sitio.",
+      "url": "https://caamanoluismiguel.github.io/edificio-106/",
+      "inLanguage": "es",
+      "creator": { "@type": "Person", "familyName": "Caamaño", "givenName": "Luis Miguel", "name": "Caamaño, L. M." },
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "temporalCoverage": "2001/2025",
+      "variableMeasured": ["lluvia", "temperatura", "humedad", "radiación directa", "radiación difusa", "viento", "dirección del viento"],
+      "spatialCoverage": {
+        "@type": "Place",
+        "name": "Celda ERA5 de 0,25° con centro en 9,000° N, 79,500° O, que contiene el Edificio 106 (Ciudad del Saber, Panamá)",
+        "geo": { "@type": "GeoCoordinates", "latitude": 8.9993, "longitude": -79.5827 }
+      },
+      "isBasedOn": [
+        "https://doi.org/10.24381/cds.adbb2d47",
+        "https://doi.org/10.5281/zenodo.7970649"
+      ],
+      "distribution": {
+        "@type": "DataDownload",
+        "encodingFormat": "application/gzip",
+        "contentUrl": "https://caamanoluismiguel.github.io/edificio-106/datos/clima_horario.bin.gz"
+      }
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -83,7 +158,8 @@
   /* panel plano detrás del título: la misma legibilidad que daba el velo, sin degradado */
   .intro-titulo-caja { display: grid; gap: 18px; justify-self: start; background: var(--panel-2); border: 1px solid var(--linea); border-radius: 22px;
     padding: clamp(18px, 2.4vw, 30px) clamp(18px, 2.6vw, 34px); backdrop-filter: blur(12px); transition: opacity 1.1s var(--ease), transform 1.4s var(--ease), filter 1.1s; transform-origin: left center; }
-  html:not(.intro-titulo) .intro-titulo-caja { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); }
+  /* visible desde el primer cuadro, mientras carga; se va cuando la intro lo dice */
+  html.en-intro:not(.intro-titulo) .intro-titulo-caja, html.listo .intro-titulo-caja { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); }
   #intro-rotulos { list-style: none; margin: 0; padding: 0; position: relative; height: 1.2em; font: 700 clamp(28px, 4.2vw, 62px)/1.05 var(--display); letter-spacing: -0.02em; font-variation-settings: "opsz" 72; }
   #intro-rotulos li { position: absolute; left: 0; top: 0; white-space: nowrap; background: var(--panel-2); border-radius: 16px; padding: .12em .42em .18em; opacity: 0; transform: translateY(60%); filter: blur(8px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s; }
   #intro-rotulos li.activo { opacity: 1; transform: none; filter: none; }
@@ -102,7 +178,7 @@
   /* ---------- lo que aparece al terminar el armado ---------- */
   .tras-intro { transition: opacity 1s var(--ease), transform 1.1s var(--ease); }
   html:not(.listo) .tras-intro { opacity: 0; transform: translateY(16px); pointer-events: none; }
-  html.listo .tras-intro:nth-of-type(2) { transition-delay: .12s; }
+  html.listo #hud.tras-intro { transition-delay: .12s; }   /* por id: era :nth-of-type(2), que caía en #hud y se movería al cambiar los hermanos */
   html:not(.listo) #estado { opacity: .0; }
 
   /* rótulo: qué estás viendo */
@@ -110,6 +186,11 @@
     display: grid; gap: 8px; pointer-events: none; box-sizing: border-box; background: var(--panel); border: 1px solid var(--linea); border-radius: 16px; padding: 12px 16px;
     backdrop-filter: blur(12px); }
   #rotulo-texto { margin: 0; font-size: 16.5px; text-wrap: pretty; }
+  /* plegado (unos segundos después de cambiar, o con un panel abierto): queda la línea de arriba y «Leer» para desplegarlo */
+  #rotulo-abrir { display: none; }
+  html.rotulo-plegado #rotulo { grid-template-columns: auto auto; align-items: center; gap: 12px; right: auto; padding: 5px 5px 5px 14px; border-radius: 999px; }
+  html.rotulo-plegado #rotulo-texto, html.rotulo-plegado #rotulo-noche { display: none !important; }
+  html.rotulo-plegado #rotulo-abrir { display: inline-flex; pointer-events: auto; padding: 6px 12px; font-size: 12.5px; }
 
   /* ---------- brújula y vistas ---------- */
   #hud { position: fixed; z-index: 6; right: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 74px); display: grid; justify-items: end; gap: 10px; }
@@ -153,6 +234,11 @@
   .ley-sigue { display: none; position: sticky; bottom: -12px; margin: 0 -13px -12px; padding: 7px 13px 8px; font: 600 12px/1.2 var(--texto); color: var(--sol);
     background: var(--solido); border-top: 1px solid var(--linea-2); border-radius: 0 0 14px 14px; pointer-events: none; }
   #leyenda.hay-mas .ley-sigue { display: block; }
+  /* el mismo aviso en los paneles largos (lo agrega main.js): plano, pegado al borde de abajo mientras quede texto oculto */
+  .panel-sigue { display: none; position: sticky; bottom: calc(-1 * var(--pb, 16px)); margin: 0 calc(-1 * var(--px, 16px)) calc(-1 * var(--pb, 16px)); padding: 8px var(--px, 16px) 9px;
+    font: 600 12px/1.2 var(--texto); color: var(--sol); background: var(--solido); border-top: 1px solid var(--linea-2); pointer-events: none; }
+  .hay-mas > .panel-sigue { display: block; }
+  #sirve { --px: 18px; --pb: 18px; } #voladizo { --px: 18px; --pb: 14px; } #rec-cuerpo { --px: 0px; --pb: 0px; }
   .ley-cab { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
   #ley-t { margin: 0; font: 700 14.5px/1.25 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
   #ley-cerrar { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: none; color: var(--cal-2);
@@ -249,6 +335,12 @@
   #lp-tabla tbody th { text-align: left; font: 400 12px/1.25 var(--texto); color: var(--cal-2); white-space: normal; padding-left: 0; }
   #lp-tabla td:last-child { color: var(--sol); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* teclado: el enlace para saltar la barra aparece solo con el foco; el h1 accesible queda cuando se va la intro */
+  .saltar-a { position: fixed; z-index: 40; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 8px); transform: translateY(-160%); font: 600 14px/1 var(--texto); color: #1d1405;
+    background: var(--sol); border-radius: 999px; padding: 11px 16px; text-decoration: none; }
+  .saltar-a:focus { transform: none; }
+  #principal:focus { outline: none; }
+  html:not(.listo) #titulo-app { display: none; }
   .lp-link { justify-self: start; border: 0; background: none; padding: 2px 0; cursor: pointer; font: 600 12.5px/1.3 var(--texto); color: var(--sol); text-align: left; }
   .lp-link:hover { color: var(--sol-2); text-decoration: underline; }
   .lp-mostrar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border-top: 1px solid var(--linea); padding-top: 7px; }
@@ -292,7 +384,7 @@
   .corte-datos span { font: 500 11px/1.2 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
   .corte-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; color: var(--sol-2); }
   #corte-txt { font-size: 14px; }
-  .c-grupo[data-g="viento"] h4 { color: #5fd3b0; }
+  .c-grupo[data-g="viento"] h3 { color: #5fd3b0; }
   .c-grupo[data-g="viento"] .c-item:hover { box-shadow: inset 2px 0 0 0 #5fd3b0; }
   .c-grupo[data-g="viento"] li.activo > .c-item { border-color: #5fd3b0; background: rgba(63, 197, 156, .12); }
   .limites { border: 1px solid var(--linea-2); border-radius: 14px; padding: 14px; display: grid; gap: 8px; background: rgba(239,233,222,.03); }
@@ -312,8 +404,10 @@
   #viaje.llego { transition: opacity .6s .9s; opacity: 0; }
   html.viajando #l-hora, html.viajando #l-fecha { color: var(--sol-2); }
   html.viajando .dock-lect { opacity: .55; transition: opacity .2s; }
-  .pista { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; max-width: 13rem; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
+  .pista { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; white-space: nowrap; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
   html.girado .pista { opacity: 0; }
+  .pista .tactil { display: none; }
+  @media (pointer: coarse) { .pista .raton { display: none; } .pista .tactil { display: inline; } }
 
   /* ---------- máquina del tiempo ---------- */
   #dia .gota { fill: var(--lluvia); } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
@@ -370,7 +464,28 @@
   #reproducir::before { content: ""; width: 0; height: 0; border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; margin-left: 3px; }
   #reproducir[aria-pressed="true"]::before { width: 12px; height: 15px; border: 0; border-left: 4px solid currentColor; border-right: 4px solid currentColor; box-sizing: border-box; margin: 0; }
   #abrir-capas { height: 48px; }
-  @media (max-width: 1500px) { #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora lect botones" "centro centro centro"; } }
+  /* hasta 1600 px el dock va en dos filas cortas: arriba la hora, las pestañas, las lecturas resumidas en un botón que despliega
+     el detalle y los botones; abajo la regla */
+  @media (max-width: 1600px) {
+    #dock { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "hora tabs resumen botones" "regla regla regla regla" "momentos momentos momentos momentos" "lect lect lect lect";
+      gap: 8px 22px; padding: 12px 18px; }
+    .dock-centro { display: contents; }
+    .pestanas { grid-area: tabs; align-self: center; } .regla { grid-area: regla; } #regla-dia { margin-top: 18px; } #momentos-caja { grid-area: momentos; }
+    .dock-hora { grid-template-columns: auto auto; grid-template-areas: "h f" "h a"; column-gap: 14px; row-gap: 4px; align-items: center; min-width: 0; }
+    #l-hora { grid-area: h; font-size: 40px; } #elegir { grid-area: f; } #ahora { grid-area: a; justify-self: start; margin: 0; }
+    #lect-resumen { grid-area: resumen; justify-self: start; display: flex; align-items: center; gap: 10px; max-width: 100%; min-width: 0; min-height: 40px; box-sizing: border-box; padding: 8px 14px;
+      border: 1px solid var(--linea-2); border-radius: 12px; background: rgba(239,233,222,.04); cursor: pointer; font: 500 13px/1.2 var(--datos); color: var(--cal); text-align: left; }
+    #lect-resumen:hover { border-color: rgba(239,233,222,.42); }
+    #lect-resumen-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #lect-resumen i { font-style: normal; color: var(--sol); transition: transform .2s; }
+    html.lect-abiertas #lect-resumen i { transform: rotate(180deg); }
+    .dock-lect { display: none; } html.lect-abiertas .dock-lect { display: grid; }
+  }
+  /* en pantallas medianas las pestañas bajan a su propia fila para que el resumen de las lecturas se lea entero */
+  @media (max-width: 1200px) and (min-width: 761px) {
+    #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora resumen botones" "tabs tabs tabs" "regla regla regla" "momentos momentos momentos" "lect lect lect"; }
+    .pestanas { justify-self: start; }
+  }
 
   /* ---------- para qué sirve ---------- */
   .boton.destacado { border-color: var(--sol); color: var(--sol); }
@@ -417,9 +532,9 @@
     width: min(430px, calc(100vw - 2 * var(--gutter) - 150px)); align-content: start; overflow: auto; overscroll-behavior: contain;
     background: var(--panel-2); border: 1px solid var(--sol); border-radius: 18px; padding: 16px; backdrop-filter: blur(18px); display: grid; gap: 14px; box-sizing: border-box;
     box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .22s cubic-bezier(.2, 0, 0, 1); }
-  #confort h3 { font: 760 22px/1 var(--display); margin: 0; letter-spacing: -0.01em; }
+  #confort h2 { font: 760 22px/1 var(--display); margin: 0; letter-spacing: -0.01em; }
   #confort section { display: grid; gap: 8px; }
-  #confort h4 { font: 500 11.5px/1.3 var(--datos); color: var(--sol); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  #confort h3 { font: 500 11.5px/1.3 var(--datos); color: var(--sol); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
   #confort svg { width: 100%; height: auto; display: block; font-family: var(--datos); }
   #confort .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }        /* --cal-3 no llega a 4,5:1 sobre el panel */
   .conf-cifras, .conf-ley { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 500 12.5px/1.35 var(--texto); color: var(--cal-2); }
@@ -441,7 +556,7 @@
     background: var(--panel-2); border: 1px solid var(--sol); border-radius: 18px; padding: 16px; backdrop-filter: blur(18px); display: grid; gap: 12px; box-sizing: border-box;
     box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .22s cubic-bezier(.2, 0, 0, 1); }
   .ir-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  #ir-a h3 { font: 760 22px/1 var(--display); margin: 0; letter-spacing: -0.01em; }
+  #ir-a h2 { font: 760 22px/1 var(--display); margin: 0; letter-spacing: -0.01em; }
   .ir-form { display: grid; grid-template-columns: 1.3fr 1fr auto; gap: 10px; align-items: end; }
   #ir-a label { display: grid; gap: 6px; font: 600 12px/1 var(--texto); color: var(--cal-2); }
   #ir-a input { font: 500 16px/1 var(--datos); color: var(--cal); background: rgba(239,233,222,.06); border: 1px solid var(--linea-2); border-radius: 10px; padding: 10px; min-width: 0; color-scheme: dark; }
@@ -450,10 +565,11 @@
   #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
   .consultas { display: grid; gap: 14px; }
   html:has(#ir-a:not([hidden])) #rotulo, html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
+  html:has(#capas:not([hidden])) #rotulo, html:has(#capas:not([hidden])) #panel-fachada { display: none; }
   /* un panel a la vez: Confort, Ir a… o Capas tapan la leyenda de la forma de ver */
-  html:has(#confort:not([hidden])) #leyenda, html:has(#ir-a:not([hidden])) #leyenda, html:has(#capas:not([hidden])) #leyenda { display: none; }
-  .c-grupo h4 { font: 500 11.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
-  .c-grupo[data-g="lluvia"] h4 { color: var(--lluvia); }
+  html:has(#confort:not([hidden])) #leyenda, html:has(#ir-a:not([hidden])) #leyenda, html:has(#capas:not([hidden])) #leyenda, html:has(#sirve:not([hidden])) #leyenda { display: none; }
+  .c-grupo h3 { font: 500 11.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
+  .c-grupo[data-g="lluvia"] h3 { color: var(--lluvia); }
   .c-grupo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
   .c-grupo li { display: grid; gap: 3px; animation: sube .24s cubic-bezier(.2, 0, 0, 1) both; }
   .c-item { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; align-items: baseline; text-align: left; width: 100%; border: 1px solid var(--linea); background: rgba(239,233,222,.03); border-radius: 10px;
@@ -474,9 +590,9 @@
   .rank button[aria-pressed="true"] { border-color: var(--sol); color: var(--sol); }
 
   /* ---------- capas ---------- */
-  #capas { position: fixed; z-index: 7; right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px); width: min(360px, calc(100vw - 2 * var(--gutter)));
+  #capas { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); width: min(380px, calc(100vw - 2 * var(--gutter) - 150px));
     background: var(--panel-2); border: 1px solid var(--linea); border-radius: 16px; padding: 16px; backdrop-filter: blur(16px); display: grid; gap: 14px; box-sizing: border-box;
-    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); max-height: calc(100vh - var(--dock-h) - 150px); overflow: auto; }
+    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--dock-h) - 108px); overflow: auto; overscroll-behavior: contain; }
   @keyframes sube { from { opacity: 0; transform: translateY(10px) } }
   .capas-pie { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
   #motor { color: var(--cal); letter-spacing: 0.04em; }
@@ -490,7 +606,7 @@
   #abrir-ar { display: none; min-height: 44px; padding: 10px 16px; border-color: var(--sol); color: var(--sol); }
   @media (pointer: coarse) { #abrir-ar { display: inline-flex; } }
   #img-estado:empty { display: none; } #img-estado { color: var(--cal); }
-  #capas h3 { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
+  #capas h2 { font: 500 11.5px/1 var(--datos); color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 8px; }
   .interruptores { display: grid; gap: 6px; }
   .interruptores label { display: grid; grid-template-columns: 18px 1fr; gap: 3px 10px; align-items: start; cursor: pointer; border: 1px solid var(--linea); border-radius: 12px; padding: 10px 11px; transition: border-color .2s, background .2s; }
   .interruptores label:has(input:checked) { border-color: var(--sol); background: var(--sol-tenue); }
@@ -546,11 +662,13 @@
     #mirando, .pista { display: none; }
     #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
     #brujula text { font-size: 13px; } #brujula text.n { font-size: 15px; }
-    .hud-botones { display: flex; grid-column: 1; grid-row: 1; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
-    .hud-botones::-webkit-scrollbar { display: none; }
-    .vistas, .lentes { flex: none; scroll-snap-align: start; }
+    .hud-botones { display: contents; }
+    .vistas { grid-column: 1; grid-row: 1; justify-self: start; }
+    .lentes { grid-column: 1 / -1; grid-row: 2; }
+    .lentes button { flex: 1 1 auto; min-width: 0; padding: 8px 4px; }
+    .lentes .info { flex: 0 0 30px; }
     .vistas button { padding: 7px 10px; font-size: 12.5px; }
-    #leyenda { grid-column: 1 / -1; grid-row: 2; width: auto; }
+    #leyenda { grid-column: 1 / -1; grid-row: 3; width: auto; }
     html.en-recorrido #leyenda { display: none; }                    /* en el recorrido, la tarjeta del paso ya lo explica */
     #rotulo { max-width: none; right: 8px; left: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); padding: 9px 12px; gap: 5px; }
     #rotulo-texto { font-size: 13.5px; }
@@ -579,9 +697,10 @@
     .dock-lect small { font-size: 11.5px; }
     #l-fuente { display: none; }
     #capas, #ir-a, #confort { left: 8px; right: 8px; width: auto; }
+    #capas { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px); }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px 18px 14px 14px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
-    .lentes::before { display: none; } .lentes button { padding: 7px 10px; font-size: 12.5px; }
+    .lentes::before { display: none; } .lentes button { font-size: 12.5px; }
     #leyenda { padding: 9px 10px; } .ley-sigue { bottom: -9px; margin: 0 -10px -9px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
     #ir-a { background: var(--solido); }
@@ -602,6 +721,7 @@
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
     #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
+    #voladizo { --px: 14px; --pb: 13px; }
     #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 11.5px; }
     .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 11.5px; padding: 4px 7px; }
   }
@@ -654,8 +774,8 @@
 </style>
 </head><body>
 
+<a id="saltar-a" class="saltar-a" href="#principal">Saltar a los controles</a>
 <div id="lienzo"></div>
-<div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
 <header class="barra">
   <a class="marca" href="#" aria-label="Isthmus · Edificio 106">
@@ -692,13 +812,17 @@
   </div>
 </section>
 
+<main id="principal" tabindex="-1">
+<h1 id="titulo-app" class="sr">Edificio 106: sol y lluvia</h1>
 <p id="aviso-noche" class="tras-intro solo-noche" hidden></p>
 <div id="rotulo" class="tras-intro" aria-live="off">
   <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
+  <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer</button>
   <p id="rotulo-texto"></p>
   <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Ver hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Ver el atardecer de hoy</button></div>
   <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
 </div>
+<div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
 <aside id="recorrido" hidden aria-labelledby="rec-t" aria-live="polite">
   <div class="rec-cab"><span id="rec-n" class="num"></span><button type="button" id="rec-plegar" class="boton" aria-expanded="true" aria-controls="rec-cuerpo">Ver el edificio</button><button type="button" id="rec-salir" class="boton">Salir</button></div>
@@ -793,7 +917,7 @@
     </details>
     <p class="ley-sigue" aria-hidden="true">Hay más abajo ▾</p>
   </div>
-  <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
+  <p class="pista"><span class="raton">Arrastra para girar · rueda para acercarte</span><span class="tactil">Arrastra para girar · pellizca para acercarte</span></p>
 </aside>
 <div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
 
@@ -939,7 +1063,7 @@
       </article>
       <article class="hallazgo simple" data-fecha="2006-11-23" data-hora="10:30" data-vista="" data-fachada="no" data-capa="lluvia" data-modo="anio">
         <h4>Una pared se moja mucho más que las otras</h4>
-        <p>Cuando llueve con viento, la pared noroeste recibe más de cinco veces el agua que recibe la del lado del jardín.</p>
+        <p>Cuando llueve con viento, la pared noroeste recibe más de cinco veces el agua que recibe la lateral noreste.</p>
         <button class="ver" type="button"><span>Verlo</span><small>Año típico · fachada noroeste · mapa de lluvia</small></button>
       </article>
       <article class="hallazgo simple" data-fecha="2016-02-18" data-hora="14:00" data-vista="aerea" data-fachada="" data-capa="viento" data-modo="anio">
@@ -1024,9 +1148,9 @@
 </aside>
 
 <aside id="confort" hidden aria-labelledby="confort-t">
-  <div class="ir-cab"><h3 id="confort-t">Confort térmico</h3><button class="boton" type="button" id="cerrar-confort">Cerrar</button></div>
+  <div class="ir-cab"><h2 id="confort-t">Confort térmico</h2><button class="boton" type="button" id="cerrar-confort">Cerrar</button></div>
   <section aria-labelledby="conviene-t">
-    <h4 id="conviene-t">A esta hora conviene</h4>
+    <h3 id="conviene-t">A esta hora conviene</h3>
     <p class="conf-sello" id="conviene-sello"></p>
     <ul class="conf-conviene" id="conviene" aria-live="polite"></ul>
     <details class="conf-detalle"><summary id="conviene-resumen">Por qué</summary>
@@ -1035,18 +1159,20 @@
     <details class="conf-detalle"><summary>Fuentes y límites</summary>
       <p>Son estrategias según el clima de afuera a esta hora, no un cálculo del interior: no se conocen los tabiques, el tipo de ventanas ni cuánto abren, y el tercer piso suele estar más caliente por el techo.</p>
       <p><b>Givoni</b> (1992, zonas para países cálidos): confort con aire quieto o con brisa según temperatura y humedad. Cerca de un límite dice «en el borde»: ERA5 marca entre 0,6 y 1,4 g/kg más de humedad que la estación de Tocumen (ETESA/IMHPA, 1977–2010). <b>Guía de Panamá</b> (Secretaría Nacional de Energía, 2016, p. 8): confort de 23,5 a 28,5 °C; con aire a unos 0,6 m/s, ASHRAE 55-2017 acepta 1,2 °C más. Las dos suponen la temperatura del aula.</p>
-      <p><b>Sol:</b> ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del modelo, ~45°; mejor la persiana por fuera (Guía, p. 36), y el control solar importa más al principio de la tarde (p. 37). <b>Aire:</b> de frente si el viento llega a menos de 30° de la perpendicular de una fachada larga; de 30 a 60°, entra cerca de la mitad (UN-Habitat, 2014, p. 71); la salida igual o mayor que la entrada (p. 70). ERA5 da el viento a 10 m en terreno abierto, y en esta celda más fuerte que en Tocumen; junto a la ventana es bastante menor (p. 29). De mayo a noviembre su dirección cambia de hora en hora. <b>Lluvia:</b> las persianas de vidrio ventilan sin dejar pasar el agua (p. 115).</p>
+      <p><b>Sol:</b> ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del modelo, ~45°; mejor la persiana por fuera (Guía, p. 36), y el control solar importa más al principio de la tarde (p. 37). <b>Aire:</b> de frente si el viento llega a menos de 30° de la perpendicular de una fachada larga; de 30 a 60°, entra cerca de la mitad (UN-Habitat, 2014, p. 71); la salida igual o mayor que la entrada (p. 70). ERA5 da el viento a 10 m en terreno abierto, y en esta celda más fuerte que en Tocumen; junto a la ventana es bastante menor (p. 29). De mayo a noviembre su dirección cambia de hora en hora. <b>Lluvia:</b> las persianas de vidrio ventilan sin dejar pasar el agua (p. 115). <b>Noche:</b> en clima cálido húmedo conviene ventilar a toda hora (p. 68); enfriar los muros de noche y cerrar de día es una estrategia que Givoni (1992, p. 17) considera aplicable sobre todo en regiones áridas, porque rinde según la diferencia entre el día y la noche. <b>Ventiladores:</b> amplían el rango de confort sin subir la temperatura (Givoni, 1992, p. 17); el panel no sabe si el aula los tiene.</p>
+      <p>El sol cuenta como directo desde 120 W/m² de radiación directa, el umbral con que la Organización Meteorológica Mundial cuenta las horas de sol (<a href="https://community.wmo.int/site/knowledge-hub/programmes-and-initiatives/instruments-and-methods-of-observation-programme-imop/guide-instruments-and-methods-of-observation-wmo-no-8" target="_blank" rel="noopener">WMO-No. 8</a>, vol. I, 2023, §8.1.1, p. 309).</p>
       <p>No se usa la simulación de aulas de Cedeño et al. (2022, <i>Novasinergia</i>): probó de 0,1 a 2 renovaciones de aire por hora, menos de la mitad del mínimo que ella misma calcula, y su relación entre ventilar y sentir calor es una correlación, no una causa.</p>
     </details>
   </section>
   <section aria-labelledby="carta-t">
-    <h4 id="carta-t">Carta psicrométrica · cada hora de 2001 a 2025</h4>
+    <h3 id="carta-t">Carta psicrométrica · horas de clase, de 7:00 a 17:00, 2001 a 2025</h3>
     <svg id="carta" viewBox="0 0 380 262" role="img" aria-labelledby="carta-t carta-desc"><desc id="carta-desc"></desc></svg>
     <ul class="conf-cifras" id="carta-cifras"></ul>
+    <p class="nota">Solo cuentan las horas de 7:00 a 17:00, un horario de clase diurno; en ese tramo el sol está sobre el horizonte todo el año. El modelo adaptativo de ASHRAE 55-2017 (§5.4) vale solo en espacios naturalmente acondicionados que controlan sus ocupantes, con ventanas que ellos abren y cierran, sin aire acondicionado ni calefacción en marcha, con actividad casi sedentaria y ropa que pueden adaptar libremente (de Dear y Brager, 2002, <a href="https://doi.org/10.1016/S0378-7788(02)00005-1" target="_blank" rel="noopener">doi:10.1016/S0378-7788(02)00005-1</a>, p. 556), y con una media exterior de los días anteriores entre 10 y 33,5 °C (aquí, de 25 a 29 °C). Además pide la temperatura operativa del aula, y aquí se usa la del aire de afuera a la sombra; adentro el sol en muros y techo y la gente la suben, así que su porcentaje es una cota superior.</p>
     <p class="nota">Es el aire exterior a la sombra, no el interior del aula: las zonas suponen un aula ventilada cuyo aire sigue al de afuera; en el 106 los muros pesados pueden retrasar el calor. Givoni pone un techo de humedad; el modelo adaptativo de ASHRAE, medido en edificios ventilados, no. Por eso no coinciden. Ojo con la humedad: ERA5 marca entre 0,6 y 1,4 g/kg más que la estación de Tocumen (ETESA/IMHPA, 1977–2010), y muchas horas caen cerca del límite, así que las cifras de Givoni cambian mucho con ese ajuste. En la temporada de lluvias la humedad es el límite de todos modos; en la seca, ERA5 alisa el día: su máxima y su mínima diarias se separan de 4 a 6 °C, menos de lo que mide una estación en tierra, y lo que más pesa son las tardes calientes. Clayton no es Tocumen: toma la carta como un orden de magnitud.</p>
   </section>
   <section aria-labelledby="utci-t">
-    <h4 id="utci-t">Sensación térmica afuera, de pie (UTCI) · al sol y bajo el alero</h4>
+    <h3 id="utci-t">Sensación térmica afuera, de pie (UTCI) · al sol y bajo el alero</h3>
     <p class="conf-hora" id="utci-hora" aria-live="polite"></p>
     <svg id="utci" viewBox="0 0 380 136" role="img" aria-labelledby="utci-t utci-desc"><desc id="utci-desc"></desc></svg>
     <ul class="conf-ley" id="utci-ley"></ul>
@@ -1056,7 +1182,7 @@
 </aside>
 
 <aside id="ir-a" hidden aria-labelledby="ir-a-t">
-  <div class="ir-cab"><h3 id="ir-a-t">Ir a…</h3><button class="boton" type="button" id="cerrar-ir">Cerrar</button></div>
+  <div class="ir-cab"><h2 id="ir-a-t">Ir a…</h2><button class="boton" type="button" id="cerrar-ir">Cerrar</button></div>
   <form id="ir-form" class="ir-form" aria-label="Una fecha y hora exactas">
     <label>Fecha<input type="date" id="ir-fecha" min="1940-01-01" max="2040-12-31" required></label>
     <label>Hora (Panamá)<input type="time" id="ir-hora" step="60" required></label>
@@ -1069,7 +1195,7 @@
 
 <div id="capas" hidden>
   <div>
-    <h3>Capas</h3>
+    <h2>Capas</h2>
     <div class="interruptores">
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
       <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez</b><small>Viene marcada: la escena se dibuja siempre a la resolución más alta. Si en tu equipo el movimiento se siente lento, desmárcala y la página bajará la resolución cuando vaya justo. <span id="res-actual"></span></small></label>
@@ -1078,7 +1204,7 @@
     </div>
   </div>
   <div>
-    <h3>Sol directo sobre cada fachada</h3>
+    <h2>Sol directo sobre cada fachada</h2>
     <div class="fachadas">
       <a href="#fachada-se" data-ir-fachada="fachada-se" data-fachada="fachada-se"><span>Sureste</span><i></i><b>0 W/m²</b></a>
       <a href="#fachada-no" data-ir-fachada="fachada-no" data-fachada="fachada-no"><span>Noroeste</span><i></i><b>0 W/m²</b></a>
@@ -1087,19 +1213,20 @@
     </div>
   </div>
   <div class="lamina">
-    <h3>Para la lámina</h3>
+    <h2>Para la lámina</h2>
     <div class="lamina-botones"><button class="boton" id="guardar-img" type="button">Guardar imagen (PNG)</button><button class="boton" id="copiar-enlace" type="button">Copiar enlace</button></div>
     <p class="lamina-nota">Descarga lo que ves en la escena, a 2.400 px en el lado largo aunque tu pantalla sea pequeña, con un pie: fecha y hora, forma de ver, fachada o vista, la leyenda de color y un código QR que abre este mismo momento. «Copiar enlace» da la dirección de lo que ves: fecha y hora, forma de ver, vista o fachada y el encuadre, para proyectarlo en clase o entregarlo como evidencia.</p>
     <p id="img-estado" class="lamina-nota" role="status"></p>
   </div>
   <div class="lamina" id="sobre-la-mesa">
-    <h3 title="Realidad aumentada">Sobre la mesa</h3>
+    <h2 title="Realidad aumentada">Sobre la mesa</h2>
     <p class="lamina-nota">Imprime la tarjeta y escanea su código con el celular. El edificio aparece en 3D sobre el plano, con la sombra de hoy.</p>
     <div class="lamina-botones"><a class="boton" id="abrir-ar" href="ar/">Abrir la cámara</a><a class="boton" id="bajar-tarjeta" href="ar/tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descargar la tarjeta (PDF)</a></div>
     <p class="lamina-nota">Imprímela en A4 o carta, al 100 %, en papel mate. Sin impresora, ábrela en la pantalla del computador y apunta el celular ahí.</p>
   </div>
   <p class="capas-pie">Motor de dibujo en este navegador: <span id="motor">…</span></p>
 </div>
+</main>
 
 <dialog id="acerca" aria-labelledby="acerca-t">
   <button class="boton" id="cerrar-acerca" type="button">Cerrar</button>
@@ -1132,7 +1259,7 @@
   <ul class="fuentes">
     <li><b>Tiempo:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0): pronóstico para «Ahora», serie 2001–2025 y consultas en línea.</li>
     <li><b>Reanálisis ERA5:</b> Hersbach, H. et al. (2023). <i>ERA5 hourly data on single levels from 1940 to present</i>. Copernicus Climate Change Service (C3S) Climate Data Store. <a href="https://doi.org/10.24381/cds.adbb2d47" target="_blank" rel="noopener">doi:10.24381/cds.adbb2d47</a>. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2026). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.</li>
-    <li><b>Sol:</b> algoritmo de la <a href="https://gml.noaa.gov/grad/solcalc/" target="_blank" rel="noopener">calculadora solar de NOAA</a> (Meeus), con refracción; verificado contra Michalsky (1988) en 132.392 momentos de 2001 a 2025 y contra NREL SPA (Reda y Andreas, 2004): hasta 0,03° en altura con el sol sobre 3° y hasta 0,11° en azimut. Salida y puesta a ±1 min de SPA.</li>
+    <li><b>Sol:</b> algoritmo de la <a href="https://gml.noaa.gov/grad/solcalc/" target="_blank" rel="noopener">calculadora solar de NOAA</a> (Meeus), con refracción; verificado contra Michalsky (1988) en 132.392 momentos de 2001 a 2025 y contra NREL SPA (Reda y Andreas, 2004, en la versión de pvlib) en 1.448 momentos del mismo período: hasta 0,03° en altura con el sol sobre 3° y hasta 0,11° en azimut. Salida y puesta a ±1 min de SPA. La comparación con SPA se repite con <code>node fuente/verificar-sol.mjs</code>.</li>
     <li><b>Estaciones de contraste:</b> <a href="https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf" target="_blank" rel="noopener">ETESA/IMHPA</a>, Tocumen 1977–2010 (1.917 mm al año); <a href="https://www.inec.gob.pa/archivos/P3771121-01.pdf" target="_blank" rel="noopener">INEC, cuadro 121-01</a> (2001–2010): Balboa, estación de la ACP, 1.885 mm al año; Albrook, de la Autoridad de Aeronáutica Civil, 1.898; Tocumen, 1.941 (2.061 sin 2009, que el cuadro da en 863,1 mm).</li>
     <li><b>Clayton:</b> Enscore, S. I., Johnson, S. P., Webster, J. L. y Cohen, G. L. (2000). <i>Guarding the Gates: The Story of Fort Clayton</i>. CERL, <a href="https://archive.org/details/DTIC_ADA388262" target="_blank" rel="noopener">DTIC ADA388262</a>. Gordón, C. A. (2021), <a href="https://www.laestrella.com.pa/panama/nacional/fort-clayton-procesos-cambio-urbano-PILE459512" target="_blank" rel="noopener">«Fort Clayton: procesos de cambio urbano, militar y tecnológico en la antigua Zona del Canal», La Estrella de Panamá</a>, 20 de noviembre de 2021. Fundación Ciudad del Saber, <a href="https://ciudaddelsaber.org/historia" target="_blank" rel="noopener">Historia</a> y <a href="https://ciudaddelsaber.org/conoce-el-campus" target="_blank" rel="noopener">Conoce el campus</a>.</li>
     <li><b>Isthmus en Ciudad del Saber:</b> <a href="https://isthmus.edu.pa/ciudad-del-saber/" target="_blank" rel="noopener">isthmus.edu.pa</a>.</li>
@@ -1149,7 +1276,7 @@
     <li><b>Radiación sobre las fachadas:</b> directa por el coseno de incidencia; difusa con el cielo de Hay y Davies (1980); reflejada por un suelo que devuelve el 20 %; sin descontar el cielo que tapan el alero o los vecinos (Duffie y Beckman, <i>Solar Engineering of Thermal Processes</i>). El hallazgo del alero es un corte en 2D con el alero continuo, sin retornos ni ménsulas.</li>
     <li><b>Validación:</b> sol contra Michalsky (1988) y NREL SPA (Reda y Andreas, 2004); sombras 3D contra un trazado de rayos sobre la geometría del modelo, dentro de ±8 cm con el sol entre 14° y 42° (salen unos 5 cm más cortas), y sin sol colado bajo el alero con el sol a más de 60° (la prueba falla, como debe, si el desplazamiento del mapa de sombras se multiplica por 10); lluvia anual de ERA5, 2.048 mm en 2001–2010, frente a 1.885–1.941 mm en Balboa, Albrook y Tocumen (con Tocumen, sin el registro incompleto de 2009, la diferencia baja a 0,4 %). La radiación y el viento no tienen contraste local: no hay piranómetro ni anemómetro con datos abiertos cerca.</li>
     <li><b>Incertidumbre:</b> ERA5 representa una celda de ~28 km: subestima los aguaceros de una hora, adelanta la lluvia de la tarde (Lavers et al., 2022, <a href="https://doi.org/10.1002/qj.4351" target="_blank" rel="noopener">doi:10.1002/qj.4351</a>) y achica la diferencia entre el día y la noche. Las medidas del edificio salen de un modelo con escala ±12 %; las ventanas de los pisos 2 y 3 son inferidas.</li>
-    <li><b>Confort:</b> Givoni (1992), <i>Energy and Buildings</i> 18, <a href="https://doi.org/10.1016/0378-7788(92)90047-K" target="_blank" rel="noopener">doi:10.1016/0378-7788(92)90047-K</a>; ASHRAE 55-2017; UTCI de Bröde et al. (2012), <a href="https://doi.org/10.1007/s00484-011-0454-1" target="_blank" rel="noopener">doi:10.1007/s00484-011-0454-1</a>, con la radiación de SolarCal (Arens et al., 2015); cálculo verificado contra pythermalcomfort (Tartarini y Schiavon, 2020).</li>
+    <li><b>Confort:</b> Givoni (1992), <i>Energy and Buildings</i> 18, <a href="https://doi.org/10.1016/0378-7788(92)90047-K" target="_blank" rel="noopener">doi:10.1016/0378-7788(92)90047-K</a>; ASHRAE 55-2017, con el origen del modelo adaptativo y sus condiciones en de Dear y Brager (2002), <i>Energy and Buildings</i> 34(6), 549–561, <a href="https://doi.org/10.1016/S0378-7788(02)00005-1" target="_blank" rel="noopener">doi:10.1016/S0378-7788(02)00005-1</a>; UTCI de Bröde et al. (2012), <a href="https://doi.org/10.1007/s00484-011-0454-1" target="_blank" rel="noopener">doi:10.1007/s00484-011-0454-1</a>, con la radiación de SolarCal (Arens et al., 2015); cálculo verificado contra pythermalcomfort (Tartarini y Schiavon, 2020). Umbral de sol directo: 120 W/m², OMM, <i>Guide to Instruments and Methods of Observation</i> (WMO-No. 8), vol. I, 2023, §8.1.1.</li>
     <li><b>Código abierto y pruebas:</b> <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>; <code>fuente/verificar.mjs</code> repite las comprobaciones.</li>
   </ul>
   <h3>Bibliografía de diseño</h3>
@@ -1164,4 +1291,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=e534d32767"></script></body></html>
+<script type="module" src="js/app.js?v=3cefa7ea40"></script></body></html>
