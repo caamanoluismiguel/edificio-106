@@ -1,5 +1,80 @@
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
+<link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
+<link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="img/icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a1216">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_PA">
+<meta property="og:url" content="https://caamanoluismiguel.github.io/edificio-106/">
+<meta property="og:title" content="Edificio 106: sol y lluvia">
+<meta property="og:description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
+<meta property="og:image" content="https://caamanoluismiguel.github.io/edificio-106/img/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Captura del visor: el Edificio 106 en Ciudad del Saber el 15 de enero de 2024 a las 9:00, con el título Edificio 106: sol y lluvia.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://caamanoluismiguel.github.io/edificio-106/#visor",
+      "name": "Edificio 106 · Isthmus: visor de sol y clima",
+      "alternateName": "Edificio 106: sol y lluvia",
+      "url": "https://caamanoluismiguel.github.io/edificio-106/",
+      "description": "Maqueta digital del Edificio 106 (Ciudad del Saber, Panamá) para ver cómo inciden el sol, la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025). Proyecto académico experimental, no oficial de Isthmus ni de Ciudad del Saber.",
+      "applicationCategory": "EducationalApplication",
+      "inLanguage": "es",
+      "author": { "@type": "Person", "familyName": "Caamaño", "givenName": "Luis Miguel", "name": "Caamaño, L. M." },
+      "softwareVersion": "2026-10-01",
+      "datePublished": "2026-10-01",
+      "license": "https://opensource.org/licenses/MIT",
+      "sameAs": "https://github.com/caamanoluismiguel/edificio-106",
+      "keywords": "arquitectura bioclimática, trópico húmedo, ERA5, radiación solar, lluvia batiente, confort térmico, Panamá",
+      "contentLocation": {
+        "@type": "Place",
+        "name": "Edificio 106, Ciudad del Saber, Panamá",
+        "geo": { "@type": "GeoCoordinates", "latitude": 8.9993, "longitude": -79.5827 }
+      },
+      "citation": [
+        { "@type": "ScholarlyArticle", "name": "The ERA5 global reanalysis", "sameAs": "https://doi.org/10.1002/qj.3803" },
+        { "@type": "SoftwareApplication", "name": "Open-Meteo.com Weather API", "sameAs": "https://doi.org/10.5281/zenodo.7970649" }
+      ]
+    },
+    {
+      "@type": "Dataset",
+      "@id": "https://caamanoluismiguel.github.io/edificio-106/#clima",
+      "name": "Clima de cada hora entre 2001 y 2025 en el Edificio 106 (ERA5)",
+      "description": "Reanálisis ERA5 leído con la API de archivo de Open-Meteo para la celda de 9,000° N, 79,500° O (24 m), en hora de Panamá. La lluvia y la radiación de cada hora son el total o el promedio de la hora anterior. Resolución guardada: lluvia 0,1 mm, temperatura 1/6 °C, radiación 4 W/m², viento 1 km/h, dirección 2°. Es dato de modelo para una celda de ~28 km, no una medición en el sitio.",
+      "url": "https://caamanoluismiguel.github.io/edificio-106/",
+      "inLanguage": "es",
+      "creator": { "@type": "Person", "familyName": "Caamaño", "givenName": "Luis Miguel", "name": "Caamaño, L. M." },
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "temporalCoverage": "2001/2025",
+      "variableMeasured": ["lluvia", "temperatura", "humedad", "radiación directa", "radiación difusa", "viento", "dirección del viento"],
+      "spatialCoverage": {
+        "@type": "Place",
+        "name": "Celda ERA5 de 0,25° con centro en 9,000° N, 79,500° O, que contiene el Edificio 106 (Ciudad del Saber, Panamá)",
+        "geo": { "@type": "GeoCoordinates", "latitude": 8.9993, "longitude": -79.5827 }
+      },
+      "isBasedOn": [
+        "https://doi.org/10.24381/cds.adbb2d47",
+        "https://doi.org/10.5281/zenodo.7970649"
+      ],
+      "distribution": {
+        "@type": "DataDownload",
+        "encodingFormat": "application/gzip",
+        "contentUrl": "https://caamanoluismiguel.github.io/edificio-106/datos/clima_horario.bin.gz"
+      }
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
