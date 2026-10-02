@@ -6,7 +6,8 @@ c3de5cea492e47205c10bea567d9b233 modelo/arquitectura.glb
 03391bb3c569c1232166fc8472c3bbb4 modelo/cubiertas.glb
 60449f2043bc3fdf2c8b79512086d845 modelo/cubiertas_sombra.glb
 e2ae61aee2b4e9144e23082c7a0a35ca modelo/detalles.glb
-b0f16a4d71a9dced4064515eea563083 modelo/entrada.glb
+# entrada.glb actualizado el 2026-10-01: sin las dos vigas sueltas en X frente al 106 (fuente/quitar-cruz.mjs, pedido de LM)
+624257368b42fcb32b951ae57ae12bb3 modelo/entrada.glb
 b17f8024180d050e60eb30f9ebbba042 modelo/sitio.glb
 a37be78e9211fa562e08fe0899e75c0d modelo/vegetacion.glb
 a35e9f2ea6fe9428ed483ecd94f8725f modelo/ventanas.glb
