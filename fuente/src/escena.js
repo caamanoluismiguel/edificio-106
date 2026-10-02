@@ -140,6 +140,7 @@ export class Escena {
 
   async init(forceWebGL = false) {
     await this.#crearRenderer(forceWebGL);
+    this.#nivelWebGL();
     const r = this.renderer;
 
     const scene = new THREE.Scene();
@@ -232,6 +233,8 @@ export class Escena {
 
     window.addEventListener('resize', () => this.resize());
     this.setSol(-8, 90);
+    // el cielo, el suelo, la lluvia y las ayudas, en tramos mientras llegan los puntos de la intro (el primer cuadro los compilaba juntos)
+    this.precompilar().catch(() => {});
     return this;
   }
 
@@ -252,10 +255,35 @@ export class Escena {
     this.renderer = r;
   }
 
+  /** En WebGL 2 (pedido con #webgl, sin WebGPU o de rescate) el nivel 'alto' no cabe: con sombras de 4.096, bloom y profundidad
+   *  de campo, el jurado midió 28 cuadros por segundo al girar (p95 de 50 ms). Pasa al nivel 'medio', el mismo que ya usa un
+   *  navegador sin WebGPU. Cambia el objeto de calidad en su lugar (main.js lee de él las partículas). En WebGPU no hace nada. */
+  #nivelWebGL() {
+    const q = this.calidad;
+    if (this.backend !== 'WebGL 2' || q.nivel !== 'alto') return;
+    Object.assign(q, { nivel: 'medio', dpr: Math.min(q.dpr, 1.25), px: Math.min(q.px ?? 3.7e6, 2.4e6), sombras: Math.min(q.sombras, 2048),
+      particulas: Math.min(q.particulas, 60000), bloom: false, ao: false });
+    this.renderer.setPixelRatio(this.dprMax());
+  }
+
+  /** Baja al nivel 'bajo' sin recompilar los materiales: mapa de sombras de 1.024, sin FXAA y la resolución del teléfono.
+   *  Lo pide main.js (vigilarNivel) si en WebGL 2 los primeros cuadros no llegan a 30 por segundo. */
+  bajarNivel() {
+    const q = this.calidad;
+    if (q.nivel === 'bajo') return false;
+    Object.assign(q, { nivel: 'bajo', dpr: Math.min(q.dpr, 1), px: Math.min(q.px ?? 3.7e6, 1.6e6), sombras: 1024, bloom: false });
+    this.sun.shadow.mapSize.set(1024, 1024); this.sun.shadow.needsUpdate = true;
+    this.bloomOn = false; this.setSalida('sinAA');
+    this.fijarResolucion(this.dprMax());
+    return true;
+  }
+
   /** Si WebGPU falla en este equipo, la misma escena pasa a WebGL 2 sin recargar la página. */
   async pasarAWebGL() {
     const viejo = this.renderer;
     await this.#crearRenderer(true);
+    this.#nivelWebGL(); this.sun.shadow.mapSize.set(this.calidad.sombras, this.calidad.sombras);
+    this._compilados = null;                        // lo compilado era del renderer anterior
     try { viejo.setAnimationLoop?.(null); viejo.dispose(); } catch (e) { /* el dispositivo ya no existe */ }
     this.pmrem = new THREE.PMREMGenerator(this.renderer);
     this._envRT = null; this.scene.environment = null; this._envClave = null; this._envT = 0;
@@ -331,19 +359,44 @@ export class Escena {
    *  Quedan fuera (se compilan al primer uso, son pocos y chicos): las mallas transparentes de dos caras, que compileAsync
    *  compila de dos caras y el render dibuja en dos pasadas (atrás y adelante), y la pasada del mapa de sombras. */
   async precompilar() {
-    const r = this.renderer, rc = r._renderContexts, get = rc.get, rt0 = r.getRenderTarget(), mrt0 = r.getMRT(), cambiados = [];
-    this.scene.traverse((o) => { if (!o.visible || o.frustumCulled) { cambiados.push([o, o.visible, o.frustumCulled]); o.visible = true; o.frustumCulled = false; } });
-    const promesas = [];
-    try {
-      for (const p of this.pasadas ?? []) {
-        r.setRenderTarget(p.renderTarget); r.setMRT(p._mrt ?? null);
-        rc.get = (t, m) => get.call(rc, t, m, 1);        // las pasadas se dibujan dentro del render del postproceso (profundidad 1)
-        promesas.push(r.compileAsync(this.scene, this.camera));
-        rc.get = get;
-      }
-    } finally {
-      rc.get = get; r.setRenderTarget(rt0); r.setMRT(mrt0);
-      for (const [o, v, f] of cambiados) { o.visible = v; o.frustumCulled = f; }
+    // una sola tanda a la vez: si llega otro grupo mientras se compila, se da otra vuelta al final (solo con lo nuevo)
+    if (this._compilando) { this._otraVuelta = true; return this._compilando; }
+    this._compilando = (async () => { do { this._otraVuelta = false; await this.#precompilarTanda(); } while (this._otraVuelta); })()
+      .finally(() => { this._compilando = null; });
+    return this._compilando;
+  }
+  /** true mientras precompilar() tiene trabajo pendiente. */
+  get compilando() { return !!this._compilando; }
+
+  /** Compila objeto por objeto, en tramos de ~25 ms con un cuadro de por medio: de un tirón eran 0,6 s de página congelada
+   *  con WebGPU y 5 a 6 s con WebGL 2 (allí three.js arma y enlaza cada programa en el hilo principal). compileAsync con el
+   *  objeto y la escena de destino (las luces y el entorno salen de ella) da las mismas claves que el render. Cada objeto se
+   *  compila una vez por material: la vuelta que pide un grupo nuevo solo compila lo nuevo. */
+  async #precompilarTanda() { await this.#compilar(this.scene); }
+
+  /** Compila lo que cuelga de `raiz` y aún no está compilado con su material. Sirve también para un grupo que todavía no
+   *  está en la escena (cargar() lo compila antes de agregarlo): las luces y el entorno salen de this.scene igual. */
+  async #compilar(raiz) {
+    const r = this.renderer, rc = r._renderContexts, get = rc.get;
+    const hechos = (this._compilados ??= new WeakMap()), cola = [];
+    raiz.traverse((o) => { if ((o.isMesh || o.isPoints || o.isLine || o.isSprite) && o.material && hechos.get(o) !== o.material) cola.push(o); });
+    const promesas = [], cuadro = () => new Promise((ok) => requestAnimationFrame(() => setTimeout(ok, 0)));
+    const TRAMO = 25;
+    let t0 = performance.now();
+    for (const o of cola) {
+      if (!o.parent || hechos.get(o) === o.material) continue;   // se quitó mientras tanto, o ya lo compiló otra tanda
+      const rt0 = r.getRenderTarget(), mrt0 = r.getMRT(), v = o.visible, fc = o.frustumCulled;
+      o.visible = true; o.frustumCulled = false;
+      try {
+        for (const p of this.pasadas ?? []) {
+          r.setRenderTarget(p.renderTarget); r.setMRT(p._mrt ?? null);
+          rc.get = (t, m) => get.call(rc, t, m, 1);      // las pasadas se dibujan dentro del render del postproceso (profundidad 1)
+          promesas.push(r.compileAsync(o, this.camera, this.scene).catch(() => {}));
+          rc.get = get;
+        }
+        hechos.set(o, o.material);
+      } finally { rc.get = get; r.setRenderTarget(rt0); r.setMRT(mrt0); o.visible = v; o.frustumCulled = fc; }
+      if (performance.now() - t0 > TRAMO) { await cuadro(); t0 = performance.now(); }
     }
     await Promise.all(promesas);
   }
@@ -522,7 +575,10 @@ export class Escena {
   setLampara(k) { this.lampara = k; this.sucio = true; this.setSol(this.alt, this.az); }
 
   // ---------- Carga ----------
-  /** Carga los grupos del modelo. `prioridad` define el orden; vegetación y contexto llegan al final. */
+  /** Carga los grupos del modelo en el orden del armado; vegetación y contexto llegan al final. Con `calidad.diferidos`
+   *  (teléfonos) esos grupos no entran en cargaCompleta: se piden después, en un rato libre, y la intro no los espera.
+   *  Con `calidad.tejasLivianas` las cubiertas son cubiertas_movil.glb (fuente/tejas-movil.mjs: las mismas piezas y materiales,
+   *  con cada teja simplificada; 1,0 MB en vez de 1,4 MB por la red y 2/3 de los triángulos), que proyectan la sombra ellas mismas. */
   async cargar(base, onProgress) {
     const loader = new GLTFLoader();
     try { await MeshoptDecoder.ready; loader.setMeshoptDecoder(MeshoptDecoder); } catch (e) { /* sin meshopt no hay modelo */ }
@@ -530,6 +586,8 @@ export class Escena {
     const texturas = {};
     const cargaTex = (f) => texturas[f] ??= tex.loadAsync(conVersion(base + 'texturas/' + f)).then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
     const lista = this.calidad.grupos ?? GRUPOS;
+    const diferidos = GRUPOS.filter((g) => this.calidad.diferidos?.includes(g));
+    const livianas = !!this.calidad.tejasLivianas;
     const leerGLB = async (nombre) => {
       const bytes = await binario(base + 'modelo/' + nombre + '.glb', (l, t) => onProgress?.(nombre, l, t));
       return loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), base + 'modelo/');
@@ -537,39 +595,62 @@ export class Escena {
     this.listos = new Set();
     const uno = async (nombre) => {
       const idx = GRUPOS.indexOf(nombre);
-      const gltf = await leerGLB(nombre);
+      const gltf = await leerGLB(nombre === 'cubiertas' && livianas ? 'cubiertas_movil' : nombre);
       const root = gltf.scene;
       root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(root);
       const info = { root, idx, minY: box.min.y, maxY: box.max.y, box };
       const uMin = uniform(box.min.y), uMax = uniform(box.max.y);
-      const materiales = [];
+      const materiales = [], pedidas = [], texG = (f) => { const p = cargaTex(f); pedidas.push(p); return p; };
       root.traverse((o) => {
         if (!o.isMesh) return;
-        // proyectan sombra: todo menos las tejas (usan un sustituto liviano) y, del contexto, solo los vecinos a menos de ~60 m
+        // proyectan sombra: todo menos las tejas (usan un sustituto liviano; las del teléfono, ya livianas, la proyectan ellas) y, del contexto, solo los vecinos a menos de ~60 m
         // del 106 (contexto.mjs los marca con extras.sombra; los lejanos no llegan al edificio)
         const tejas = nombre === 'cubiertas' && /terracotta/i.test(o.material?.name || '');
         let vecino = false; for (let p = o; p && !vecino; p = p.parent) vecino = !!p.userData?.sombra;
-        o.castShadow = (nombre !== 'contexto' || vecino) && !tejas; o.receiveShadow = true;
+        o.castShadow = (nombre !== 'contexto' || vecino) && (!tejas || livianas); o.receiveShadow = true;
         if (o.castShadow) o.layers.enable(1);
-        o.material = this.#material(o.material, nombre, idx, uMin, uMax, cargaTex);
+        o.material = this.#material(o.material, nombre, idx, uMin, uMax, texG);
         materiales.push(o.material);
       });
       info.materiales = materiales;
+      // compilado antes de entrar a la escena, en tramos: si no, el primer cuadro con el grupo lo compilaba entero de un tirón
+      // (0,2 a 1,6 s de imagen congelada por grupo con WebGL 2)
+      // con sus texturas ya puestas: la textura cambia el sombreador (sRGB), y al llegar después se recompilaba el grupo
+      try { await Promise.all(pedidas); await this.#compilar(root); } catch (e) { /* se compila al dibujar */ }
+      // la pasada de la sombra también compila un programa por pieza al primer cuadro: las piezas entran a la capa de la sombra
+      // de a pocas, un cuadro cada tanda (unos cuadros con la sombra del grupo a medias, mientras el armado todavía lo oculta)
+      const sombra = []; root.traverse((o) => { if (o.isMesh && o.layers.isEnabled(1)) { sombra.push(o); o.layers.disable(1); } });
       this.grupos[nombre] = info;
       this.scene.add(root); this.sun.shadow.needsUpdate = true; this.sucio = true;
-      this.listos.add(nombre); onProgress?.(nombre, 1, 1, this.listos.size / lista.length);
-      if (nombre === 'cubiertas') this.#sombraCubiertas(leerGLB, idx, uMin, uMax);
+      this.#calentarSombra(sombra);
+      this.listos.add(nombre); onProgress?.(nombre, 1, 1, this.listos.size / (orden.length + diferidos.length));
+      if (nombre === 'cubiertas' && !livianas) this.#sombraCubiertas(leerGLB, idx, uMin, uMax);
       return info;
     };
     // de dos en dos, en el orden del armado: lo primero que se arma llega primero
-    const orden = GRUPOS.filter(g => lista.includes(g));
+    const orden = GRUPOS.filter(g => lista.includes(g) && !diferidos.includes(g));
     const promesas = {};
     let i = 0;
     const siguiente = () => { if (i >= orden.length) return null; const g = orden[i++]; return (promesas[g] = uno(g).catch((e) => { console.warn('grupo', g, e); this.listos.add(g); })).then(siguiente); };
     this.cargaCompleta = Promise.all([siguiente(), siguiente()]).then((r) => { this.cargado = true; return r; });
     this.promesas = promesas;
+    // diferidos: de a uno, cuando el resto ya llegó y la página tiene un rato libre (no compiten con lo que se arma primero)
+    const libre = () => new Promise((ok) => (window.requestIdleCallback ?? ((f) => setTimeout(f, 200)))(ok, { timeout: 2000 }));
+    this.cargaDiferida = diferidos.length ? this.cargaCompleta.then(async () => {
+      for (const g of diferidos) { await libre(); await (promesas[g] = uno(g).catch((e) => { console.warn('grupo', g, e); this.listos.add(g); })); }
+    }) : this.cargaCompleta;
     return this;
+  }
+
+  /** Una pieza por cuadro a la capa de la sombra (cada pieza trae su material: hasta 33 por grupo, ~1 s a 60 Hz). */
+  async #calentarSombra(piezas) {
+    const cuadro = () => new Promise((ok) => requestAnimationFrame(ok)), TANDA = 1;
+    for (let i = 0; i < piezas.length; i += TANDA) {
+      for (const o of piezas.slice(i, i + TANDA)) o.layers.enable(1);
+      this.sun.shadow.needsUpdate = true; this.sucio = true;
+      if (i + TANDA < piezas.length) { await cuadro(); await cuadro(); }
+    }
   }
 
   /** Sustituto de sombra de las tejas: solo lo ve la cámara de la sombra (capa 1). */
