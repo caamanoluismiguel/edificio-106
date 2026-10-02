@@ -38,7 +38,8 @@ function pintarDiag() {
   el.querySelector('summary').textContent = `Diagnóstico · ${be} · ${graves} error${graves === 1 ? '' : 'es'} · ${VERSION}`;
   el.querySelector('pre').textContent = DIAG.log.map((x) => `${x.t} s  ${x.tipo}${x.n > 1 ? ' ×' + x.n : ''}: ${x.txt}`).join('\n');
 }
-addEventListener('error', (e) => anotar('error', e.message + (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '')));
+// «ResizeObserver loop…» solo avisa que una medida pasó al cuadro siguiente: no es una falla
+addEventListener('error', (e) => anotar(/^ResizeObserver loop/.test(e.message) ? 'aviso' : 'error', e.message + (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '')));
 addEventListener('unhandledrejection', (e) => anotar('promesa', e.reason?.stack?.split('\n').slice(0, 2).join(' ') ?? e.reason));
 {
   const ce = console.error.bind(console), cw = console.warn.bind(console);
@@ -1171,13 +1172,13 @@ function prepararUI() {
     document.documentElement.classList.toggle('lect-abiertas', abrir); $('#lect-resumen').setAttribute('aria-expanded', String(abrir));
   });
   // indicio de que hay más: la fila de botones del teléfono (hacia la derecha) y la leyenda (hacia abajo)
-  for (const el of [$('.hud-botones'), $('#leyenda')]) { el.addEventListener('scroll', () => hayMas(el), { passive: true }); new ResizeObserver(() => hayMas(el)).observe(el); }
+  for (const el of [$('.hud-botones'), $('#leyenda')]) { el.addEventListener('scroll', () => hayMas(el), { passive: true }); new ResizeObserver(() => hayMasLuego(el)).observe(el); }
   // los paneles largos: el mismo aviso plano, pegado abajo mientras quede texto por ver (se mira también cuando cambia su contenido)
   for (const el of ['#sirve', '#ir-a', '#confort', '#capas', '#voladizo', '#rec-cuerpo'].map((q) => $(q)).filter(Boolean)) {
     const aviso = document.createElement('div'); aviso.className = 'panel-sigue'; aviso.setAttribute('aria-hidden', 'true'); aviso.textContent = 'Hay más abajo ▾';
     el.append(aviso);
     el.addEventListener('scroll', () => hayMas(el), { passive: true });
-    const ro = new ResizeObserver(() => hayMas(el)); ro.observe(el); for (const h of el.children) if (h !== aviso) ro.observe(h);
+    const ro = new ResizeObserver(() => hayMasLuego(el)); ro.observe(el); for (const h of el.children) if (h !== aviso) ro.observe(h);
   }
   ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
@@ -1304,6 +1305,12 @@ function plegarRotulo(now) {
 }
 
 /** Marca con .hay-mas un panel que tiene contenido oculto por desplazar (a la derecha si es una fila, abajo si no). */
+// se mide en el cuadro siguiente: el aviso que muestra cambia el tamaño de lo que se observa
+const hayMasPend = new Set();
+function hayMasLuego(el) {
+  if (!hayMasPend.size) requestAnimationFrame(() => { for (const x of hayMasPend) hayMas(x); hayMasPend.clear(); });
+  hayMasPend.add(el);
+}
 function hayMas(el) {
   if (!el) return;
   const fila = el.scrollWidth > el.clientWidth + 2 && getComputedStyle(el).overflowX !== 'visible';
