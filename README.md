@@ -115,11 +115,14 @@ Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para baja
 **Confort y estrategias**
 - Givoni, B. (1992). Comfort, climate analysis and building design guidelines. *Energy and Buildings*, 18(1), 11–23. doi:10.1016/0378-7788(92)90047-K
 - ASHRAE (2017). *ANSI/ASHRAE Standard 55-2017: Thermal Environmental Conditions for Human Occupancy*.
+- de Dear, R. J. y Brager, G. S. (2002). Thermal comfort in naturally ventilated buildings: revisions to ASHRAE Standard 55. *Energy and Buildings*, 34(6), 549–561. doi:10.1016/S0378-7788(02)00005-1. Origen del modelo adaptativo y sus condiciones de uso (§4.1, p. 556): espacios naturalmente acondicionados, ventanas que abren los ocupantes, sin refrigeración mecánica, actividad casi sedentaria
 - Bröde, P. et al. (2012). Deriving the operational procedure for the Universal Thermal Climate Index (UTCI). *International Journal of Biometeorology*, 56(3), 481–494. doi:10.1007/s00484-011-0454-1
 - Arens, E. et al. (2015). Modeling the comfort effects of short-wave solar radiation indoors. *Building and Environment*, 88, 3–9. doi:10.1016/j.buildenv.2014.09.004
 - Tartarini, F. y Schiavon, S. (2020). pythermalcomfort: A Python package for thermal comfort research. *SoftwareX*, 12, 100578. doi:10.1016/j.softx.2020.100578. El cálculo del UTCI de `fuente/src/confort.js` es un porte de pythermalcomfort (MIT) y se verificó contra él.
 - Secretaría Nacional de Energía de Panamá (2016). *Guía de Construcción Sostenible para el Ahorro de Energía en Edificaciones*. Adoptada por la Resolución N.º 3142 (Gaceta Oficial N.º 28165, 24 de noviembre de 2016). Rango de confort para Panamá (p. 8), protección solar (pp. 33–37).
-- UN-Habitat (2014). *Sustainable Building Design for Tropical Climates: Principles and Applications for Eastern Africa*. Nairobi: UN-Habitat. Ventilación cruzada (pp. 70–71), viento a la altura de la ventana (p. 29), persianas y lluvia (p. 115).
+- UN-Habitat (2014). *Sustainable Building Design for Tropical Climates: Principles and Applications for Eastern Africa*. Nairobi: UN-Habitat. Ventilación cruzada (pp. 70–71), viento a la altura de la ventana (p. 29), persianas y lluvia (p. 115), ventilar a toda hora en clima cálido húmedo (p. 68).
+- Givoni (1992), §4.6.1, p. 17: el enfriamiento nocturno de la masa, aplicable sobre todo en regiones áridas, y los ventiladores, que amplían el rango de confort.
+- Organización Meteorológica Mundial (2023). *Guide to Instruments and Methods of Observation* (WMO-No. 8), vol. I, cap. 8, §8.1.1, p. 309. Umbral de 120 W/m² de radiación directa para contar horas de sol.
 - Se revisó y no se usa Cedeño et al. (2022), *Novasinergia*: su simulación de aulas probó tasas de ventilación por debajo del mínimo que ella misma calcula.
 
 **El lugar**

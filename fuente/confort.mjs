@@ -11,9 +11,10 @@
 //    las medias diarias de los 7 días anteriores (la norma admite de 7 a 30). Aquí la temperatura operativa se toma igual a la
 //    del aire exterior a la sombra: es la suposición de un aula ventilada y liviana que sigue al aire de afuera. Adentro el sol
 //    en muros y techo y la gente la suben, así que el porcentaje de ASHRAE es una cota superior.
-//    Aplicabilidad (§5.4.1 de la versión 2017): espacios naturalmente acondicionados controlados por los ocupantes, con
-//    ventanas que ellos abren y cierran; sin refrigeración mecánica ni calefacción en marcha; metabolismo de 1,0 a 1,3 met;
-//    ropa libre entre 0,5 y 1,0 clo; t_pma entre 10 y 33,5 °C (aquí, de ~25 a ~29 °C).
+//    Aplicabilidad: espacios naturalmente acondicionados controlados por los ocupantes, con ventanas que ellos abren y
+//    cierran; sin refrigeración mecánica ni calefacción en marcha; actividad casi sedentaria; ropa que pueden adaptar
+//    libremente (de Dear y Brager 2002, Energy and Buildings 34(6):549–561, §4.1, p. 556, doi:10.1016/S0378-7788(02)00005-1);
+//    t_pma entre 10 y 33,5 °C (§5.4.1, citado en Simmonds 2022, CLIMA 2022; aquí, de ~25 a ~29 °C).
 //  - Horas que cuentan: un horario de clase diurno, de 7:00 a 17:00 (11 lecturas por día). En ese
 //    tramo el sol está sobre el horizonte todo el año (sale entre 5:58 y 6:39 y se pone entre 17:54 y 18:42, según src/sol.js).
 import fs from 'node:fs';
@@ -110,6 +111,7 @@ const salida = {
   fuentes: [
     'Givoni, B. (1992). Comfort, climate analysis and building design guidelines. Energy and Buildings 18(1), 11–23. doi:10.1016/0378-7788(92)90047-K',
     'ASHRAE 55-2017. Thermal Environmental Conditions for Human Occupancy, §5.4 (modelo adaptativo) y apéndice C (SolarCal).',
+    'de Dear, R. J. y Brager, G. S. (2002). Thermal comfort in naturally ventilated buildings: revisions to ASHRAE Standard 55. Energy and Buildings 34(6), 549–561. doi:10.1016/S0378-7788(02)00005-1',
     'Bröde, P. et al. (2012). Deriving the operational procedure for the Universal Thermal Climate Index (UTCI). Int J Biometeorol 56, 481–494. doi:10.1007/s00484-011-0454-1',
     'Arens, E. et al. (2015). Modeling the comfort effects of short-wave solar radiation indoors. Building and Environment 88, 3–9. doi:10.1016/j.buildenv.2014.09.004',
     'ETESA, Centro del Clima. Caracterización climática de los distritos de Panamá y San Miguelito, estación Tocumen 1977–2010 (imhpa.gob.pa).',
