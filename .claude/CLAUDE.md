@@ -44,6 +44,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 
 ## Reglas de contenido (de LM)
 
+- **Verificador siempre (`.claude/agents/verificador.md`).** Toda cifra, fuente, regla, recomendación o texto nuevo o cambiado pasa por el verificador antes de publicarse, también los informes del panel de expertos y los cálculos propios. Comprueba que cada número se recalcule, que cada fuente diga lo que se le atribuye, que las cifras cuadren en todo el visor y que nada sea subjetivo. Lo FALSO, INCOHERENTE o lo que presente un modelo como medición bloquea la publicación.
 - **Panel de expertos antes de publicar información nueva** (cifras, recomendaciones, capas): expertos del tema con contexto de Panamá, uno de visualización o UX y un crítico que cruce los informes. Las fuentes se verifican contra el original (DOI, URL oficial, página) y los números clave se comprueban con los datos del visor. Se prefieren las fuentes panameñas: IMHPA, ETESA, la Guía de Construcción Sostenible de 2016, la UTP.
 - **Clima de Panamá:**
   - estación seca de diciembre a abril, con alisios del norte y el noroeste;
