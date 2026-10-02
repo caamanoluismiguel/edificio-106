@@ -307,12 +307,10 @@ function terminarIntro() {
 
 // ---------------- Bienvenida («¿Primera vez aquí?») ----------------
 // Sale una vez, al terminar la intro de quien llega por primera vez. Se va con la primera interacción real (una forma de ver,
-// una vista, arrastrar la escena, la regla, Escape) o a los 30 s, pero no mientras tenga el foco dentro.
+// una vista, arrastrar la escena, la regla, Escape). No se va sola: quien llega tarde a mirar la pantalla también la ve.
 function mostrarOferta() {
   if (S.paso != null || !$('#sirve').hidden || !$('#ir-a').hidden || !$('#confort').hidden || S.interactuo) return;
-  const el = $('#oferta-recorrido'); el.hidden = false;
-  const vencer = () => { if (el.hidden) return; if (el.contains(document.activeElement)) mostrarOferta.t = setTimeout(vencer, 5000); else el.hidden = true; };
-  clearTimeout(mostrarOferta.t); mostrarOferta.t = setTimeout(vencer, 30000);
+  $('#oferta-recorrido').hidden = false;
 }
 function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = true; clearTimeout(mostrarOferta.t); }
 
@@ -596,7 +594,9 @@ function paso(now) {
   const hr = Math.floor(S.min / 60); if (hr !== lastHour) { if (lastHour >= 0 && S.reproduce) sonido.clic(); lastHour = hr; }
   brujula(p);
   lecturas(p, c);
+  if (!intro) plegarRotulo(now);
   encuadreMovil(dtReal);
+  esquivarHoras();
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
@@ -1090,7 +1090,8 @@ function prepararUI() {
     b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); explicar(b.dataset.explica); } });
   });
   $('#rotulo-cerrar').addEventListener('click', () => { anunciar(); S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
-  $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; lastLect = ''; });
+  $('#rotulo-abrir').addEventListener('click', () => { ROT.abierto = true; ROT.t = performance.now(); soloUnPanel(null); });
+  $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; if (S.verLeyenda) soloUnPanel('leyenda'); lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
   if (innerWidth <= 760) $('#ley-mas').open = false;
   prepararPartes();
@@ -1121,9 +1122,16 @@ function prepararUI() {
   });
   // indicio de que hay más: la fila de botones del teléfono (hacia la derecha) y la leyenda (hacia abajo)
   for (const el of [$('.hud-botones'), $('#leyenda')]) { el.addEventListener('scroll', () => hayMas(el), { passive: true }); new ResizeObserver(() => hayMas(el)).observe(el); }
+  // los paneles largos: el mismo aviso plano, pegado abajo mientras quede texto por ver (se mira también cuando cambia su contenido)
+  for (const el of ['#sirve', '#ir-a', '#confort', '#capas', '#voladizo', '#rec-cuerpo'].map((q) => $(q)).filter(Boolean)) {
+    const aviso = document.createElement('div'); aviso.className = 'panel-sigue'; aviso.setAttribute('aria-hidden', 'true'); aviso.textContent = 'Hay más abajo ▾';
+    el.append(aviso);
+    el.addEventListener('scroll', () => hayMas(el), { passive: true });
+    const ro = new ResizeObserver(() => hayMas(el)); ro.observe(el); for (const h of el.children) if (h !== aviso) ro.observe(h);
+  }
   ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
-  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); } };
+  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); soloUnPanel('sirve'); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
@@ -1136,8 +1144,7 @@ function prepararUI() {
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
-    if (abrir) { cerrarOferta(); abrirVoladizo(false); }
-    if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
+    if (abrir) { cerrarOferta(); abrirVoladizo(false); soloUnPanel('ir'); }
     if (abrir) {
       { const a = ahoraPanama(), t = new Date(Date.UTC(a.y, a.m - 1, a.d + 15)); $('#ir-fecha').max = kf2({ y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() }); }   // el pronóstico llega a 15 días
       $('#ir-fecha').value = kf2(S.fecha); $('#ir-hora').value = hhmm(S.min);
@@ -1172,14 +1179,15 @@ function prepararUI() {
   // formas de ver
   document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.addEventListener('click', () => {
     cerrarOferta(); anunciar();
-    ponerLente(b.dataset.lente, !(b.dataset.lente === 'partes' && innerWidth <= 760));   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
+    const conTarjeta = !(b.dataset.lente === 'partes' && innerWidth <= 760);   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
+    ponerLente(b.dataset.lente, conTarjeta); if (conTarjeta) soloUnPanel('leyenda');
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
   $('#ley-modos').addEventListener('click', (e) => { const b = e.target.closest('[data-modo]'); if (!b || !MODO_DE[S.lente]) return; S[MODO_DE[S.lente]] = b.dataset.modo; S.claveRosa = ''; lastLect = ''; anunciar(); });
   $('#guardar-img').addEventListener('click', guardarImagen);
   $('#copiar-enlace').addEventListener('click', copiarEnlace);
-  $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { abrirIr(false); pintarResolucion(); } });
+  $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); soloUnPanel('capas'); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
   // exposición larga: la alternativa a la noche honesta; se rotula en la escena mientras está activa
   $('#capa-larga').addEventListener('change', (e) => {
@@ -1215,6 +1223,34 @@ function prepararUI() {
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
+}
+
+/** Un solo panel lateral a la vez (Para qué sirve, Ir a…, Confort, Capas o la tarjeta de la forma de ver): al abrir uno, se
+ *  cierran los demás. Con null los cierra todos. */
+function soloUnPanel(k) {
+  if (k !== 'sirve' && !$('#sirve').hidden) { $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); }
+  if (k !== 'ir' && !$('#ir-a').hidden) globalThis.__abrirIr?.(false);
+  if (k !== 'confort' && !$('#confort').hidden) abrirConfort(false);
+  if (k !== 'capas' && !$('#capas').hidden) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
+  if (k !== 'leyenda' && S.verLeyenda) { S.verLeyenda = false; lastLect = ''; }
+}
+
+// El rótulo («Ahora en Ciudad del Saber», un momento elegido…) se lee al cambiar y después se pliega a su línea de arriba:
+// a los 8 s (14 s si es un momento con su explicación) o en cuanto se abre un panel. «Leer» lo despliega. No se pliega con la
+// explicación de un dato (tiene «Entendido»), de noche (lleva los atajos al día) ni mientras se viaja.
+const ROT = { clave: null, t: 0, abierto: false };
+function plegarRotulo(now) {
+  const clave = `${S.modo}|${S.momento?.titulo ?? ''}|${S.explica ?? ''}|${S.fachada ?? ''}|${S.viaje ? 'v' : ''}`;
+  if (clave !== ROT.clave) { ROT.clave = clave; ROT.t = now; ROT.abierto = false; }
+  const fijo = !!S.explica || !!S.viaje || !$('#rotulo-noche').hidden;
+  const panel = !$('#leyenda').hidden || !$('#capas').hidden;
+  const plegar = !fijo && (panel || (!ROT.abierto && now - ROT.t > (S.momento ? 14000 : 8000)));
+  const html = document.documentElement;
+  if (html.classList.contains('rotulo-plegado') !== plegar) {
+    html.classList.toggle('rotulo-plegado', plegar);
+    $('#rotulo-abrir').setAttribute('aria-expanded', String(!plegar));
+    pintarPartes.f = '';
+  }
 }
 
 /** Marca con .hay-mas un panel que tiene contenido oculto por desplazar (a la derecha si es una fila, abajo si no). */
@@ -1529,7 +1565,52 @@ function aplicarPartes() {
 }
 const _pp = new THREE.Vector3(), _pv = new THREE.Vector3();
 // paneles de la interfaz que las etiquetas no deben tapar ni quedar debajo
-const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#confort', '#panel-fachada', '#qr', '#aviso.ver'];
+const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#confort', '#panel-fachada', '#qr', '#aviso.ver', '#rotulo', '.pista', '#viaje', '#aviso-noche'];
+/** Rectángulos (con 6 px de margen) de la barra de arriba y de los paneles visibles. Casi todos son position: fixed, así que
+ *  offsetParent no sirve para saber si se ven: un panel oculto (display: none) da un rectángulo vacío. */
+function rectsUI(W) {
+  const obst = [[0, 0, W, 66]];
+  for (const q of OBSTACULOS) {
+    const el = document.querySelector(q); if (!el || el.hidden) continue;
+    const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).opacity !== '0') obst.push([r.left - 6, r.top - 6, r.width + 12, r.height + 12]);
+  }
+  return obst;
+}
+const cruzaR = (a, b, m = 5) => a[0] < b[0] + b[2] + m && b[0] < a[0] + a[2] + m && a[1] < b[1] + b[3] + m && b[1] < a[1] + a[3] + m;
+
+// Rótulos de hora de la escena (las sombras de cada hora y el arco del sol): son sprites que siguen al terreno. Se oculta el
+// que caería bajo un panel o encima de otro rótulo; primero se ponen las horas que más dicen (mediodía y los extremos del día).
+const ORDEN_HORAS = [12, 6, 18, 9, 15, 7, 17, 8, 16, 10, 14, 11, 13];
+function esquivarHoras() {
+  const diag = escena?.diagRotulos, ruta = escena?.rutaRotulos ?? [];
+  if (!diag) return;
+  const cam = escena.camera, W = innerWidth, H = innerHeight;
+  const verDiag = U.sombras.value > 0.01 && !!escena._diagClave, verRuta = escena.uRuta.value > 0.01 && U.sombras.value < 0.5;
+  const html = document.documentElement;
+  const firma = [cam.position.x, cam.position.y, cam.position.z, controls.target.x, controls.target.y, controls.target.z].map((v) => Math.round(v * 20)).join(',')
+    + `|${W}x${H}|${verDiag}|${verRuta}|${escena._diagClave}|${escena._ruta}|${html.className}|${S.lente}|${S.parte}|${S.verLeyenda}|${S.paso}|${Math.round(ENC.dy)}`
+    + ['#sirve', '#ir-a', '#capas', '#confort', '#voladizo', '#oferta-recorrido', '#qr', '#viaje'].map((q) => $(q)?.hidden ? 0 : 1).join('');
+  if (firma === esquivarHoras.f) return;
+  esquivarHoras.f = firma;
+  const obst = (verDiag || verRuta) ? rectsUI(W) : [], puestos = [];
+  const px = H / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2));      // píxeles por metro a 1 m de distancia
+  const colocar = (s, vale) => {
+    let tapado = false;
+    if (vale) {
+      _pv.copy(s.position).project(cam);
+      if (_pv.z < 1 && _pv.z > -1) {
+        const x = (_pv.x + 1) / 2 * W, y = (1 - _pv.y) / 2 * H, k = px / Math.max(1, cam.position.distanceTo(s.position));
+        const w = s.scale.x * k * 0.7, h = s.scale.y * k * 0.62, r = [x - w / 2, y - h / 2, w, h];   // el texto ocupa ~70 × 62 % del sprite
+        tapado = obst.some((o) => cruzaR(r, o, 0)) || puestos.some((o) => cruzaR(r, o, 8));
+        if (!tapado) puestos.push(r);
+      }
+    }
+    if (!!s.userData.tapado !== tapado) { s.userData.tapado = tapado; escena.sucio = true; }
+  };
+  const porHora = new Map(diag.map((s) => [s.userData.h, s]));
+  for (const h of ORDEN_HORAS) { const s = porHora.get(h); if (s) colocar(s, verDiag && s.userData.vale); }
+  for (const s of ruta) colocar(s, verRuta && s.userData.arriba);
+}
 /** Coloca las etiquetas sobre la imagen: proyecta cada ancla con la cámara, esquiva los paneles y evita que se encimen. */
 function pintarPartes() {
   const capa = $('#partes-capa'); if (!capa || !escena) return;
@@ -1542,12 +1623,7 @@ function pintarPartes() {
   if (firma === pintarPartes.f) return;
   pintarPartes.f = firma;
   // 1) leer: dónde están los paneles (antes de mover nada, para no forzar el diseño dos veces)
-  const obst = [[0, 0, W, 66]];
-  for (const q of OBSTACULOS) {
-    const el = document.querySelector(q); if (!el || el.hidden || el.offsetParent === null) continue;
-    const r = el.getBoundingClientRect(); if (r.width && r.height) obst.push([r.left - 6, r.top - 6, r.width + 12, r.height + 12]);
-  }
-  const cruza = (a, b, m = 5) => a[0] < b[0] + b[2] + m && b[0] < a[0] + a[2] + m && a[1] < b[1] + b[3] + m && b[1] < a[1] + a[3] + m;
+  const obst = rectsUI(W), cruza = cruzaR;
   const tapa = (r) => obst.some((o) => cruza(r, o, 0));
   const puestos = [];
   const aPantalla = (p) => {
@@ -1580,19 +1656,21 @@ function pintarPartes() {
     }
     if (!q) { el.hidden = true; continue; }
     const w = anchos.get(el), h = 31, lx = Math.max(0, w / 2 - 16);
-    const opciones = [[0, 0], [0, 36], [-lx, 0], [lx, 0], [0, 72], [-lx, 36], [lx, 36], [0, 108]];
+    const opciones = [[0, 0], [0, 36], [-lx, 0], [lx, 0], [0, 72], [-lx, 36], [lx, 36], [0, 108], [-lx, 72], [lx, 72], [0, 144]];
     let elegido = null;
-    for (const pasada of [0, 1]) {                                    // 0: sin tocar nada · 1: se permite encimar etiquetas, nunca paneles
+    // 0: sin tocar otra etiqueta ni la línea que la une a su punto · 1 (solo la parte elegida): se permite encimar etiquetas, nunca paneles
+    for (const pasada of k === S.parte ? [0, 1] : [0]) {
       for (const [dx, dy] of opciones) {
-        const r = [q[0] - w / 2 + dx, q[1] - 18 - h - dy, w, h];
+        const r = [q[0] - w / 2 + dx, q[1] - 18 - h - dy, w, h], tallo = [q[0] - 3, q[1] - 18 - dy, 6, 18 + dy];
         if (tapa(r) || r[0] < 4 || r[0] + w > W - 4) continue;
-        if (pasada === 0 && puestos.some((o) => cruza(r, o))) continue;
-        elegido = [dx, dy, r]; break;
+        if (pasada === 0 && (puestos.some((o) => cruza(r, o)) || puestos.some((o) => !o.tallo && cruza(tallo, o, 2)))) continue;
+        elegido = [dx, dy, r, tallo]; break;
       }
       if (elegido) break;
     }
     if (!elegido) { el.hidden = true; continue; }
-    el.hidden = false; puestos.push(elegido[2]);
+    const tallo = elegido[3]; tallo.tallo = true;
+    el.hidden = false; puestos.push(elegido[2], tallo);
     el.style.transform = `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px)`;
     el.style.setProperty('--dx', elegido[0].toFixed(1) + 'px'); el.style.setProperty('--dy', elegido[1] + 'px');
   }
@@ -1784,6 +1862,8 @@ function capturarAlta() {
   const r = escena.renderer, pr0 = r.getPixelRatio(), cw = escena._w, ch = escena._h, largo = Math.max(cw, ch);
   const lim = r.backend?.device?.limits?.maxTextureDimension2D ?? (r.backend?.gl?.getParameter?.(r.backend.gl.MAX_RENDERBUFFER_SIZE)) ?? 4096;
   const intentos = [...new Set([...[LADO_LAMINA, 1600].map((l) => Math.min(l, lim) / largo), pr0])];
+  for (const s of [...(escena.diagRotulos ?? []), ...(escena.rutaRotulos ?? [])]) s.userData.tapado = false;
+  esquivarHoras.f = '';                                         // el cuadro siguiente vuelve a esquivar los paneles
   try {
     for (const pr of intentos) {
       r.setPixelRatio(pr);
@@ -2066,9 +2146,7 @@ const UTCI_COL = { 4: '#8fa39b', 5: '#f2c46b', 6: '#e8913a', 7: '#cf5a2c', 8: '#
 async function abrirConfort(abrir) {
   $('#confort').hidden = !abrir; $('#abrir-confort').setAttribute('aria-expanded', String(abrir));
   if (!abrir) return;
-  cerrarOferta(); abrirVoladizo(false); globalThis.__abrirIr?.(false);
-  $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false');
-  $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false');
+  cerrarOferta(); abrirVoladizo(false); soloUnPanel('confort');
   if (!confortJ) {
     try { confortJ = await (await fetch(conVersion(BASE + 'datos/confort.json'))).json(); }
     catch (e) { anotar('aviso', 'confort: ' + e); $('#carta-cifras').textContent = 'No se pudieron cargar los datos de confort.'; return; }

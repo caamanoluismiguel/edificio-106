@@ -1119,7 +1119,7 @@ export class Escena {
     let n = 0, nf = 0; const Y = 0.12, W = 0.28, d = {};
     for (const sp of this.diagRotulos) {
       const p = posicionSol({ ...f, h: sp.userData.h, min: 0 });
-      sp.visible = false;
+      sp.visible = sp.userData.vale = false;
       if (p.alt < 3) continue;
       vectorSol(p.alt, p.az, d);
       const k = 1 / d.y, proy = P.map(([x, z, y]) => [x - d.x * y * k, z - d.z * y * k]);
@@ -1136,7 +1136,7 @@ export class Escena {
       }
       // rótulo en la punta de la sombra (el vértice más lejos del edificio)
       let best = H[0], bd = -1; for (const q of H) { const dd = q[0] * q[0] + q[1] * q[1]; if (dd > bd) { bd = dd; best = q; } }
-      const r = Math.sqrt(bd) || 1; sp.position.set(best[0] + best[0] / r * 5, 1.5, best[1] + best[1] / r * 5); sp.visible = true;
+      const r = Math.sqrt(bd) || 1; sp.position.set(best[0] + best[0] / r * 5, 1.5, best[1] + best[1] / r * 5); sp.visible = sp.userData.vale = true;
     }
     pos.needsUpdate = col.needsUpdate = fp.needsUpdate = true;
     this.diagLineas.geometry.setDrawRange(0, n); this.diagRelleno.geometry.setDrawRange(0, nf);
@@ -1246,7 +1246,8 @@ export class Escena {
     if (this.lineasReticula) this.lineasReticula.visible = U.reticula.value > 0.001;
     if (this.rosaMesh) this.rosaMesh.visible = this.uRosa.value > 0.01;
     if (this.rutaLinea) this.rutaLinea.visible = this.rutaHoras.visible = this.uRuta.value > 0.01;
-    if (this.rutaRotulos) for (const s of this.rutaRotulos) s.visible = this.uRuta.value > 0.01 && s.userData.arriba && U.sombras.value < 0.5;   // con el diagrama, sus rótulos mandan
+    if (this.rutaRotulos) for (const s of this.rutaRotulos) s.visible = this.uRuta.value > 0.01 && s.userData.arriba && U.sombras.value < 0.5 && !s.userData.tapado;   // con el diagrama, sus rótulos mandan; tapado: bajo un panel (main.js)
+    if (this.diagRotulos) for (const sp of this.diagRotulos) sp.visible = !!sp.userData.vale && !sp.userData.tapado;
     if (this.rutaSol) this.rutaSol.visible = this.uRuta.value > 0.01 && this.alt > -1;
     if (this.diagramaGrupo) this.diagramaGrupo.visible = U.sombras.value > 0.01 && !!this._diagClave;
     if (this.vientoMesh) this.vientoMesh.visible = this.uViento.value > 0.01;

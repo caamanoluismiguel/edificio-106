@@ -185,6 +185,11 @@
     display: grid; gap: 8px; pointer-events: none; box-sizing: border-box; background: var(--panel); border: 1px solid var(--linea); border-radius: 16px; padding: 12px 16px;
     backdrop-filter: blur(12px); }
   #rotulo-texto { margin: 0; font-size: 16.5px; text-wrap: pretty; }
+  /* plegado (unos segundos después de cambiar, o con un panel abierto): queda la línea de arriba y «Leer» para desplegarlo */
+  #rotulo-abrir { display: none; }
+  html.rotulo-plegado #rotulo { grid-template-columns: auto auto; align-items: center; gap: 12px; right: auto; padding: 5px 5px 5px 14px; border-radius: 999px; }
+  html.rotulo-plegado #rotulo-texto, html.rotulo-plegado #rotulo-noche { display: none !important; }
+  html.rotulo-plegado #rotulo-abrir { display: inline-flex; pointer-events: auto; padding: 6px 12px; font-size: 12.5px; }
 
   /* ---------- brújula y vistas ---------- */
   #hud { position: fixed; z-index: 6; right: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 74px); display: grid; justify-items: end; gap: 10px; }
@@ -228,6 +233,11 @@
   .ley-sigue { display: none; position: sticky; bottom: -12px; margin: 0 -13px -12px; padding: 7px 13px 8px; font: 600 12px/1.2 var(--texto); color: var(--sol);
     background: var(--solido); border-top: 1px solid var(--linea-2); border-radius: 0 0 14px 14px; pointer-events: none; }
   #leyenda.hay-mas .ley-sigue { display: block; }
+  /* el mismo aviso en los paneles largos (lo agrega main.js): plano, pegado al borde de abajo mientras quede texto oculto */
+  .panel-sigue { display: none; position: sticky; bottom: calc(-1 * var(--pb, 16px)); margin: 0 calc(-1 * var(--px, 16px)) calc(-1 * var(--pb, 16px)); padding: 8px var(--px, 16px) 9px;
+    font: 600 12px/1.2 var(--texto); color: var(--sol); background: var(--solido); border-top: 1px solid var(--linea-2); pointer-events: none; }
+  .hay-mas > .panel-sigue { display: block; }
+  #sirve { --px: 18px; --pb: 18px; } #voladizo { --px: 18px; --pb: 14px; } #rec-cuerpo { --px: 0px; --pb: 0px; }
   .ley-cab { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
   #ley-t { margin: 0; font: 700 14.5px/1.25 var(--display); letter-spacing: -0.005em; text-wrap: balance; }
   #ley-cerrar { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: none; color: var(--cal-2);
@@ -393,8 +403,10 @@
   #viaje.llego { transition: opacity .6s .9s; opacity: 0; }
   html.viajando #l-hora, html.viajando #l-fecha { color: var(--sol-2); }
   html.viajando .dock-lect { opacity: .55; transition: opacity .2s; }
-  .pista { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; max-width: 13rem; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
+  .pista { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); text-align: right; white-space: nowrap; transition: opacity .6s; background: var(--panel); border-radius: 10px; padding: 6px 9px; backdrop-filter: blur(10px); }
   html.girado .pista { opacity: 0; }
+  .pista .tactil { display: none; }
+  @media (pointer: coarse) { .pista .raton { display: none; } .pista .tactil { display: inline; } }
 
   /* ---------- máquina del tiempo ---------- */
   #dia .gota { fill: var(--lluvia); } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
@@ -451,7 +463,28 @@
   #reproducir::before { content: ""; width: 0; height: 0; border-left: 12px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; margin-left: 3px; }
   #reproducir[aria-pressed="true"]::before { width: 12px; height: 15px; border: 0; border-left: 4px solid currentColor; border-right: 4px solid currentColor; box-sizing: border-box; margin: 0; }
   #abrir-capas { height: 48px; }
-  @media (max-width: 1500px) { #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora lect botones" "centro centro centro"; } }
+  /* hasta 1600 px el dock va en dos filas cortas: arriba la hora, las pestañas, las lecturas resumidas en un botón que despliega
+     el detalle y los botones; abajo la regla */
+  @media (max-width: 1600px) {
+    #dock { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "hora tabs resumen botones" "regla regla regla regla" "momentos momentos momentos momentos" "lect lect lect lect";
+      gap: 8px 22px; padding: 12px 18px; }
+    .dock-centro { display: contents; }
+    .pestanas { grid-area: tabs; align-self: center; } .regla { grid-area: regla; } #regla-dia { margin-top: 18px; } #momentos-caja { grid-area: momentos; }
+    .dock-hora { grid-template-columns: auto auto; grid-template-areas: "h f" "h a"; column-gap: 14px; row-gap: 4px; align-items: center; min-width: 0; }
+    #l-hora { grid-area: h; font-size: 40px; } #elegir { grid-area: f; } #ahora { grid-area: a; justify-self: start; margin: 0; }
+    #lect-resumen { grid-area: resumen; justify-self: start; display: flex; align-items: center; gap: 10px; max-width: 100%; min-width: 0; min-height: 40px; box-sizing: border-box; padding: 8px 14px;
+      border: 1px solid var(--linea-2); border-radius: 12px; background: rgba(239,233,222,.04); cursor: pointer; font: 500 13px/1.2 var(--datos); color: var(--cal); text-align: left; }
+    #lect-resumen:hover { border-color: rgba(239,233,222,.42); }
+    #lect-resumen-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #lect-resumen i { font-style: normal; color: var(--sol); transition: transform .2s; }
+    html.lect-abiertas #lect-resumen i { transform: rotate(180deg); }
+    .dock-lect { display: none; } html.lect-abiertas .dock-lect { display: grid; }
+  }
+  /* en pantallas medianas las pestañas bajan a su propia fila para que el resumen de las lecturas se lea entero */
+  @media (max-width: 1200px) and (min-width: 761px) {
+    #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora resumen botones" "tabs tabs tabs" "regla regla regla" "momentos momentos momentos" "lect lect lect"; }
+    .pestanas { justify-self: start; }
+  }
 
   /* ---------- para qué sirve ---------- */
   .boton.destacado { border-color: var(--sol); color: var(--sol); }
@@ -531,8 +564,9 @@
   #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
   .consultas { display: grid; gap: 14px; }
   html:has(#ir-a:not([hidden])) #rotulo, html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
+  html:has(#capas:not([hidden])) #rotulo, html:has(#capas:not([hidden])) #panel-fachada { display: none; }
   /* un panel a la vez: Confort, Ir a… o Capas tapan la leyenda de la forma de ver */
-  html:has(#confort:not([hidden])) #leyenda, html:has(#ir-a:not([hidden])) #leyenda, html:has(#capas:not([hidden])) #leyenda { display: none; }
+  html:has(#confort:not([hidden])) #leyenda, html:has(#ir-a:not([hidden])) #leyenda, html:has(#capas:not([hidden])) #leyenda, html:has(#sirve:not([hidden])) #leyenda { display: none; }
   .c-grupo h3 { font: 500 11.5px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
   .c-grupo[data-g="lluvia"] h3 { color: var(--lluvia); }
   .c-grupo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
@@ -555,9 +589,9 @@
   .rank button[aria-pressed="true"] { border-color: var(--sol); color: var(--sol); }
 
   /* ---------- capas ---------- */
-  #capas { position: fixed; z-index: 7; right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px); width: min(360px, calc(100vw - 2 * var(--gutter)));
+  #capas { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); width: min(380px, calc(100vw - 2 * var(--gutter) - 150px));
     background: var(--panel-2); border: 1px solid var(--linea); border-radius: 16px; padding: 16px; backdrop-filter: blur(16px); display: grid; gap: 14px; box-sizing: border-box;
-    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); max-height: calc(100vh - var(--dock-h) - 150px); overflow: auto; }
+    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .45s var(--ease); max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--dock-h) - 108px); overflow: auto; overscroll-behavior: contain; }
   @keyframes sube { from { opacity: 0; transform: translateY(10px) } }
   .capas-pie { margin: 0; font: 500 11.5px/1.35 var(--datos); color: var(--cal-2); }
   #motor { color: var(--cal); letter-spacing: 0.04em; }
@@ -627,11 +661,13 @@
     #mirando, .pista { display: none; }
     #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
     #brujula text { font-size: 13px; } #brujula text.n { font-size: 15px; }
-    .hud-botones { display: flex; grid-column: 1; grid-row: 1; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
-    .hud-botones::-webkit-scrollbar { display: none; }
-    .vistas, .lentes { flex: none; scroll-snap-align: start; }
+    .hud-botones { display: contents; }
+    .vistas { grid-column: 1; grid-row: 1; justify-self: start; }
+    .lentes { grid-column: 1 / -1; grid-row: 2; }
+    .lentes button { flex: 1 1 auto; min-width: 0; padding: 8px 4px; }
+    .lentes .info { flex: 0 0 30px; }
     .vistas button { padding: 7px 10px; font-size: 12.5px; }
-    #leyenda { grid-column: 1 / -1; grid-row: 2; width: auto; }
+    #leyenda { grid-column: 1 / -1; grid-row: 3; width: auto; }
     html.en-recorrido #leyenda { display: none; }                    /* en el recorrido, la tarjeta del paso ya lo explica */
     #rotulo { max-width: none; right: 8px; left: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); padding: 9px 12px; gap: 5px; }
     #rotulo-texto { font-size: 13.5px; }
@@ -660,9 +696,10 @@
     .dock-lect small { font-size: 11.5px; }
     #l-fuente { display: none; }
     #capas, #ir-a, #confort { left: 8px; right: 8px; width: auto; }
+    #capas { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px); }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px 18px 14px 14px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
-    .lentes::before { display: none; } .lentes button { padding: 7px 10px; font-size: 12.5px; }
+    .lentes::before { display: none; } .lentes button { font-size: 12.5px; }
     #leyenda { padding: 9px 10px; } .ley-sigue { bottom: -9px; margin: 0 -10px -9px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 19px; }
     #ir-a { background: var(--solido); }
@@ -683,6 +720,7 @@
     #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
     #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
+    #voladizo { --px: 14px; --pb: 13px; }
     #voladizo h2 { font-size: 19px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 11.5px; }
     .parte span { font-size: 11.5px; padding: 6px 9px; } .cota { font-size: 11.5px; padding: 4px 7px; }
   }
@@ -777,6 +815,7 @@
 <p id="aviso-noche" class="tras-intro solo-noche" hidden></p>
 <div id="rotulo" class="tras-intro" aria-live="off">
   <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
+  <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer</button>
   <p id="rotulo-texto"></p>
   <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Ver hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Ver el atardecer de hoy</button></div>
   <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
@@ -876,7 +915,7 @@
     </details>
     <p class="ley-sigue" aria-hidden="true">Hay más abajo ▾</p>
   </div>
-  <p class="pista">Arrastra para girar el edificio · rueda o pellizco para acercarte</p>
+  <p class="pista"><span class="raton">Arrastra para girar · rueda para acercarte</span><span class="tactil">Arrastra para girar · pellizca para acercarte</span></p>
 </aside>
 <div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
 
