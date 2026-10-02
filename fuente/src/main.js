@@ -1091,7 +1091,7 @@ function prepararUI() {
   $('#acerca-sirve').addEventListener('click', () => { $('#acerca').close?.(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
-  $('#rec-salir').addEventListener('click', () => recorrido(null));
+  $('#rec-salir').addEventListener('click', () => { recorrido(null); enfocar($('#abrir-recorrido')); });
   $('#rec-plegar').addEventListener('click', () => plegarRecorrido(!document.documentElement.classList.contains('rec-plegado')));
   $('#rec-ver').addEventListener('click', verRespuesta);
   // nitidez
@@ -1159,7 +1159,7 @@ function prepararUI() {
     viajarA({ fecha: r.f, min: r.min, vista: it.vista, fachada: it.fachada, lente: it.lente, modo: it.modo, titulo: it.t, texto: r.txt ?? it.txt });
   });
   // formas de ver
-  document.querySelectorAll('[data-lente]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.addEventListener('click', () => {
     cerrarOferta(); anunciar();
     ponerLente(b.dataset.lente, !(b.dataset.lente === 'partes' && innerWidth <= 760));   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
@@ -1190,6 +1190,15 @@ function prepararUI() {
     if (S.viaje && (e.key === 'Escape' || e.key === ' ')) { S.viaje.t0 = -1e9; e.preventDefault(); }
     else if (S.paso != null && e.key === 'ArrowRight') recorrido(S.paso + 1);
     else if (S.paso != null && e.key === 'ArrowLeft') recorrido(S.paso - 1);
+  });
+  $('#saltar-a')?.addEventListener('click', (e) => { e.preventDefault(); $('#principal').focus(); });   // sin cambiar el #: el # es el momento
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    // el foco vuelve al botón que abrió el panel; Escape durante un viaje solo lo salta, sin salir del recorrido
+    const dentro = ['#sirve', '#capas', '#ir-a', '#confort', '#recorrido'].find((x) => !$(x).hidden && $(x).contains(document.activeElement));
+    const abridor = dentro === '#recorrido' ? $('#abrir-recorrido') : dentro && document.querySelector(`[aria-controls="${dentro.slice(1)}"][aria-expanded="true"]`);
+    if (S.paso != null && !S.viaje) recorrido(null);
+    if (dentro && (dentro !== '#recorrido' || S.paso == null)) setTimeout(() => enfocar(abridor), 0);
   });
   addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
@@ -1340,7 +1349,7 @@ function pintarRadiacion() {
 function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';
   S.lente = k; if (mostrar) S.verLeyenda = true;
-  document.querySelectorAll('[data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));
+  document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));   // solo los botones: #leyenda y #ley-modos también llevan data-lente
   aplicarPartes(); pintarPartes.f = '';
   document.documentElement.classList.toggle('en-partes', k === 'partes');
   lastLect = '';
@@ -1937,6 +1946,10 @@ function recorrido(i) {
   (conPregunta ? q.antes : q.ir)(); S.momento = null; S.verLeyenda = S.lente !== 'foto'; lastLect = '';
   if (conPregunta && foco) $('#rec-ver').focus();
 }
+/** Devuelve el foco a un botón al cerrar su panel; si ese botón no se ve (en el teléfono no hay «Recorrido guiado» arriba), a la zona principal. */
+function enfocar(b) {
+  if (b && (b.checkVisibility ? b.checkVisibility() : b.offsetParent !== null)) b.focus(); else $('#principal')?.focus();
+}
 /** En el teléfono la tarjeta del paso se pliega a su título para ver la escena entera. */
 function plegarRecorrido(plegar) {
   document.documentElement.classList.toggle('rec-plegado', plegar);
@@ -2190,7 +2203,7 @@ function pintarConsultas() {
   const L = listaConsultas(); S.listaConsultas = L;
   let html = '', grupo = '';
   L.forEach((it, i) => {
-    if (it.grupo !== grupo) { if (grupo) html += '</ul></section>'; grupo = it.grupo; html += `<section class="c-grupo" data-g="${grupo === 'Lluvia' ? 'lluvia' : grupo === 'Viento' ? 'viento' : 'sol'}"><h4>${grupo}</h4><ul>`; }
+    if (it.grupo !== grupo) { if (grupo) html += '</ul></section>'; grupo = it.grupo; html += `<section class="c-grupo" data-g="${grupo === 'Lluvia' ? 'lluvia' : grupo === 'Viento' ? 'viento' : 'sol'}"><h3>${grupo}</h3><ul>`; }
     const rank = it.rank ? `<span class="rank" aria-label="Otros del ranking">${it.rank.slice(1).map((r, j) => `<button type="button" data-i="${i}" data-r="${j + 1}" title="${fechaCorta(r.f)} · ${r.v}">${j + 2}</button>`).join('')}</span>` : '';
     html += `<li><button type="button" class="c-item" data-i="${i}"><span class="c-t">${it.t}</span><span class="c-d num">${fechaCorta(it.f)} · ${hhmm(it.min)} · ${it.fachada ? 'fachada ' + it.fachada.toUpperCase() : it.vista === 'aerea' ? 'aérea' : it.vista}</span><span class="c-v num">${it.v ?? ''}</span><span class="c-txt">${it.txt ?? ''}</span></button>${rank}</li>`;
   });
