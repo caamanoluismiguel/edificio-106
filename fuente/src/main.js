@@ -824,6 +824,7 @@ function brujula(p) {
   const clave = [Math.round(ang * 2), Math.round(p.az), p.alt > 0 ? 1 : 0, Math.round(rumbo / 22.5)].join(',');
   if (clave === lastBruj) return; lastBruj = clave;
   $('#rosa-g').setAttribute('transform', `rotate(${ang.toFixed(1)})`);
+  for (const t of document.querySelectorAll('#rosa-g text')) t.setAttribute('transform', `rotate(${(-ang).toFixed(1)} ${t.getAttribute('x')} ${t.getAttribute('y')})`);   // las letras, derechas
   const r = (p.az) * Math.PI / 180;
   const sol = $('#brujula-sol'); sol.setAttribute('cx', (40 * Math.sin(r)).toFixed(1)); sol.setAttribute('cy', (-40 * Math.cos(r)).toFixed(1));
   sol.style.opacity = p.alt > 0 ? 1 : 0.28;
@@ -1127,6 +1128,7 @@ function prepararUI() {
   $('#rotulo-abrir').addEventListener('click', () => { ROT.abierto = true; ROT.t = performance.now(); soloUnPanel(null); });
   $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; if (S.verLeyenda) soloUnPanel('leyenda'); lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
+  $('#ley-texto').addEventListener('click', () => { const el = $('#leyenda'), ab = el.classList.toggle('texto'); textoLeyenda(ab); hayMas(el); });
   if (innerWidth <= 760) $('#ley-mas').open = false;
   prepararPartes();
   // recorrido guiado
@@ -1445,6 +1447,7 @@ function ponerLente(k, mostrar = true) {
   document.documentElement.classList.toggle('en-partes', k === 'partes');
   lastLect = '';
 }
+function textoLeyenda(abierto) { const b = $('#ley-texto'); b.setAttribute('aria-expanded', String(abierto)); b.textContent = abierto ? 'Menos' : 'Leer'; }
 function leyenda(c) {
   const L = LENTES[S.lente], el = $('#leyenda');
   el.hidden = !S.verLeyenda; $('#lente-info').setAttribute('aria-expanded', String(!!S.verLeyenda));
@@ -1461,6 +1464,7 @@ function leyenda(c) {
   }
   if (el.dataset.lente !== claveT) {                            // textos fijos: solo al cambiar de lente (o al año típico del sol, o de parte)
     el.dataset.lente = claveT;
+    if (el.classList.contains('texto')) { el.classList.remove('texto'); textoLeyenda(false); }
     $('#ley-t').textContent = esPartes ? P.t : L.t; $('#ley-que').textContent = esPartes ? P.que : L.que;
     $('#ley-parte').hidden = !esPartes;
     if (esPartes) {

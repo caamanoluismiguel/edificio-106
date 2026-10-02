@@ -61,7 +61,10 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
   - sin degradados;
   - no renombrar botones existentes, en especial «Confort»;
   - no sobrecargar;
-  - poco esfuerzo y alto valor primero.
+  - poco esfuerzo y alto valor primero;
+  - ámbar (`--sol`) solo para lo que es el sol (brújula, regla, lente Sol), la acción primaria (`.primario`, play), los enlaces y los eyebrows de los paneles; lo seleccionado o encendido va en crema (`--cal`) y los bordes de panel en `--linea-2`;
+  - escala de letra: 11 · 12 · 13 · 14 · 15 · 16 · 18 · 22 px (26, 30 y 46 para títulos y la hora); radios: 8 chips · 12 tarjetas · 18 paneles · 999 píldoras. Nada de medios píxeles;
+  - las fuentes de Google se cargan en los pesos que el CSS pide (Plex Mono 400/500/600): un peso que no está cargado sale como negrita sintética.
 - **Honestidad:** decir lo que no hace (interior, CFD, desagües). ERA5 es una celda de ~28 km: marca 0,6 a 1,4 g/kg más de humedad que Tocumen y aplana la oscilación del día. No afirmar el año de construcción, el uso original ni el autor del 106: en los planos de CERL de los años 30, el «106» era un galpón de madera.
 - **Descartado por LM, no proponer de nuevo:** recorridos con sombra, lluvia de la ACP, consumo eléctrico, captación de agua, el catálogo retocado con IA, la reexportación desde Blender y la AO horneada (+842 KB, casi invisible).
 
