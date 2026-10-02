@@ -85,7 +85,10 @@ function calidad() {
   const q = new URLSearchParams(location.search);
   if (q.has('ligero')) return { nivel: 'bajo', dpr: 1, px: 1.2e6, sombras: 1024, particulas: 20000, bloom: false, grupos: ['sitio', 'arquitectura', 'ventanas', 'entrada'] };
   const movil = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820;
-  if (movil) return { nivel: 'bajo', dpr: 1.5, px: 1.6e6, sombras: 2048, particulas: 40000, bloom: false };
+  // teléfono: las tejas livianas (cubiertas_movil.glb, 1,0 MB en vez de 1,4 MB por la red) y la vegetación y el entorno
+  // después de armar el edificio, en un rato libre (la intro no los espera); la serie horaria, solo si hace falta (pedirSerie)
+  if (movil) return { nivel: 'bajo', dpr: 1.5, px: 1.6e6, sombras: 2048, particulas: 40000, bloom: false, tejasLivianas: true,
+    grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto'), diferidos: ['vegetacion', 'contexto'], serieAlPedir: true };
   if (!navigator.gpu) return { nivel: 'medio', dpr: 1.25, px: 2.4e6, sombras: 2048, particulas: 60000, bloom: false };
   const ultra = location.hash === '#ultra';
   return { nivel: 'alto', dpr: ultra ? 2 : 1.5, px: ultra ? 6e6 : 3.7e6, sombras: 4096, particulas: ultra ? 120000 : 90000, bloom: true, ao: ultra };
@@ -211,7 +214,9 @@ async function arrancar() {
     escena.grupos.entrada?.root.traverse((o) => { if (o.isMesh && cerca.containsBox(b.setFromObject(o))) c.union(b); });
     if (!c.isEmpty()) ESQ106 = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? c.max.x : c.min.x, i & 2 ? c.max.y : c.min.y, i & 4 ? c.max.z : c.min.z));
   });
-  escena.cargaCompleta.then(() => clima.cargarHorario(BASE).then(() => { dibujarDecadas(); refrescar(); }).catch((e) => console.warn('clima horario', e)));
+  // la serie horaria: en escritorio, en un rato libre después del modelo; en el teléfono, cuando algo la necesita (o con un enlace a 2001–2025)
+  if (!q.serieAlPedir || /[?&]prueba/.test(location.search) || /^#m-20(0[1-9]|1\d|2[0-5])/.test(location.hash))
+    escena.cargaCompleta.then(() => { if (globalThis.requestIdleCallback) requestIdleCallback(() => pedirSerie(), { timeout: 3000 }); else setTimeout(pedirSerie, 500); });
   pVivo.then(() => refrescar());
   if (location.hash === '#depurar') depurar();
   if (MIDE) escena.cargaCompleta.then(async () => {
@@ -225,6 +230,17 @@ let compilando = 0;
 function compilarPronto() {
   clearTimeout(compilando);
   compilando = setTimeout(() => { escena.precompilar().catch(() => {}); }, 60);
+}
+
+// La serie horaria 2001–2025 (datos/clima_horario.bin.gz, 0,9 MB) se pide una sola vez, la primera vez que hace falta: una fecha
+// de 2001–2025 (climaEn, viajarA), las pestañas «Año» y «25 años», «Ir a…» y Confort. Mientras llega, el dock muestra lo típico
+// y lo dice. Si falla, se reintenta a los 30 s como mínimo.
+function pedirSerie() {
+  if (clima.horario) return Promise.resolve(true);
+  if (pedirSerie.p || performance.now() - (pedirSerie.fallo ?? -1e9) < 30000) return pedirSerie.p ?? Promise.resolve(false);
+  return (pedirSerie.p = clima.cargarHorario(BASE).then(() => { dibujarDecadas(); refrescar(); return true; })
+    .catch((e) => { console.warn('clima horario', e); pedirSerie.fallo = performance.now(); return false; })
+    .finally(() => { pedirSerie.p = null; }));
 }
 
 function estadoCarga(t) { const el = $('#carga-estado'); if (el) el.textContent = t; }
@@ -351,6 +367,7 @@ const marcaT = (f, min) => Date.UTC(f.y, f.m - 1, f.d) + min * 60e3;
 const numDia = (f) => Math.round(Date.UTC(f.y, f.m - 1, f.d) / 864e5);
 function solDeVector(v) { const alt = Math.asin(Math.max(-1, Math.min(1, v.y))) * 180 / Math.PI; const az = ((EJE_LARGO - Math.atan2(-v.z, v.x) * 180 / Math.PI) % 360 + 360) % 360; return { alt, az }; }
 function viajarA(d) {
+  if (clima.enSerie(d.fecha)) pedirSerie();          // que llegue durante el viaje
   parar(); explorar();
   S.mesSerie = null; S.aguacero = false; $('#capa-aguacero').checked = false; S.explica = null;
   S.momento = d.titulo ? { titulo: d.titulo, texto: d.texto ?? '' } : null;
@@ -462,8 +479,10 @@ function silenciar() { clearTimeout(anunciar.t); VIVAS.forEach((x) => $(x)?.setA
 function climaEn(f, min) {
   if (S.viaje) return { fuente: 'viaje', nubes: S.viaje.nubes0 + (35 - S.viaje.nubes0) * Math.min(1, (performance.now() - S.viaje.t0) / S.viaje.T), lluvia: 0, dni: null, temp: null };
   if (S.modo === 'ahora' && clima.vivo) return clima.vivo;
-  if (S.mesSerie !== null) { const q = clima.meses[S.mesSerie]; if (q) return { fuente: 'mes', nubes: q.nubes ?? 55, lluviaMes: q.lluvia, lluvia: 0, temp: null }; }
+  if (S.mesSerie !== null) { const q = clima.meses[S.mesSerie]; if (q) { if (!clima.horario) pedirSerie(); return { fuente: 'mes', nubes: q.nubes ?? 55, lluviaMes: q.lluvia, lluvia: 0, temp: null }; } }
   const r = clima.registro(f, min); if (r) return r;
+  // 2001–2025 sin la serie todavía: se pide y, mientras llega, lo típico (ese día viene en la serie: no se consulta en línea)
+  if (clima.enSerie(f) && !clima.horario) { pedirSerie(); return { ...clima.tipico(f.m, min), cargandoSerie: true }; }
   // fuera de 2001–2025: se pide el día en línea (una vez); mientras llega, lo típico
   const p = clima.pedirDia(f);
   if (p instanceof Promise && !p._visto) { p._visto = true; p.then(() => { lastLect = ''; }); }
@@ -633,8 +652,22 @@ function encuadreMovil(dt) {
 const RES = { iv: [], minIv: 16.7, techo: 0, tTecho: -1e9, fija: false };
 // máxima nitidez por defecto (pedido de LM): solo se apaga si alguien la desmarca en Capas
 try { RES.fija = localStorage.getItem('e106-nitidez') !== '0'; } catch (e) { RES.fija = true; }
+// En WebGL 2 (nivel 'medio'), si el primer segundo de cuadros seguidos, ya sin intro, carga ni compilación, promedia más de
+// 33 ms (menos de 30 por segundo), se baja una sola vez al nivel 'bajo' (Escena.bajarNivel). «Máxima nitidez» sigue mandando
+// dentro del nivel: fija la resolución en el máximo del nivel nuevo. Con ?prueba no se baja nunca (las capturas deben repetirse).
+const NIVEL = { suma: 0, n: 0, hecho: /[?&]prueba/.test(location.search) };
+function vigilarNivel(iv, previo) {
+  if (NIVEL.hecho || escena.backend !== 'WebGL 2' || escena.calidad.nivel === 'bajo') return;
+  if (!previo || intro || S.viaje || !escena.cargado || escena.compilando || iv > 250 || document.visibilityState !== 'visible') return;
+  NIVEL.suma += iv; NIVEL.n++;
+  if (NIVEL.suma < 1000) return;
+  NIVEL.hecho = true;
+  const media = NIVEL.suma / NIVEL.n;
+  if (media > 33 && escena.bajarNivel()) { anotar('aviso', `WebGL 2 a ${f1(media)} ms por cuadro: paso al nivel bajo`); RES.iv = []; RES.techo = 0; pintarResolucion(); }
+}
 function medirCuadro(now, dtReal) {
   const iv = dtReal * 1000, previo = S.dibujoPrevio; S.dibujoPrevio = true;
+  vigilarNivel(iv, previo);
   if (RES.fija) { if (Math.abs(escena.renderer.getPixelRatio() - escena.dprMax()) > 0.01) { escena.fijarResolucion(escena.dprMax()); pintarResolucion(); } return; }
   if (!previo || intro || S.viaje || iv > 90 || document.visibilityState !== 'visible') return;
   RES.iv.push(iv); if (RES.iv.length < 50) return;
@@ -838,7 +871,7 @@ function lecturas(p, c) {
     else if (c.fuente === 'dia') fuente = c.modelo === 'era5' ? 'Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km.' : 'Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea.';
     else if (c.fuente === 'mes') fuente = `Total del mes en la serie 2001–2025 (Open-Meteo).`;
     else fuente = vivo ? (globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (2001–2025). En esta vista previa no hay conexión al tiempo real.' : 'Típico para esta fecha y hora (2001–2025): no se pudo leer el tiempo real.')
-      : c.buscando ? 'Buscando el dato de ese día en Open-Meteo…' : globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión.' : 'Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.';
+      : c.cargandoSerie ? 'Cargando la serie horaria 2001–2025…' : c.buscando ? 'Buscando el dato de ese día en Open-Meteo…' : globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión.' : 'Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.';
   }
   $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
   // resumen de una línea para el teléfono: solo los valores
@@ -1041,6 +1074,7 @@ function irAAhora(volar = true) {
   lastLect = '';
 }
 function ponerPestana(t) {
+  if (t !== 'dia') pedirSerie();
   S.pestana = t;
   document.querySelectorAll('[data-tab]').forEach((b) => { b.setAttribute('aria-selected', String(b.dataset.tab === t)); b.tabIndex = b.dataset.tab === t ? 0 : -1; });
   for (const k of ['dia', 'anio', 'decadas']) $('#regla-' + k).hidden = k !== t;
@@ -1125,7 +1159,7 @@ function prepararUI() {
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
-    if (abrir) { cerrarOferta(); abrirVoladizo(false); }
+    if (abrir) { cerrarOferta(); abrirVoladizo(false); pedirSerie(); }
     if (abrir) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     if (abrir) {
       { const a = ahoraPanama(), t = new Date(Date.UTC(a.y, a.m - 1, a.d + 15)); $('#ir-fecha').max = kf2({ y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() }); }   // el pronóstico llega a 15 días
@@ -2032,6 +2066,7 @@ const UTCI_COL = { 4: '#8fa39b', 5: '#f2c46b', 6: '#e8913a', 7: '#cf5a2c', 8: '#
 async function abrirConfort(abrir) {
   $('#confort').hidden = !abrir; $('#abrir-confort').setAttribute('aria-expanded', String(abrir));
   if (!abrir) return;
+  pedirSerie();
   cerrarOferta(); abrirVoladizo(false); globalThis.__abrirIr?.(false);
   $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false');
   $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false');
