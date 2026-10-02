@@ -9,4 +9,6 @@ npx vite build --logLevel warn
 cp dist/js/app.js ../js/app.js
 V=$(cd .. && cat js/app.js modelo/*.glb datos/* texturas/* | shasum | cut -c1-10)
 { echo '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'; sed -n '1,/<\/style>/p' cuerpo.html; echo '</head><body>'; sed '1,/<\/style>/d' cuerpo.html; echo "<script type=\"module\" src=\"js/app.js?v=$V\"></script></body></html>"; } > ../index.html
+# los puntos de la intro (datos/intro.bin.gz) se precargan con la misma URL que pide la app (conVersion): llegan antes que el modelo
+perl -pi -e "s|<meta charset=\"utf-8\">|<meta charset=\"utf-8\"><link rel=\"preload\" href=\"datos/intro.bin.gz?v=$V\" as=\"fetch\" crossorigin>|" ../index.html
 echo "raíz armada · versión $V"
