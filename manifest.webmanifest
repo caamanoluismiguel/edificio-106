@@ -1,0 +1,16 @@
+{
+  "name": "Edificio 106: sol y lluvia",
+  "short_name": "Edificio 106",
+  "description": "Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a1216",
+  "theme_color": "#0a1216",
+  "icons": [
+    { "src": "img/icono.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "img/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icono-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
