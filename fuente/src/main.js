@@ -149,11 +149,20 @@ if (globalThis.GPUTexture) {
 }
 
 let visto = false; try { visto = localStorage.getItem('e106-visto') === '1'; } catch (e) { /* sin almacenamiento */ }
+// «Saltar» pulsado antes de que empiece la intro: se recuerda y la intro arranca ya en su final
+let saltoPendiente = false, alSaltar = () => {};
+const pSalto = new Promise((ok) => { alSaltar = ok; });
 
 // ---------------- Arranque ----------------
 async function arrancar() {
   const q = calidad();
   estadoCarga('Preparando la escena…');
+  // los puntos de la intro se piden primero (index.html ya los precarga con la misma URL); son decorativos y nada los espera
+  const pIntro = puntosIntro(BASE).catch((e) => { console.warn(e); return null; });
+  $('#saltar').addEventListener('click', () => {
+    if (!intro) { saltoPendiente = true; alSaltar(); return; }
+    if (intro.velocidad > 1) intro.t = intro.L; else intro.velocidad = 4;
+  });
   const MIDE = /^#medir/.test(location.hash);
   let pideGL = /[?&]webgl/.test(location.search) || location.hash === '#medir-gl' || location.hash === '#webgl';
   try { if (localStorage.getItem('e106-motor') === 'webgl' && location.hash !== '#webgpu') pideGL = true; if (location.hash === '#webgpu') localStorage.removeItem('e106-motor'); } catch (e) { /* sin almacenamiento */ }
@@ -179,23 +188,24 @@ async function arrancar() {
   if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, enlaceMomento, VISTAS, VISTA_FACHADA, posicionSol };
 
   const bytes = {};
-  escena.cargar(BASE, (g, l, t) => {
+  const pModelo = escena.cargar(BASE, (g, l, t) => {
     if (t) bytes[g] = [l, t];
     const [L, T] = Object.values(bytes).reduce((a, b) => [a[0] + b[0], a[1] + b[1]], [0, 0]);
     if (T) estadoCarga(`Modelo · ${f1(L / 1e6)} MB`);
     if (l === 1 && t === 1) compilarPronto();
   });
-  const pIntro = puntosIntro(BASE).catch((e) => { console.warn(e); return null; });
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
   fetch(conVersion(BASE + 'datos/consultas.json')).then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
   setInterval(() => { if (S.modo === 'ahora') clima.cargarVivo(); }, 10 * 60e3);
 
   prepararUI();
-  const d = await pIntro;
-  const n = d ? escena.construirParticulas(d, q.particulas) : 0;
+  // la intro no espera a los puntos: si no llegaron cuando ya está el primer grupo del modelo (más un margen), se arma sin ellos
+  const primero = pModelo.then((e) => e.promesas[GRUPOS.find((g) => (e.calidad.grupos ?? GRUPOS).includes(g))]).catch(() => {});
+  const d = await Promise.race([pIntro, primero.then(() => new Promise((ok) => setTimeout(ok, 2000))), pSalto]);
+  const n = d && !saltoPendiente ? escena.construirParticulas(d, q.particulas) : 0;
   estadoCarga(n ? `${miles(n)} puntos` : 'Cargando el modelo…');
-  empezarIntro();
+  empezarIntro(n);
   requestAnimationFrame(bucle);
   escena.cargaCompleta.then(async () => {
     // compilar de antemano la lluvia y el diagrama de sombras, para que el primer aguacero o el primer clic en «Sombras» no congelen la imagen
@@ -203,7 +213,7 @@ async function arrancar() {
     // la silueta del diagrama de sombras recorre toda la geometría (~120 ms): se calcula en un rato libre y no al primer clic
     escena.prepararSilueta();                    // en pedazos, en ratos libres
   });
-  escena.cargaCompleta.then(() => { if (n) estadoCarga(`${miles(n)} puntos · modelo completo`); });
+  escena.cargaCompleta.then(() => estadoCarga(n ? `${miles(n)} puntos · modelo completo` : 'Modelo completo'));
   escena.cargaCompleta.then(() => {
     // cuerpo, cubiertas y ventanas, más las piezas del pórtico pegadas al edificio (en entrada.glb hay vigas que llegan a z ≈ 30)
     const c = new THREE.Box3(); for (const g of ['arquitectura', 'cubiertas', 'ventanas']) if (escena.grupos[g]?.root) c.expandByObject(escena.grupos[g].root);
@@ -230,7 +240,7 @@ function compilarPronto() {
 function estadoCarga(t) { const el = $('#carga-estado'); if (el) el.textContent = t; }
 
 // ---------------- Intro automática ----------------
-function empezarIntro() {
+function empezarIntro(n) {
   const h = location.hash.replace('#', '');
   const corta = visto || !!FACHADAS[h] || /^m-/.test(h) || reduce;
   intro = { t: 0, L: /[?&]rapido/.test(location.search) || /^#medir/.test(location.hash) ? 4 : corta ? 4.5 : 14, velocidad: 1, rotulo: -1 };
@@ -241,6 +251,8 @@ function empezarIntro() {
   intro.m1 = a.min;
   intro.m0 = a.min < sale - 45 ? a.min - 60 : a.min > pone + 60 ? pone - 60 : sale - 45;
   intro.cam0 = escena.camera.position.clone();
+  // sin puntos no hay nada que juntar: se salta esa parte y el sólido empieza a revelarse casi enseguida
+  if (saltoPendiente) intro.t = intro.L; else if (!n) intro.t = 0.26 * intro.L;
 }
 
 function pasoIntro(dt) {
@@ -1054,7 +1066,6 @@ function prepararUI() {
   // el rótulo y el panel de capas se apoyan sobre el dock: su altura real va a --dock-h
   const ro = new ResizeObserver(() => document.documentElement.style.setProperty('--dock-h', $('#dock').offsetHeight + 'px'));
   ro.observe($('#dock'));
-  $('#saltar').addEventListener('click', () => { if (!intro) return; if (intro.velocidad > 1) intro.t = intro.L; else intro.velocidad = 4; });
   $('#sonido').addEventListener('click', () => {
     const on = $('#sonido').getAttribute('aria-pressed') !== 'true';
     on ? sonido.encender() : sonido.apagar();

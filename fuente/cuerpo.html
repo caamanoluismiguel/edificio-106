@@ -157,7 +157,8 @@
   /* panel plano detrás del título: la misma legibilidad que daba el velo, sin degradado */
   .intro-titulo-caja { display: grid; gap: 18px; justify-self: start; background: var(--panel-2); border: 1px solid var(--linea); border-radius: 22px;
     padding: clamp(18px, 2.4vw, 30px) clamp(18px, 2.6vw, 34px); backdrop-filter: blur(12px); transition: opacity 1.1s var(--ease), transform 1.4s var(--ease), filter 1.1s; transform-origin: left center; }
-  html:not(.intro-titulo) .intro-titulo-caja { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); }
+  /* visible desde el primer cuadro, mientras carga; se va cuando la intro lo dice */
+  html.en-intro:not(.intro-titulo) .intro-titulo-caja, html.listo .intro-titulo-caja { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); }
   #intro-rotulos { list-style: none; margin: 0; padding: 0; position: relative; height: 1.2em; font: 700 clamp(28px, 4.2vw, 62px)/1.05 var(--display); letter-spacing: -0.02em; font-variation-settings: "opsz" 72; }
   #intro-rotulos li { position: absolute; left: 0; top: 0; white-space: nowrap; background: var(--panel-2); border-radius: 16px; padding: .12em .42em .18em; opacity: 0; transform: translateY(60%); filter: blur(8px); transition: opacity .7s var(--ease), transform .9s var(--ease), filter .7s; }
   #intro-rotulos li.activo { opacity: 1; transform: none; filter: none; }
