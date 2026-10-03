@@ -82,7 +82,11 @@ out = dict(
     humedad=dict(nota='g/kg que ERA5 marca de más, por mes (enero a diciembre); se resta a la humedad específica', sesgo=dq),
     resultado=dict(horas30_crudo=round(float((ET >= 30).sum() / anios)), horas30_ajustado=round(float((TA >= 30).sum() / anios)),
                    horas30_ajustado_2017_2025=round(float((TA[cal] >= 30).sum() / 9)),
-                   maxima_crudo=round(float(ET.max()), 1), maxima_ajustada=round(float(TA.max()), 1)))
+                   maxima_crudo=round(float(ET.max()), 1), maxima_ajustada=round(float(TA.max()), 1),
+                   # la hora más calurosa de la serie ajustada (el momento «La hora más calurosa» de «25 años»; main.js
+                   # la usa en lugar de la cruda de clima_resumen.json, que sale de clima_bin.py y no conoce el ajuste)
+                   hora_calor=dict(fecha=str(tl[int(np.argmax(TA))].astype('datetime64[D]')), hora=int(hr[int(np.argmax(TA))]),
+                                   valor=round(float(TA.max()), 1))))
 dst = os.path.join(AQUI, '../datos/ajuste_albrook.json')
 json.dump(out, open(dst, 'w'), ensure_ascii=False, separators=(',', ':'))
 print('escrito', dst, os.path.getsize(dst), 'bytes')
