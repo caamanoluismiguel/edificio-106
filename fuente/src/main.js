@@ -198,7 +198,7 @@ async function arrancar() {
     if (T) estadoCarga(`Modelo · ${f1(L / 1e6)} MB`);
     if (l === 1 && t === 1) compilarPronto();
   });
-  clima.cargarAjuste(conVersion(BASE + 'datos/ajuste_albrook.json')).then(() => { lastLect = ''; });
+  clima.cargarAjuste(conVersion(BASE + 'datos/ajuste_albrook.json')).then(() => { lastLect = ''; if (clima.ok) pintarMomentos(); });
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
   fetch(conVersion(BASE + 'datos/consultas.json')).then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
   const pVivo = clima.cargarVivo();
@@ -385,10 +385,10 @@ function viajarA(d) {
   if (clima.enSerie(d.fecha)) pedirSerie();          // que llegue durante el viaje
   parar(); explorar();
   S.mesSerie = null; S.aguacero = false; $('#capa-aguacero').checked = false; S.explica = null;
-  S.momento = d.titulo ? { titulo: d.titulo, texto: d.texto ?? '' } : null;
   if (d.lente) ponerLente(d.lente, d.lente !== 'foto' && S.paso == null);
   if (d.modo && MODO_DE[d.lente]) S[MODO_DE[d.lente]] = d.modo;
   if (S.pestana !== 'dia') ponerPestana('dia');
+  S.momento = d.titulo ? { titulo: d.titulo, texto: d.texto ?? '' } : null;   // después de ponerPestana, que lo borra
   if (d.fachada) mostrarFachada('fachada-' + d.fachada); else { S.fachada = null; document.documentElement.classList.remove('en-fachada'); }
   const f1 = { y: d.fecha.y, m: d.fecha.m, d: d.fecha.d }, m1 = d.min;
   const dh = Math.abs(marcaT(f1, m1) - marcaT(S.fecha, S.min)) / 3.6e6;
@@ -854,7 +854,7 @@ let lastLect = '';
 function lecturas(p, c) {
   const kf = `${S.fecha.y}-${S.fecha.m}-${S.fecha.d}`;
   if (kf !== S.kf && !S.viaje) { S.kf = kf; dibujarReglas(); }
-  const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0);
+  const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0) + '|' + S.modo + (clima.vivo?.albrook && !clima.vivo.albrook.auto ? 'A' : '');
   if (kc !== S.kClimaDia && !S.viaje) { S.kClimaDia = kc; pintarClimaDia(); }
   const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, S.viaje?.fase].join('|');
   confortHora(p, c);                              // el punto de la carta y la línea de UTCI, si el panel está abierto
@@ -1042,9 +1042,15 @@ function dibujarDecadas() {
   $('#dec-leyenda').textContent = `Lluvia de cada mes, 2001–2025 · el más lluvioso: ${Math.round(max)} mm`;
 }
 
+/** Los extremos de clima_resumen.json (clima_bin.py, ERA5 sin ajustar). La hora más calurosa se toma de la serie ajustada a
+ *  Albrook (ajuste_albrook.py → resultado.hora_calor), la misma que se ve al ir ahí; con ?era5=crudo, la cruda. */
+function momentosSerie() {
+  const hc = clima.ajuste?.resultado?.hora_calor;
+  return (clima.r?.momentos ?? []).map((m) => m.id === 'hora-calor' && hc ? { ...m, fecha: hc.fecha, hora: hc.hora, valor: hc.valor, ajustado: true, crudo: m } : m);
+}
 function pintarMomentos() {
   const ul = $('#momentos'); ul.textContent = '';
-  for (const m of clima.r.momentos ?? []) {
+  for (const m of momentosSerie()) {
     const li = document.createElement('li'), b = document.createElement('button');
     b.type = 'button'; b.innerHTML = `<span></span><b></b>`;
     b.querySelector('span').textContent = m.titulo; b.querySelector('b').textContent = `${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}`;
@@ -1053,18 +1059,26 @@ function pintarMomentos() {
   }
 }
 
+/** Texto de un extremo de la serie: la lluvia dice «pluviómetro»; la temperatura, «termómetro», y si va ajustada, la cruda. */
+function textoMomento(m, cuando) {
+  const v = `${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}`;
+  if (m.unidad !== '°C') return `${cuando}: ${v}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.`;
+  if (!m.ajustado) return `${cuando}: ${v}, según ERA5 sin ajustar para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un termómetro en el sitio.`;
+  const [y0, m0, d0] = m.crudo.fecha.split('-').map(Number);
+  return `${cuando}: ${v}, ERA5 ajustado al aeropuerto de Albrook para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un termómetro en el sitio. Sin ajustar, la hora más calurosa de ERA5 es el ${d0} de ${MESES[m0 - 1]} de ${y0} a las ${hhmm(m.crudo.hora * 60)}, con ${f1(m.crudo.valor)} °C.`;
+}
 function irAMomento(m) {
   const [y, mo, d] = m.fecha.split('-').map(Number);
   const esMes = /^mes/.test(m.id), esAnio = /^anio/.test(m.id);
   if (!esMes && !esAnio) {
     const cuando = `${d} de ${MESES[mo - 1]} de ${y}${/^hora-lluvia|^dia/.test(m.id) ? `, de ${hhmm(m.hora * 60 - 60)} a ${hhmm(m.hora * 60)}` : ', ' + hhmm(m.hora * 60)}`;
     viajarA({ fecha: { y, m: mo, d }, min: /^hora-lluvia|^dia/.test(m.id) ? m.hora * 60 - 30 : m.hora * 60, vista: 'esquina', titulo: m.titulo + ' de la serie',
-      texto: `${cuando}: ${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.` });
+      texto: textoMomento(m, cuando) });
     ponerPestana('decadas'); S.momento = S.momento; return;
   }
   explorar(); parar(); S.fecha = { y, m: mo, d }; S.min = m.hora * 60;
   const cuando = esAnio ? `${y}` : esMes ? `${MESES[mo - 1]} de ${y}` : `${d} de ${MESES[mo - 1]} de ${y}${/^hora-lluvia/.test(m.id) ? `, de ${hhmm(m.hora * 60 - 60)} a ${hhmm(m.hora * 60)}` : /^hora/.test(m.id) ? ', ' + hhmm(m.hora * 60) : ''}`;
-  S.momento = { titulo: m.titulo + ' de la serie', texto: `${cuando}: ${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.` };
+  S.momento = { titulo: m.titulo + ' de la serie', texto: textoMomento(m, cuando) };
   // mes y año: la escena muestra la lluvia del mes; hora y día: el dato de esa hora
   S.mesSerie = esMes || esAnio ? (y - 2001) * 12 + mo - 1 : null;
   lastLect = '';
@@ -2062,7 +2076,7 @@ function explicacion(k, p, c) {
     const txtLl = c.albrook && !c.albrook.auto ? '' : ll >= 0.1 && !llueve(c) ? `Da ${f1(ll)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${UMBRAL_TXT}).` : llueve(c) ? `Llueven ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : 'No llueve a esa hora.';
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : (c.ajustado ? 'Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero')+' muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, ERA5 marca lluvia en la misma hora una de cada cinco veces que allí llovió (2017–2025). La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, ERA5 tiene unas 0,8 veces las horas con lluvia que informa el observador de Albrook de diciembre a marzo, y unas 1,15 veces de abril a noviembre (2017–2025).'}`];
   }
-  if (k === 'tab-dia') return ['La regla del día', 'Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras azules son la lluvia de cada hora y lo gris, las horas en que las nubes tapan el sol. Arrástrala para recorrer el día.'];
+  if (k === 'tab-dia') return ['La regla del día', `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${UMBRAL_TXT}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de un cielo despejado, y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`];
   if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
   if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie.'];
   return null;
@@ -2153,23 +2167,29 @@ function pintarClimaDia() {
   const f = S.fecha, g = $('#dia-clima'); if (!g) return;
   let h = '', fuente = '';
   const reg = (min) => clima.registro(f, min) ?? clima.registroDia(f, min);
-  const hay = !!reg(0);
+  const r0 = reg(0), hay = !!r0, u = umbralLluvia(f.m);
   for (let i = 0; i < 24; i++) {
     const x = i / 24 * 1000 + 2, w = 1000 / 24 - 4;
     if (hay) {
       const r = reg(i * 60), q = reg(i * 60 + 30), alt = posicionSol({ ...f, h: i, min: 30 }).alt;
-      if (alt > 2 && q?.dni != null) { const k = clamp01(q.dni / Math.max(40, dniDespejado(alt))); if (k < 0.85) h += `<rect class="nube" x="${x - 2}" y="6" width="${w + 4}" height="16" opacity="${(0.62 * (1 - k)).toFixed(2)}"></rect>`; }
       const mm = r?.lluvia ?? 0;
-      if (mm >= 0.1) { const hh = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(mm) / Math.log1p(15))); h += `<rect class="gota" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm</title></rect>`; }
-      fuente = 'lluvia y nubes de cada hora (ERA5)';
+      // gris: cuánto sol directo falta frente al de cielo despejado (Meinel); en las horas en que la escena dibuja lluvia, lleno
+      if (alt > 2 && q?.dni != null) { const k = mm >= u ? 0 : clamp01(q.dni / Math.max(40, dniDespejado(alt))); if (k < 0.85) h += `<rect class="nube" x="${x - 2}" y="6" width="${w + 4}" height="16" opacity="${(0.62 * (1 - k)).toFixed(2)}"></rect>`; }
+      // barras llenas: la lluvia que la escena dibuja (desde el umbral del mes); una raya tenue: la lluvia débil de la celda
+      if (mm >= u) { const hh = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(mm) / Math.log1p(15))); h += `<rect class="gota" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm</title></rect>`; }
+      else if (mm >= 0.1) h += `<rect class="gota debil" x="${x}" y="20" width="${w}" height="2" rx="1"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm, lluvia débil en la celda (la escena no la dibuja)</title></rect>`;
     } else if (clima.ok) {
       const t = clima.tipico(f.m, i * 60), pr = t?.probLluvia ?? 0;
-      if (pr >= 5) { const hh = Math.max(1.5, 16 * pr / 100); h += `<rect class="prob" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: llueve en ${Math.round(pr)} % de estas horas (típico de ${MESES[f.m - 1]})</title></rect>`; }
-      fuente = `probabilidad de lluvia típica de ${MESES[f.m - 1]}`;
+      if (pr >= 5) { const hh = Math.max(1.5, 16 * pr / 100); h += `<rect class="prob" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: llueve 1 mm o más en ${Math.round(pr)} % de estas horas (típico de ${MESES[f.m - 1]})</title></rect>`; }
     }
   }
+  if (hay) {
+    const src = r0.fuente === 'serie' ? 'ERA5' : r0.modelo === 'era5' ? 'ERA5, consultado en línea' : 'pronóstico de modelo (Open-Meteo)';
+    const alb = S.modo === 'ahora' && clima.vivo?.albrook && !clima.vivo.albrook.auto ? '; el ahora sigue el parte de Albrook' : '';
+    fuente = `▮ lluvia desde ${f1(u, u % 1 ? 1 : 0)} mm en la hora · ▁ lluvia débil en la celda · gris: sol directo que falta · ${src}${alb}`;
+  } else if (clima.ok) fuente = `▮ probabilidad típica de 1 mm o más en la hora (${MESES[f.m - 1]})`;
   g.innerHTML = h;
-  $('#dia-ley').textContent = fuente ? '▮ ' + fuente : '';
+  $('#dia-ley').textContent = fuente;
 }
 
 // ---------------- Consultas: los días que un arquitecto quiere ver ----------------

@@ -413,7 +413,7 @@
   @media (pointer: coarse) { .pista .raton { display: none; } .pista .tactil { display: inline; } }
 
   /* ---------- máquina del tiempo ---------- */
-  #dia .gota { fill: var(--lluvia); } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
+  #dia .gota { fill: var(--lluvia); } #dia .gota.debil { opacity: .45; } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
   .dia-ley { margin: 2px 0 0; font: 500 12px/1.2 var(--datos); color: var(--cal-2); text-align: right; min-height: 14px; }
   #dock { position: fixed; z-index: 6; left: var(--gutter); right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
     display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "hora centro lect botones"; gap: 10px 26px; align-items: center; padding: 14px 18px;
