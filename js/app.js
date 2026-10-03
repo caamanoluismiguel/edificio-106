@@ -32407,7 +32407,7 @@ var MV = class {
 		let t = this.renderer, n = new yr();
 		n.fog = new vr(10466240, 350, 2600), this.scene = n;
 		let r = new Zs(window.innerWidth / window.innerHeight < .8 ? 58 : 38, window.innerWidth / window.innerHeight, .3, 7e3);
-		r.position.set(65, 2.1, 29), this.camera = r;
+		r.position.set(46, 1.4, 29), this.camera = r;
 		let i = new cB();
 		i.scale.setScalar(6e3), i.turbidity.value = 7, i.rayleigh.value = 2, i.mieCoefficient.value = .006, i.mieDirectionalG.value = .8, i.cloudCoverage.value = .35, i.cloudDensity.value = .45, i.cloudElevation.value = .5, i.material.fog = !1;
 		let a = mL(ZL(aR).y, 0, 1), o = AR(K(Y(X.cieloH), Y(X.cieloZ), oR(a, .45)), 1), s = ZL(aR.sub(pL)), c = Math.sin(.55 * Math.PI / 180), l = yL(s, X.lunaDir), u = s.sub(Y(X.lunaDir).mul(l)).div(c), d = yL(u, u), f = u.sub(Y(X.lunaDir).mul(RL(G(1).sub(d), 0).sqrt())), p = K(G(.08), G(.6), X.lunaNube), m = vR(G(1).add(p), G(1).sub(p), d.sqrt()).mul(q(0, l)), h = vR(-.06, .06, yL(f, X.lunaLuz)), g = Y(...EV.lunaColor).mul(m.mul(h).mul(X.lunaDisco));
@@ -36917,17 +36917,21 @@ function EU() {
 }
 var DU = {
 	pos: [
-		65,
-		2.1,
+		46,
+		1.4,
 		29
 	],
 	tgt: [
-		30.09,
-		3.71,
-		9.53
+		12,
+		5.4,
+		2
 	]
 };
-innerWidth / innerHeight < .8 && (DU.pos = DU.pos.map((e, t) => DU.tgt[t] + (e - DU.tgt[t]) * (t === 1 ? 1 : 1.45)));
+innerWidth / innerHeight < .8 && (DU.pos = [
+	58,
+	1.4,
+	33
+]);
 var OU = [
 	3,
 	5,

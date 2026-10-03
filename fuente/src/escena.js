@@ -147,7 +147,7 @@ export class Escena {
     scene.fog = new THREE.Fog(0x9fb3c0, 350, 2600);
     this.scene = scene;
     const cam = new THREE.PerspectiveCamera(window.innerWidth / window.innerHeight < 0.8 ? 58 : 38, window.innerWidth / window.innerHeight, 0.3, 7000);
-    cam.position.set(65, 2.1, 29);
+    cam.position.set(46, 1.4, 29);                                  // la vista Esquina (main.js la fija y arma la intro)
     this.camera = cam;
 
     // Cielo (Preetham + nubes procedurales de three.js)

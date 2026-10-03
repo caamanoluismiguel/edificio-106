@@ -96,9 +96,10 @@ function calidad() {
 }
 
 // ---------------- Vistas (coordenadas de la escena, metros; +X = noreste, +Z = sureste) ----------------
-const ESQUINA = { pos: [65, 2.1, 29], tgt: [30.09, 3.71, 9.53] };     // cámara 05 de la v016: la esquina del jardín
-// en pantallas verticales la misma esquina, desde un poco más lejos para que quepa el edificio
-if (innerWidth / innerHeight < 0.8) ESQUINA.pos = ESQUINA.pos.map((v, i) => ESQUINA.tgt[i] + (v - ESQUINA.tgt[i]) * (i === 1 ? 1 : 1.45));
+// pasado el poste y a 1,4 m: la arista de la esquina al centro y las dos fachadas fugando (el poste es real; se mueve la cámara, no el poste)
+const ESQUINA = { pos: [46, 1.4, 29], tgt: [12, 5.4, 2] };
+// en pantallas verticales, un poco más lejos para que quepa el edificio sin meter la galería de La Casa
+if (innerWidth / innerHeight < 0.8) ESQUINA.pos = [58, 1.4, 33];
 const CENTRO = [3, 5, 1];                                           // pivote para girar el edificio
 const NORTE = vectorSol(0, 0), ESTE = vectorSol(0, 90);
 const VISTAS = {
