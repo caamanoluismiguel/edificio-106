@@ -766,7 +766,7 @@ export class Escena {
         .add(U.ghiW.mul(0.1).mul(float(1).sub(n.y)));
       const irr = directa.add(difusa.mul(U.total)).div(800);
       // escala de calor ordenada (azul noche → morado → rojo → naranja → amarillo), con colores puros para que el tonemapping no la lave
-      const s4 = (a, b) => smoothstep(a, b, irr);
+      const s4 = (a, b) => clamp(irr.sub(a).div(b - a), 0, 1);       // tramos lineales, como la leyenda (rampaCSS)
       const [c0, c1, c2, c3, c4] = RAMPA_SOL.map((c) => vec3(...c));
       const ramp = mix(mix(mix(mix(c0, c1, s4(0.0, 0.25)), c2, s4(0.25, 0.5)), c3, s4(0.5, 0.75)), c4, s4(0.75, 1.0));
       const e = ramp.mul(U.calor).mul(0.8);
@@ -775,14 +775,18 @@ export class Escena {
       const dirs = Object.values(FACHADAS).map(fc => { const v = vectorSol(0, fc.rumbo); return [v.x, v.z]; });
       const a = U.aguaF;
       const wet = w(...dirs[0]).mul(a.x).add(w(...dirs[1]).mul(a.y)).add(w(...dirs[2]).mul(a.z)).add(w(...dirs[3]).mul(a.w)).add(pow(max(n.y, 0), 3.0).mul(U.aguaT));
-      const rampA = mix(mix(vec3(U.pal0), vec3(U.pal1), smoothstep(0.0, 0.5, wet)), vec3(U.pal2), smoothstep(0.5, 1.0, wet));
-      const eA = rampA.mul(U.agua).mul(0.8);
+      const rampA = mix(mix(vec3(U.pal0), vec3(U.pal1), clamp(wet.mul(2), 0, 1)), vec3(U.pal2), clamp(wet.mul(2).sub(1), 0, 1));   // lineal, como la leyenda
+      // el índice de lluvia y el viento de frente valen para paredes verticales: techo, aleros y suelo quedan con su material
+      // (en «Año típico» del Sol el techo sí se pinta, con aguaT)
+      const vert = float(1).sub(smoothstep(0.35, 0.6, abs(n.y)));
+      const lenteA = U.agua.mul(max(vert, step(0.001, U.aguaT)));
+      const eA = rampA.mul(lenteA).mul(0.8);
       const prevE = m.emissiveNode;
       m.emissiveNode = prevE ? prevE.add(eA) : eA;
       // la lente «Sol» se suma después de la iluminación, cuando sombraSol ya trae la sombra (ver arriba, junto a sombraSol)
       m.outputNode = vec4(output.rgb.add(e), output.a);
       // el material se apaga (color y brillos) para que mande el color de la lente
-      const lente = max(U.calor, U.agua);
+      const lente = max(U.calor, lenteA);
       m.colorNode = mix(m.colorNode, m.colorNode.mul(0.04), lente);
       m.roughnessNode = mix(m.roughnessNode ?? materialRoughness, float(1), lente);
       m.lenteNode = lente;

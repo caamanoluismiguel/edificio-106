@@ -238,7 +238,7 @@ function conAlbrook(v, a) {
   const temp = Math.round((a.tmpf - 32) / 1.8), x = { ...v, temp, recibido: Date.now() };
   if (a.relh != null) x.humedad = a.relh;
   if (a.sknt != null) { x.viento = a.sknt * 1.852; if (a.drct != null && a.sknt > 0) x.dir = a.drct; }
-  x.lluviaMm = v.lluvia;                                   // la del modelo, para la lluvia con viento por fachada
+  x.lluviaMm = v.lluviaModelo;                             // la del modelo sin el umbral de dibujo, para la lluvia con viento por fachada
   if (!wx.auto) {
     x.lluvia = wx.lluvia ? ALBROOK_MMH[wx.lluvia.llovizna ? 'llovizna' : wx.lluvia.clase] : 0;
     x.llovizna = false;
