@@ -12,7 +12,8 @@ import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, 
 import QRCode from 'qrcode';
 
 const $ = (s) => document.querySelector(s);
-export const VERSION = 'v3 · 25 sep 2026';
+// la versión es la huella del armado (js/app.js?v=…, la escribe armar-raiz.sh); sin ella, el servidor de desarrollo
+export const VERSION = (() => { try { return 'armado ' + (new URL(import.meta.url).searchParams.get('v') ?? 'local'); } catch (e) { return 'armado local'; } })();
 
 // ---------------- Diagnóstico: todo error queda anotado y, si hace falta, visible en pantalla ----------------
 const DIAG = { log: [], gpu: 0, t0: performance.now() };
@@ -874,7 +875,8 @@ function lecturas(p, c) {
   lf.children[0].textContent = larga; lf.children[1].textContent = corta;
   document.documentElement.classList.toggle('vivo', vivo);
   // «En vivo» solo cuando ya llegó el dato de este momento (pronóstico o parte de Albrook); antes, «Ahora»
-  $('#ahora').textContent = vivo ? (c?.fuente === 'vivo' ? 'En vivo' : 'Ahora') : 'Volver a ahora';
+  // con la hora del dato: el parte de Albrook (a 4 km) o el pronóstico, para que no parezca una lectura en el sitio
+  $('#ahora').textContent = vivo ? (c?.fuente === 'vivo' ? `En vivo · ${c.albrook ? `Albrook ${c.albrook.hora}` : `pronóstico ${c.hora ?? ''}`.trim()}` : 'Ahora') : 'Volver a ahora';
   $('#ahora').setAttribute('aria-pressed', String(vivo));
   // sol y sombra (en el viaje, «—», como el clima: el sol va de paso, no es el de un momento)
   const sp = sombraPoste(p.alt, p.az);
@@ -921,7 +923,7 @@ function lecturas(p, c) {
   const sello0 = !c || V ? '' : c.fuente === 'vivo' ? (c.albrook ? 'Albrook' : 'pronóstico') : c.fuente === 'serie' ? (c.ajustado ? 'ERA5 ajustado' : 'ERA5') : c.fuente === 'dia' && c.modelo === 'era5' ? 'ERA5' : c.fuente === 'dia' ? 'pronóstico' : c.fuente === 'mes' ? 'ERA5, mes' : c.ajustado ? 'típico ajustado' : 'típico';
   const sello = S.aguacero && sello0 ? 'aguacero forzado · ' + sello0 : sello0;
   S.sello = sello;                                                 // también va en el pie de la imagen PNG
-  $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (c?.fuente === 'mes' ? temp : sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol bajo el horizonte · ${temp}`);   // la procedencia primero: en el teléfono el final se corta
+  $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (c?.fuente === 'mes' ? temp : sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol ${enHorizonte(p) ? 'en el' : 'bajo el'} horizonte · ${temp}`);   // la procedencia primero: en el teléfono el final se corta
   // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
   const est = $('#estado-txt');
   if (V) { /* se actualiza al llegar */ }
@@ -962,6 +964,7 @@ function marcaSol(p) {
 /** Qué luz hay de noche, en dos frases: depende de si la luna está arriba, de su fase y de las nubes de esa hora. Lo que es
  *  supuesto (las ventanas encendidas, la lámpara del poste) se explica en la lente Foto, no aquí. */
 function textoNoche(c) {
+  if (S.aguacero) return 'Es de noche y la escena dibuja un aguacero forzado en Capas: no es el dato.';
   const L = escena.luna, nub = c?.nubes ?? 30, llueveYa = llueve(c);
   const fase = !L ? '' : L.frac > 0.95 ? 'la luna llena' : L.frac < 0.25 ? `una luna ${L.fase < 180 ? 'creciente' : 'menguante'} delgada` : `la luna ${L.fase < 180 ? 'creciente' : 'menguante'}`;
   if (!L || L.alt <= 0) return 'Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y el poste de la esquina.';
@@ -975,6 +978,10 @@ function textoNoche(c) {
 }
 
 /** La primera frase de un texto (las cifras usan coma decimal, así que el punto cierra la frase). */
+/** En el teléfono la línea de arriba no cabe junto a «En vivo · …», que ya dice lo mismo: queda vacía. */
+const tipoVivo = () => matchMedia('(max-width: 760px)').matches ? '' : 'Ahora en Ciudad del Saber';
+/** Con la altura aparente bajo 0,5° (sin sombra): ¿asoma el disco? El mismo criterio que saleYPone (centro a −0,833° geométricos). */
+const enHorizonte = (p) => p?.geo != null && p.geo >= -0.833;
 const primeraFrase = (t) => (t.match(/^.+?[.!?](?=\s|$)/) ?? [t])[0];
 /** El narrador del dock: escribe el texto entero y su primera frase, que es lo que se ve plegado. Mientras la escena
  *  dibuja lluvia, la frase corta es la del dato de lluvia, no la de la sombra: en ese momento no se dibuja sol directo. */
@@ -1000,8 +1007,10 @@ function rotuloTexto(p, c, sp) {
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
   // de noche el rótulo queda en dos frases cortas y los dos atajos; el dato del tiempo sigue en el dock
   // con una fecha elegida la línea de arriba queda vacía: la fecha y la hora ya están en el dock, justo debajo
-  if (noche) { tipo.textContent = S.modo === 'ahora' ? 'Ahora en Ciudad del Saber' : ''; txt.textContent = textoNoche(c); return; }
+  if (noche) { tipo.textContent = S.modo === 'ahora' ? tipoVivo() : ''; txt.textContent = textoNoche(c); return; }
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y se proyecta hacia el ${rumboTexto(sp.rumbo)}.`
+    // entre la salida o la puesta (centro a −0,833° de altura geométrica, como saleYPone) y los 0,5° de la sombra
+    : enHorizonte(p) ? 'El sol está justo en el horizonte.'
     : p.alt > -6 ? (p.az < 180 ? 'El sol está por salir: es el crepúsculo del amanecer.' : 'El sol acaba de ponerse: es el crepúsculo.') : textoNoche(c);
   let clTxt = '';
   if (c?.fuente === 'vivo' && c.albrook && !c.albrook.auto) clTxt = ` ${textoAlbrook(c.albrook).replace(/^Albrook /, 'El aeropuerto de Albrook, a 4 km, ')}. Cielo con ${Math.round(c.nubes)} % de nubes, según el modelo.`;
@@ -1014,7 +1023,7 @@ function rotuloTexto(p, c, sp) {
     clTxt += ` ${Math.round(c.temp)} °C, humedad ${Math.round(c.humedad)} %, viento ${Math.round(c.viento)} km/h desde el ${rumboTexto(c.dir)}.`;
   }
   else if (c?.fuente === 'mes') clTxt = ` En ${MESES[S.fecha.m - 1]} de ${S.fecha.y} ERA5 da ${Math.round(c.lluviaMes)} mm (media de ${MESES[S.fecha.m - 1]} en 2001–2025: ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm). La lluvia que cae en la escena es proporcional al total del mes, no la de una hora.`;
-  if (S.modo === 'ahora') { tipo.textContent = 'Ahora en Ciudad del Saber'; txt.textContent = solTxt + clTxt; }
+  if (S.modo === 'ahora') { tipo.textContent = tipoVivo(); txt.textContent = solTxt + clTxt; }
   else { tipo.textContent = ''; txt.textContent = (S.mesSerie !== null ? '' : solTxt) + clTxt; }
   // plegado no se muestra una sombra al centímetro cuando la escena no la dibuja así: con lluvia (del dato o forzada en Capas),
   // con el sol a ratos (90 % de nubes o más) o con sol débil (menos de UMBRAL_SOL W/m² de directa)
@@ -1467,7 +1476,7 @@ const solARatos = (c, p) => p.alt > 2 && c?.dni != null && c.dni >= UMBRAL_SOL &
 function textoFachada(p, c) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
   // con el sol a menos de 0,5° no hay sombra del poste que comparar (sombraPoste da null): se dice solo la hora
-  if (!sp) { $('#fachada-texto').textContent = `Son las ${hhmm(S.min)} en Panamá y el sol está ${p.alt <= 0 ? 'bajo el horizonte' : 'en el horizonte'}.`; return; }
+  if (!sp) { $('#fachada-texto').textContent = `Son las ${hhmm(S.min)} en Panamá y el sol está ${enHorizonte(p) ? 'en el horizonte' : 'bajo el horizonte'}.`; return; }
   // la geometría dice si el sol mira a la fachada; el dato de esa hora (DNI) dice si su rayo llega con fuerza
   const dni = c?.dni, debil = dni != null && dni < UMBRAL_SOL, hacia = `hacia el ${rumboTexto(sp.rumbo)}`, largo = `${f1(sp.largo, 2)} veces tu estatura`;
   const llueveE = lluviaDibujada(c), lluvEsc = llueveE && inc > 0.02, aRatos = !llueveE && !debil && solARatos(c, p);
@@ -2047,7 +2056,7 @@ async function guardarImagen() {
     const kf = S.fachada ? S.fachada.slice(8) : null;
     const donde = S.fachada ? FACHADAS[S.fachada].nombre : vistaB ? `Vista ${vistaB.textContent.trim().toLowerCase()}` : 'Vista libre';
     const p = posicionSol({ ...f, h: 0, min: S.min });
-    const solTxt = p.alt > 0.5 ? `Sol a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}` : 'El sol está bajo el horizonte';
+    const solTxt = p.alt > 0.5 ? `Sol a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}` : enHorizonte(p) ? 'El sol está justo en el horizonte' : 'El sol está bajo el horizonte';
     const anioSol = S.lente === 'sol' && S.solModo === 'anio';
     const rampa = leyendaLente(L);
     const qr = document.createElement('canvas');
@@ -2117,7 +2126,7 @@ async function guardarImagen() {
 function explicacion(k, p, c) {
   const sp = sombraPoste(p.alt, p.az);
   if (k === 'hora') return ['La hora', `Es la hora de Panamá, que usa UTC−5 todo el año (no tiene horario de verano). El sol se calcula para este minuto exacto: ${fechaTexto(S.fecha)}, ${hhmm(S.min)}. Arrastra la regla de abajo para cambiarla, o usa «Momentos clave» para una fecha exacta.`];
-  if (k === 'sol') return ['El sol: altura y rumbo', p.alt <= 0.5 ? `Ahora el sol está ${f1(-p.alt)}° bajo el horizonte: es de noche o está por salir. La altura es el ángulo del sol sobre el horizonte (0° al salir o ponerse, 90° justo encima) y el rumbo, hacia dónde está, medido desde el norte.`
+  if (k === 'sol') return ['El sol: altura y rumbo', p.alt <= 0.5 ? `${enHorizonte(p) ? 'Ahora el sol está justo en el horizonte.' : `Ahora el sol está ${f1(-p.alt)}° bajo el horizonte: ${p.az < 180 ? 'es de noche o está por salir' : 'ya se puso o es de noche'}.`} La altura es el ángulo del sol sobre el horizonte (0° al salir o ponerse, 90° justo encima) y el rumbo, hacia dónde está, medido desde el norte.`
     : `La altura es el ángulo del sol sobre el horizonte: 0° al salir o ponerse, 90° justo encima. Ahora está a ${f1(p.alt)}°. El rumbo dice hacia dónde está, medido desde el norte en el sentido del reloj: ${Math.round(p.az)}° es hacia el ${rumboTexto(p.az)}. A 9° al norte del ecuador, el sol del mediodía pasa casi encima todo el año; por eso el techo recibe mucho más sol que las paredes.`];
   if (k === 'sombra') return ['La sombra de un poste de 1 m', sp ? `Es lo que mide ahora la sombra de un palo de 1 m: ${f1(sp.largo, 2)} m, hacia el ${rumboTexto(sp.rumbo)}. Sirve de regla para cualquier cosa: una persona de 1,70 m hace una sombra de ${f1(1.7 * sp.largo, 1)} m y un poste de luz de 6 m, una de ${f1(6 * sp.largo, 1)} m. Mientras más corta la sombra, más alto está el sol.`
     : 'Ahora no hay sol, así que no hay sombra solar. Mueve la regla del día a una hora con sol.'];
