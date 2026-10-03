@@ -509,7 +509,7 @@ const llueve = (c, m = S.fecha.m) => c?.albrook && !c.albrook.auto ? !!c.albrook
 /** Intensidad de la lluvia que dibuja la escena: nada por debajo del umbral (la llovizna de Albrook sí se dibuja, apenas). */
 const lluviaEscena = (c) => llueve(c) ? intensidad(c.lluvia ?? 0) : 0;
 /** ¿La escena dibuja lluvia en esta hora? La del dato (o el parte de Albrook) o la capa «Aguacero». Entonces no dibuja sol directo. */
-const lluviaDibujada = (c) => S.aguacero || (c?.fuente === 'mes' ? (c.lluviaMes ?? 0) > 0 : c?.fuente !== 'viaje' && llueve(c));
+const lluviaDibujada = (c) => S.aguacero || (c?.fuente === 'mes' ? Math.min(1, (c.lluviaMes ?? 0) / 380) > 0.08 : c?.fuente !== 'viaje' && llueve(c));
 const UMBRAL_TXT = '1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre';
 
 // ---------------- Bucle ----------------
@@ -1566,7 +1566,7 @@ function leyenda(c) {
   if (S.lente === 'sol') {
     nota = p.alt <= 0 ? 'Ahora es de noche: nada recibe sol. Mueve la regla del día a la mañana o a la tarde.'
       : `Ahora el sol está hacia el ${rumboTexto(p.az)}, a ${f1(p.alt)}° de altura${(S.irr ?? []).every((v) => v < 5) ? ': a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan.' : '.'}`;
-    if (p.alt > 0 && lluviaDibujada(c) && !anioSol) nota += ' Llueve en la escena: la Foto no dibuja sol directo, y aquí se pinta la directa media de la hora que da el dato.';
+    if (p.alt > 0 && lluviaDibujada(c) && !anioSol && c?.dni != null) nota += ' Llueve en la escena: la Foto no dibuja sol directo, y aquí se pinta la directa media de la hora que da el dato.';
     if (S.solModo === 'total' && !S.hayDifusa) nota += ' Para esta hora no hay dato de luz difusa (hay entre 2001 y 2025 y en los días consultados en línea): se muestra solo el sol directo.';
     if (anioSol) {
       const R = consultas?.radiacion?.fachadas;
@@ -2088,9 +2088,9 @@ function explicacion(k, p, c) {
     const dc = dniDespejado(p.alt);
     const partes = [`${Math.round(c.temp)} °C de temperatura del aire`, `${Math.round(c.nubes)} % del cielo cubierto de nubes`];
     if (c.dni != null && p.alt > 2) partes.push(`${miles(Math.round(c.dni / 10) * 10)} W/m² de sol directo${solARatos(c, p) ? ' de media en la hora, a ratos o velado' : ''} (el modelo sencillo de Meinel y Meinel, 1976, da ${miles(Math.round(dc / 10) * 10)} W/m² con cielo despejado a esta altura; ERA5, en las horas casi sin nubes, da cerca de las tres cuartas partes de eso)`);
-    const ll = c.lluvia ?? 0;
+    const ll = c.fuente === 'vivo' ? (c.lluviaModelo ?? c.lluvia ?? 0) : (c.lluvia ?? 0);
     const srcLl = c.fuente === 'vivo' || (c.fuente === 'dia' && c.modelo !== 'era5') ? 'El pronóstico' : 'ERA5';
-    const txtLl = c.albrook && !c.albrook.auto ? '' : ll >= 0.1 && !llueve(c) ? `Da ${f1(ll)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${UMBRAL_TXT}).` : llueve(c) ? `${srcLl} da ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde 10 mm en una hora la OMM la llama lluvia fuerte (WMO-No. 8, 2023, vol. I, p. 484).` : `${srcLl} no da lluvia a esa hora.`;
+    const txtLl = c.albrook && !c.albrook.auto ? '' : ll >= 0.1 && !llueve(c) ? `${srcLl} da ${f1(ll)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${UMBRAL_TXT}).` : llueve(c) ? `${srcLl} da ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde 10 mm en una hora la OMM la llama lluvia fuerte (WMO-No. 8, 2023, vol. I, p. 484).` : `${srcLl} no da lluvia a esa hora.`;
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : c.fuente === 'dia' && c.modelo !== 'era5' ? 'Es el pronóstico de modelo de Open-Meteo para ese día, consultado en línea: no es ERA5 ni está ajustado a Albrook.' : (c.ajustado ? 'Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero')+' muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, a la hora de un parte con lluvia la escena dibuja lluvia una de cada seis veces (2017–2025). El sol directo es el promedio de la hora en la celda: en las horas de 9 a 14 en que Albrook informó lluvia, ERA5 daba 300 W/m² o más en casi la mitad (48 %). La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, ERA5 tiene unas 0,8 veces las horas con lluvia que informa el observador de Albrook de diciembre a marzo, y unas 1,15 veces de abril a noviembre (2017–2025, de 7 a 18 h). Mientras la escena dibuja lluvia, no dibuja sol directo.'}`];
   }
   if (k === 'tab-dia') return ['La regla del día', `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${UMBRAL_TXT}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de un cielo despejado, y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`];
