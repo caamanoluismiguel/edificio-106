@@ -97,6 +97,19 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 - **Probado** por LM en Android con Chrome, vertical y girado, también apuntando a la pantalla del computador. **iPhone sin probar.**
 - **Pendiente:** selector de fechas (solsticios y días sin sombra), mensajes de error y ayuda, `visibilitychange`.
 
+## Interfaz (plan de 4 fases, publicado el 3 de octubre de 2026)
+
+- **Tres diseños según la pantalla:**
+  - hasta 760 px, una hoja inferior con alturas cerrada, media, completa y oculta (`ponerHoja`, `#hoja-asa`);
+  - desde 900 px de ancho y 501 de alto, un panel lateral fijo a la izquierda (`html.panel-lateral`);
+  - entre medias, y con el teléfono en horizontal, el diseño anterior (dock abajo, modos y vistas en el HUD).
+- **Las piezas se mueven, no se copian.** `acomodarHoja()` en main.js lleva `.vistas`, `.lentes`, `#leyenda` y la lámina de Capas al `#dock` en la hoja y en el panel, y las devuelve en el diseño intermedio. Sus eventos siguen igual. Cualquier pieza nueva del dock necesita su área en las tres `grid-template-areas` (teléfono, panel e intermedio).
+- **El narrador (`#rotulo`) es la primera fila del dock.** Plegado da una frase (`primeraFrase`, o la del dato de lluvia, del aguacero o del sol a ratos si la escena no dibuja una sombra exacta). `#ahora` va en su cabecera y dice «En vivo · Albrook HH:MM» o «pronóstico HH:MM».
+- **Procedencia siempre a la vista:** el resumen `#lect-resumen` en la hoja, `#l-fuente` en el panel, y `#ley-sello` en la tarjeta compacta de la hoja cerrada. Al ocultar algo en una altura, comprobar que no quede una cifra sin su fuente.
+- **El panel lateral corre la cámara** con `setViewOffset` (en `encuadreMovil`, en horizontal). `?panel=0` lo apaga. **La línea base del guardia ya incluye el panel.** Para probar que un cambio no toca la escena, correr también `node guardia.mjs --url=panel=0`.
+- **Primera visita:** `guia()` da tres pasos sobre el control real y termina en la oferta del recorrido. Con `?prueba` solo sale si se pide `?guia`.
+- **Auditoría de que nada se pierde:** el inventario de 196 elementos contra `d81073d` (antes del plan) pasó en 390, 820 y 1440 px. Ante un cambio grande de interfaz, repetirla: LM exige que todo siga conectado y que no se pierda el objetivo pedagógico (recorrido del sol, sombras, incidencia de sol, lluvia y viento, y sus análisis, Confort incluido).
+
 ## Gotchas
 
 - **Entorno (`contexto.glb`):** se rehace con `node contexto.mjs` (ver README, «El entorno»). Una malla grande pierde precisión al cuantizar (17 cm en 6 km): lo cercano va en mallas propias. `dedup` funde materiales iguales aunque cambie el nombre. En WebGPU no cambiar `mesh.geometry` de algo ya dibujado. Los barcos son ilustrativos (1 cada 2 h por vía).
@@ -113,5 +126,6 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 - `~/projects/edificio-106-UX-PLAN.md`: plan de interfaz en 4 fases, glosario aprobado y pendientes en espera.
 - `~/projects/edificio-106-UX-MANUAL.md`: manual de interfaz con la investigación y las fuentes.
 - `~/projects/edificio-106-UX-prototipo.html`: prototipo de comportamiento (no es código para copiar).
+- `~/projects/edificio-106-ux-capturas-2026-10-03/`: capturas de cada fase y el informe de la prueba con estudiantes SIMULADA (no real).
 - `~/Documents/Web/libros-climatizacion/`: las fuentes en PDF y `REGLAS_EXTRAIDAS.md`, las reglas con su página.
 - `~/projects/edificio-106-ciudad-privado/`: la investigación de la ciudad con Street View (inventario con panorámicas, informes de cada paso, ruta de verificación). No va al repo (LM, 5 oct 2026): `generar-observado.mjs` rehace desde ahí `fuente/ciudad-observado.json`, sin ids, posiciones ni método de captura. El resumen público es `docs/ciudad/CIUDAD.md`.
