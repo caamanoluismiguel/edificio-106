@@ -860,7 +860,7 @@ function lecturas(p, c) {
   if (kf !== S.kf && !S.viaje) { S.kf = kf; dibujarReglas(); }
   const kc = kf + '|' + (clima.horario ? 1 : 0) + '|' + (clima.dias[kf2(S.fecha)] ? (clima.dias[kf2(S.fecha)] instanceof Promise ? 1 : 2) : 0) + '|' + (clima.ok ? 1 : 0) + '|' + S.modo + (clima.vivo?.albrook && !clima.vivo.albrook.auto ? 'A' : '');
   if (kc !== S.kClimaDia && !S.viaje) { S.kClimaDia = kc; pintarClimaDia(); }
-  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, S.viaje?.fase].join('|');
+  const key = [kf, Math.round(S.min), S.modo, S.pestana, S.mesSerie, c?.fuente, Math.round((c?.temp ?? 0) * 10), Math.round(c?.nubes ?? -1), Math.round((c?.lluvia ?? 0) * 10), Math.round((c?.dni ?? 0) / 10), S.fachada, S.lente, S.aguaModo, S.viaje?.fase, S.aguacero ? 1 : 0].join('|');
   confortHora(p, c);                              // el punto de la carta y la línea de UTCI, si el panel está abierto
   if (key === lastLect) return; lastLect = key;
   const vivo = S.modo === 'ahora', V = S.viaje;
@@ -1431,7 +1431,7 @@ function textoFachada(p, c) {
   if (!sp) { $('#fachada-texto').textContent = `Son las ${hhmm(S.min)} en Panamá y el sol está ${p.alt <= 0 ? 'bajo el horizonte' : 'en el horizonte'}.`; return; }
   // la geometría dice si el sol mira a la fachada; el dato de esa hora (DNI) dice si su rayo llega con fuerza
   const dni = c?.dni, debil = dni != null && dni < UMBRAL_SOL, hacia = `hacia el ${rumboTexto(sp.rumbo)}`, largo = `${f1(sp.largo, 2)} veces tu estatura`;
-  const lluvEsc = lluviaDibujada(c) && inc > 0.02, aRatos = !lluvEsc && !debil && solARatos(c, p);
+  const llueveE = lluviaDibujada(c), lluvEsc = llueveE && inc > 0.02, aRatos = !llueveE && !debil && solARatos(c, p);
   const frente = inc <= 0.02 ? 'Esta fachada está en sombra.'
     : lluvEsc ? `Llueve en la escena, así que no se dibuja sol directo${dni != null ? `; el dato de la hora da ${miles(Math.round(dni))} W/m² de directa, el promedio de la hora en una celda de 28 km` : ''}.`
     : dni == null ? 'El sol mira a esta fachada; si el cielo está despejado, incide sobre ella.'
@@ -1439,7 +1439,7 @@ function textoFachada(p, c) {
     : aRatos ? `El sol mira a esta fachada; con ${Math.round(c.nubes)} % de nubes llega a ratos o velado (${miles(Math.round(dni / 10) * 10)} W/m² de media en la hora).`
     : 'Esta fachada recibe sol directo.';
   $('#fachada-texto').textContent = `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${frente}`
-    + (lluvEsc ? '' : debil || aRatos ? ` Si el sol se asoma, tu sombra se proyectará ${hacia} y medirá ${largo}.` : ` Tu sombra debería proyectarse ${hacia} y medir ${largo}: compárala con la del modelo.`);
+    + (llueveE ? '' : debil || aRatos ? ` Si el sol se asoma, tu sombra se proyectará ${hacia} y medirá ${largo}.` : ` Tu sombra debería proyectarse ${hacia} y medir ${largo}: compárala con la del modelo.`);
 }
 
 function refrescar() { lastLect = ''; S.kClimaDia = ''; }
