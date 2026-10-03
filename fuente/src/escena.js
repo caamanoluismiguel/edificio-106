@@ -434,7 +434,8 @@ export class Escena {
     this.sun.color.setRGB(1, 0.55 + 0.42 * warm, 0.3 + 0.62 * warm);
     const lv = this.lv ?? 0;               // lluvia visible (0..1)
     const ks = this.kSol ?? 1;             // transmisión del sol directo (DNI de los datos / DNI de cielo despejado)
-    this.sun.intensity = 5.0 * k * (0.55 + 0.45 * Math.min(1, up * 2)) * (1 - 0.88 * lv) * (0.1 + 0.9 * ks);
+    // la luz del sol sigue solo al dato (kSol): con lluvia en la escena, main.js ya lo pone en 0 (sin factor propio de la lluvia)
+    this.sun.intensity = 5.0 * k * (0.55 + 0.45 * Math.min(1, up * 2)) * (0.1 + 0.9 * ks);
     const cub = 1 - ks;
     // con el sol velado por nubes delgadas o bruma la sombra pierde el borde nítido (el radio va en texeles del mapa, sin recompilar)
     this.sun.shadow.radius = 2 + 3 * cub;

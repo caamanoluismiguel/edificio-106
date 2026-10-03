@@ -78,18 +78,21 @@ export class Clima {
 
   /** Qué tan mojadas siguen las superficies (0..1) a una fecha y minuto: la lluvia de las 12 horas anteriores menos lo que
    *  secaron el sol, el viento y el aire seco. Modelo simple e ilustrativo, no medido: 1 mm en una hora empapa; con sol pleno
-   *  y brisa se seca en una hora y pico, y de noche con aire húmedo tarda más de diez. Null si no hay serie para ese momento. */
+   *  y brisa se seca en una hora y pico, y de noche con aire húmedo tarda más de diez. Solo moja la lluvia que la escena dibuja
+   *  (desde umbralLluvia del mes): la lluvia débil de la celda no. Null si no hay serie para ese momento. */
   mojado(f, min) {
     const h = Math.floor(min / 60), t = (min - h * 60) / 60;
     let fin, lee;
     if (this.horario && this.enSerie(f)) {
       fin = this.indice(f, h); if (fin < 0) return null;
-      lee = (i) => i < 0 || i >= this.n ? null : [this.valor('lluvia', i), this.valor('dni', i), this.valor('viento', i), this.valor('humedad', i)];
+      lee = (i) => { if (i < 0 || i >= this.n) return null; const mm = this.valor('lluvia', i), m = new Date(T0 + i * 3.6e6).getUTCMonth() + 1;
+        return [mm >= umbralLluvia(m) ? mm : 0, this.valor('dni', i), this.valor('viento', i), this.valor('humedad', i)]; };
     } else {
       const k = `${f.y}-${String(f.m).padStart(2, '0')}-${String(f.d).padStart(2, '0')}`, D = this.dias[k];
       if (!D || D instanceof Promise) return null;
       fin = h;                                   // solo se conocen las horas de ese día
-      lee = (i) => i < 0 || i > 23 ? null : [D.h.precipitation[i] ?? 0, D.h.direct_normal_irradiance[i] ?? 0, D.h.wind_speed_10m[i] ?? 0, D.h.relative_humidity_2m[i] ?? 80];
+      lee = (i) => { if (i < 0 || i > 23) return null; const mm = D.h.precipitation[i] ?? 0;
+        return [mm >= umbralLluvia(f.m) ? mm : 0, D.h.direct_normal_irradiance[i] ?? 0, D.h.wind_speed_10m[i] ?? 0, D.h.relative_humidity_2m[i] ?? 80]; };
     }
     // la lluvia de la marca i es la de la hora que termina en i: se recorre hasta la hora en curso (fin + 1) y se interpola
     let w = 0, antes = 0;

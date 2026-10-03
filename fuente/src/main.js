@@ -508,6 +508,8 @@ const intensidad = (mm) => mm < 0.2 ? 0 : Math.min(1, 0.25 + 0.75 * Math.log1p(m
 const llueve = (c, m = S.fecha.m) => c?.albrook && !c.albrook.auto ? !!c.albrook.lluvia : (c?.lluvia ?? 0) >= umbralLluvia(m);
 /** Intensidad de la lluvia que dibuja la escena: nada por debajo del umbral (la llovizna de Albrook sí se dibuja, apenas). */
 const lluviaEscena = (c) => llueve(c) ? intensidad(c.lluvia ?? 0) : 0;
+/** ¿La escena dibuja lluvia en esta hora? La del dato (o el parte de Albrook) o la capa «Aguacero». Entonces no dibuja sol directo. */
+const lluviaDibujada = (c) => S.aguacero || (c?.fuente !== 'mes' && c?.fuente !== 'viaje' && llueve(c));
 const UMBRAL_TXT = '1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre';
 
 // ---------------- Bucle ----------------
@@ -552,8 +554,14 @@ function paso(now) {
   const salto = !!S.salto; S.salto = false;               // al saltar a un momento, el tiempo se muestra de inmediato
   nubesSuave += (nub - nubesSuave) * (salto ? 1 : Math.min(1, dt * 2.5));
   // sol directo: la DNI del dato frente a la de cielo despejado (la nubosidad total incluye cirros que casi no tapan el sol)
+  // Mientras la escena dibuja lluvia (la del dato desde el umbral del mes, la del parte de Albrook con observador o la capa
+  // «Aguacero») no dibuja sol directo: la lluvia que cae en el sitio viene de una nube encima, y la DNI de ERA5 es el promedio de
+  // la hora entera en una celda de 28 km. Es una regla de dibujo declarada: el número de la DNI sigue en el dock y en la lente Sol
+  // (panel de clima y verificador, 2 de octubre de 2026). Las nubes solas no apagan el sol: con 99–100 % de nubes de ERA5, Albrook
+  // informa lluvia en el 11 % de esas horas.
   const dc = dniDespejado(p.alt);
-  const kObj = p.alt <= 0.5 ? 1 : c?.dni != null ? clamp01(c.dni / Math.max(40, dc)) : 1 - 0.75 * Math.pow(clamp01(nub / 100), 3.4);
+  S.lluviaEsc = !intro && !S.viaje && lluviaDibujada(c);
+  const kObj = p.alt <= 0.5 ? 1 : S.lluviaEsc ? 0 : c?.dni != null ? clamp01(c.dni / Math.max(40, dc)) : 1 - 0.75 * Math.pow(clamp01(nub / 100), 3.4);
   S.kSol = (S.kSol ?? kObj) + (kObj - (S.kSol ?? kObj)) * (salto ? 1 : Math.min(1, dt * 2.5));
   escena.kSol = S.kSol; escena.nb = nubesSuave / 100;
   escena.setNubes(0.08 + 0.85 * nubesSuave / 100);
@@ -639,7 +647,7 @@ function paso(now) {
     else medirCuadro(now, dtReal);
   } else S.dibujoPrevio = false;
   pintarPartes();
-  if (S.voladizo) pintarCorte(p);
+  if (S.voladizo) pintarCorte(p, c);
 }
 
 // ---------------- Encuadre en el teléfono ----------------
@@ -879,7 +887,7 @@ function lecturas(p, c) {
     // línea 1: cielo · línea 2: lluvia (o la diferencia con lo típico)
     const cielo = [];
     if (c.nubes != null) cielo.push(`${Math.round(c.nubes)} % nubes`);
-    if (c.dni != null && p.alt > 2) cielo.push(`sol ${miles(Math.round(c.dni / 10) * 10)} W/m²`);
+    if (c.dni != null && p.alt > 2) { const W = miles(Math.round(c.dni / 10) * 10); cielo.push(solARatos(c, p) && !lluviaDibujada(c) ? `sol a ratos · ${W} W/m² de media` : lluviaDibujada(c) ? `sol ${W} W/m² de media` : `sol ${W} W/m²`); }
     let agua = '';
     if (c.fuente === 'mes') { temp = `${Math.round(c.lluviaMes)} mm`; agua = 'de lluvia en el mes'; }
     else if (c.fuente === 'tipico') agua = `llueve 1 mm o más en ${Math.round(c.probLluvia)} % de estas horas`;
@@ -976,8 +984,11 @@ function rotulo(p, c, sp) {
   if (c?.fuente === 'vivo' && c.albrook && !c.albrook.auto) clTxt = ` ${textoAlbrook(c.albrook).replace(/^Albrook /, 'El aeropuerto de Albrook, a 4 km, ')}. Cielo con ${Math.round(c.nubes)} % de nubes, según el modelo.`;
   else if (c?.fuente === 'vivo') clTxt = llueve(c) ? ` El modelo da lluvia en la zona (${f1(c.lluvia)} mm/h).` : c.llovizna ? ` Cielo con ${Math.round(c.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${f1(c.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
   else if (c?.fuente === 'serie' || c?.fuente === 'dia') {
-    clTxt = llueve(c) ? ` Entre las ${hhmm(Math.floor(S.min / 60) * 60)} y las ${hhmm(Math.floor(S.min / 60) * 60 + 60)} llovieron ${f1(c.lluvia)} mm.` : (c.lluvia ?? 0) >= 0.1 ? ` A esa hora ERA5 da una lluvia débil en la celda (${f1(c.lluvia)} mm), que la escena no dibuja; ${Math.round(c.nubes)} % de nubes.` : ` A esa hora no llovía; ${Math.round(c.nubes)} % de nubes.`;
-    clTxt += ` ${f1(c.temp)} °C, humedad ${Math.round(c.humedad)} %, viento ${Math.round(c.viento)} km/h desde el ${rumboTexto(c.dir)}.`;
+    // ERA5 o pronóstico, según de dónde vino el dato; en presente, que sirve también para un día del pronóstico
+    const src = c.fuente === 'dia' && c.modelo !== 'era5' ? 'el pronóstico' : 'ERA5', h0 = Math.floor(S.min / 60) * 60;
+    clTxt = llueve(c) ? ` Entre las ${hhmm(h0)} y las ${hhmm(h0 + 60)}, ${src} da ${f1(c.lluvia)} mm de lluvia; mientras la escena dibuja lluvia, no dibuja sol directo.` : (c.lluvia ?? 0) >= 0.1 ? ` A esa hora ${src} da una lluvia débil en la celda (${f1(c.lluvia)} mm), que la escena no dibuja; ${Math.round(c.nubes)} % de nubes.` : ` A esa hora ${src} no da lluvia; ${Math.round(c.nubes)} % de nubes.`;
+    if (!llueve(c) && solARatos(c, p)) clTxt += ` Con ${Math.round(c.nubes)} % de nubes y ${miles(Math.round(c.dni / 10) * 10)} W/m² de sol directo de media en la hora, el sol sale a ratos o llega velado: la sombra es la de esa media, no la de este minuto.`;
+    clTxt += ` ${Math.round(c.temp)} °C, humedad ${Math.round(c.humedad)} %, viento ${Math.round(c.viento)} km/h desde el ${rumboTexto(c.dir)}.`;
   }
   else if (c?.fuente === 'mes') clTxt = ` En ${MESES[S.fecha.m - 1]} de ${S.fecha.y} llovieron ${Math.round(c.lluviaMes)} mm (un ${MESES[S.fecha.m - 1]} típico: ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm).`;
   if (S.modo === 'ahora') { tipo.textContent = 'Ahora en Ciudad del Saber'; txt.textContent = solTxt + clTxt; }
@@ -1386,18 +1397,24 @@ function cerrarQR(devolverFoco) {
  *  vol. I, ed. 2023, cap. 8, §8.1.1, p. 309; la misma sección asocia el sol con «la aparición de sombras»). Con el dato horario
  *  de ERA5 es una aproximación: una hora con nubes que pasan puede promediar menos y tener ratos de sol. */
 const UMBRAL_SOL = 120;
+/** Sol a ratos: la hora tiene sol directo de media (≥ 120 W/m²) pero con 90 % de nubes o más; en ERA5, de 9 a 15 h, pasa en el
+ *  45 % de las horas (2001–2025). La sombra que dibuja la escena es la de esa media, no la de un minuto. */
+const solARatos = (c, p) => p.alt > 2 && c?.dni != null && c.dni >= UMBRAL_SOL && (c.nubes ?? 0) >= 90;
 function textoFachada(p, c) {
   const f = FACHADAS[S.fachada], sp = sombraPoste(p.alt, p.az), inc = incidencia(p.alt, p.az, f.rumbo);
   // con el sol a menos de 0,5° no hay sombra del poste que comparar (sombraPoste da null): se dice solo la hora
   if (!sp) { $('#fachada-texto').textContent = `Son las ${hhmm(S.min)} en Panamá y el sol está ${p.alt <= 0 ? 'bajo el horizonte' : 'en el horizonte'}.`; return; }
   // la geometría dice si el sol mira a la fachada; el dato de esa hora (DNI) dice si su rayo llega con fuerza
   const dni = c?.dni, debil = dni != null && dni < UMBRAL_SOL, hacia = `hacia el ${rumboTexto(sp.rumbo)}`, largo = `${f1(sp.largo, 2)} veces tu estatura`;
+  const lluvEsc = lluviaDibujada(c) && inc > 0.02, aRatos = !lluvEsc && !debil && solARatos(c, p);
   const frente = inc <= 0.02 ? 'Esta fachada está en sombra.'
+    : lluvEsc ? `Llueve en la escena, así que no se dibuja sol directo${dni != null ? `; el dato de la hora da ${miles(Math.round(dni))} W/m² de directa, el promedio de la hora en una celda de 28 km` : ''}.`
     : dni == null ? 'El sol mira a esta fachada; si el cielo está despejado, incide sobre ella.'
     : debil ? `El sol mira a esta fachada, pero ${dniDespejado(p.alt) < UMBRAL_SOL ? 'está tan bajo que su rayo llega débil' : dni < 20 ? 'las nubes lo tapan' : 'las nubes casi lo tapan'}: la radiación directa es de ${miles(Math.round(dni))} W/m², menos de los 120 W/m² con que la OMM cuenta horas de sol, y las sombras ${dni < 20 ? 'no se marcan' : 'apenas se marcan'}.`
+    : aRatos ? `El sol mira a esta fachada; con ${Math.round(c.nubes)} % de nubes llega a ratos o velado (${miles(Math.round(dni / 10) * 10)} W/m² de media en la hora).`
     : 'Esta fachada recibe sol directo.';
-  $('#fachada-texto').textContent = `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${frente} `
-    + (debil ? `Si el sol se asoma, tu sombra se proyectará ${hacia} y medirá ${largo}.` : `Tu sombra debería proyectarse ${hacia} y medir ${largo}: compárala con la del modelo.`);
+  $('#fachada-texto').textContent = `Son las ${hhmm(S.min)}. El sol está a ${f1(p.alt)}° de altura, hacia el ${rumboTexto(p.az)}. ${frente}`
+    + (lluvEsc ? '' : debil || aRatos ? ` Si el sol se asoma, tu sombra se proyectará ${hacia} y medirá ${largo}.` : ` Tu sombra debería proyectarse ${hacia} y medir ${largo}: compárala con la del modelo.`);
 }
 
 function refrescar() { lastLect = ''; S.kClimaDia = ''; }
@@ -1524,6 +1541,7 @@ function leyenda(c) {
   if (S.lente === 'sol') {
     nota = p.alt <= 0 ? 'Ahora es de noche: nada recibe sol. Mueve la regla del día a la mañana o a la tarde.'
       : `Ahora el sol está hacia el ${rumboTexto(p.az)}, a ${f1(p.alt)}° de altura${(S.irr ?? []).every((v) => v < 5) ? ': a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan.' : '.'}`;
+    if (p.alt > 0 && lluviaDibujada(c) && !anioSol) nota += ' Llueve en la escena: la Foto no dibuja sol directo, y aquí se pinta la directa media de la hora que da el dato.';
     if (S.solModo === 'total' && !S.hayDifusa) nota += ' Para esta hora no hay dato de luz difusa (hay entre 2001 y 2025 y en los días consultados en línea): se muestra solo el sol directo.';
     if (anioSol) {
       const R = consultas?.radiacion?.fachadas;
@@ -1813,11 +1831,12 @@ function estadoCorte(p, L, k) {
   const vidrio = frac >= 0.97 ? 'sombra' : frac >= 0.75 ? 'casiSombra' : frac > 0.25 ? 'medias' : frac > 0.03 ? 'casiSol' : 'sol';
   return { pf, t, dw, dg, frac, vidrio, hSombra: C.alero - dw, pisoEntero: C.alero - dw <= C.losa + C.esp };
 }
-function pintarCorte(p) {
+function pintarCorte(p, c) {
   const el = $('#corte-svg'); if (!el) return;
   p ??= S.solViaje ?? posicionSol({ ...S.fecha, h: 0, min: S.min });
+  c ??= S.viaje ? null : climaEn(S.fecha, S.min);
   const L = S.largo ?? 1.65, k = S.corteF ?? 'se';
-  const clave = [L, k, p.alt.toFixed(2), p.az.toFixed(2)].join('|');
+  const clave = [L, k, p.alt.toFixed(2), p.az.toFixed(2), Math.round((c?.dni ?? -10) / 10), Math.round(c?.nubes ?? -1), lluviaDibujada(c) ? 1 : 0].join('|');
   if (clave === pintarCorte.f) return; pintarCorte.f = clave;
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
   $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
@@ -1891,6 +1910,10 @@ function pintarCorte(p) {
     $('#corte-perfil').textContent = pfT; $('#corte-sombra').textContent = somT;
     $('#corte-vidrio').textContent = VIDRIO_TXT[E.vidrio];
     txt = `A las ${hora} el sol incide sobre la ${fach} con un ángulo de perfil de ${pfT}. `;
+    // el corte es la geometría del rayo; el dato de la hora dice si ese rayo llega
+    if (lluviaDibujada(c)) txt += 'Es la geometría del rayo: a esta hora la escena dibuja lluvia y no sol directo. ';
+    else if (c?.dni != null && c.dni < UMBRAL_SOL) txt += `Es la geometría del rayo: a esta hora las nubes casi tapan el sol (${miles(Math.round(c.dni))} W/m² de directa). `;
+    else if (solARatos(c, p)) txt += `El sol llega a ratos o velado (${miles(Math.round(c.dni / 10) * 10)} W/m² de media en la hora, con ${Math.round(c.nubes)} % de nubes). `;
     if (E.pisoEntero) txt += 'La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo.';
     else if (E.vidrio === 'sombra') txt += `La sombra baja ${coma(E.dw)} m por el muro y tapa todo el vidrio; el sol solo incide en la franja de muro que queda debajo, hasta ${coma(E.hSombra)} m del suelo.`;
     else if (E.vidrio === 'sol') txt += `El sol entra por debajo del alero e incide en todo el vidrio. La sombra solo baja ${coma(E.dw)} m${E.dw > 0.05 ? ', sobre el muro que hay encima de la ventana' : ''}.`;
@@ -2280,7 +2303,7 @@ function confortHora(p, c) {
   const uS = utci(c.temp, tmrtSol({ ta: c.temp, altSol: p.alt, dni: c.dni, difusa: c.difusa ?? 0 }), va, c.humedad, { recortarViento: true });
   const uA = utci(c.temp, tmrtSombra({ ta: c.temp, difusa: c.difusa ?? 0, altSol: p.alt, dni: c.dni }), va, c.humedad, { recortarViento: true });
   const nom = (u) => CATEGORIAS_UTCI[categoriaUTCI(u)]?.nombre.toLowerCase() ?? '—';
-  $('#utci-hora').innerHTML = `A las ${hora}: al sol se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
+  $('#utci-hora').innerHTML = `A las ${hora}: al sol${solARatos(c, p) || llueve(c) ? ', cuando sale,' : ''} se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
 }
 /** Qué conviene a esta hora, a partir del clima de afuera (especificación revisada por el panel de expertos, 30/09/2026).
  *  Dos marcos de confort (Givoni 1992; Guía de Construcción Sostenible de Panamá 2016, p. 8, con la extensión de ASHRAE 55
@@ -2315,7 +2338,7 @@ function conviene(p, c) {
   out.push(['cierre', '', g[0] === pa[0] ? 'Coinciden.' : 'No coinciden porque Givoni mira la humedad y la Guía solo la temperatura.']);
   // 3. Sol en el vidrio (de día, con sol directo, perfil bajo el corte del alero)
   const acciones = [], datos = [];
-  if (dia && (c.dni ?? 0) >= UMBRAL_SOL) {
+  if (dia && !llueve(c) && (c.dni ?? 0) >= UMBRAL_SOL) {
     const al = [];
     for (const k of Object.keys(FACHADAS)) {
       const ca = Math.cos((p.az - FACHADAS[k].rumbo) * Math.PI / 180); if (ca <= 0.05) continue;
