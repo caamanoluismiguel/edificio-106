@@ -4,7 +4,7 @@ Una maqueta digital del Edificio 106 de Isthmus, en Ciudad del Saber (la antigua
 
 **Ver el visor:** https://caamanoluismiguel.github.io/edificio-106/
 
-**El edificio sobre tu mesa:** en el visor, «Capas» › «Sobre la mesa» trae una tarjeta para imprimir. Con el celular, el edificio aparece en 3D sobre el plano, con la sombra de hoy.
+**El edificio sobre tu mesa:** en el visor, «Capas» › «Ver en la mesa (realidad aumentada)» trae una tarjeta para imprimir. Con el celular, el edificio aparece en 3D sobre el plano, con la sombra de hoy.
 
 Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.
 
@@ -21,19 +21,19 @@ Algunos resultados que salen del propio visor, con su momento para verlo en la e
 
 ## Qué se puede hacer
 
-- **Ahora:** el sol de este minuto y el pronóstico de Open-Meteo, con valores cada 15 minutos interpolados; el modelo se actualiza varias veces al día.
+- **En vivo:** el sol de este minuto y el pronóstico de Open-Meteo, con valores cada 15 minutos interpolados; el modelo se actualiza varias veces al día.
 - **Máquina del tiempo:** recorrer un día, un año o los 25 años. La regla del día marca la lluvia de cada hora (llena la que la escena dibuja, tenue la lluvia débil de la celda) y cuánto sol directo falta frente a un cielo despejado; mientras la escena dibuja lluvia, no dibuja sol directo.
-- **Ir a…:** cualquier fecha y hora desde 1940, o un momento calculado con la serie: los días sin sombra, los solsticios, la hora más lluviosa en 25 años, la sequía más larga, el día con más sol y un día típico de cada mes.
-- **Formas de ver:** Foto; Sol (la radiación que incide en cada punto, con la sombra real de los aleros, los árboles y los vecinos); Lluvia (lluvia con viento según ISO 15927-3); Viento (rosa de vientos por temporada); Sombras (la sombra de cada hora sobre el terreno); Partes (el nombre de cada parte del edificio, qué es y qué hace, con una persona de 1,70 m para comparar). Cada una explica qué se ve, cómo leerlo, sus límites y cómo se calcula.
+- **Momentos clave:** cualquier fecha y hora desde 1940, o un momento calculado con la serie: los días sin sombra, los solsticios, la hora más lluviosa en 25 años, la sequía más larga, el día con más sol y un día típico de cada mes.
+- **¿Qué quieres ver?** Cómo se ve; Sol en fachadas (la radiación que incide en cada punto, con la sombra real de los aleros, los árboles y los vecinos); Lluvia en fachadas (lluvia con viento según ISO 15927-3); Viento (rosa de vientos por temporada); Sombras del día (la sombra de cada hora sobre el terreno); Partes y medidas (el nombre de cada parte del edificio, qué es y qué hace, con una persona de 1,70 m para comparar). Cada una explica qué se ve, cómo leerlo, sus límites y cómo se calcula.
 - **Confort:** la carta psicrométrica con cada hora de 2001 a 2025 sobre las zonas de Givoni y el modelo adaptativo de ASHRAE 55, el UTCI al sol y a la sombra, y «A esta hora conviene»: qué conviene abrir, tapar o ventilar a esa hora según el clima de afuera, con la fuente de cada regla.
 - **Para la lámina:** guardar la escena en PNG a 2.400 px con un pie y un código QR, o copiar el enlace exacto del momento (fecha, hora, forma de ver y encuadre).
-- **Sobre la mesa:** la tarjeta de realidad aumentada (abajo).
+- **Ver en la mesa (realidad aumentada):** la tarjeta de realidad aumentada (abajo).
 - **El entorno:** Ciudad del Saber entera con sus calles y edificios, la Avenida Omar Torrijos Herrera, el ferrocarril y el canal con las esclusas de Miraflores, sobre el relieve real fuera del sitio. Por el canal pasan barcos ilustrativos, uno cada dos horas por cada vía de las esclusas. La cámara se aleja hasta 800 m para ver el conjunto; desde la calle frente al 106 se ven al fondo los contenedores.
-- **Recorrido guiado** de 11 pasos. Cada dato de la barra de abajo se puede tocar para ver qué significa.
+- **Recorrido guiado · 5 min**, de 11 pasos. Cada dato de la barra de abajo se puede tocar para ver qué significa.
 
 Enlaces directos: `#fachada-se`, `#fachada-no`, `#fachada-ne` y `#fachada-so` abren la página frente a cada fachada (son los de los QR en el sitio); `#m-AAAAMMDD-HHMM` abre un momento, por ejemplo `#m-20240724-1745`. Si WebGPU falla, la página pasa sola a WebGL 2; `#webgl` lo fuerza y `#depurar` muestra el diagnóstico.
 
-## Sobre la mesa: el edificio en realidad aumentada
+## Ver en la mesa: el edificio en realidad aumentada
 
 `ar/` es una página aparte que funciona en el navegador del celular, sin instalar nada ni pagar una plataforma.
 

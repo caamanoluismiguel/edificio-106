@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=d168c9b8e4" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=d3e618f2fe" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -119,7 +119,17 @@
     padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter) 10px; pointer-events: none; }
   .barra > * { pointer-events: auto; }
   .marca { display: flex; gap: 11px; align-items: center; color: var(--cal); text-decoration: none; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
-    padding: 7px 14px 7px 11px; backdrop-filter: blur(10px); }
+    padding: 7px 14px 7px 11px; backdrop-filter: blur(10px); font: inherit; cursor: pointer; }
+  .marca:hover { border-color: rgba(239,233,222,.42); }
+  .marca .flecha { font-style: normal; font-size: 14px; color: var(--cal); transition: transform .2s; }
+  .marca[aria-expanded="true"] .flecha { transform: rotate(180deg); }
+  /* una sola puerta de ayuda: el menú de la marca */
+  .menu-ayuda { position: relative; }
+  #menu-lista { position: absolute; top: calc(100% + 8px); left: 0; display: grid; gap: 6px; min-width: 15rem; padding: 6px; background: var(--solido); border: 1px solid var(--linea-2);
+    border-radius: 18px; animation: sube .2s var(--ease); }
+  #menu-lista[hidden] { display: none; }
+  #menu-lista .boton { justify-content: flex-start; min-height: 44px; background: none; border-color: transparent; border-radius: 12px; }
+  #menu-lista .boton:hover, #menu-lista .boton:focus-visible { background: rgba(239,233,222,.08); }
   .marca svg { width: 38px; height: 22px; overflow: visible; }
   .marca .arco { fill: none; stroke: var(--cal-3); stroke-width: 1.5; }
   .marca .horizonte { stroke: var(--cal-3); stroke-width: 1.5; }
@@ -141,7 +151,6 @@
   .boton .onda i { width: 2px; background: currentColor; border-radius: 1px; height: 4px; }
   .boton .onda i:nth-child(1) { height: 5px } .boton .onda i:nth-child(2) { height: 10px } .boton .onda i:nth-child(3) { height: 7px }
   .boton[aria-pressed="true"] { border-color: rgba(239,233,222,.42); }
-  .boton .glifo { display: inline-grid; place-items: center; width: 16px; height: 16px; border: 1.5px solid currentColor; border-radius: 50%; font: 700 11px/1 var(--datos); font-style: italic; }
   .boton[aria-pressed="true"] .onda i { animation: onda 1s var(--ease) infinite alternate; }
   .boton[aria-pressed="true"] .onda i:nth-child(2) { animation-delay: .2s } .boton[aria-pressed="true"] .onda i:nth-child(3) { animation-delay: .4s }
   @keyframes onda { from { height: 3px } to { height: 12px } }
@@ -221,7 +230,7 @@
     transform: scaleX(var(--p, 0)); transform-origin: left; opacity: 0; transition: opacity .3s; }
   .vistas button[aria-pressed="true"]::after { opacity: 1; }
   .lentes { display: flex; background: var(--panel); border: 1px solid var(--linea); border-radius: 999px; padding: 3px; backdrop-filter: blur(10px); gap: 2px; }
-  .lentes::before { content: 'Ver'; font: 500 12px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--cal-2); align-self: center; padding: 0 6px 0 8px; }
+  .lentes::before { content: '¿Qué quieres ver?'; font: 600 12px/1 var(--texto); color: var(--cal-2); align-self: center; padding: 0 6px 0 10px; white-space: nowrap; }
   .lentes button { border: 0; background: none; cursor: pointer; font: 600 13px/1 var(--texto); color: var(--cal-2); padding: 8px 10px; border-radius: 999px; }
   .lentes button:hover { color: var(--cal); background: rgba(239,233,222,.08); }
   .lentes button[aria-pressed="true"] { color: #0b1216; background: var(--cal); }
@@ -492,8 +501,6 @@
   }
 
   /* ---------- para qué sirve ---------- */
-  .boton.destacado { border-color: rgba(239,233,222,.42); }
-  .boton.destacado[aria-expanded="true"] { background: var(--cal); color: var(--noche); border-color: var(--cal); }
   #sirve { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px);
     width: min(410px, calc(100vw - 2 * var(--gutter))); overflow: auto; overscroll-behavior: contain; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px;
     padding: 18px; backdrop-filter: blur(18px); box-sizing: border-box; display: grid; gap: 14px; align-content: start; box-shadow: 0 24px 70px rgba(0,0,0,.4); animation: sube .45s var(--ease); }
@@ -655,7 +662,7 @@
     .marca small, #estado .largo { display: none; }
     #estado { padding: 8px 10px; font-size: 11px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
     #estado-txt { overflow: hidden; text-overflow: ellipsis; }
-    #info .t, #sonido .t { display: none; }
+    #sonido .t { display: none; }
     .boton { padding: 10px 12px; }
     #rotulo-texto { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     /* la explicación de un dato se lee entera: sin recorte y con desplazamiento si hace falta */
@@ -669,8 +676,11 @@
     .hud-botones { display: contents; }
     .vistas { grid-column: 1; grid-row: 1; justify-self: start; }
     .lentes { grid-column: 1 / -1; grid-row: 2; }
-    .lentes button { flex: 1 1 auto; min-width: 0; padding: 8px 4px; }
-    .lentes .info { flex: 0 0 30px; }
+    /* los seis modos en una rejilla de 3 × 2 (nombres largos); arriba, el título y «?» */
+    .lentes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; border-radius: 18px; padding: 4px; }
+    .lentes::before { grid-row: 1; grid-column: 1 / 3; padding: 0 0 0 8px; }
+    .lentes .info { grid-row: 1; grid-column: 3; justify-self: end; width: 44px; min-height: 28px !important; padding: 4px; }
+    .lentes button { min-width: 0; padding: 6px 4px; white-space: normal; line-height: 1.15; text-align: center; border-radius: 12px; }
     .vistas button { padding: 7px 10px; font-size: 13px; }
     #leyenda { grid-column: 1 / -1; grid-row: 3; width: auto; }
     html.en-recorrido #leyenda { display: none; }                    /* en el recorrido, la tarjeta del paso ya lo explica */
@@ -688,8 +698,10 @@
     .pestanas { grid-area: tabs; align-self: center; } .pestanas button { white-space: nowrap; padding: 7px 10px; }
     .regla { grid-area: regla; } #regla-dia { margin-top: 12px; }
     #momentos-caja { grid-area: momentos; }
-    .dock-botones { grid-area: botones; justify-self: end; align-self: center; }
+    .dock-botones { grid-area: botones; justify-self: end; align-self: center; gap: 6px; }
     #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
+    /* «Momentos clave» en dos líneas para que la fila de botones no tape la hora */
+    .dock-botones .boton { padding: 10px; } #abrir-ir { white-space: normal; width: 5.6em; text-align: center; justify-content: center; line-height: 1.1; padding: 5px 10px; min-height: 44px; }
     #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-height: 40px; box-sizing: border-box; min-width: 0; padding: 8px 12px; margin-top: 2px;
       border: 1px solid var(--linea-2); border-radius: 12px; background: rgba(239,233,222,.04); cursor: pointer; font: 500 13px/1.2 var(--datos); color: var(--cal); text-align: left; }
     #lect-resumen-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -704,11 +716,10 @@
     #capas { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px); }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
-    .lentes::before { display: none; } .lentes button { font-size: 13px; }
+    .lentes button { font-size: 13px; }
     #leyenda { padding: 9px 10px; } .ley-sigue { bottom: -9px; margin: 0 -10px -9px; } #ley-nota { font-size: 11px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px); min-width: 0; } #viaje b { font-size: 18px; }
     #ir-a { background: var(--solido); }
-    #abrir-recorrido { display: none; }
     /* en el teléfono la tarjeta no pasa de un tercio de la pantalla: el texto se desplaza por dentro, los botones quedan a la vista,
        y «Ver el edificio» la pliega al título para mirar la escena (la cámara centra lo que se mira en el hueco que queda libre) */
     #recorrido { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); padding: 13px 14px; gap: 7px; max-height: 36vh; display: flex; flex-direction: column; }
@@ -729,7 +740,6 @@
     #oferta-recorrido { width: auto; right: 8px; left: 8px; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
     .dock-lect [data-explica] .k::after { display: none; }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
-    #abrir-sirve { padding: 10px 12px; font-size: 13px; }
     .intro-pie .carga { max-width: 60%; }
     #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
     #voladizo { --px: 14px; --pb: 13px; }
@@ -739,7 +749,7 @@
   /* teléfonos bajos: la leyenda de la regla del día se explica al tocar «Día» */
   @media (max-width: 760px) and (max-height: 800px) { #dia-ley { display: none; } }
   @media (max-width: 400px) { .marca svg { display: none; } .marca { padding: 7px 12px; } .acciones { gap: 5px; } }
-  @media (max-width: 480px) { #estado { display: none; } #abrir-sirve { padding: 9px 11px; font-size: 13px; } .acciones { gap: 6px; } .marca b { font-size: 18px; } }
+  @media (max-width: 480px) { #estado { display: none; } .acciones { gap: 6px; } .marca b { font-size: 18px; } }
   @media (max-height: 640px) and (min-width: 761px) { #l-fuente, .pista { display: none; } #l-hora { font-size: 36px; } }
   /* ---------- teléfono en horizontal (y ventanas muy bajas) ---------- */
   @media (max-height: 500px) and (min-width: 761px) {
@@ -775,7 +785,7 @@
     #oferta-recorrido { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
   }
   @media (max-width: 1400px) and (min-width: 761px) { .marca small { display: none; } }
-  @media (max-width: 1100px) and (min-width: 761px) { #abrir-recorrido { padding: 10px 12px; } #sonido .t { display: none; } }
+  @media (max-width: 1100px) and (min-width: 761px) { #sonido .t { display: none; } }
   /* en pantallas táctiles, los grupos de botones de arriba y las pestañas se tocan con el dedo: al menos 40 px de alto */
   @media (pointer: coarse) {
     .vistas, .lentes, .pestanas { min-height: 40px; box-sizing: border-box; }
@@ -789,16 +799,20 @@
 <div id="lienzo"></div>
 
 <header class="barra">
-  <a class="marca" href="#" aria-label="Isthmus · Edificio 106">
+  <div class="menu-ayuda">
+  <button class="marca" id="abrir-menu" type="button" aria-expanded="false" aria-controls="menu-lista" aria-label="Edificio 106: ayuda y fuentes">
     <svg viewBox="0 0 38 22" aria-hidden="true"><path class="arco" d="M3 20 A16 16 0 0 1 35 20"></path><line class="horizonte" x1="0" y1="20" x2="38" y2="20"></line><circle id="marca-sol" cx="19" cy="4" r="3"></circle></svg>
-    <span><b>Edificio 106</b><small>Isthmus · Ciudad del Saber</small></span>
-  </a>
+    <span><b>Edificio 106</b><small>Isthmus · Ciudad del Saber</small></span><i class="flecha" aria-hidden="true">▾</i>
+  </button>
+  <div id="menu-lista" hidden>
+    <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado · 5 min</button>
+    <button class="boton" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
+    <button class="boton" id="info" type="button" aria-haspopup="dialog">Fuentes y método</button>
+  </div>
+  </div>
   <div id="estado"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
   <div class="acciones">
     <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
-    <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado</button>
-    <button class="boton destacado" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
-    <button class="boton" id="info" type="button" aria-haspopup="dialog" aria-label="Qué es y fuentes"><span class="glifo" aria-hidden="true">i</span><span class="t">Qué es · fuentes</span></button>
   </div>
 </header>
 
@@ -828,9 +842,9 @@
 <p id="aviso-noche" class="tras-intro solo-noche" hidden></p>
 <div id="rotulo" class="tras-intro" aria-live="off">
   <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
-  <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer</button>
+  <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer más</button>
   <p id="rotulo-texto"></p>
-  <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Ver hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Ver el atardecer de hoy</button></div>
+  <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Atardecer</button></div>
   <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
 </div>
 <div id="partes-capa" hidden aria-label="Partes del edificio"></div>
@@ -852,7 +866,7 @@
 </aside>
 
 <div id="oferta-recorrido" hidden role="region" aria-label="Bienvenida">
-  <p><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo inciden el sol, la lluvia y el viento sobre el Edificio 106. En 2 minutos, el recorrido guiado te enseña a usarla.</p>
+  <p><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo inciden el sol, la lluvia y el viento sobre el Edificio 106. En 5 minutos, el recorrido guiado te enseña a usarla.</p>
   <div><button type="button" id="oferta-si" class="boton primario">Empezar el recorrido</button><button type="button" id="oferta-sirve" class="boton">¿Para qué sirve?</button><button type="button" id="oferta-no" class="boton">Ahora no</button></div>
 </div>
 
@@ -877,23 +891,23 @@
   </button>
   <p id="mirando">Miras hacia el suroeste</p>
   <div class="hud-botones">
-  <div class="vistas" role="group" aria-label="Vistas">
+  <div class="vistas" role="group" aria-label="¿Desde dónde?">
     <button type="button" data-vista="esquina">Esquina</button>
     <button type="button" data-vista="aerea">Aérea</button>
     <button type="button" data-vista="planta">Planta</button>
   </div>
-  <div class="lentes" role="group" aria-label="Formas de ver">
-    <button type="button" data-lente="foto" aria-pressed="true" title="La escena tal como se vería">Foto</button>
-    <button type="button" data-lente="sol" aria-pressed="false" title="Sol directo sobre cada fachada, en W/m²">Sol</button>
-    <button type="button" data-lente="lluvia" aria-pressed="false" title="Lluvia con viento sobre cada fachada">Lluvia</button>
-    <button type="button" data-lente="viento" aria-pressed="false" title="De dónde viene el viento y qué fachada lo recibe de frente">Viento</button>
-    <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra de cada hora del día sobre el terreno">Sombras</button>
-    <button type="button" data-lente="partes" aria-pressed="false" title="Cómo se llama cada parte del edificio y qué hace">Partes</button>
+  <div class="lentes" role="group" aria-label="¿Qué quieres ver?">
+    <button type="button" data-lente="foto" aria-pressed="true" title="Luz y sombra de esta hora">Cómo se ve</button>
+    <button type="button" data-lente="sol" aria-pressed="false" title="Cuánto sol recibe cada muro y el techo">Sol en fachadas</button>
+    <button type="button" data-lente="lluvia" aria-pressed="false" title="Qué muro se moja más">Lluvia en fachadas</button>
+    <button type="button" data-lente="viento" aria-pressed="false" title="De dónde llega el aire">Viento</button>
+    <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra hora por hora">Sombras del día</button>
+    <button type="button" data-lente="partes" aria-pressed="false" title="Nombres, alturas y escala">Partes y medidas</button>
     <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
   </div>
   </div>
   <div id="leyenda" hidden aria-live="off">
-    <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-texto" class="boton" aria-expanded="false" aria-controls="ley-que">Leer</button><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
+    <div class="ley-cab"><p id="ley-t"></p><button type="button" id="ley-texto" class="boton" aria-expanded="false" aria-controls="ley-que">Leer más</button><button type="button" id="ley-cerrar" aria-label="Cerrar la explicación">×</button></div>
     <p id="ley-que"></p>
     <div id="ley-parte" hidden>
       <p><b>En este edificio:</b> <span id="lp-aqui"></span></p>
@@ -989,7 +1003,7 @@
     <button id="ahora" type="button" aria-pressed="true">Ahora</button>
   </div>
   <div class="dock-centro">
-    <div class="pestanas" role="tablist" aria-label="Escala de tiempo">
+    <div class="pestanas" role="tablist" aria-label="¿Cuándo?">
       <button type="button" role="tab" id="tab-dia" data-tab="dia" aria-selected="true" aria-controls="regla-dia">Día</button>
       <button type="button" role="tab" id="tab-anio" data-tab="anio" aria-selected="false" aria-controls="regla-anio" tabindex="-1">Año</button>
       <button type="button" role="tab" id="tab-decadas" data-tab="decadas" aria-selected="false" aria-controls="regla-decadas" tabindex="-1">25 años</button>
@@ -1032,13 +1046,13 @@
   <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>
   <div class="dock-lect" id="dock-lect">
     <div data-explica="sol" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
-    <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
+    <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de un poste de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
     <div data-explica="clima" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
     <p id="l-fuente"></p>
   </div>
   <div class="dock-botones">
     <button class="boton" id="reproducir" type="button" aria-pressed="false" aria-label="Reproducir"></button>
-    <button class="boton" id="abrir-ir" type="button" aria-expanded="false" aria-controls="ir-a" title="Una fecha exacta o uno de los días extremos de la serie">Ir a…</button>
+    <button class="boton" id="abrir-ir" type="button" aria-expanded="false" aria-controls="ir-a" title="Una fecha exacta o uno de los días extremos de la serie">Momentos clave</button>
     <button class="boton" id="abrir-capas" type="button" aria-expanded="false" aria-controls="capas">Capas</button>
     <button class="boton" id="abrir-confort" type="button" aria-expanded="false" aria-controls="confort" title="Carta psicrométrica y sensación térmica de 25 años de datos">Confort</button>
   </div>
@@ -1054,7 +1068,7 @@
     <p>Es una maqueta digital del Edificio 106 de Isthmus, en Ciudad del Saber. En ella puedes ver cómo inciden el sol, la lluvia y el viento sobre el edificio a cualquier hora de cualquier día, con el clima de cada hora entre 2001 y 2025.</p>
     <p><b>¿Por qué importa?</b> Un edificio no está quieto frente al clima: el sol incide primero sobre una fachada y después sobre otra, los aguaceros mojan más una pared que las otras y el viento sopla sobre todo desde una misma dirección. Eso decide si adentro hace calor, si las paredes se manchan de humedad o si entra la brisa por las ventanas. Los arquitectos tienen que pensarlo antes de construir, y en un plano cuesta imaginarlo. Aquí se ve.</p>
     <p><b>Qué puedes hacer:</b> ir a una fecha y hora (por ejemplo, la de una foto que tomaste, para comparar el sol y las sombras), recorrer un día entero con la barra de abajo, mirar el edificio como mapa de sol, de lluvia, de viento o de sombras, aprender cómo se llama cada parte del edificio, ver en «Confort» qué conviene abrir o tapar a esa hora e ir a días especiales, como el más lluvioso en 25 años. En «Capas» hay además una tarjeta para imprimir: con el celular, el edificio aparece en 3D sobre tu mesa.</p>
-    <p><button class="boton primario" id="sirve-recorrido" type="button">Hacer el recorrido guiado (2 min)</button></p>
+    <p><button class="boton primario" id="sirve-recorrido" type="button">Hacer el recorrido guiado (5 min)</button></p>
     <h3 class="sirve-h">Lo que se aprende en pocos minutos</h3>
     <div class="aprende">
       <article class="hallazgo simple" data-fecha="2026-04-12" data-hora="12:19" data-vista="aerea" data-fachada="" data-capa="" data-modo="">
@@ -1085,7 +1099,7 @@
       <article class="hallazgo simple" data-fecha="2024-03-25" data-hora="09:30" data-vista="esquina" data-fachada="" data-capa="partes" data-modo="">
         <h4>Cada parte del edificio tiene su nombre</h4>
         <p>Techo a cuatro aguas, alero, ménsula, base o zócalo, módulo: toca cada etiqueta y aprende qué es, cómo es en este edificio y qué hace. Hay una persona de 1,70 m al lado para comparar, y el alero se puede probar como voladizo.</p>
-        <button class="ver" type="button"><span>Verlo</span><small>Ver → Partes · esquina</small></button>
+        <button class="ver" type="button"><span>Verlo</span><small>Partes y medidas · esquina</small></button>
       </article>
       <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
         <h4>Casi toda la lluvia cae de mayo a noviembre, y sobre todo en la tarde</h4>
@@ -1107,10 +1121,10 @@
     </article>
     <article class="hallazgo" data-fecha="2024-03-05" data-hora="09:30" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Sol directo: SE y SO reciben más del doble que la NO. Con la luz difusa, la diferencia se achica</h3>
-      <p>En una pared sin alero, el sol directo de un año es de unos <span data-rad="se.directa">374</span> kWh/m² en la SE, <span data-rad="so.directa">362</span> en la SO, <span data-rad="ne.directa">302</span> en la NE y <span data-rad="no.directa">144</span> en la NO. Pero el sol directo es solo el <span data-rad-pct>24–43 %</span> del total: sumando la luz difusa del cielo (entre <span data-rad="no.difusa">287</span> en la NO y <span data-rad="se.difusa">325</span> en la SE, porque el cielo brilla más cerca del sol) y la que refleja el suelo (~<span data-rad="se.reflejada">177</span>), los totales son de unos <span data-rad="se.total">876</span> kWh/m² en la SE, <span data-rad="so.total">863</span> en la SO, <span data-rad="ne.total">795</span> en la NE y <span data-rad="no.total">608</span> en la NO. Un techo horizontal recibe unos <span data-rad="techo.total">1.770</span>, de los que <span data-rad="techo.difusa">712</span> son difusa. En «Ver → Sol → Año típico» están estas mismas cifras.</p>
+      <p>En una pared sin alero, el sol directo de un año es de unos <span data-rad="se.directa">374</span> kWh/m² en la SE, <span data-rad="so.directa">362</span> en la SO, <span data-rad="ne.directa">302</span> en la NE y <span data-rad="no.directa">144</span> en la NO. Pero el sol directo es solo el <span data-rad-pct>24–43 %</span> del total: sumando la luz difusa del cielo (entre <span data-rad="no.difusa">287</span> en la NO y <span data-rad="se.difusa">325</span> en la SE, porque el cielo brilla más cerca del sol) y la que refleja el suelo (~<span data-rad="se.reflejada">177</span>), los totales son de unos <span data-rad="se.total">876</span> kWh/m² en la SE, <span data-rad="so.total">863</span> en la SO, <span data-rad="ne.total">795</span> en la NE y <span data-rad="no.total">608</span> en la NO. Un techo horizontal recibe unos <span data-rad="techo.total">1.770</span>, de los que <span data-rad="techo.difusa">712</span> son difusa. En «Sol en fachadas → Año típico» están estas mismas cifras.</p>
       <p class="uso"><b>Para el diseño:</b> Ordena dónde proteger primero: el techo, luego SE y SO. Pero la NO no está libre: recibe unos siete décimos de lo que recibe la SE, así que su vidrio también necesita control solar, aunque menos.</p>
       <p class="limite"><b>Límite:</b> ERA5 para una celda de ~28 km. La difusa y la reflejada se estiman con modelos sencillos: el cielo de Hay-Davies, que brilla más alrededor del sol, y un suelo que devuelve el 20 %. No descuentan vecinos, árboles ni el pedazo de cielo que tapa el alero.</p>
-      <button class="ver" type="button"><span>Verlo en la escena</span><small>05/03/2024 09:30 · vista aérea · Sol, solo directo: la SE marca el valor más alto; NO y SO, cero. Cambia a «Total» para ver la difusa.</small></button>
+      <button class="ver" type="button"><span>Verlo en la escena</span><small>05/03/2024 09:30 · vista aérea · Sol en fachadas, solo directo: la SE marca el valor más alto; NO y SO, cero. Cambia a «Total» para ver la difusa.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2024-01-15" data-hora="07:30" data-vista="" data-fachada="se" data-capa="">
       <h3>El alero de 1,65 m quita al vidrio entre 70 % y 85 % de la irradiación directa</h3>
@@ -1145,7 +1159,7 @@
     <h3 id="limites-t">Qué no hace esta herramienta y qué usar después</h3>
     <p>Sirve para leer el sitio y discutir orientación, aleros, sol, lluvia y viento. Para diseñar y comprobar un edificio hace falta más. Cuatro límites, con lo que conviene usar en cada caso:</p>
     <ol>
-      <li><b>Radiación difusa y reflejada.</b> La forma de ver «Sol» las suma con la opción «Total», pero con un modelo sencillo (cielo de Hay-Davies, suelo al 20 %) que no descuenta el cielo que tapan el alero y los vecinos.
+      <li><b>Radiación difusa y reflejada.</b> La forma de ver «Sol en fachadas» las suma con la opción «Total», pero con un modelo sencillo (cielo de Hay-Davies, suelo al 20 %) que no descuenta el cielo que tapan el alero y los vecinos.
         <span class="usar">Para dimensionar vidrios y protecciones: simulación de radiación, por ejemplo con <a href="https://www.ladybug.tools/" target="_blank" rel="noopener">Ladybug Tools</a> (Radiance).</span></li>
       <li><b>Temperatura interior y confort.</b> No calcula cuánto calor entra, cómo lo guarda y lo suelta la masa del concreto ni si adentro se está cómodo. El panel «Confort» solo compara el clima de afuera con zonas de confort.
         <span class="usar">Para eso: <a href="https://energyplus.net/" target="_blank" rel="noopener">EnergyPlus</a> (o Honeybee, de Ladybug Tools, que lo usa) con el archivo de clima típico (EPW) de la estación de Albrook, 2011–2025, en <a href="https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/PAN_Panama/index.html" target="_blank" rel="noopener">OneBuilding</a>.</span></li>
@@ -1155,7 +1169,7 @@
         <span class="usar">Para canales y bajantes: curvas de intensidad-duración-frecuencia (IDF) de una estación cercana. Para el clima del lugar: mediciones en sitio o estaciones cercanas, como Albrook.</span></li>
     </ol>
   </section>
-  <p class="sirve-pie">Cálculos: geometría solar NOAA minuto a minuto (2026) y datos horarios ERA5 2001–2025 de Open-Meteo, sobre el modelo paramétrico (escala ±12 %, ventanas inferidas). Detalle de fuentes en «Qué es · fuentes».</p>
+  <p class="sirve-pie">Cálculos: geometría solar NOAA minuto a minuto (2026) y datos horarios ERA5 2001–2025 de Open-Meteo, sobre el modelo paramétrico (escala ±12 %, ventanas inferidas). Detalle de fuentes en «Fuentes y método».</p>
 </aside>
 
 <aside id="confort" hidden aria-labelledby="confort-t">
@@ -1193,7 +1207,7 @@
 </aside>
 
 <aside id="ir-a" hidden aria-labelledby="ir-a-t">
-  <div class="ir-cab"><h2 id="ir-a-t">Ir a…</h2><button class="boton" type="button" id="cerrar-ir">Cerrar</button></div>
+  <div class="ir-cab"><h2 id="ir-a-t">Momentos clave</h2><button class="boton" type="button" id="cerrar-ir">Cerrar</button></div>
   <form id="ir-form" class="ir-form" aria-label="Una fecha y hora exactas">
     <label>Fecha<input type="date" id="ir-fecha" min="1940-01-01" max="2040-12-31" required></label>
     <label>Hora (Panamá)<input type="time" id="ir-hora" step="60" required></label>
@@ -1211,7 +1225,7 @@
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
       <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez</b><small>Viene marcada: la escena se dibuja siempre a la resolución más alta. Si en tu equipo el movimiento se siente lento, desmárcala y la página bajará la resolución cuando vaya justo. <span id="res-actual"></span></small></label>
       <label class="solo-noche"><input type="checkbox" id="capa-larga"><b>Exposición larga</b><small>Aclara la noche como una foto de 20 segundos en trípode. No agrega luz: todo sube lo mismo, así que lo claro y lo oscuro siguen en su lugar.</small></label>
-      <label><input type="checkbox" id="capa-aguacero"><b>Aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>
+      <label><input type="checkbox" id="capa-aguacero"><b>Simular aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>
     </div>
   </div>
   <div>
@@ -1230,7 +1244,7 @@
     <p id="img-estado" class="lamina-nota" role="status"></p>
   </div>
   <div class="lamina" id="sobre-la-mesa">
-    <h2 title="Realidad aumentada">Sobre la mesa</h2>
+    <h2>Ver en la mesa (realidad aumentada)</h2>
     <p class="lamina-nota">Imprime la tarjeta y escanea su código con el celular. El edificio aparece en 3D sobre el plano, con la sombra de hoy.</p>
     <div class="lamina-botones"><a class="boton" id="abrir-ar" href="ar/">Abrir la cámara</a><a class="boton" id="bajar-tarjeta" href="ar/tarjeta/tarjeta.pdf" download="Edificio-106-tarjeta.pdf">Descargar la tarjeta (PDF)</a></div>
     <p class="lamina-nota">Imprímela en A4 o carta, al 100 %, en papel mate. Sin impresora, ábrela en la pantalla del computador y apunta el celular ahí.</p>
@@ -1243,17 +1257,17 @@
   <button class="boton" id="cerrar-acerca" type="button">Cerrar</button>
   <h2 id="acerca-t">Edificio 106 · Isthmus</h2>
   <p><b>En pocas palabras:</b> una maqueta digital del Edificio 106 para ver cómo inciden el sol, la lluvia y el viento sobre él a cualquier hora de cualquier día. Sirve para entender por qué un edificio en el trópico se diseña como se diseña: por qué los aleros son anchos, qué pared recibe más sol, cuál se moja más y de dónde llega el aire fresco.</p>
-  <p><button class="boton" id="acerca-recorrido" type="button">Hacer el recorrido guiado (2 min)</button> <button class="boton" id="acerca-sirve" type="button">Para qué sirve, explicado para todos</button></p>
+  <p><button class="boton" id="acerca-recorrido" type="button">Hacer el recorrido guiado (5 min)</button> <button class="boton" id="acerca-sirve" type="button">Para qué sirve, explicado para todos</button></p>
   <h3>Para arquitectos y docentes</h3>
   <p>Un modelo 3D paramétrico del Edificio 106, con su norte real, el sol calculado (NOAA) y el tiempo de cada hora. Entre 2001 y 2025 el tiempo sale del reanálisis ERA5 (un modelo del clima alimentado con mediciones); para estos días, del pronóstico de modelo de Open-Meteo. Sirve para leer y discutir cómo trabajan la orientación, los aleros, la lluvia y el viento en este edificio.</p>
   <h3>Cómo leerlo</h3>
   <ul>
-    <li><b>Ahora:</b> el sol de este minuto y el pronóstico de Open-Meteo (combinación automática de modelos, «best_match»), con valores cada 15 min interpolados; el modelo se actualiza varias veces al día. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
+    <li><b>En vivo:</b> el sol de este minuto y el pronóstico de Open-Meteo (combinación automática de modelos, «best_match»), con valores cada 15 min interpolados; el modelo se actualiza varias veces al día. El código QR de cada fachada abre la página frente a ella, a la hora actual.</li>
     <li><b>Máquina del tiempo:</b> Día · Año · 25 años, o una fecha y hora exactas (toca la fecha bajo la hora grande). Entre 2001 y 2025, si ERA5 da 1 mm o más en esa hora (1,5 mm de abril a noviembre), llueve en la escena y no se dibuja sol directo.</li>
     <li><b>Orientación:</b> arrastra para girar el edificio. La brújula marca el norte real y el sol; en el suelo están la rosa N·E·S·O y el arco del sol del día.</li>
-    <li><b>Qué significa cada dato:</b> toca la hora, «Sol», «Sombra de 1 m» o «Clima» en la barra de abajo, o las pestañas Día · Año · 25 años, y aparece la explicación con los valores de ese momento.</li>
-    <li><b>Ir a…:</b> una fecha y hora exactas, o los días que más se consultan: sin sombra, solsticios, la hora y el día más lluviosos, el día con más sol, la fachada que más se moja y un día típico de cada mes.</li>
-    <li><b>Ver:</b> «Foto» es la escena; «Sol» pinta la radiación solar que incide en cada punto del edificio, con la sombra real de los aleros (solo directo o total, con difusa y reflejada); «Lluvia», el índice de lluvia con viento de ISO 15927-3; «Viento», la rosa de vientos y qué fachada recibe el viento de frente; «Sombras», la sombra de cada hora del día sobre el terreno; «Partes», el nombre de cada parte del edificio y qué hace, con una persona de 1,70 m para comparar y el alero explicado como voladizo. «Capas» → «Aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
+    <li><b>Qué significa cada dato:</b> toca la hora, «Sol», «Sombra de un poste de 1 m» o «Clima» en la barra de abajo, o las pestañas Día · Año · 25 años, y aparece la explicación con los valores de ese momento.</li>
+    <li><b>Momentos clave:</b> una fecha y hora exactas, o los días que más se consultan: sin sombra, solsticios, la hora y el día más lluviosos, el día con más sol, la fachada que más se moja y un día típico de cada mes.</li>
+    <li><b>¿Qué quieres ver?</b> «Cómo se ve» es la escena; «Sol en fachadas» pinta la radiación solar que incide en cada punto del edificio, con la sombra real de los aleros (solo directo o total, con difusa y reflejada); «Lluvia en fachadas», el índice de lluvia con viento de ISO 15927-3; «Viento», la rosa de vientos y qué fachada recibe el viento de frente; «Sombras del día», la sombra de cada hora del día sobre el terreno; «Partes y medidas», el nombre de cada parte del edificio y qué hace, con una persona de 1,70 m para comparar y el alero explicado como voladizo. «Capas» → «Simular aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
     <li id="cenit-txt"></li>
   </ul>
   <h3>Qué no es</h3>
@@ -1268,11 +1282,11 @@
   <p>Según el informe de CERL (2000), en Clayton se usó concreto armado, bloque de concreto con repello (revoque) y techos de teja española sobre armazón de madera, con aleros anchos que alejan la lluvia de los muros, viseras sobre las ventanas y, en los pisos intermedios, lo que el informe llama <i>mediagua</i>: un tejadillo corrido de una sola pendiente, fijado en los pisos intermedios, que resguarda las ventanas de abajo (p. 2-8). Esta página no afirma año de construcción, uso original, autor ni estilo del Edificio 106. Ojo: en los planos del Ejército de los años 30, el número 106 era un galpón para el equipo de una batería de artillería (CERL, fig. 3.46); la numeración actual puede no corresponder al mismo edificio.</p>
   <h3>Fuentes y créditos</h3>
   <ul class="fuentes">
-    <li><b>Tiempo:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0): pronóstico para «Ahora», serie 2001–2025 y consultas en línea.</li>
+    <li><b>Tiempo:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> (CC BY 4.0): pronóstico para «En vivo», serie 2001–2025 y consultas en línea.</li>
     <li><b>Reanálisis ERA5:</b> Hersbach, H. et al. (2023). <i>ERA5 hourly data on single levels from 1940 to present</i>. Copernicus Climate Change Service (C3S) Climate Data Store. <a href="https://doi.org/10.24381/cds.adbb2d47" target="_blank" rel="noopener">doi:10.24381/cds.adbb2d47</a>. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2026). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.</li>
     <li><b>Sol:</b> algoritmo de la <a href="https://gml.noaa.gov/grad/solcalc/" target="_blank" rel="noopener">calculadora solar de NOAA</a> (Meeus), con refracción; verificado contra Michalsky (1988) en 132.392 momentos de 2001 a 2025 y contra NREL SPA (Reda y Andreas, 2004, en la versión de pvlib) en 1.448 momentos del mismo período: hasta 0,03° en altura con el sol sobre 3° y hasta 0,11° en azimut. Salida y puesta a ±1 min de SPA. La comparación con SPA se repite con <code>node fuente/verificar-sol.mjs</code>.</li>
     <li><b>Estaciones de contraste:</b> <a href="https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf" target="_blank" rel="noopener">ETESA/IMHPA</a>, Tocumen 1977–2010 (1.917 mm al año); <a href="https://www.inec.gob.pa/archivos/P3771121-01.pdf" target="_blank" rel="noopener">INEC, cuadro 121-01</a> (2001–2010): Balboa, estación de la ACP, 1.885 mm al año; Albrook, de la Autoridad de Aeronáutica Civil, 1.898; Tocumen, 1.941 (2.061 sin 2009, que el cuadro da en 863,1 mm).</li>
-    <li><b>Aeropuerto de Albrook (MPMG):</b> partes horarios METAR, a 4,1 km del edificio, del archivo del <a href="https://mesonet.agron.iastate.edu/request/download.phtml?network=PA__ASOS" target="_blank" rel="noopener">Iowa Environmental Mesonet</a> (Iowa State University). En «Ahora», el último parte da la temperatura, la humedad y el viento y, si lo hizo un observador, si llueve; de 23 a 5 h el parte es automático y no informa si llueve. Lectura del parte según la OMM (<a href="https://library.wmo.int/idurl/4/35713" target="_blank" rel="noopener">WMO-No. 306</a>, vol. I.1, FM 15: 15.8.4, 15.8.8, 15.8.10 y 15.11.1). Las comparaciones con ERA5 usan los partes de rutina: la temperatura y la humedad del ajuste, de 2017 a 2025; la lluvia, de 2017 a 2025 (al archivo le faltan las lluvias de 2011, 2015 y 2016); el viento, de 2020 a 2025.</li>
+    <li><b>Aeropuerto de Albrook (MPMG):</b> partes horarios METAR, a 4,1 km del edificio, del archivo del <a href="https://mesonet.agron.iastate.edu/request/download.phtml?network=PA__ASOS" target="_blank" rel="noopener">Iowa Environmental Mesonet</a> (Iowa State University). Con «En vivo», el último parte da la temperatura, la humedad y el viento y, si lo hizo un observador, si llueve; de 23 a 5 h el parte es automático y no informa si llueve. Lectura del parte según la OMM (<a href="https://library.wmo.int/idurl/4/35713" target="_blank" rel="noopener">WMO-No. 306</a>, vol. I.1, FM 15: 15.8.4, 15.8.8, 15.8.10 y 15.11.1). Las comparaciones con ERA5 usan los partes de rutina: la temperatura y la humedad del ajuste, de 2017 a 2025; la lluvia, de 2017 a 2025 (al archivo le faltan las lluvias de 2011, 2015 y 2016); el viento, de 2020 a 2025.</li>
     <li><b>Clayton:</b> Enscore, S. I., Johnson, S. P., Webster, J. L. y Cohen, G. L. (2000). <i>Guarding the Gates: The Story of Fort Clayton</i>. CERL, <a href="https://archive.org/details/DTIC_ADA388262" target="_blank" rel="noopener">DTIC ADA388262</a>. Gordón, C. A. (2021), <a href="https://www.laestrella.com.pa/panama/nacional/fort-clayton-procesos-cambio-urbano-PILE459512" target="_blank" rel="noopener">«Fort Clayton: procesos de cambio urbano, militar y tecnológico en la antigua Zona del Canal», La Estrella de Panamá</a>, 20 de noviembre de 2021. Fundación Ciudad del Saber, <a href="https://ciudaddelsaber.org/historia" target="_blank" rel="noopener">Historia</a> y <a href="https://ciudaddelsaber.org/conoce-el-campus" target="_blank" rel="noopener">Conoce el campus</a>.</li>
     <li><b>Isthmus en Ciudad del Saber:</b> <a href="https://isthmus.edu.pa/ciudad-del-saber/" target="_blank" rel="noopener">isthmus.edu.pa</a>.</li>
     <li><b>Lluvia batiente:</b> ISO 15927-3:2009, índice anual en campo abierto (Blocken y Carmeliet, 2004, <a href="https://doi.org/10.1016/j.jweia.2004.06.003" target="_blank" rel="noopener">doi:10.1016/j.jweia.2004.06.003</a>): litros por m² sobre un plano vertical libre, sin los factores de rugosidad, topografía, obstrucción ni pared de la norma. Ordena fachadas; no mide el agua que llega al muro.</li>
@@ -1303,4 +1317,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=d168c9b8e4"></script></body></html>
+<script type="module" src="js/app.js?v=d3e618f2fe"></script></body></html>

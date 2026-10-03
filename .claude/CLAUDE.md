@@ -60,7 +60,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
   - números con coma decimal y punto de miles (`num()` en main.js; `toLocaleString('es-PA')` da formato de EE. UU.).
 - **Interfaz:**
   - sin degradados;
-  - no renombrar botones existentes, en especial «Confort»;
+  - solo se renombran los botones listados en el glosario de `~/projects/edificio-106-UX-MANUAL.md`; «Confort» no cambia;
   - no sobrecargar;
   - poco esfuerzo y alto valor primero;
   - ámbar (`--sol`) solo para lo que es el sol (brújula, regla, lente Sol), la acción primaria (`.primario`, play), los enlaces y los eyebrows de los paneles; lo seleccionado o encendido va en crema (`--cal`) y los bordes de panel en `--linea-2`;
@@ -109,4 +109,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 
 - `~/projects/edificio-106-AR-PLAN.md`: plan y lecciones de la AR.
 - `~/projects/edificio-106-auditoria-2026-09-30.md`: auditoría de expertos de lo publicado.
+- `~/projects/edificio-106-UX-PLAN.md`: plan de interfaz en 4 fases, glosario aprobado y pendientes en espera.
+- `~/projects/edificio-106-UX-MANUAL.md`: manual de interfaz con la investigación y las fuentes.
+- `~/projects/edificio-106-UX-prototipo.html`: prototipo de comportamiento (no es código para copiar).
 - `~/Documents/Web/libros-climatizacion/`: las fuentes en PDF y `REGLAS_EXTRAIDAS.md`, las reglas con su página.
