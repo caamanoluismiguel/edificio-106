@@ -982,6 +982,22 @@ function textoNoche(c) {
 const tipoVivo = () => matchMedia('(max-width: 760px)').matches ? '' : 'Ahora en Ciudad del Saber';
 /** Con la altura aparente bajo 0,5° (sin sombra): ¿asoma el disco? El mismo criterio que saleYPone (centro a −0,833° geométricos). */
 const enHorizonte = (p) => p?.geo != null && p.geo >= -0.833;
+const ANCHO_HOJA = matchMedia('(max-width: 760px)');
+/** Altura de la hoja del teléfono: 0 cerrada, 1 media, 2 completa, 'oculta' (solo el asa). Sin argumento, o en pantallas
+ *  anchas, no hay hoja: se quitan las clases. */
+function ponerHoja(n) {
+  const h = document.documentElement;
+  h.classList.remove('hoja-0', 'hoja-1', 'hoja-2', 'hoja-oculta');
+  if (n === undefined || !ANCHO_HOJA.matches) { S.hoja = undefined; for (const el of $('#dock').children) el.inert = false; return; }
+  h.classList.add(n === 'oculta' ? 'hoja-0' : 'hoja-' + n); if (n === 'oculta') h.classList.add('hoja-oculta');
+  S.hoja = n;
+  const asa = $('#hoja-asa');
+  asa.setAttribute('aria-label', n === 'oculta' ? 'Mostrar los controles' : n === 2 ? 'Menos controles' : 'Más controles');
+  asa.setAttribute('aria-expanded', String(n === 2));
+  // oculta: lo que no se ve tampoco se alcanza con Tab (solo el asa)
+  for (const el of $('#dock').children) if (el.id !== 'hoja-cab') el.inert = n === 'oculta';
+  if (n !== 2) $('#dock').scrollTop = 0;
+}
 const primeraFrase = (t) => (t.match(/^.+?[.!?](?=\s|$)/) ?? [t])[0];
 /** El narrador del dock: escribe el texto entero y su primera frase, que es lo que se ve plegado. Mientras la escena
  *  dibuja lluvia, la frase corta es la del dato de lluvia, no la de la sombra: en ese momento no se dibuja sol directo. */
@@ -1247,9 +1263,32 @@ function prepararUI() {
   });
   $('#reproducir').addEventListener('click', () => { cerrarOferta(); reproducir(); });
   $('#lect-resumen').addEventListener('click', () => {
+    if (S.hoja === 0 || S.hoja === 1) { ponerHoja(2); return; }      // en la hoja del teléfono, el detalle está en la altura completa
     const abrir = !document.documentElement.classList.contains('lect-abiertas');
     document.documentElement.classList.toggle('lect-abiertas', abrir); $('#lect-resumen').setAttribute('aria-expanded', String(abrir));
   });
+  // ---- hoja inferior del teléfono: los modos, las vistas, la tarjeta del modo y la lámina bajan al dock; en pantallas
+  // anchas vuelven a su lugar. Los nodos se mueven (no se copian), así que sus eventos siguen igual.
+  const LAMINA = $('#capas .lamina:not(#sobre-la-mesa)');
+  const acomodarHoja = () => {
+    if (ANCHO_HOJA.matches) { for (const el of [$('.vistas'), $('.lentes'), $('#leyenda'), LAMINA]) $('#dock').appendChild(el); ponerHoja(0); }
+    else { $('.hud-botones').append($('.vistas'), $('.lentes')); $('#hud').appendChild($('#leyenda')); $('#capas').insertBefore(LAMINA, $('#sobre-la-mesa')); ponerHoja(); }
+  };
+  ANCHO_HOJA.addEventListener('change', acomodarHoja); acomodarHoja();
+  // el asa: tocarla sube una altura (de la completa vuelve a la cerrada); arrastrarla sube o baja
+  const ARRIBA = { oculta: 0, 0: 1, 1: 2, 2: 2 }, ABAJO = { 2: 1, 1: 0, 0: 'oculta', oculta: 'oculta' }, TOQUE = { oculta: 0, 0: 1, 1: 2, 2: 0 };
+  let y0 = null, arrastre = false;
+  $('#hoja-asa').addEventListener('pointerdown', (e) => { y0 = e.clientY; arrastre = false; });
+  addEventListener('pointerup', (e) => {
+    if (y0 === null) return; const dy = e.clientY - y0; y0 = null;
+    if (Math.abs(dy) > 24) { arrastre = true; ponerHoja((dy < 0 ? ARRIBA : ABAJO)[S.hoja]); }
+  });
+  $('#hoja-asa').addEventListener('click', () => { if (arrastre) { arrastre = false; return; } ponerHoja(TOQUE[S.hoja]); });
+  $('#hoja-ocultar').addEventListener('click', () => ponerHoja('oculta'));
+  $('#cerrar-capas').addEventListener('click', () => { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); enfocar($('#abrir-capas')); });
+  // elegir un modo en la hoja la baja a la cerrada: se ve la escena con la tarjeta del modo (sus colores y cifras)
+  $('.lentes').addEventListener('click', (e) => { if (e.target.closest('[data-lente]') && S.hoja !== undefined) ponerHoja(0); });
+  $('#modo-activo').addEventListener('click', () => { if (S.hoja !== 2) ponerHoja(1); $('#dock .lentes')?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' }); });
   // indicio de que hay más: la fila de botones del teléfono (hacia la derecha) y la leyenda (hacia abajo)
   for (const el of [$('.hud-botones'), $('#leyenda')]) { el.addEventListener('scroll', () => hayMas(el), { passive: true }); new ResizeObserver(() => hayMasLuego(el)).observe(el); }
   // los paneles largos: el mismo aviso plano, pegado abajo mientras quede texto por ver (se mira también cuando cambia su contenido)
@@ -1358,6 +1397,8 @@ function prepararUI() {
 /** Un solo panel lateral a la vez (Para qué sirve, Ir a…, Confort, Capas o la tarjeta de la forma de ver): al abrir uno, se
  *  cierran los demás. Con null los cierra todos. */
 function soloUnPanel(k) {
+  // en el teléfono, un panel (Capas, Momentos clave, Confort, Para qué sirve) se abre con la hoja cerrada para tener lugar
+  if (k && k !== 'leyenda' && S.hoja !== undefined && S.hoja !== 0) ponerHoja(0);
   if (k !== 'sirve' && !$('#sirve').hidden) { $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); }
   if (k !== 'ir' && !$('#ir-a').hidden) globalThis.__abrirIr?.(false);
   if (k !== 'confort' && !$('#confort').hidden) abrirConfort(false);
@@ -1554,6 +1595,7 @@ function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';
   S.lente = k; if (mostrar) S.verLeyenda = true;
   document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));   // solo los botones: #leyenda y #ley-modos también llevan data-lente
+  $('#modo-activo-t').textContent = LENTES[k].t.split(':')[0];
   aplicarPartes(); pintarPartes.f = '';
   document.documentElement.classList.toggle('en-partes', k === 'partes');
   lastLect = '';
@@ -1635,6 +1677,13 @@ function leyenda(c) {
   if (S.lente === 'lluvia' && S.aguaModo === 'anio') nota = 'Promedio de un año, 2001–2025. El color es relativo: el más claro es la fachada más expuesta.';
   const horaLente = (S.lente === 'sol' && !anioSol) || (S.lente === 'lluvia' && S.aguaModo === 'hora') || (S.lente === 'viento' && S.vientoModo === 'hora');
   if (horaLente && nota && (c?.fuente === 'vivo' || (c?.fuente === 'dia' && c.modelo !== 'era5'))) nota += ` Esta hora: pronóstico de modelo${c.albrook ? '; el viento, del parte de Albrook' : ''}.`;
+  // procedencia corta de las cifras de la tarjeta, a la vista en la hoja cerrada del teléfono, donde la nota no cabe
+  const modoT = $('#ley-modos [aria-pressed="true"]')?.textContent ?? '', prono = c?.fuente === 'vivo' || (c?.fuente === 'dia' && c.modelo !== 'era5');
+  $('#ley-sello').textContent = !MODOS[S.lente] ? '' : !horaLente ? `${modoT} · 2001–2025`
+    : S.lente === 'viento' && c?.albrook ? `${modoT} · viento del parte de Albrook`
+    : prono ? `${modoT} · pronóstico de modelo${S.lente === 'lluvia' && c.albrook ? '; viento de Albrook' : ''}`
+    : c?.fuente === 'mes' && S.lente === 'sol' ? `${modoT} · cielo despejado con las nubes del mes`
+    : c?.fuente === 'serie' || c?.modelo === 'era5' ? `${modoT} · ERA5` : modoT;
   if (S.lente === 'sombras') nota = !escena._diagClave ? 'El diagrama aparece cuando termina de cargar el modelo.' : `Sombras del ${fechaTexto(S.fecha)}. Se ven mejor desde arriba: botón «Planta».`;
   if (esPartes) nota = 'Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente.';
   $('#ley-nota').textContent = nota; $('#ley-nota').hidden = !nota;
@@ -2191,6 +2240,7 @@ function pasosRecorrido() {
   ];
 }
 function recorrido(i) {
+  if (i != null && S.hoja !== undefined && S.hoja !== 0) ponerHoja(0);   // en el teléfono el paso necesita el lugar de la hoja
   const P = S.pasos ?? (S.pasos = pasosRecorrido());
   if (i == null || i < 0 || i >= P.length) { S.paso = null; S.pasos = null; $('#recorrido').hidden = true; document.documentElement.classList.remove('en-recorrido'); if (S.reproduce) parar(); lastLect = ''; return; }
   S.paso = i; S.explica = null; parar(); plegarRecorrido(false);
