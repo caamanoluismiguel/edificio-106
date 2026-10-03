@@ -974,7 +974,16 @@ function textoNoche(c) {
   return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo el cielo de la ciudad y el poste de la esquina.`;
 }
 
+/** La primera frase de un texto (las cifras usan coma decimal, así que el punto cierra la frase). */
+const primeraFrase = (t) => (t.match(/^.+?[.!?](?=\s|$)/) ?? [t])[0];
+/** El narrador del dock: escribe el texto entero y su primera frase, que es lo que se ve plegado. Mientras la escena
+ *  dibuja lluvia, la frase corta es la del dato de lluvia, no la de la sombra: en ese momento no se dibuja sol directo. */
 function rotulo(p, c, sp) {
+  const forzada = rotuloTexto(p, c, sp), largo = $('#rotulo-texto').textContent, corto = forzada ?? primeraFrase(largo);
+  if ($('#rotulo-corto').textContent !== corto) $('#rotulo-corto').textContent = corto;
+  $('#rotulo-abrir').hidden = !!S.explica || !!S.viaje || corto === largo;
+}
+function rotuloTexto(p, c, sp) {
   const tipo = $('#rotulo-tipo'), txt = $('#rotulo-texto');
   const cerrar = $('#rotulo-cerrar');
   // de noche, dos atajos para ver el mismo día con luz
@@ -990,9 +999,10 @@ function rotulo(p, c, sp) {
   cerrar.hidden = true;
   if (S.momento) { tipo.textContent = S.momento.titulo; txt.textContent = S.momento.texto; return; }
   // de noche el rótulo queda en dos frases cortas y los dos atajos; el dato del tiempo sigue en el dock
-  if (noche) { tipo.textContent = S.modo === 'ahora' ? 'Ahora en Ciudad del Saber' : `${fechaTexto(S.fecha)} · ${hhmm(S.min)}`; txt.textContent = textoNoche(c); return; }
+  // con una fecha elegida la línea de arriba queda vacía: la fecha y la hora ya están en el dock, justo debajo
+  if (noche) { tipo.textContent = S.modo === 'ahora' ? 'Ahora en Ciudad del Saber' : ''; txt.textContent = textoNoche(c); return; }
   const solTxt = p.alt > 0.5 ? `El sol está a ${f1(p.alt)}° sobre el horizonte, hacia el ${rumboTexto(p.az)}; la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} y se proyecta hacia el ${rumboTexto(sp.rumbo)}.`
-    : p.alt > -6 ? 'El sol acaba de cruzar el horizonte: es el crepúsculo.' : textoNoche(c);
+    : p.alt > -6 ? (p.az < 180 ? 'El sol está por salir: es el crepúsculo del amanecer.' : 'El sol acaba de ponerse: es el crepúsculo.') : textoNoche(c);
   let clTxt = '';
   if (c?.fuente === 'vivo' && c.albrook && !c.albrook.auto) clTxt = ` ${textoAlbrook(c.albrook).replace(/^Albrook /, 'El aeropuerto de Albrook, a 4 km, ')}. Cielo con ${Math.round(c.nubes)} % de nubes, según el modelo.`;
   else if (c?.fuente === 'vivo') clTxt = llueve(c) ? ` El modelo da lluvia en la zona (${f1(c.lluvia)} mm/h).` : c.llovizna ? ` Cielo con ${Math.round(c.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${f1(c.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(c.nubes)} % de nubes.`;
@@ -1005,7 +1015,16 @@ function rotulo(p, c, sp) {
   }
   else if (c?.fuente === 'mes') clTxt = ` En ${MESES[S.fecha.m - 1]} de ${S.fecha.y} ERA5 da ${Math.round(c.lluviaMes)} mm (media de ${MESES[S.fecha.m - 1]} en 2001–2025: ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm). La lluvia que cae en la escena es proporcional al total del mes, no la de una hora.`;
   if (S.modo === 'ahora') { tipo.textContent = 'Ahora en Ciudad del Saber'; txt.textContent = solTxt + clTxt; }
-  else { tipo.textContent = `${fechaTexto(S.fecha)} · ${hhmm(S.min)}`; txt.textContent = (S.mesSerie !== null ? '' : solTxt) + clTxt; }
+  else { tipo.textContent = ''; txt.textContent = (S.mesSerie !== null ? '' : solTxt) + clTxt; }
+  // plegado no se muestra una sombra al centímetro cuando la escena no la dibuja así: con lluvia (del dato o forzada en Capas),
+  // con el sol a ratos (90 % de nubes o más) o con sol débil (menos de UMBRAL_SOL W/m² de directa)
+  if (S.mesSerie === null && p.alt > 0.5) {
+    const dni = c?.dni;
+    if (S.aguacero) return 'La escena dibuja un aguacero forzado en Capas, sin sol directo: no es el dato.';
+    if (lluviaDibujada(c)) return primeraFrase(clTxt.trim() || solTxt);
+    if (p.alt > 2 && dni != null && (dni < UMBRAL_SOL || (c.nubes ?? 0) >= 90))
+      return `${dni < UMBRAL_SOL ? 'Las nubes casi tapan el sol' : `Con ${Math.round(c.nubes)} % de nubes, el sol sale a ratos o llega velado`}; cuando sale, la sombra de un poste de 1 m mide ${sp.largo > 99 ? 'más de 99 m' : f1(sp.largo, 2) + ' m'} hacia el ${rumboTexto(sp.rumbo)}.`;
+  }
 }
 
 // ---------------- Reglas: día, año y 25 años ----------------
@@ -1167,7 +1186,11 @@ function prepararUI() {
   addEventListener('pointerdown', (e) => { if (!menu.hidden && !e.target.closest('.menu-ayuda')) abrirMenu(false); });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { const dentro = menu.contains(document.activeElement); abrirMenu(false); if (dentro) $('#abrir-menu').focus(); } });
   $('#cerrar-acerca').addEventListener('click', () => $('#acerca').close?.());
-  $('#ahora').addEventListener('click', () => irAAhora());
+  // «Volver a ahora» quita el enlace del momento (#m-…), para que recargar o compartir no vuelva a ese momento
+  $('#ahora').addEventListener('click', () => {
+    if (/^#m-/.test(location.hash)) try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sin historial */ }
+    irAAhora();
+  });
   const tabs = [...document.querySelectorAll('[data-tab]')];
   const elegirTab = (b) => { ponerPestana(b.dataset.tab); S.explica = 'tab-' + b.dataset.tab; lastLect = ''; anunciar(); };
   tabs.forEach((b, i) => {
@@ -1184,7 +1207,10 @@ function prepararUI() {
     b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); explicar(b.dataset.explica); } });
   });
   $('#rotulo-cerrar').addEventListener('click', () => { anunciar(); S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
-  $('#rotulo-abrir').addEventListener('click', () => { ROT.abierto = true; ROT.t = performance.now(); soloUnPanel(null); });
+  $('#rotulo-abrir').addEventListener('click', () => {
+    const abrir = document.documentElement.classList.contains('rotulo-plegado');
+    ROT.abierto = abrir; ROT.auto = false; if (abrir) soloUnPanel(null);
+  });
   $('#lente-info').addEventListener('click', () => { cerrarOferta(); S.verLeyenda = !S.verLeyenda; if (S.verLeyenda) soloUnPanel('leyenda'); lastLect = ''; });
   $('#ley-cerrar').addEventListener('click', () => { S.verLeyenda = false; lastLect = ''; });
   $('#ley-texto').addEventListener('click', () => { const el = $('#leyenda'), ab = el.classList.toggle('texto'); textoLeyenda(ab); hayMas(el); });
@@ -1294,7 +1320,7 @@ function prepararUI() {
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
   $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
-  document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada); }));
+  document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada, true); }));
   $('#qr-cerrar').addEventListener('click', () => cerrarQR(true));
   $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
   addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (intro) return; if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); } else irAMomentoHash(); });   // un segundo QR escaneado con la página abierta también trae su tarjeta
@@ -1330,20 +1356,23 @@ function soloUnPanel(k) {
   if (k !== 'leyenda' && S.verLeyenda) { S.verLeyenda = false; lastLect = ''; }
 }
 
-// El rótulo («Ahora en Ciudad del Saber», un momento elegido…) se lee al cambiar y después se pliega a su línea de arriba:
-// a los 8 s (14 s si es un momento con su explicación) o en cuanto se abre un panel. «Leer» lo despliega. No se pliega con la
-// explicación de un dato (tiene «Entendido»), de noche (lleva los atajos al día) ni mientras se viaja.
-const ROT = { clave: null, t: 0, abierto: false };
+// El narrador («Ahora en Ciudad del Saber», un momento elegido…) es la primera fila del dock y va plegado a una frase;
+// «Leer más» lo despliega. Un momento elegido se abre 14 s; la explicación de un dato (con «Entendido») y el viaje quedan abiertos.
+const ROT = { clave: null, t: 0, abierto: false, auto: false };
 function plegarRotulo(now) {
   const clave = `${S.modo}|${S.momento?.titulo ?? ''}|${S.explica ?? ''}|${S.fachada ?? ''}|${S.viaje ? 'v' : ''}`;
-  if (clave !== ROT.clave) { ROT.clave = clave; ROT.t = now; ROT.abierto = false; }
-  const fijo = !!S.explica || !!S.viaje || !$('#rotulo-noche').hidden;
+  // dentro del dock arranca plegado (una frase), para que el dock no cambie de alto con cada cambio; un momento elegido se
+  // abre solo 14 s con su explicación. La explicación de un dato y el viaje quedan abiertos. La noche ya no es fija.
+  if (clave !== ROT.clave) { ROT.clave = clave; ROT.t = now; ROT.abierto = ROT.auto = !!S.momento; }
+  if (ROT.auto && now - ROT.t > 14000) ROT.abierto = ROT.auto = false;
+  const fijo = !!S.explica || !!S.viaje;
   const panel = !$('#leyenda').hidden || !$('#capas').hidden;
-  const plegar = !fijo && (panel || (!ROT.abierto && now - ROT.t > (S.momento ? 14000 : 8000)));
+  const plegar = !fijo && (panel || !ROT.abierto);
   const html = document.documentElement;
   if (html.classList.contains('rotulo-plegado') !== plegar) {
     html.classList.toggle('rotulo-plegado', plegar);
     $('#rotulo-abrir').setAttribute('aria-expanded', String(!plegar));
+    $('#rotulo-abrir').textContent = plegar ? 'Leer más' : 'Ver menos';
     pintarPartes.f = '';
   }
 }
@@ -1362,9 +1391,11 @@ function hayMas(el) {
   if (el.classList.contains('hay-mas') !== mas) el.classList.toggle('hay-mas', mas);
 }
 
-function irAFachada(k) {
+/** El QR de una fachada la abre a la hora actual; desde Capas se va a la fachada sin perder la hora elegida. */
+function irAFachada(k, conservarHora = false) {
   if (!FACHADAS[k]) return;
-  irAAhora(false); mostrarFachada(k); volarA(VISTA_FACHADA[k]);
+  if (!conservarHora) irAAhora(false);
+  mostrarFachada(k); volarA(VISTA_FACHADA[k]);
 }
 function mostrarFachada(k) {
   const f = FACHADAS[k]; if (!f) return;
@@ -2334,7 +2365,7 @@ function confortHora(p, c) {
   const ok = c && c.temp != null && c.humedad != null, k = ok ? [Math.round(c.temp * 10), Math.round(c.humedad), Math.round((c.dni ?? 0) / 10), Math.round((c.difusa ?? 0) / 10), Math.round(c.viento ?? 0), Math.round(c.dir ?? -1), Math.round((c.lluvia ?? 0) * 10), Math.round(p.alt), Math.round(p.az)].join('|') : 'no';
   if (k === confortClave) return; confortClave = k;
   const g = $('#carta-punto');
-  if (!ok) { if (g) g.innerHTML = ''; $('#conviene').innerHTML = '<li class="accion">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Volver a ahora».</li>'; $('#conviene-porque').innerHTML = ''; $('#conviene-resumen').textContent = 'Por qué'; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).'; return; }
+  if (!ok) { if (g) g.innerHTML = ''; $('#conviene').innerHTML = '<li class="accion">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Volver a ahora».</li>'; $('#conviene-porque').innerHTML = ''; $('#conviene-resumen').textContent = 'Por qué'; $('#utci-hora').textContent = 'Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Volver a ahora»).'; return; }
   const R = conviene(p, c), sr = (gl) => `<span class="sr">${gl === '●' ? 'Sí: ' : gl === '◐' ? 'Con condición: ' : 'No alcanza: '}</span>`;
   $('#conviene').innerHTML = R.hacer.map((t) => `<li class="accion">${t}</li>`).join('');
   $('#conviene-porque').innerHTML = R.porque.map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? sr(gl) : ''}${t}</span></li>`).join('') + R.datos.map((t) => `<li class="cierre">${t}</li>`).join('');

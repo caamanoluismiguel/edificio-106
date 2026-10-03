@@ -192,17 +192,19 @@
   html.listo #hud.tras-intro { transition-delay: .12s; }   /* por id: era :nth-of-type(2), que caía en #hud y se movería al cambiar los hermanos */
   html:not(.listo) #estado { opacity: .0; }
 
-  /* rótulo: qué estás viendo */
-  #rotulo { position: fixed; z-index: 4; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); max-width: min(34rem, calc(100vw - 2 * var(--gutter) - 130px));
-    display: grid; gap: 8px; pointer-events: none; box-sizing: border-box; background: var(--panel); border: 1px solid var(--linea); border-radius: 18px; padding: 12px 16px;
-    backdrop-filter: blur(12px); }
-  #rotulo .eyebrow { color: var(--cal-2); }
-  #rotulo-texto { margin: 0; font-size: 16px; text-wrap: pretty; }
-  /* plegado (unos segundos después de cambiar, o con un panel abierto): queda la línea de arriba y «Leer» para desplegarlo */
-  #rotulo-abrir { display: none; }
-  html.rotulo-plegado #rotulo { grid-template-columns: auto auto; align-items: center; gap: 12px; right: auto; padding: 5px 5px 5px 14px; border-radius: 999px; }
-  html.rotulo-plegado #rotulo-texto, html.rotulo-plegado #rotulo-noche { display: none !important; }
-  html.rotulo-plegado #rotulo-abrir { display: inline-flex; pointer-events: auto; padding: 6px 12px; font-size: 13px; }
+  /* narrador: la primera fila del dock. Plegado da una frase y «Leer más»; abierto, el texto entero y «Ver menos».
+     «En vivo» / «Volver a ahora» va en su cabecera; de noche, los dos atajos quedan siempre a la vista */
+  #rotulo { grid-area: narr; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "cab cab" "txt leer" "noche noche" "cerrar cerrar";
+    gap: 6px 12px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--linea); }
+  #rotulo-cab { grid-area: cab; display: flex; align-items: center; gap: 10px; min-width: 0; }
+  #rotulo .eyebrow:empty { visibility: hidden; }
+  #rotulo .eyebrow { color: var(--cal-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #rotulo-cab #ahora { margin-left: auto; flex: none; }
+  #rotulo-texto, #rotulo-corto { grid-area: txt; margin: 0; font-size: 15px; line-height: 1.4; text-wrap: pretty; }
+  #rotulo-texto { max-height: 30vh; overflow: auto; overscroll-behavior: contain; }
+  html.rotulo-plegado #rotulo-texto, html:not(.rotulo-plegado) #rotulo-corto { display: none; }
+  #rotulo-abrir { grid-area: leer; align-self: start; padding: 7px 12px; font-size: 13px; }
+  #rotulo-abrir[hidden] { display: none; }
 
   /* ---------- brújula y vistas ---------- */
   #hud { position: fixed; z-index: 6; right: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 74px); display: grid; justify-items: end; gap: 10px; }
@@ -273,11 +275,11 @@
   [data-explica][aria-pressed="true"] { background: rgba(239,233,222,.1); }
   .dock-lect [data-explica] .k::after { content: '?'; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 6px; border: 1px solid var(--cal-2); border-radius: 50%;
     font-size: 11px; line-height: 1; color: var(--cal); vertical-align: 0; }
-  #rotulo-cerrar { justify-self: start; pointer-events: auto; padding: 7px 13px; font-size: 13px; }
+  #rotulo-cerrar { grid-area: cerrar; justify-self: start; padding: 7px 13px; font-size: 13px; }
   /* noche: botones para ir al día o al atardecer, el interruptor que solo aparece de noche y el rótulo de la exposición larga */
-  #rotulo-noche { display: flex; flex-wrap: wrap; gap: 8px; }
+  #rotulo-noche { grid-area: noche; display: flex; flex-wrap: wrap; gap: 8px; }
   #rotulo-noche[hidden] { display: none; }
-  #rotulo-noche .boton { pointer-events: auto; padding: 7px 13px; font-size: 13px; }
+  #rotulo-noche .boton { padding: 7px 13px; font-size: 13px; min-height: 36px; }
   html:not(.de-noche) .solo-noche { display: none !important; }
   #aviso-noche { position: fixed; z-index: 4; top: calc(env(safe-area-inset-top, 0px) + 74px); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 2 * var(--gutter));
     box-sizing: border-box; margin: 0; pointer-events: none; font: 600 14px/1.35 var(--texto); color: var(--cal); background: var(--panel-2); border: 1px solid var(--linea-2);
@@ -287,7 +289,7 @@
   #recorrido { position: fixed; z-index: 8; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); width: min(27rem, calc(100vw - 2 * var(--gutter)));
     box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px; padding: 16px 18px; backdrop-filter: blur(16px); display: grid; gap: 9px;
     box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .3s cubic-bezier(.2, 0, 0, 1); }
-  html.en-recorrido #rotulo, html.en-recorrido #panel-fachada { display: none; }
+  html.en-recorrido #rotulo > :not(#rotulo-cab), html.en-recorrido #panel-fachada { display: none; }
   .rec-cab { display: flex; justify-content: space-between; align-items: center; }
   #rec-n { font: 500 12px/1 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
   #rec-salir, #rec-plegar { padding: 6px 12px; font-size: 13px; }
@@ -363,8 +365,8 @@
   #voladizo { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); width: min(560px, calc(100vw - 2 * var(--gutter)));
     max-height: calc(100vh - var(--dock-h) - 110px); overflow: auto; overscroll-behavior: contain; box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2);
     border-radius: 18px; padding: 14px 18px; backdrop-filter: blur(16px); display: grid; gap: 9px; box-shadow: 0 20px 60px rgba(0,0,0,.4); animation: sube .3s var(--ease); }
-  html:has(#voladizo:not([hidden])) #rotulo, html:has(#voladizo:not([hidden])) #panel-fachada, html:has(#voladizo:not([hidden])) #leyenda { display: none; }
-  html.en-partes:not(.en-recorrido) #rotulo:not(:has(#rotulo-cerrar:not([hidden]))) { display: none; }
+  html:has(#voladizo:not([hidden])) #rotulo > :not(#rotulo-cab), html:has(#voladizo:not([hidden])) #panel-fachada, html:has(#voladizo:not([hidden])) #leyenda { display: none; }
+  html.en-partes:not(.en-recorrido) #rotulo:not(:has(#rotulo-cerrar:not([hidden]))) > :not(#rotulo-cab) { display: none; }
   .vol-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   .vol-eyebrow { font: 500 12px/1.2 var(--datos); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
   #cerrar-voladizo { padding: 7px 12px; font-size: 13px; }
@@ -425,7 +427,7 @@
   #dia .gota { fill: var(--lluvia); } #dia .gota.debil { opacity: .45; } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
   .dia-ley { margin: 2px 0 0; font: 500 12px/1.2 var(--datos); color: var(--cal-2); text-align: right; min-height: 14px; }
   #dock { position: fixed; z-index: 6; left: var(--gutter); right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-    display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "hora centro lect botones"; gap: 10px 26px; align-items: center; padding: 14px 18px;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "narr narr narr narr" "hora centro lect botones"; gap: 10px 26px; align-items: center; padding: 14px 18px;
     border-radius: 18px; background: var(--panel-2); border: 1px solid var(--linea); backdrop-filter: blur(18px); box-shadow: 0 24px 70px rgba(0,0,0,.4); box-sizing: border-box; }
   #dock > * { min-width: 0; }
   .dock-hora { grid-area: hora; display: grid; gap: 5px; justify-items: start; min-width: 8.2em; }
@@ -479,12 +481,12 @@
   /* hasta 1600 px el dock va en dos filas cortas: arriba la hora, las pestañas, las lecturas resumidas en un botón que despliega
      el detalle y los botones; abajo la regla */
   @media (max-width: 1600px) {
-    #dock { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "hora tabs resumen botones" "regla regla regla regla" "momentos momentos momentos momentos" "lect lect lect lect";
+    #dock { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr narr" "hora tabs resumen botones" "regla regla regla regla" "momentos momentos momentos momentos" "lect lect lect lect";
       gap: 8px 22px; padding: 12px 18px; }
     .dock-centro { display: contents; }
     .pestanas { grid-area: tabs; align-self: center; } .regla { grid-area: regla; } #regla-dia { margin-top: 18px; } #momentos-caja { grid-area: momentos; }
-    .dock-hora { grid-template-columns: auto auto; grid-template-areas: "h f" "h a"; column-gap: 14px; row-gap: 4px; align-items: center; min-width: 0; }
-    #l-hora { grid-area: h; font-size: 40px; } #elegir { grid-area: f; } #ahora { grid-area: a; justify-self: start; margin: 0; }
+    .dock-hora { grid-template-columns: auto auto; grid-template-areas: "h f"; column-gap: 14px; row-gap: 4px; align-items: center; min-width: 0; }
+    #l-hora { grid-area: h; font-size: 40px; } #elegir { grid-area: f; }
     #lect-resumen { grid-area: resumen; justify-self: start; display: flex; align-items: center; gap: 10px; max-width: 100%; min-width: 0; min-height: 40px; box-sizing: border-box; padding: 8px 14px;
       border: 1px solid var(--linea-2); border-radius: 12px; background: rgba(239,233,222,.04); cursor: pointer; font: 500 13px/1.2 var(--datos); color: var(--cal); text-align: left; }
     #lect-resumen:hover { border-color: rgba(239,233,222,.42); }
@@ -495,7 +497,7 @@
   }
   /* en pantallas medianas las pestañas bajan a su propia fila para que el resumen de las lecturas se lea entero */
   @media (max-width: 1200px) and (min-width: 761px) {
-    #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "hora resumen botones" "tabs tabs tabs" "regla regla regla" "momentos momentos momentos" "lect lect lect"; }
+    #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr" "hora resumen botones" "tabs tabs tabs" "regla regla regla" "momentos momentos momentos" "lect lect lect"; }
     .pestanas { justify-self: start; }
   }
 
@@ -503,7 +505,7 @@
   #sirve { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px);
     width: min(410px, calc(100vw - 2 * var(--gutter))); overflow: auto; overscroll-behavior: contain; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px;
     padding: 18px; backdrop-filter: blur(18px); box-sizing: border-box; display: grid; gap: 14px; align-content: start; box-shadow: 0 24px 70px rgba(0,0,0,.4); animation: sube .45s var(--ease); }
-  html:has(#sirve:not([hidden])) #rotulo, html:has(#sirve:not([hidden])) #panel-fachada { display: none; }
+  html:has(#sirve:not([hidden])) #rotulo > :not(#rotulo-cab), html:has(#sirve:not([hidden])) #panel-fachada { display: none; }
   .sirve-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   #sirve h2 { font: 760 26px/1 var(--display); margin: 0; letter-spacing: -0.02em; }
   .sirve-intro { margin: 0; font-size: 15px; color: var(--cal-2); }
@@ -560,7 +562,7 @@
   .conf-detalle summary { cursor: pointer; font: 600 13px/1.3 var(--texto); color: var(--sol); } .conf-detalle p { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--cal-2); }
   .conf-conviene b { font-weight: 650; }
   .conf-hora b { font-family: var(--datos); font-variant-numeric: tabular-nums; }
-  html:has(#confort:not([hidden])) #rotulo, html:has(#confort:not([hidden])) #panel-fachada { display: none; }
+  html:has(#confort:not([hidden])) #rotulo > :not(#rotulo-cab), html:has(#confort:not([hidden])) #panel-fachada { display: none; }
   #ir-a { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px);
     width: min(400px, calc(100vw - 2 * var(--gutter) - 150px)); align-content: start; overflow: auto; overscroll-behavior: contain;
     background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px; padding: 16px; backdrop-filter: blur(18px); display: grid; gap: 12px; box-sizing: border-box;
@@ -574,8 +576,8 @@
   #ir-a .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
   #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
   .consultas { display: grid; gap: 14px; }
-  html:has(#ir-a:not([hidden])) #rotulo, html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
-  html:has(#capas:not([hidden])) #rotulo, html:has(#capas:not([hidden])) #panel-fachada { display: none; }
+  html:has(#ir-a:not([hidden])) #rotulo > :not(#rotulo-cab), html:has(#ir-a:not([hidden])) #panel-fachada { display: none; }
+  html:has(#capas:not([hidden])) #rotulo > :not(#rotulo-cab), html:has(#capas:not([hidden])) #panel-fachada { display: none; }
   /* un panel a la vez: Confort, Ir a… o Capas tapan la leyenda de la forma de ver */
   html:has(#confort:not([hidden])) #leyenda, html:has(#ir-a:not([hidden])) #leyenda, html:has(#capas:not([hidden])) #leyenda, html:has(#sirve:not([hidden])) #leyenda { display: none; }
   .c-grupo h3 { font: 500 12px/1 var(--datos); color: var(--sol); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 7px; }
@@ -634,7 +636,7 @@
   #panel-fachada h2 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: -0.01em; }
   #panel-fachada p { margin: 0; font-size: 15px; }
   html:not(.en-fachada) #panel-fachada { display: none; }
-  html.en-fachada #rotulo { display: none; }
+  html.en-fachada #rotulo > :not(#rotulo-cab) { display: none; }
   #qr { position: fixed; z-index: 8; top: calc(env(safe-area-inset-top, 0px) + 72px); left: var(--gutter); width: min(27rem, calc(100vw - 2 * var(--gutter) - 130px)); box-sizing: border-box;
     background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px; padding: 14px 18px 16px; display: grid; gap: 8px; backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
   #qr:focus { outline: none; }
@@ -663,9 +665,8 @@
     #estado-txt { overflow: hidden; text-overflow: ellipsis; }
     #sonido .t { display: none; }
     .boton { padding: 10px 12px; }
-    #rotulo-texto { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    /* la explicación de un dato se lee entera: sin recorte y con desplazamiento si hace falta */
-    #rotulo:has(#rotulo-cerrar:not([hidden])) #rotulo-texto { display: block; max-height: 32vh; overflow: auto; pointer-events: auto; overscroll-behavior: contain; }
+    #rotulo-texto { max-height: 26vh; }
+    #rotulo-corto { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; }
     /* orientación en una sola franja: formas de ver y vistas en una fila que se desliza, y la brújula al lado */
     #hud { left: 8px; right: 8px; top: calc(env(safe-area-inset-top, 0px) + 60px); grid-template-columns: minmax(0, 1fr) auto; justify-items: stretch; align-items: center; gap: 8px; pointer-events: none; }
     #hud > * { pointer-events: auto; }                               /* el hueco entre paneles deja arrastrar la escena */
@@ -683,17 +684,15 @@
     .vistas button { padding: 7px 10px; font-size: 13px; }
     #leyenda { grid-column: 1 / -1; grid-row: 3; width: auto; }
     html.en-recorrido #leyenda { display: none; }                    /* en el recorrido, la tarjeta del paso ya lo explica */
-    #rotulo { max-width: none; right: 8px; left: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); padding: 9px 12px; gap: 5px; }
-    #rotulo-texto { font-size: 14px; }
-    /* dock compacto: hora y fecha corta · pestañas y «Ahora» · la regla · las lecturas en una línea que se despliega */
+    #rotulo { padding-bottom: 8px; gap: 5px 10px; } #rotulo-texto { font-size: 14px; }
+    /* dock compacto: narrador · hora y fecha corta · pestañas · la regla · las lecturas en una línea que se despliega */
     #dock { left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 12px; gap: 5px 10px;
       grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-areas: "hora botones" "fecha botones" "tabs ahora" "regla regla" "momentos momentos" "resumen resumen" "lect lect"; }
+      grid-template-areas: "narr narr" "hora botones" "fecha botones" "tabs tabs" "regla regla" "momentos momentos" "resumen resumen" "lect lect"; }
     .dock-hora, .dock-centro { display: contents; }
     #l-hora { grid-area: hora; justify-self: start; font-size: 30px; }
     #elegir { grid-area: fecha; justify-self: start; padding: 10px 0; margin: -10px 0; }      /* área táctil de 44 px sin cambiar cómo se ve */
     #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
-    #ahora { grid-area: ahora; justify-self: end; align-self: center; margin: 0; }
     .pestanas { grid-area: tabs; align-self: center; } .pestanas button { white-space: nowrap; padding: 7px 10px; }
     .regla { grid-area: regla; } #regla-dia { margin-top: 12px; }
     #momentos-caja { grid-area: momentos; }
@@ -732,10 +731,6 @@
     /* la tarjeta de la forma de ver arranca plegada: título, rampa, cifras y la nota del momento; «Leer» abre el texto (Partes es texto) */
     #ley-texto { display: inline-flex; } #leyenda[data-lente^="partes"] #ley-texto { display: none; }
     #leyenda:not([data-lente^="partes"]):not(.texto) :is(#ley-que, #ley-leer, #ley-mas) { display: none; }
-    /* el rótulo plegado no repite la fecha que ya está en el dock: queda solo «Leer», a la derecha */
-    html.rotulo-plegado #rotulo { left: auto; right: 8px; padding: 4px; gap: 0; }
-    html.rotulo-plegado #rotulo-tipo { display: none; }
-    html.rotulo-plegado #rotulo-abrir { padding: 8px 14px; font-size: 13px; }
     #oferta-recorrido { width: auto; right: 8px; left: 8px; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
     .dock-lect [data-explica] .k::after { display: none; }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
@@ -762,13 +757,11 @@
     .hud-botones::-webkit-scrollbar { display: none; }
     .vistas, .lentes { flex: none; } .lentes::before { display: none; }
     #leyenda { grid-column: 1 / -1; grid-row: 2; justify-self: end; max-height: calc(100vh - var(--dock-h) - 124px); min-height: 0; }
-    #rotulo { max-width: 46vw; padding: 8px 12px; gap: 4px; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); }
-    #rotulo-texto { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    #rotulo:has(#rotulo-cerrar:not([hidden])) #rotulo-texto { display: block; max-height: 26vh; overflow: auto; pointer-events: auto; }
+    #rotulo { padding-bottom: 6px; gap: 4px 10px; } #rotulo-texto { font-size: 13px; max-height: 22vh; } #rotulo-corto { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
     #dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 14px; gap: 4px 18px; grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
-      grid-template-areas: "hora centro botones" "fecha centro resumen" "ahora centro resumen" "lect lect lect"; }
+      grid-template-areas: "narr narr narr" "hora centro botones" "fecha centro resumen" "fecha centro resumen" "lect lect lect"; }
     .dock-hora, .dock-centro { display: contents; }
-    #l-hora { grid-area: hora; font-size: 28px; } #elegir { grid-area: fecha; justify-self: start; } #ahora { grid-area: ahora; justify-self: start; margin: 0; }
+    #l-hora { grid-area: hora; font-size: 28px; } #elegir { grid-area: fecha; justify-self: start; }
     #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
     .pestanas { grid-area: centro; align-self: start; } .regla { grid-area: centro; align-self: end; margin-top: 60px; } #momentos-caja { display: none !important; }
     .dia-ley, #dec-leyenda, #l-fuente { display: none; }
@@ -789,6 +782,8 @@
   @media (pointer: coarse) {
     .vistas, .lentes, .pestanas { min-height: 40px; box-sizing: border-box; }
     .vistas button, .lentes button, .pestanas button { min-height: 40px; }
+    #ahora, #rotulo-noche .boton, #rotulo-abrir { min-height: 44px; }
+    .lentes .info { min-height: 40px !important; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -838,13 +833,6 @@
 <main id="principal" tabindex="-1">
 <h1 id="titulo-app" class="sr">Edificio 106: sol y lluvia</h1>
 <p id="aviso-noche" class="tras-intro solo-noche" hidden></p>
-<div id="rotulo" class="tras-intro" aria-live="off">
-  <p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p>
-  <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer más</button>
-  <p id="rotulo-texto"></p>
-  <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Atardecer</button></div>
-  <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
-</div>
 <div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
 <aside id="recorrido" hidden aria-labelledby="rec-t" aria-live="polite">
@@ -995,10 +983,17 @@
 </aside>
 
 <section id="dock" class="tras-intro" aria-label="Máquina del tiempo">
+  <div id="rotulo" aria-live="off">
+    <div id="rotulo-cab"><p class="eyebrow" id="rotulo-tipo">Ahora en Ciudad del Saber</p><button id="ahora" type="button" aria-pressed="true">Ahora</button></div>
+    <p id="rotulo-corto"></p>
+    <p id="rotulo-texto"></p>
+    <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer más</button>
+    <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Atardecer</button></div>
+    <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
+  </div>
   <div class="dock-hora">
     <span id="l-hora" class="num" data-explica="hora" role="button" tabindex="0" aria-pressed="false" title="Qué significa">--:--</span>
     <button id="elegir" type="button" aria-expanded="false" aria-controls="ir-a" title="Elegir una fecha y hora exactas"><span id="l-fecha"></span><span class="lapiz" aria-hidden="true">▾</span></button>
-    <button id="ahora" type="button" aria-pressed="true">Ahora</button>
   </div>
   <div class="dock-centro">
     <div class="pestanas" role="tablist" aria-label="¿Cuándo?">
