@@ -2301,6 +2301,7 @@ function pintarCarta() {
   $('#carta').innerHTML = `<desc id="carta-desc">Densidad de ${miles(J.horas)} horas de clase en temperatura y humedad, con ERA5 ajustado al aeropuerto de Albrook.</desc>` + s.join('');
   const P = J.pct, li = (col, dash, txt) => `<li><i style="border:2px ${dash} ${col};background:none"></i>${txt}</li>`;
   $('#carta-cifras').innerHTML = [
+    `<li><i style="background:#4aa8dc;opacity:.5"></i>Tono: horas en cada celda de 1 °C × 1 g/kg, en cinco clases: hasta ${miles(q[0])}, hasta ${miles(q[1])}, hasta ${miles(q[2])}, hasta ${miles(q[3])} y más de ${miles(q[3])} h</li>`,
     // en enteros: ERA5 no sostiene décimas en la humedad de una celda de ~28 km
     li('#f4b545', 'solid', `Givoni, aire quieto: <b>${Math.round(P.quieto)} %</b> de las horas de clase`),
     li('#f4b545', 'dashed', `Givoni, con ventilación de ~2 m/s: <b>${Math.round(P.ventilacion)} %</b>`),
@@ -2319,19 +2320,19 @@ function confortHora(p, c) {
   $('#conviene').innerHTML = R.hacer.map((t) => `<li class="accion">${t}</li>`).join('');
   $('#conviene-porque').innerHTML = R.porque.map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? sr(gl) : ''}${t}</span></li>`).join('') + R.datos.map((t) => `<li class="cierre">${t}</li>`).join('');
   $('#conviene-resumen').textContent = `Por qué · Givoni ${R.porque[0][1]} · Guía de Panamá ${R.porque[1][1]}`;
-  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? (c.albrook ? `Albrook ${c.albrook.hora}, a 4 km` : `pronóstico ${c.hora ?? ''}`.trim()) : c.fuente === 'serie' ? (c.ajustado ? 'ERA5 ajustado a Albrook' : 'ERA5') : c.fuente === 'dia' && c.modelo === 'era5' ? 'ERA5' : c.fuente === 'dia' ? 'modelo' : 'típico'} · viento a 10 m`;
+  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${c.fuente === 'vivo' ? (c.albrook ? `Albrook ${c.albrook.hora}, a 4 km` : `pronóstico ${c.hora ?? ''}`.trim()) : c.fuente === 'serie' ? (c.ajustado ? 'ERA5 ajustado a Albrook' : 'ERA5') : c.fuente === 'dia' && c.modelo === 'era5' ? 'ERA5' : c.fuente === 'dia' ? 'pronóstico' : c.ajustado ? 'típico ajustado' : 'típico'} · viento a 10 m`;
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
-  if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${f1(c.temp)} °C, ${f1(w)} g/kg</title></circle>` : '';
+  if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${Math.round(c.temp)} °C, ${Math.round(w)} g/kg</title></circle>` : '';
   const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
   if (p.alt <= 0 || c.dni == null) {
     const u = utci(c.temp, c.temp, va, c.humedad, { recortarViento: true }), k2 = categoriaUTCI(u);
-    $('#utci-hora').innerHTML = `A las ${hora} (de noche o sin radiación): UTCI <b>${Math.round(u)} °C</b>, ${CATEGORIAS_UTCI[k2]?.nombre.toLowerCase() ?? '—'}. Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
+    $('#utci-hora').innerHTML = `A las ${hora} (de noche o sin radiación): UTCI <b>${Math.round(u)} °C</b>, ${CATEGORIAS_UTCI[k2]?.nombre.toLowerCase() ?? '—'}. Aire ${Math.round(c.temp)} °C · ${Math.round(w)} g/kg.`;
     return;
   }
   const uS = utci(c.temp, tmrtSol({ ta: c.temp, altSol: p.alt, dni: c.dni, difusa: c.difusa ?? 0 }), va, c.humedad, { recortarViento: true });
   const uA = utci(c.temp, tmrtSombra({ ta: c.temp, difusa: c.difusa ?? 0, altSol: p.alt, dni: c.dni }), va, c.humedad, { recortarViento: true });
   const nom = (u) => CATEGORIAS_UTCI[categoriaUTCI(u)]?.nombre.toLowerCase() ?? '—';
-  $('#utci-hora').innerHTML = `A las ${hora}: al sol${solARatos(c, p) || llueve(c) ? ', cuando sale,' : ''} se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${f1(c.temp)} °C · ${f1(w)} g/kg.`;
+  $('#utci-hora').innerHTML = `A las ${hora}: al sol${solARatos(c, p) || llueve(c) ? ', cuando sale,' : ''} se siente <b>${Math.round(uS)} °C</b> (${nom(uS)}); bajo el alero <b>${Math.round(uA)} °C</b> (${nom(uA)}). Aire ${Math.round(c.temp)} °C · ${Math.round(w)} g/kg.`;
 }
 /** Qué conviene a esta hora, a partir del clima de afuera (especificación revisada por el panel de expertos, 30/09/2026).
  *  Dos marcos de confort (Givoni 1992; Guía de Construcción Sostenible de Panamá 2016, p. 8, con la extensión de ASHRAE 55
@@ -2343,25 +2344,34 @@ function conviene(p, c) {
   const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0, mes = S.fecha.m, seca = mes === 12 || mes <= 4, h = S.min / 60;
   // banda «en el borde»: con ERA5 crudo, la diferencia de humedad con las estaciones (1 g/kg en la seca, 0,5 en lluvias) y 1 °C;
   // con el parte de Albrook o la serie ajustada, lo que deja el redondeo del parte al grado entero: 0,5 °C y 0,6 g/kg
-  const fino = !!(c.albrook || c.ajustado), T = f1(c.temp), W = f1(w), banda = fino ? 0.6 : seca ? 1 : 0.5, dT = fino ? 0.5 : 1;
+  // en el texto, en enteros (el parte de Albrook redondea al grado); el cálculo sigue con los valores sin redondear
+  const fino = !!(c.albrook || c.ajustado), T = String(Math.round(c.temp)), W = String(Math.round(w)), banda = fino ? 0.6 : seca ? 1 : 0.5, dT = fino ? 0.5 : 1;
   // 1. Givoni (con la banda «en el borde»)
   const enQ = dentroPoligono(c.temp, w, GIVONI.quieto), enV = dentroPoligono(c.temp, w, GIVONI.ventilacion);
   // «en el borde»: el veredicto cambiaría con ±dT °C o con ±banda g/kg
   const borde = [[dT, 0], [-dT, 0], [0, banda], [0, -banda]].some(([dt, dw]) => dentroPoligono(c.temp + dt, w + dw, GIVONI.ventilacion) !== enV);
-  let g;
+  let g, porCalor = false;
   if (c.temp < 20) g = ['●', '<b>Givoni: fresco.</b> Ventilar poco.'];
   else if (enQ) g = ['●', '<b>Givoni: confort con el aire quieto.</b> Basta la sombra.'];
   else if (borde) g = ['◐', `<b>Givoni: en el borde.</b> Con ${T} °C y ${W} g/kg, ${fino ? '' : ' y la humedad de ERA5 algo alta,'} puede quedar dentro o fuera de la zona con brisa.`];
   else if (enV) g = ['◐', `<b>Givoni: confort si se mueve el aire</b> (${T} °C, ${W} g/kg).`];
-  else if (w > 19) g = seca ? ['◐', `<b>Givoni: fuera por poco</b> (${W} g/kg).${fino ? '' : ' En esta época la humedad medida en tierra suele ser algo menor que la de ERA5.'}`] : ['○', `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${W} g/kg). Mover el aire igual ayuda.`];
-  else g = ['○', `<b>Givoni: demasiado caluroso</b> (${T} °C).`];
+  else {
+    // fuera de la zona con brisa: ¿por qué borde sale? Por el derecho (calor) o por el techo o el borde izquierdo (humedad)
+    const tDer = w <= 15.7 ? 32 : 32 - 2.1 * (w - 15.7) / 3.3;
+    porCalor = (w <= 19 && c.temp > tDer) || (w > 19 && c.temp > 29.9);
+    // humedad máxima de la zona con brisa a esta temperatura: el techo de 19 g/kg o el borde izquierdo, de (20; 13,5) a (25,4; 19)
+    const wTope = c.temp >= 25.4 ? 19 : 13.5 + (c.temp - 20) * 5.5 / 5.4;
+    if (porCalor) g = ['○', `<b>Givoni: demasiado calor para la zona con brisa</b> (${T} °C, ${W} g/kg).`];
+    else if (seca) g = ['○', `<b>Givoni: fuera por la humedad</b> (${W} g/kg; con ${T} °C, la zona con brisa llega a ${f1(wTope)}).${fino ? '' : ' En esta época la humedad medida en tierra suele ser algo menor que la de ERA5.'}`];
+    else g = ['○', `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${W} g/kg). Mover el aire igual ayuda (UN-Habitat, 2014, p. 41).`];
+  }
   out.push(['', ...g]);
   // 2. Guía de Panamá: 23,5 a 28,5 °C; con aire a ~0,6 m/s, ASHRAE 55 acepta 1,2 °C más (solo sobre 25 °C)
   let pa;
   if (c.temp < 23.5) pa = ['●', '<b>Guía de Panamá: fresco para su rango</b> (23,5 a 28,5 °C).'];
   else if (c.temp <= 28.5) pa = ['●', '<b>Guía de Panamá: dentro del rango</b> (23,5 a 28,5 °C).'];
   else if (c.temp <= 29.7) pa = ['◐', `<b>Guía de Panamá: aceptable con ventilador o brisa suave</b> (${T} °C, el rango llega a 28,5).`];
-  else pa = ['○', `<b>Guía de Panamá: caluroso</b> (${T} °C, aun con el aire en movimiento).`];
+  else pa = ['○', `<b>Guía de Panamá: caluroso</b> (${T} °C, más de lo que ASHRAE 55 acepta con aire a 0,6 m/s).`];
   out.push(['', ...pa]);
   out.push(['cierre', '', g[0] === pa[0] ? 'Coinciden.' : 'No coinciden porque Givoni mira la humedad y la Guía solo la temperatura.']);
   // 3. Sol en el vidrio (de día, con sol directo, perfil bajo el corte del alero)
@@ -2377,20 +2387,22 @@ function conviene(p, c) {
       datos.push(`Sol en el vidrio con ángulo de perfil ${al.map((x) => x.replace(' (perfil ', ' ').replace('°)', '°')).join(' y ')}; el alero tapa el vidrio desde unos 45°.`); }
   }
   // 4. Aire: con las fachadas largas como eje
-  const v = c.viento ?? 0, variable = mes >= 5 && mes <= 11 ? ' (en esta época la dirección cambia de hora en hora)' : '';
-  if (c.dir == null || v < 6) { acciones.push('<b>Si hay ventiladores, préndelos.</b> Casi no hay viento; si hay ventanas altas, ábrelas para que salga el aire caliente.'); datos.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`); }
+  const v = c.viento ?? 0, variable = mes >= 5 && mes <= 11 ? ' (en esta época el viento llega de más direcciones y puede cambiar en la hora)' : '';
+  if (c.dir == null || v < 5) { acciones.push('<b>Si hay ventiladores, préndelos.</b> El viento es flojo (menos de 5 km/h a 10 m de altura); si hay ventanas altas, ábrelas para que salga el aire caliente.'); datos.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`); }
   else {
     let k = LARGAS[0], ang = 180;
     for (const f of LARGAS) { const a = Math.abs(((c.dir - FACHADAS[f].rumbo + 540) % 360) - 180); if (a < ang) { ang = a; k = f; } }
-    if (ang <= 30) acciones.push(`<b>Abre las ventanas de la ${CORTO[k]} y de la ${CORTO[OPUESTA[k]]}.</b> La brisa entra de frente por la ${CORTO[k]} y sale por la otra.`);
+    // con el aire de afuera más caliente que la zona con brisa, ventilar ya no da confort (Givoni 1992, p. 16): no se manda abrir
+    if (porCalor) acciones.push(`<b>Si hay ventiladores, préndelos; abre solo si adentro está más caliente que afuera.</b> Con el aire de afuera a ${T} °C, ventilar ya no da confort (Givoni, 1992, p. 16); el ventilador mueve el aire sin meter calor (p. 17).`);
+    else if (ang <= 30) acciones.push(`<b>Abre las ventanas de la ${CORTO[k]} y de la ${CORTO[OPUESTA[k]]}.</b> La brisa entra de frente por la ${CORTO[k]} y sale por la otra.`);
     else if (ang <= 60) acciones.push(`<b>Abre las ventanas de las dos fachadas largas, NO y SE.</b> La brisa llega de lado y entra más o menos la mitad del aire.`);
     else acciones.push('<b>Si hay ventiladores, préndelos.</b> La brisa corre paralela a las fachadas largas y casi no entra.');
-    if (seca && h >= 5 && h < 9) acciones[acciones.length - 1] += ' Aprovecha: es la hora más fresca del día.';
+    if (seca && !porCalor && h >= 5 && h < 8) acciones[acciones.length - 1] += ' Aprovecha: de 5 a 8 h es lo más fresco del día.';
     datos.push(`Viento del ${rumboTexto(c.dir)} a ${Math.round(v)} km/h a 10 m de altura, a ${Math.round(ang)}° de la perpendicular de la ${CORTO[k]}${variable}. Conviene que la salida sea igual o mayor que la entrada.`);
   }
   const hacer = acciones.slice(0, 2);
   // 5. Lluvia, solo si llueve
-  if (llueve(c)) hacer.push(`<b>Cierra lo que el alero no protege.</b> ${c.albrook && !c.albrook.auto ? 'El aeropuerto de Albrook, a 4 km, informa lluvia' : 'Llueve'} y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.`);
+  if (llueve(c)) hacer.push(`<b>Cierra lo que el alero no protege.</b> ${c.albrook && !c.albrook.auto ? 'El aeropuerto de Albrook, a 4 km, informa lluvia' : 'El dato da lluvia'} y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.`);
   // de noche: en clima cálido húmedo conviene ventilar todo el día (UN-Habitat 2014, p. 68); enfriar la masa de noche es una
   // estrategia de regiones áridas (Givoni 1992, §4.6.1, p. 17): baja la máxima de adentro un 45 a 55 % de la oscilación de afuera,
   // con el aula cerrada y en sombra de día. Oscilación diaria media: Albrook (METAR, días completos 2019–2025) de 5,2 a 8,3 °C según el mes; ERA5 de 4 a 6 °C. (La «oscilación térmica
