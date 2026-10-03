@@ -114,6 +114,12 @@ export function incidencia(alt, az, rumboFachada) {
   return Math.max(0, Math.cos(alt * rad) * Math.cos((az - rumboFachada) * rad));
 }
 
+/** Lo más despejado que da ERA5 en su celda, frente a Meinel: el percentil 95 de DNI/Meinel en 2001–2025 es ~0,80 en todas
+ *  las bandas de altura del sol (0,78 a 0,86, de 2 a 90°; panel de sombras, 3 de octubre de 2026). La escena mide el sol del
+ *  dato contra esto y no contra Meinel: si no, la hora más despejada se dibujaba con el sol al 82 % y la sombra borrosa. */
+export const DESPEJADO_ERA5 = 0.8;
+export const dniDespejadoEra5 = (alt) => DESPEJADO_ERA5 * dniDespejado(alt);
+
 /** Irradiancia directa normal de cielo despejado (modelo de Meinel, aproximado), W/m². */
 export function dniDespejado(alt) {
   if (alt <= 0) return 0;

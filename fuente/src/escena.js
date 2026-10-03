@@ -505,7 +505,22 @@ export class Escena {
     U.cieloH.value.setRGB(...H); U.cieloZ.value.setRGB(...Z);
     U.entornoN.value.setRGB(...H.map((x, i) => (x + Z[i]) / 2));
     // relleno: de día el de antes; de noche, la misma bóveda (así el muro en sombra nunca queda más claro que el cielo).
-    const Iday = 0.08 + day * (0.22 + 0.95 * cubierto);
+    // Relleno atado al dato: con cielo despejado, la razón entre suelo al sol y suelo en sombra que daría el cielo de esa hora
+    // (Hay-Davies con la DNI, la difusa y Ai del dato, como la lente Sol: (DNI·sen h + DHI) / (DHI·(1 − Ai))) manda sobre el
+    // relleno fijo de antes, que dejaba las sombras de una hora despejada en la mitad o un tercio de esa razón. Solo baja el
+    // relleno, nunca lo sube: lo nublado queda como estaba. Sin dato de difusa, con lluvia o de noche, no actúa.
+    // KAPPA lleva las luces de la escena a esa razón: medido el 15/02/2024 a las 10:00 en el concreto en planta, con el relleno
+    // de antes, razón 3,61 en escena con el sol a 4,62 y 46,4° (salida AgX invertida; panel de sombras, 3 de octubre de 2026).
+    let fRel = 1;
+    const dhiD = U.dhiW.value, dniD = U.dniW.value, aiD = U.ai.value, sh = Math.sin(Math.max(alt, 0) * Math.PI / 180);
+    if (alt > 2 && dhiD > 0 && lv < 0.05 && !(this.lluviaEsc ?? false)) {
+      const KAPPA = 0.234, Rf = (dniD * sh + dhiD) / (dhiD * Math.max(0.05, 1 - aiD)), Rv = 1 + KAPPA * this.sun.intensity * sh / 0.30;
+      if (Rf > 1.01) fRel = THREE.MathUtils.clamp((Rv - 1) / (Rf - 1), 0.3, 1);
+    }
+    this._fRel = (this._fRel ?? fRel) + (fRel - (this._fRel ?? fRel)) * 0.15;     // sin saltos al pasar de una hora a otra
+    const rel = 1 + (this._fRel - 1) * day;
+    const Iday = (0.08 + day * 0.22) * rel + day * 0.95 * cubierto;
+    if (this._envRT) this.scene.environmentIntensity = 0.4 * rel;
     const hc = new THREE.Color().setRGB(0.55 + 0.27 * day, 0.62 + 0.21 * day, 0.85 - 0.02 * day).lerp(new THREE.Color(0.88, 0.89, 0.9), cubierto).multiplyScalar(Iday);
     const hn = new THREE.Color().setRGB(...H.map((x, i) => (x * 0.4 + Z[i] * 0.6) * NOCHE.relleno * 10));
     // techos y suelo abiertos ven la bóveda entera: reciben el 100 % de su luz, no el 35 % del relleno (lo que le llega al muro
@@ -745,7 +760,11 @@ export class Escena {
       // fuerte en el primer metro (entre los cabios, donde las fotos muestran una franja oscura) y se desvanece hacia 1,6 m
       const bajo = (j) => step(y, j).mul(smoothstep(1.6, 0.5, float(j).sub(y)));
       const occ = max(max(bajo(4.4), bajo(8.05)), bajo(11.7)).mul(vertical);
-      colorFinal = colorFinal.mul(mix(float(1), float(0.32), occ));
+      // como oclusión ambiental: el alero le tapa el cielo al muro, no el sol. El sol bajo de la mañana que entra bajo el alero
+      // (la SE en enero, «Ver el corte del alero») sigue entrando con toda su fuerza. 0,15 en el encuentro sigue el perfil de una
+      // foto de un bloque gemelo, nublado (~8 a 1 en el contacto; panel de sombras, 3 de octubre de 2026). Antes multiplicaba el
+      // color por 0,32, y eso apagaba también el sol directo
+      m.aoNode = mix(float(1), float(0.15), occ);
     }
     m.colorNode = mix(clayColor, colorFinal, U.mat);
     if (glass) m.colorNode = mix(clayColor.mul(0.35), colorFinal, U.mat);
@@ -1124,6 +1143,32 @@ export class Escena {
     this.diagramaGrupo = new THREE.Group(); this.diagramaGrupo.add(relleno, lineas); this.diagramaGrupo.visible = false;
     this.scene.add(this.diagramaGrupo);
     this.diagLineas = lineas; this.diagRelleno = relleno;
+    relleno.visible = false;                         // el velo de antes ya no se dibuja (lo reemplazan las horas de sombra)
+    // horas de sombra por bandas: una cuadrícula de 1,5 m sobre el terreno cuenta en cuántas de las horas en punto con el sol a 3° o más (de 7 a 17 o 18 h: 11 o 12 por día)
+    // cae dentro de la sombra; se pinta en 5 bandas (1–2, 3–4, 5–6, 7–8 y 9 o más horas), como las horas de sombra de ArcGIS o
+    // las horas de sol directo de Ladybug. Reemplaza el velo de antes (7,5 % por hora, casi invisible)
+    const NR = 160, CELDA = 1.5;
+    this._horas = { NR, CELDA, datos: new Uint8Array(NR * NR) };
+    const th = new THREE.DataTexture(this._horas.datos, NR, NR, THREE.RedFormat, THREE.UnsignedByteType);
+    th.magFilter = th.minFilter = THREE.NearestFilter; th.needsUpdate = true; this._horas.tex = th;
+    const gh = new THREE.PlaneGeometry(NR * CELDA, NR * CELDA); gh.rotateX(-Math.PI / 2);
+    const mh = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false });
+    const banda = min(floor(floor(texture(th).r.mul(255).add(0.5)).add(1).div(2)), float(5));   // la cuenta entera, sin depender del redondeo de la GPU
+    mh.colorNode = vec3(0.02, 0.04, 0.09); mh.opacityNode = banda.mul(0.11).mul(U.sombras); mh.fog = false;
+    const horas = new THREE.Mesh(gh, mh); horas.position.y = 0.09; horas.renderOrder = 7; horas.frustumCulled = false;
+    this.diagramaGrupo.add(horas);
+    // la sombra de la hora que marca la regla: contorno crema y grueso, y un relleno suave
+    const ga = new THREE.BufferGeometry();
+    ga.setAttribute('position', new THREE.BufferAttribute(new Float32Array(96 * 6 * 3), 3).setUsage(THREE.DynamicDrawUsage)); ga.setDrawRange(0, 0);
+    const ma = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    ma.colorNode = vec3(0.94, 0.91, 0.87); ma.opacityNode = U.sombras; ma.fog = false;
+    const gaf = new THREE.BufferGeometry();
+    gaf.setAttribute('position', new THREE.BufferAttribute(new Float32Array(96 * 3 * 3), 3).setUsage(THREE.DynamicDrawUsage)); gaf.setDrawRange(0, 0);
+    const maf = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    maf.colorNode = vec3(0.02, 0.03, 0.06); maf.opacityNode = U.sombras.mul(0.22); maf.fog = false;
+    this.diagAhora = new THREE.Mesh(ga, ma); this.diagAhora.renderOrder = 10; this.diagAhora.frustumCulled = false; this.diagAhora.visible = false;
+    this.diagAhoraR = new THREE.Mesh(gaf, maf); this.diagAhoraR.renderOrder = 9; this.diagAhoraR.frustumCulled = false; this.diagAhoraR.visible = false;
+    this.diagramaGrupo.add(this.diagAhora, this.diagAhoraR);
     this.diagRotulos = [];
     for (let h = 6; h <= 18; h++) {
       const c = document.createElement('canvas'); c.width = 160; c.height = 80; const x = c.getContext('2d');
@@ -1202,7 +1247,7 @@ export class Escena {
     const P = this.#siluetaPuntos(); if (!P) return false;
     this._diagClave = clave;
     const pos = this.diagLineas.geometry.attributes.position, col = this.diagLineas.geometry.attributes.color, fp = this.diagRelleno.geometry.attributes.position;
-    let n = 0, nf = 0; const Y = 0.12, W = 0.28, d = {};
+    let n = 0, nf = 0; const Y = 0.12, W = 0.28, d = {}, contornos = [];
     for (const sp of this.diagRotulos) {
       const p = posicionSol({ ...f, h: sp.userData.h, min: 0 });
       sp.visible = sp.userData.vale = false;
@@ -1210,6 +1255,7 @@ export class Escena {
       vectorSol(p.alt, p.az, d);
       const k = 1 / d.y, proy = P.map(([x, z, y]) => [x - d.x * y * k, z - d.z * y * k]);
       const H = envolvente(proy); if (H.length < 3) continue;
+      contornos.push(H);
       const c = colorHora(sp.userData.h);
       // contorno como cinta de 0,56 m (las líneas de 1 px casi no se ven desde arriba)
       let cx = 0, cz = 0; H.forEach(([x, z]) => { cx += x; cz += z; }); cx /= H.length; cz /= H.length;
@@ -1218,16 +1264,68 @@ export class Escena {
         const ex = x1 - x0, ez = z1 - z0, L = Math.hypot(ex, ez) || 1, nx = -ez / L * W, nz = ex / L * W;
         const q = [[x0 - nx, z0 - nz], [x1 - nx, z1 - nz], [x1 + nx, z1 + nz], [x0 - nx, z0 - nz], [x1 + nx, z1 + nz], [x0 + nx, z0 + nz]];
         for (const [x, z] of q) { pos.setXYZ(n, x, Y, z); col.setXYZ(n, c.r, c.g, c.b); n++; }
-        if (nf < fp.count - 3) { fp.setXYZ(nf++, cx, Y - 0.02, cz); fp.setXYZ(nf++, x0, Y - 0.02, z0); fp.setXYZ(nf++, x1, Y - 0.02, z1); }
       }
       // rótulo en la punta de la sombra (el vértice más lejos del edificio)
       let best = H[0], bd = -1; for (const q of H) { const dd = q[0] * q[0] + q[1] * q[1]; if (dd > bd) { bd = dd; best = q; } }
       const r = Math.sqrt(bd) || 1; sp.position.set(best[0] + best[0] / r * 5, 1.5, best[1] + best[1] / r * 5); sp.visible = sp.userData.vale = true;
     }
+    this.#contarHoras(contornos);
+    this._ahoraClave = '';
     pos.needsUpdate = col.needsUpdate = fp.needsUpdate = true;
     this.diagLineas.geometry.setDrawRange(0, n); this.diagRelleno.geometry.setDrawRange(0, nf);
     this.sucio = true;
     return true;
+  }
+
+  /** Cuántas de las horas en punto cae cada celda dentro de la sombra (contornos convexos; recorte por caja de cada uno). */
+  #contarHoras(contornos) {
+    const { NR, CELDA, datos, tex } = this._horas, half = NR * CELDA / 2;
+    datos.fill(0);
+    for (const H of contornos) {
+      let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      for (const [x, z] of H) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+      const i0 = Math.max(0, Math.floor((x0 + half) / CELDA)), i1 = Math.min(NR - 1, Math.floor((x1 + half) / CELDA));
+      const j0 = Math.max(0, Math.floor((half - z1) / CELDA)), j1 = Math.min(NR - 1, Math.floor((half - z0) / CELDA));
+      for (let j = j0; j <= j1; j++) {
+        const z = half - (j + 0.5) * CELDA;
+        for (let i = i0; i <= i1; i++) {
+          const x = -half + (i + 0.5) * CELDA;
+          let signo = 0, dentro = true;
+          for (let k = 0; k < H.length; k++) {
+            const [ax, az] = H[k], [bx, bz] = H[(k + 1) % H.length];
+            const cr = (bx - ax) * (z - az) - (bz - az) * (x - ax);
+            if (cr !== 0) { const sg = Math.sign(cr); if (signo === 0) signo = sg; else if (sg !== signo) { dentro = false; break; } }
+          }
+          if (dentro) datos[j * NR + i]++;
+        }
+      }
+    }
+    tex.needsUpdate = true;
+  }
+
+  /** La sombra del minuto que marca la regla (dentro de «Sombras del día»): contorno crema grueso y relleno suave. */
+  setSombraAhora(f, min) {
+    const clave = `${f.y}-${f.m}-${f.d}-${Math.round(min)}`; if (clave === this._ahoraClave || !this.diagAhora) return;
+    this._ahoraClave = clave;
+    const P = this._silueta, pa = this.diagAhora.geometry.attributes.position, pf = this.diagAhoraR.geometry.attributes.position;
+    const p = posicionSol({ ...f, h: 0, min });
+    let n = 0, nf = 0;
+    if (P && p.alt >= 3) {
+      const d = {}; vectorSol(p.alt, p.az, d);
+      const k = 1 / d.y, H = envolvente(P.map(([x, z, y]) => [x - d.x * y * k, z - d.z * y * k]));
+      let cx = 0, cz = 0; H.forEach(([x, z]) => { cx += x; cz += z; }); cx /= H.length || 1; cz /= H.length || 1;
+      const Y = 0.16, W = 0.5;
+      for (let i = 0; i < H.length && n < pa.count - 6; i++) {
+        const [x0, z0] = H[i], [x1, z1] = H[(i + 1) % H.length];
+        const ex = x1 - x0, ez = z1 - z0, L = Math.hypot(ex, ez) || 1, nx = -ez / L * W, nz = ex / L * W;
+        for (const [x, z] of [[x0 - nx, z0 - nz], [x1 - nx, z1 - nz], [x1 + nx, z1 + nz], [x0 - nx, z0 - nz], [x1 + nx, z1 + nz], [x0 + nx, z0 + nz]]) pa.setXYZ(n++, x, Y, z);
+        if (nf < pf.count - 3) { pf.setXYZ(nf++, cx, Y - 0.03, cz); pf.setXYZ(nf++, x0, Y - 0.03, z0); pf.setXYZ(nf++, x1, Y - 0.03, z1); }
+      }
+    }
+    pa.needsUpdate = pf.needsUpdate = true;
+    this.diagAhora.geometry.setDrawRange(0, n); this.diagAhoraR.geometry.setDrawRange(0, nf);
+    this.diagAhora.visible = n > 0; this.diagAhoraR.visible = nf > 0;   // sin nada que dibujar, ni se llama (WebGPU avisa)
+    this.sucio = true;
   }
 
   #reticula() {

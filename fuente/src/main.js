@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Escena, U, GRUPOS, RAMPA_SOL } from './escena.js';
 import { Sonido } from './sonido.js';
 import { puntosIntro, conVersion } from './datos.js';
-import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, mediodiaSolar, EJE_LARGO } from './sol.js';
+import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, dniDespejadoEra5, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { posicionLuna } from './luna.js';
 import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
@@ -601,11 +601,11 @@ function paso(now) {
   // la hora entera en una celda de 28 km. Es una regla de dibujo declarada: el número de la DNI sigue en el dock y en la lente Sol
   // (panel de clima y verificador, 2 de octubre de 2026). Las nubes solas no apagan el sol: con 99–100 % de nubes de ERA5, Albrook
   // informa lluvia en el 10 % de esas horas.
-  const dc = dniDespejado(p.alt);
+  const dc = dniDespejadoEra5(p.alt);                                // el cielo más despejado de ERA5, no Meinel (sol.js)
   S.lluviaEsc = !intro && !S.viaje && lluviaDibujada(c);
   const kObj = p.alt <= 0.5 ? 1 : S.lluviaEsc ? 0 : c?.dni != null ? clamp01(c.dni / Math.max(40, dc)) : 1 - 0.75 * Math.pow(clamp01(nub / 100), 3.4);
   S.kSol = (S.kSol ?? kObj) + (kObj - (S.kSol ?? kObj)) * (salto ? 1 : Math.min(1, dt * 2.5));
-  escena.kSol = S.kSol; escena.nb = nubesSuave / 100;
+  escena.kSol = S.kSol; escena.nb = nubesSuave / 100; escena.lluviaEsc = S.lluviaEsc;   // con lluvia en la escena el relleno no se ata al dato
   escena.setNubes(0.08 + 0.85 * nubesSuave / 100);
   U.nubeSombra.value = 0.25 + 2.4 * S.kSol * (1 - S.kSol);         // las sombras de nubes pesan más con cielo a medias
   escena.luna = p.alt < 2 ? posicionLuna({ ...S.fecha, h: 0, min: S.min }) : null;   // la luna de esa noche (de día no hace falta)
@@ -653,7 +653,7 @@ function paso(now) {
   escena.uRampa.value = Math.max(20, lejos * DOF.rampa); escena.uBokeh.value = DOF.bokeh;
   const desenfoque = DOF.on && S.lente !== 'sombras' && !S.fachada && dirCam.y > -0.8 ? 1 : 0;      // en planta, sombras o fachada: nítido
   escena.uDesenfoque.value += (desenfoque - escena.uDesenfoque.value) * Math.min(1, dt * 3);
-  if (S.lente === 'sombras' && !S.viaje) escena.setDiagrama(S.fecha);
+  if (S.lente === 'sombras' && !S.viaje && escena.setDiagrama(S.fecha)) escena.setSombraAhora(S.fecha, S.min);
   actualizarCalor(p, c);
   actualizarAgua(c);
   if (S.lente === 'viento') {
@@ -682,7 +682,7 @@ function paso(now) {
   const cp = escena.camera.position, ct = controls.target;
   const firma = [cp.x, cp.y, cp.z, ct.x, ct.y, ct.z].map((v) => Math.round(v * 60)).join(',') + '|' +
     [U.build.value * 500, U.mat.value * 200, S.min * 4, nubesSuave * 4, (S.kSol ?? 1) * 200, U.calor.value * 100, U.agua.value * 100, U.sombras.value * 100, U.total.value * 100, escena.uViento.value * 100, U.viaje.value * 100, U.mojado.value * 200, U.brisa.value * 100, escena.uRosa.value * 100, escena.uRuta.value * 100, (p.alt ?? 0) * 20, (p.az ?? 0) * 20].map(Math.round).join(',') +
-    `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}|${Math.round(ENC.dy)}`;
+    `|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${innerWidth}x${innerHeight}|${Math.round(ENC.dy)}|${Math.round((escena._fRel ?? 1) * 100)}`;   // el relleno atado al dato converge en unos cuadros
   const anima = !!intro || !!escena.particulas || U.lluvia.value > 0.01 || U.relampago.value > 0 || !!S.midiendo || !!S.viaje;
   if (firma !== S.firma || anima || escena.sucio || now - (S.ultimoCambio || 0) < 500) {
     if (firma !== S.firma) { S.firma = firma; S.ultimoCambio = now; }
@@ -1619,12 +1619,14 @@ const LENTES = {
     porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, es de 0,6 a 0,8 veces el de 10 m (UN-Habitat, 2014, p. 29), y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste baja a unas 5.200 horas al año (ERA5, en los mismos años, unas 5.500) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos.' },
-  sombras: { t: 'Sombras del día: la proyección de sombra del edificio en cada hora', rampa: 'linear-gradient(90deg, #5cc8d6, #f2efe6 50%, #f4a23a)', esc: ['6 h', '12 h', '18 h'],
-    que: 'Sobre el terreno se dibuja el contorno de la sombra del edificio en cada hora en punto, de 6 a 18 h: turquesa en la mañana, blanco al mediodía y naranja en la tarde. Donde se enciman más contornos, ese pedazo de suelo pasa más horas a la sombra.',
+  sombras: { t: 'Sombras del día: la proyección de sombra del edificio en cada hora',
+    // la rampa: el mismo velo marino (0,11 de opacidad por banda) sobre un suelo claro de referencia
+    rampa: 'linear-gradient(90deg, #bfbbb3 0% 20%, #b5b1ab 20% 40%, #a9a6a2 40% 60%, #9d9b99 60% 80%, #8f8e8f 80% 100%)', esc: ['1–2 h', '5–6 h', '9 h o más'],
+    que: 'Sobre el terreno se dibuja el contorno de la sombra del edificio en cada hora en punto con el sol a 3° o más (de 7 a 17 o 18 h, según la época), con su hora: turquesa en la mañana, blanco al mediodía y naranja en la tarde. El contorno crema y grueso es la sombra de la hora que marca la regla. El relleno cuenta en cuántas de esas horas (11 o 12 por día) cae a la sombra cada pedazo de suelo: más oscuro, más horas.',
     prueba: 'Cambia la fecha con la regla del año: en diciembre las sombras son largas y se proyectan hacia el norte; en junio, a mediodía, son cortas y apuntan al sur. En los días sin sombra (abril y agosto), la del mediodía casi desaparece.',
-    porque: 'Sirve para decidir dónde poner un patio, una terraza, una banca o un árbol: qué partes del jardín tienen sombra en la mañana y cuáles en la tarde.',
-    ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos.',
-    tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior. Es exacto para el volumen; los detalles pequeños quedan dentro del contorno.' },
+    porque: 'Sirve para decidir dónde poner un patio, una terraza, una banca o un árbol: qué partes del jardín tienen sombra en la mañana, cuáles en la tarde y cuántas horas en total.',
+    ojo: 'Es la sombra del volumen del edificio solo, sobre un terreno plano, sin árboles ni vecinos. El contorno es convexo: rellena los entrantes del edificio, así que junto a la entrada la sombra real es algo menor. Las horas se cuentan en punto (11 o 12 por día: solo con el sol a 3° o más), no minuto a minuto.',
+    tec: 'Para cada hora se proyecta la silueta del edificio sobre el suelo en la dirección del sol (NOAA) y se traza su contorno exterior convexo. Las horas de sombra se cuentan en una cuadrícula de 1,5 m y se pintan con un velo azul oscuro, 11 % más opaco por banda.' },
   partes: { t: 'Partes y medidas', rampa: null, que: '',
     prueba: 'Toca «Alero» y luego «El alero como voladizo»: cambia el largo y mira cuánto crece el esfuerzo. Después gira el edificio: las etiquetas pasan a la cara que tienes enfrente.',
     porque: 'Nombrar las partes es el primer paso para leer un edificio y conversar sobre él: son las mismas palabras de los planos y de una clase de diseño.',
@@ -2260,7 +2262,7 @@ function explicacion(k, p, c) {
     const txtLl = c.albrook && !c.albrook.auto ? '' : ll >= 0.1 && !llueve(c) ? `${srcLl} da ${f1(ll)} ${c.fuente === 'vivo' ? 'mm/h' : 'mm en la hora'}: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${UMBRAL_TXT}).` : llueve(c) ? `${srcLl} da ${f1(ll)} mm en la hora: ${f1(ll)} litros por cada metro cuadrado. Desde 10 mm en una hora la OMM la llama lluvia fuerte (WMO-No. 8, 2023, vol. I, p. 484).` : `${srcLl} no da lluvia a esa hora.`;
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : c.fuente === 'dia' && c.modelo !== 'era5' ? 'Es el pronóstico de modelo de Open-Meteo para ese día, consultado en línea: no es ERA5 ni está ajustado a Albrook.' : (c.ajustado ? 'Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero')+' muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, a la hora de un parte con lluvia la escena dibuja lluvia una de cada seis veces (2017–2025). El sol directo es el promedio de la hora en la celda: en las horas de 9 a 14 en que Albrook informó lluvia, ERA5 daba 300 W/m² o más en casi la mitad (48 %). La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, ERA5 tiene unas 0,8 veces las horas con lluvia que informa el observador de Albrook de diciembre a marzo, y unas 1,15 veces de abril a noviembre (2017–2025, de 7 a 18 h). Mientras la escena dibuja lluvia, no dibuja sol directo.'}`];
   }
-  if (k === 'tab-dia') return ['La regla del día', `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${UMBRAL_TXT}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de un cielo despejado, y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`];
+  if (k === 'tab-dia') return ['La regla del día', `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${UMBRAL_TXT}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de las horas más despejadas de ERA5 (0,8 del de Meinel), y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`];
   if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
   if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie.'];
   return null;
@@ -2359,8 +2361,8 @@ function pintarClimaDia() {
     if (hay) {
       const r = reg(i * 60), q = reg(i * 60 + 30), alt = posicionSol({ ...f, h: i, min: 30 }).alt;
       const mm = r?.lluvia ?? 0;
-      // gris: cuánto sol directo falta frente al de cielo despejado (Meinel); en las horas en que la escena dibuja lluvia, lleno
-      if (alt > 2 && q?.dni != null) { const k = mm >= u ? 0 : clamp01(q.dni / Math.max(40, dniDespejado(alt))); if (k < 0.85) h += `<rect class="nube" x="${x - 2}" y="6" width="${w + 4}" height="16" opacity="${(0.62 * (1 - k)).toFixed(2)}"></rect>`; }
+      // gris: cuánto sol directo falta frente al de las horas más despejadas de ERA5 (0,8 de Meinel, sol.js); en las horas en que la escena dibuja lluvia, lleno
+      if (alt > 2 && q?.dni != null) { const k = mm >= u ? 0 : clamp01(q.dni / Math.max(40, dniDespejadoEra5(alt))); if (k < 0.85) h += `<rect class="nube" x="${x - 2}" y="6" width="${w + 4}" height="16" opacity="${(0.62 * (1 - k)).toFixed(2)}"></rect>`; }
       // barras llenas: la lluvia que la escena dibuja (desde el umbral del mes); una raya tenue: la lluvia débil de la celda
       if (mm >= u) { const hh = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(mm) / Math.log1p(15))); h += `<rect class="gota" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm</title></rect>`; }
       else if (mm >= 0.1) h += `<rect class="gota debil" x="${x}" y="20" width="${w}" height="2" rx="1"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm, lluvia débil en la celda (la escena no la dibuja)</title></rect>`;
