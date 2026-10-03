@@ -359,7 +359,9 @@ function guia(i, primera = false) {
   if (i === 0 && S.hoja !== undefined && S.hoja !== 0) ponerHoja(0);
   if (i === 0 && S.pestana !== 'dia') ponerPestana('dia');            // el paso 1 señala la regla del día
   GUIA.paso = i; const P = PASOS_GUIA[i];
-  $('#guia-n').textContent = `${i + 1} de ${PASOS_GUIA.length}`; $('#guia-t').textContent = P.t; $('#guia-txt').textContent = P.txt;
+  // de noche, el paso 1 sugiere el atajo del narrador para verlo con luz (sin dejar de mostrar el momento real)
+  const noche = i === 0 && $('#rotulo-noche').getClientRects().length > 0 ? ` A esta hora es de noche: toca «${$('#noche-dia').textContent}» para verlo con luz.` : '';   // solo si el chip se ve
+  $('#guia-n').textContent = `${i + 1} de ${PASOS_GUIA.length}`; $('#guia-t').textContent = P.t; $('#guia-txt').textContent = P.txt + noche;
   $('#guia-sig').textContent = i === PASOS_GUIA.length - 1 ? 'Listo' : 'Siguiente';
   P.foco()?.classList.add('guia-foco');
   $('#guia').hidden = false; colocarGuia(); $('#guia-sig').focus();
@@ -1732,6 +1734,7 @@ function leyenda(c) {
   if (horaLente && nota && (c?.fuente === 'vivo' || (c?.fuente === 'dia' && c.modelo !== 'era5'))) nota += ` Esta hora: pronóstico de modelo${c.albrook ? '; el viento, del parte de Albrook' : ''}.`;
   // procedencia corta de las cifras de la tarjeta, a la vista en la hoja cerrada del teléfono, donde la nota no cabe
   const modoT = $('#ley-modos [aria-pressed="true"]')?.textContent ?? '', prono = c?.fuente === 'vivo' || (c?.fuente === 'dia' && c.modelo !== 'era5');
+  $('#ley-corte').hidden = S.lente !== 'sol';
   $('#ley-sello').textContent = !MODOS[S.lente] ? '' : !horaLente ? `${modoT} · 2001–2025`
     : S.lente === 'viento' && c?.albrook ? `${modoT} · viento del parte de Albrook`
     : prono ? `${modoT} · pronóstico de modelo${S.lente === 'lluvia' && c.albrook ? '; viento de Albrook' : ''}`
@@ -1802,6 +1805,7 @@ function prepararPartes() {
   }));
   $('#lp-voladizo').addEventListener('click', () => abrirVoladizo(true));
   $('#cerrar-voladizo').addEventListener('click', () => abrirVoladizo(false));
+  $('#ley-corte').addEventListener('click', verCorte); $('#fachada-corte').addEventListener('click', verCorte);
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.addEventListener('click', () => { S.largo = +b.dataset.largo; pintarVoladizo(); }));
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.addEventListener('click', () => { S.corteF = b.dataset.corte; pintarCorte(); }));
   pintarVoladizo();
@@ -1935,6 +1939,18 @@ function pintarPartes() {
 
 // El alero como voladizo: proporciones con la misma sección y la misma carga por metro (no es el cálculo de este alero)
 const VISTA_ALERO = { pos: [34.6, 7.5, 29.6], tgt: [19, 7.5, 11] };        // la esquina: los aleros y sus ménsulas de perfil, a la derecha del panel (en la misma línea de antes, más cerca: en (40; 36) quedaba dentro de la caja de 11 m que el contexto anterior ponía sobre la huella 108; hoy ahí está La Casa, un salón de un piso cuya huella empieza en z ≈ 30,6 y cuya cubierta queda por debajo de los 7 m)
+/** «Ver el corte del alero»: desde Sol en fachadas o frente a una fachada, va a Partes › alero y abre el corte del piso 2
+ *  con el sol de esta hora (en la fachada que se miraba; si no, la última elegida o la SE), con el alero real de 1,65 m. */
+function verCorte() {
+  if (S.hoja !== undefined && S.hoja !== 0) ponerHoja(0);
+  if (document.documentElement.classList.contains('panel-lateral')) $('#dock').scrollTop = 0;   // con el panel, la regla vuelve a la vista
+  if (S.lente !== 'partes') ponerLente('partes', false);
+  elegirParte('alero');
+  S.largo = 1.65;                                                  // el alero real, aunque antes se haya probado otro largo
+  abrirVoladizo(true); pintarVoladizo();
+  // baja hasta el corte dentro del panel del voladizo, sin mover el panel lateral ni la hoja (la regla queda a mano)
+  requestAnimationFrame(() => { const v = $('#voladizo'), c = $('#corte'); if (v && c) v.scrollTop += c.getBoundingClientRect().top - v.getBoundingClientRect().top - 12; });
+}
 function abrirVoladizo(abrir) {
   const el = $('#voladizo'); if (!el) return;
   if (!!S.voladizo === abrir) return;

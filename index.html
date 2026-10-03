@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=246294a3fd" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=3f096be140" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -147,6 +147,7 @@
     padding: 10px 15px; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, background .2s, transform .2s var(--ease); display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
   .boton:hover { border-color: rgba(239,233,222,.42); }
   .boton:active { transform: scale(.97); }
+  .boton .parlante { width: 14px; height: 14px; fill: currentColor; flex: none; }
   .boton .onda { display: inline-flex; gap: 2px; align-items: end; height: 12px; }
   .boton .onda i { width: 2px; background: currentColor; border-radius: 1px; height: 4px; }
   .boton .onda i:nth-child(1) { height: 5px } .boton .onda i:nth-child(2) { height: 10px } .boton .onda i:nth-child(3) { height: 7px }
@@ -736,7 +737,8 @@
     .dock-lect [data-explica] .k::after { display: none; }
     #sirve { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9; }
     .intro-pie .carga { max-width: 60%; }
-    #voladizo { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 74vh; z-index: 11; padding: 13px 14px; }
+    /* sobre la hoja, sin taparla: el corte pide mover la hora con la regla */
+    #voladizo { left: 8px; right: 8px; width: auto; top: calc(env(safe-area-inset-top, 0px) + 60px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); max-height: none; z-index: 11; padding: 13px 14px; }
     #voladizo { --px: 14px; --pb: 13px; }
     #voladizo h2 { font-size: 18px; } #voladizo p { font-size: 13px; } .vol-datos b { font-size: 16px; } .vol-datos small { font-size: 12px; }
     .parte span { font-size: 12px; padding: 6px 9px; } .cota { font-size: 12px; padding: 4px 7px; }
@@ -835,6 +837,8 @@
     html.hoja-oculta #dock { transform: translateY(calc(100% - 38px)); overflow: hidden; }
     html.hoja-oculta #dock #leyenda { display: none; }
     html.hoja-oculta #hoja-ocultar { visibility: hidden; }
+    /* frente a una fachada, su panel termina donde empieza la hoja (no tapa el asa ni la regla) */
+    #panel-fachada { max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 72px - var(--dock-h) - 22px); overflow: auto; overscroll-behavior: contain; box-sizing: border-box; }
   }
   /* ---------- escritorio desde 900 px: panel lateral fijo (fase 4 del plan de interfaz) ----------
      el dock pasa a la izquierda, a todo el alto, con todo a la vista; main.js le mueve los modos, las vistas, la tarjeta
@@ -843,11 +847,11 @@
   :root { --panel-w: clamp(360px, 28vw, 420px); }
   @media (min-width: 900px) and (min-height: 501px) {
     html.panel-lateral { --dock-h: 0px !important; }
-    html.panel-lateral #dock { left: 0; right: auto; top: 0; bottom: 0; width: var(--panel-w); border-radius: 0; border-width: 0 1px 0 0; box-shadow: none;
-      padding: calc(env(safe-area-inset-top, 0px) + 72px) 20px 24px; overflow-y: auto; overscroll-behavior: contain; align-content: start; align-items: center;
+    html.panel-lateral #dock { left: 0; right: auto; top: calc(env(safe-area-inset-top, 0px) + 64px); bottom: 0; width: var(--panel-w); border-radius: 0; border-width: 0 1px 0 0; box-shadow: none;
+      padding: 8px 20px 24px; overflow-y: auto; overscroll-behavior: contain; align-content: start; align-items: center;
       grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; grid-template-rows: repeat(12, max-content);   /* con alto fijo, las filas auto no crecían con la tarjeta del modo */
-      grid-template-areas: "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "tabs tabs tabs" "momentos momentos momentos"
-        "modos modos modos" "ley ley ley" "ir confort capas" "lect lect lect" "vistas vistas vistas" "lamina lamina lamina"; }
+      grid-template-areas: "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "tabs tabs tabs" "momentos momentos momentos" "vistas vistas vistas"
+        "modos modos modos" "ley ley ley" "ir confort capas" "lect lect lect" "lamina lamina lamina"; }
     html.panel-lateral #dock > * { margin-top: 12px; }
     html.panel-lateral #rotulo { margin-top: 0; }
     html.panel-lateral :is(.dock-hora, .dock-centro, .dock-botones) { display: contents; }
@@ -875,6 +879,14 @@
     html.panel-lateral #leyenda { grid-area: ley; width: auto; max-height: none; min-height: 0; overflow: visible; animation: none; }
     html.panel-lateral #dock .lamina { grid-area: lamina; padding-top: 12px; border-top: 1px solid var(--linea); }
     html.panel-lateral #dock .lamina h2 { margin: 0; font-size: 14px; } html.panel-lateral #dock .lamina .lamina-nota:not(#img-estado) { display: none; }
+    /* la marca vive dentro del ancho del panel, alineada con su contenido (sin el subtítulo, que no cabe) */
+    /* franja de la marca: el panel empieza debajo, así lo que se desplaza no pasa bajo «Edificio 106» */
+    html.panel-lateral .barra::before { content: ''; position: absolute; left: 0; top: 0; width: var(--panel-w); height: calc(env(safe-area-inset-top, 0px) + 64px); z-index: -1;
+      box-sizing: border-box; background: var(--panel-2); border-right: 1px solid var(--linea); backdrop-filter: blur(18px); pointer-events: auto; }
+    html.panel-lateral .menu-ayuda { margin-left: calc(20px - var(--gutter)); width: calc(var(--panel-w) - 40px); min-width: 0; }
+    html.panel-lateral .marca { width: 100%; box-sizing: border-box; min-width: 0; }
+    html.panel-lateral .marca > span { min-width: 0; flex: 1; text-align: left; }
+    html.panel-lateral .marca small { display: none; }
     html.panel-lateral :is(#recorrido, #oferta-recorrido, #voladizo, #sirve, #confort, #ir-a, #capas, #panel-fachada) {
       left: calc(var(--panel-w) + var(--gutter)); max-width: calc(100vw - var(--panel-w) - 2 * var(--gutter)); }
   }
@@ -919,7 +931,7 @@
   </div>
   <div id="estado"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
   <div class="acciones">
-    <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
+    <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><svg class="parlante" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z"></path></svg><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
   </div>
 </header>
 
@@ -1038,6 +1050,7 @@
     <div id="ley-escala"></div>
     <ul id="ley-fachadas"></ul>
     <p id="ley-sello" class="conf-sello"></p>
+    <button type="button" id="ley-corte" class="boton" hidden>Ver el corte del alero</button>
     <div id="ley-modos" class="segmento" hidden></div>
     <p id="ley-leer"></p>
     <p id="ley-nota"></p>
@@ -1101,7 +1114,7 @@
   <p class="eyebrow">Estás frente al edificio</p>
   <h2 id="fachada-titulo"></h2>
   <p id="fachada-texto"></p>
-  <p><button class="boton" id="salir-fachada" type="button">Ver todo el edificio</button></p>
+  <p><button class="boton" id="salir-fachada" type="button">Ver todo el edificio</button> <button class="boton" id="fachada-corte" type="button">Ver el corte del alero</button></p>
 </aside>
 
 <section id="dock" class="tras-intro" aria-label="Máquina del tiempo">
@@ -1434,4 +1447,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=246294a3fd"></script></body></html>
+<script type="module" src="js/app.js?v=3f096be140"></script></body></html>
