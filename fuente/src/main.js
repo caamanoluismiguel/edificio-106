@@ -322,7 +322,8 @@ function terminarIntro() {
   document.documentElement.classList.add('listo');
   controls.enabled = true;
   irAAhora(false);
-  if (!visto && !location.hash) setTimeout(mostrarOferta, 900);
+  // primera visita: tres pasos sobre los controles reales y después la oferta del recorrido (con ?prueba solo si se pide ?guia)
+  if (!visto && !location.hash) setTimeout(() => (/[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search) ? mostrarOferta() : guia(0, true)), 900);
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); }
   irAMomentoHash();
@@ -334,6 +335,43 @@ function terminarIntro() {
 function mostrarOferta() {
   if (S.paso != null || !$('#sirve').hidden || !$('#ir-a').hidden || !$('#confort').hidden || S.interactuo) return;
   $('#oferta-recorrido').hidden = false;
+}
+// ---------------- Primera visita: tres pasos sobre el control real ----------------
+const GUIA = { paso: null, alFinal: false, volver: null };
+const PASOS_GUIA = [
+  { t: 'Mueve la hora', txt: 'Arrastra sobre la regla del día: el sol va a la posición calculada para esa hora y la luz depende del clima de ese momento.', foco: () => $('#regla-dia') },
+  { t: 'Elige qué quieres ver', txt: 'Cada modo muestra otra cosa: el sol, la lluvia o el viento en las fachadas, la sombra hora por hora o las partes del edificio.',
+    foco: () => (ANCHO_HOJA.matches ? $('#modo-activo') : $('.lentes')) },
+  { t: 'Gira el edificio', txt: 'Arrastra la escena para girarlo. Con dos dedos o con la rueda del ratón te acercas.', foco: () => null },
+];
+/** Muestra el paso i de la guía (null la cierra). Al cerrarla en la primera visita, ofrece el recorrido guiado. */
+function guia(i, primera = false) {
+  if (primera) GUIA.alFinal = true;
+  document.querySelectorAll('.guia-foco').forEach((el) => el.classList.remove('guia-foco'));
+  if (i == null || i >= PASOS_GUIA.length) {
+    const ofrecer = GUIA.alFinal, estaba = GUIA.paso != null; GUIA.paso = null; GUIA.alFinal = false; $('#guia').hidden = true;
+    if (ofrecer) { S.interactuo = false; mostrarOferta(); }
+    // el foco vuelve a la oferta del recorrido o a donde estaba (si quedó oculto, por ejemplo dentro del menú, a la marca)
+    if (estaba) (!$('#oferta-recorrido').hidden ? $('#oferta-si') : GUIA.volver?.isConnected && GUIA.volver.offsetParent ? GUIA.volver : $('#abrir-menu')).focus();
+    return;
+  }
+  if (GUIA.paso == null) GUIA.volver = document.activeElement;
+  if (i === 0 && S.hoja !== undefined && S.hoja !== 0) ponerHoja(0);
+  if (i === 0 && S.pestana !== 'dia') ponerPestana('dia');            // el paso 1 señala la regla del día
+  GUIA.paso = i; const P = PASOS_GUIA[i];
+  $('#guia-n').textContent = `${i + 1} de ${PASOS_GUIA.length}`; $('#guia-t').textContent = P.t; $('#guia-txt').textContent = P.txt;
+  $('#guia-sig').textContent = i === PASOS_GUIA.length - 1 ? 'Listo' : 'Siguiente';
+  P.foco()?.classList.add('guia-foco');
+  $('#guia').hidden = false; colocarGuia(); $('#guia-sig').focus();
+}
+/** En el teléfono, sobre la hoja; con el panel lateral, a su derecha y a la altura del control; si no, sobre el dock. */
+function colocarGuia() {
+  const g = $('#guia'), P = PASOS_GUIA[GUIA.paso]; if (!P) return;
+  g.style.left = g.style.top = g.style.bottom = '';
+  if (ANCHO_HOJA.matches || !document.documentElement.classList.contains('panel-lateral')) return;     // lo ubica el CSS
+  const der = $('#dock').getBoundingClientRect().right, r = P.foco()?.getBoundingClientRect(), alto = g.offsetHeight;
+  g.style.left = `${der + 16}px`;
+  g.style.top = `${r ? Math.max(76, Math.min(innerHeight - alto - 16, r.top + r.height / 2 - alto / 2)) : Math.round(innerHeight * 0.4)}px`;
 }
 function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = true; clearTimeout(mostrarOferta.t); }
 
@@ -659,8 +697,8 @@ function paso(now) {
 // de la imagen y el edificio quedaba debajo, sobre todo en planta. La vista se corre en vertical (desplazamiento de lente con
 // setViewOffset: la cámara no se mueve y las etiquetas, que proyectan con la misma cámara, siguen en su lugar) para que el
 // punto que se mira quede en el centro del hueco libre entre los botones de arriba y el panel más alto de abajo.
-// En escritorio no cambia nada.
-const ENC = { dy: 0, aplicado: 0 };
+// Con el panel lateral de escritorio, lo mismo en horizontal: al centro del espacio a su derecha.
+const ENC = { dy: 0, aplicado: 0, dx: 0, aplicadoX: 0 };
 const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje'];
 function encuadreMovil(dt) {
   const W = innerWidth, H = innerHeight;
@@ -671,12 +709,16 @@ function encuadreMovil(dt) {
     for (const q of PANELES_ABAJO) { const r = $(q)?.getBoundingClientRect(); if (r && r.height > 0 && r.top > H * 0.3) abajo = Math.min(abajo, r.top); }
     if (abajo - arriba > 60) obj = (arriba + abajo) / 2 - H / 2;
   }
-  ENC.dy += (obj - ENC.dy) * (reduce ? 1 : Math.min(1, dt * 5));
+  // con el panel lateral de escritorio, lo que se mira va al centro del espacio que queda a su derecha
+  const objX = !intro && document.documentElement.classList.contains('panel-lateral') ? $('#dock').getBoundingClientRect().right / 2 : 0;
+  const k = reduce ? 1 : Math.min(1, dt * 5);
+  ENC.dy += (obj - ENC.dy) * k; ENC.dx += (objX - ENC.dx) * k;
   if (Math.abs(obj - ENC.dy) < 0.5) ENC.dy = obj;
-  if (Math.abs(ENC.dy - ENC.aplicado) < 0.25 && ENC.W === W && ENC.H === H) return;
-  ENC.aplicado = ENC.dy; ENC.W = W; ENC.H = H;
+  if (Math.abs(objX - ENC.dx) < 0.5) ENC.dx = objX;
+  if (Math.abs(ENC.dy - ENC.aplicado) < 0.25 && Math.abs(ENC.dx - ENC.aplicadoX) < 0.25 && ENC.W === W && ENC.H === H) return;
+  ENC.aplicado = ENC.dy; ENC.aplicadoX = ENC.dx; ENC.W = W; ENC.H = H;
   const cam = escena.camera;
-  if (Math.abs(ENC.dy) < 0.5) cam.clearViewOffset(); else cam.setViewOffset(W, H, 0, -ENC.dy, W, H);
+  if (Math.abs(ENC.dy) < 0.5 && Math.abs(ENC.dx) < 0.5) cam.clearViewOffset(); else cam.setViewOffset(W, H, -ENC.dx, -ENC.dy, W, H);
 }
 
 // ---------------- Resolución adaptable ----------------
@@ -978,8 +1020,8 @@ function textoNoche(c) {
 }
 
 /** La primera frase de un texto (las cifras usan coma decimal, así que el punto cierra la frase). */
-/** En el teléfono la línea de arriba no cabe junto a «En vivo · …», que ya dice lo mismo: queda vacía. */
-const tipoVivo = () => matchMedia('(max-width: 760px)').matches ? '' : 'Ahora en Ciudad del Saber';
+/** En el teléfono y en el panel lateral la línea de arriba no cabe junto a «En vivo · …», que ya dice lo mismo: queda vacía. */
+const tipoVivo = () => matchMedia('(max-width: 760px)').matches || document.documentElement.classList.contains('panel-lateral') ? '' : 'Ahora en Ciudad del Saber';
 /** Con la altura aparente bajo 0,5° (sin sombra): ¿asoma el disco? El mismo criterio que saleYPone (centro a −0,833° geométricos). */
 const enHorizonte = (p) => p?.geo != null && p.geo >= -0.833;
 const ANCHO_HOJA = matchMedia('(max-width: 760px)');
@@ -1270,11 +1312,22 @@ function prepararUI() {
   // ---- hoja inferior del teléfono: los modos, las vistas, la tarjeta del modo y la lámina bajan al dock; en pantallas
   // anchas vuelven a su lugar. Los nodos se mueven (no se copian), así que sus eventos siguen igual.
   const LAMINA = $('#capas .lamina:not(#sobre-la-mesa)');
+  // desde 900 px el dock es un panel lateral fijo con las mismas piezas (?panel=0 lo apaga, para comparar la escena con main)
+  const ANCHO_PANEL = matchMedia('(min-width: 900px) and (min-height: 501px)'), conPanel = !/[?&]panel=0/.test(location.search);
   const acomodarHoja = () => {
-    if (ANCHO_HOJA.matches) { for (const el of [$('.vistas'), $('.lentes'), $('#leyenda'), LAMINA]) $('#dock').appendChild(el); ponerHoja(0); }
-    else { $('.hud-botones').append($('.vistas'), $('.lentes')); $('#hud').appendChild($('#leyenda')); $('#capas').insertBefore(LAMINA, $('#sobre-la-mesa')); ponerHoja(); }
+    const panel = conPanel && ANCHO_PANEL.matches;
+    document.documentElement.classList.toggle('panel-lateral', panel);
+    if (ANCHO_HOJA.matches || panel) for (const el of [$('.vistas'), $('.lentes'), $('#leyenda'), LAMINA]) $('#dock').appendChild(el);
+    else { $('.hud-botones').append($('.vistas'), $('.lentes')); $('#hud').appendChild($('#leyenda')); $('#capas').insertBefore(LAMINA, $('#sobre-la-mesa')); }
+    ponerHoja(ANCHO_HOJA.matches ? 0 : undefined);
   };
-  ANCHO_HOJA.addEventListener('change', acomodarHoja); acomodarHoja();
+  ANCHO_HOJA.addEventListener('change', acomodarHoja); ANCHO_PANEL.addEventListener('change', acomodarHoja); acomodarHoja();
+  $('#abrir-guia').addEventListener('click', () => guia(0));
+  $('#guia-sig').addEventListener('click', () => guia(GUIA.paso + 1));
+  $('#guia-saltar').addEventListener('click', () => guia(null));
+  // Escape en la guía es lo mismo que «Saltar» (y no llega al Escape general, que cerraría la oferta del recorrido)
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && GUIA.paso != null) { e.stopImmediatePropagation(); guia(null); } });
+  addEventListener('resize', () => { if (GUIA.paso != null) colocarGuia(); });
   // el asa: tocarla sube una altura (de la completa vuelve a la cerrada); arrastrarla sube o baja
   const ARRIBA = { oculta: 0, 0: 1, 1: 2, 2: 2 }, ABAJO = { 2: 1, 1: 0, 0: 'oculta', oculta: 'oculta' }, TOQUE = { oculta: 0, 0: 1, 1: 2, 2: 0 };
   let y0 = null, arrastre = false;

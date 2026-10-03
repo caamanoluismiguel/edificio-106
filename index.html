@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=1665302291" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=246294a3fd" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -302,7 +302,7 @@
   .rec-pie { display: flex; gap: 8px; align-items: center; margin-top: 2px; }
   #rec-puntos { display: flex; gap: 5px; margin-right: auto; } #rec-puntos i { width: 6px; height: 6px; border-radius: 50%; background: var(--linea-2); }
   #rec-puntos i.ya { background: var(--cal-3); } #rec-puntos i.hoy { background: var(--cal); width: 16px; border-radius: 3px; }
-  #recorrido .primario, #oferta-recorrido .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  #recorrido .primario, #oferta-recorrido .primario, #guia .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); }
   #rec-prev:disabled { opacity: .35; cursor: default; }
   #rec-pregunta, #rec-respuesta { display: grid; gap: 9px; } #rec-pregunta[hidden], #rec-respuesta[hidden], #rec-ver[hidden] { display: none; }
   #rec-pregunta p { margin: 0; padding: 10px 12px; border-left: 3px solid var(--sol); background: var(--panel); border-radius: 4px 12px 12px 4px; font-size: 15px; line-height: 1.5; text-wrap: pretty; }
@@ -836,6 +836,60 @@
     html.hoja-oculta #dock #leyenda { display: none; }
     html.hoja-oculta #hoja-ocultar { visibility: hidden; }
   }
+  /* ---------- escritorio desde 900 px: panel lateral fijo (fase 4 del plan de interfaz) ----------
+     el dock pasa a la izquierda, a todo el alto, con todo a la vista; main.js le mueve los modos, las vistas, la tarjeta
+     del modo y la lámina, y corre la cámara al centro del espacio libre. Los paneles que se abrían a la izquierda van a
+     su derecha. ?panel=0 vuelve al diseño anterior */
+  :root { --panel-w: clamp(360px, 28vw, 420px); }
+  @media (min-width: 900px) and (min-height: 501px) {
+    html.panel-lateral { --dock-h: 0px !important; }
+    html.panel-lateral #dock { left: 0; right: auto; top: 0; bottom: 0; width: var(--panel-w); border-radius: 0; border-width: 0 1px 0 0; box-shadow: none;
+      padding: calc(env(safe-area-inset-top, 0px) + 72px) 20px 24px; overflow-y: auto; overscroll-behavior: contain; align-content: start; align-items: center;
+      grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; grid-template-rows: repeat(12, max-content);   /* con alto fijo, las filas auto no crecían con la tarjeta del modo */
+      grid-template-areas: "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "tabs tabs tabs" "momentos momentos momentos"
+        "modos modos modos" "ley ley ley" "ir confort capas" "lect lect lect" "vistas vistas vistas" "lamina lamina lamina"; }
+    html.panel-lateral #dock > * { margin-top: 12px; }
+    html.panel-lateral #rotulo { margin-top: 0; }
+    html.panel-lateral :is(.dock-hora, .dock-centro, .dock-botones) { display: contents; }
+    html.panel-lateral #l-hora { grid-area: hora; font-size: 46px; }
+    html.panel-lateral #elegir { grid-area: fecha; justify-self: start; margin-top: 4px; }
+    html.panel-lateral #reproducir { grid-area: play; width: 52px; height: 52px; }
+    html.panel-lateral #abrir-ir { grid-area: ir; justify-self: start; } html.panel-lateral #abrir-confort { grid-area: confort; } html.panel-lateral #abrir-capas { grid-area: capas; }
+    html.panel-lateral .regla { grid-area: regla; } html.panel-lateral :is(#regla-dia, #regla-anio, #regla-decadas) { margin-top: 34px; }
+    html.panel-lateral #momentos-caja { grid-area: momentos; }
+    html.panel-lateral #lect-resumen { display: none; }
+    html.panel-lateral .dock-lect { grid-area: lect; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+    html.panel-lateral .dock-lect .k { white-space: normal; } html.panel-lateral .dock-lect [data-explica="clima"] { grid-column: 1 / -1; }
+    html.panel-lateral #l-fuente { display: block; }
+    /* las tres preguntas: ¿cuándo?, ¿qué quieres ver? y ¿desde dónde? */
+    html.panel-lateral :is(.pestanas, .vistas) { grid-area: tabs; justify-self: start; flex-wrap: wrap; }
+    html.panel-lateral .vistas { grid-area: vistas; }
+    html.panel-lateral :is(.pestanas, .vistas)::before { flex-basis: 100%; font: 600 12px/1 var(--texto); color: var(--cal-2); padding: 6px 10px 8px; }
+    html.panel-lateral .pestanas::before { content: '¿Cuándo?'; } html.panel-lateral .vistas::before { content: '¿Desde dónde?'; }
+    html.panel-lateral .lentes { grid-area: modos; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 6px; border-radius: 18px; }
+    html.panel-lateral .lentes::before { grid-row: 1; grid-column: 1; padding: 0 0 0 8px; }
+    html.panel-lateral .lentes .info { grid-row: 1; grid-column: 2; justify-self: end; }
+    html.panel-lateral .lentes button:not(.info) { display: grid; align-content: center; justify-items: start; gap: 3px; min-height: 56px; padding: 8px 10px; text-align: left;
+      font-size: 14px; border-radius: 12px; white-space: normal; }
+    html.panel-lateral .lentes .apoyo { display: block; font: 400 12px/1.25 var(--texto); color: inherit; opacity: .78; }
+    html.panel-lateral #leyenda { grid-area: ley; width: auto; max-height: none; min-height: 0; overflow: visible; animation: none; }
+    html.panel-lateral #dock .lamina { grid-area: lamina; padding-top: 12px; border-top: 1px solid var(--linea); }
+    html.panel-lateral #dock .lamina h2 { margin: 0; font-size: 14px; } html.panel-lateral #dock .lamina .lamina-nota:not(#img-estado) { display: none; }
+    html.panel-lateral :is(#recorrido, #oferta-recorrido, #voladizo, #sirve, #confort, #ir-a, #capas, #panel-fachada) {
+      left: calc(var(--panel-w) + var(--gutter)); max-width: calc(100vw - var(--panel-w) - 2 * var(--gutter)); }
+  }
+  /* primera visita: una tarjeta por paso, junto al control real, que se marca con un borde crema */
+  #guia { position: fixed; z-index: 12; left: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); width: min(22rem, calc(100vw - 2 * var(--gutter)));
+    box-sizing: border-box; display: grid; gap: 8px; padding: 14px 16px; background: var(--solido); border: 1px solid var(--linea-2); border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .3s var(--ease); }
+  #guia[hidden] { display: none; }
+  #guia h2 { margin: 0; font: 700 18px/1.2 var(--display); } #guia p { margin: 0; }
+  #guia-txt { font-size: 15px; line-height: 1.45; color: var(--cal); }
+  #guia > div { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; }
+  #guia .boton { min-height: 44px; }
+  html.panel-lateral #guia { bottom: auto; }
+  @media (max-width: 760px) { #guia { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); } }
+  .guia-foco { outline: 2px solid var(--cal); outline-offset: 4px; }
   /* en pantallas táctiles, los grupos de botones de arriba y las pestañas se tocan con el dedo: al menos 40 px de alto */
   @media (pointer: coarse) {
     .vistas, .lentes, .pestanas { min-height: 44px; box-sizing: border-box; }
@@ -857,6 +911,7 @@
     <span><b>Edificio 106</b><small>Isthmus · Ciudad del Saber</small></span><i class="flecha" aria-hidden="true">▾</i>
   </button>
   <div id="menu-lista" hidden>
+    <button class="boton" id="abrir-guia" type="button">Cómo se usa (3 pasos)</button>
     <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado · 5 min</button>
     <button class="boton" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
     <button class="boton" id="info" type="button" aria-haspopup="dialog">Fuentes y método</button>
@@ -909,6 +964,13 @@
   </div>
   <div class="rec-pie"><div id="rec-puntos" aria-hidden="true"></div><button type="button" id="rec-prev" class="boton">Anterior</button><button type="button" id="rec-sig" class="boton primario">Siguiente</button></div>
 </aside>
+
+<div id="guia" hidden role="dialog" aria-labelledby="guia-t" aria-describedby="guia-txt">
+  <p class="eyebrow" id="guia-n">1 de 3</p>
+  <h2 id="guia-t"></h2>
+  <p id="guia-txt" aria-live="polite"></p>
+  <div><button type="button" id="guia-saltar" class="boton">Saltar</button><button type="button" id="guia-sig" class="boton primario">Siguiente</button></div>
+</div>
 
 <div id="oferta-recorrido" hidden role="region" aria-label="Bienvenida">
   <p><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo inciden el sol, la lluvia y el viento sobre el Edificio 106. En 5 minutos, el recorrido guiado te enseña a usarla.</p>
@@ -1372,4 +1434,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=1665302291"></script></body></html>
+<script type="module" src="js/app.js?v=246294a3fd"></script></body></html>
