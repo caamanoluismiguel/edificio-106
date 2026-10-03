@@ -109,7 +109,7 @@ export class Clima {
   /** Valores típicos (mediana 2001–2025) para el mes y la hora. */
   tipico(m, min) {
     if (!this.ok) return null;
-    const r = this.r, h = Math.min(23, Math.floor(min / 60)), g = (v, q = 'p50') => v[q][m - 1][h];
+    const r = this.r, h = Math.max(0, Math.min(23, Math.floor(min / 60))), g = (v, q = 'p50') => v[q][m - 1][h];
     const hl = (h + 1) % 24;                  // la probabilidad de lluvia de la marca H es la de H−1 a H
     const A = this.ajuste, aj = (t) => A ? ajustarT(A, t, m, h) : t, t50 = g(r.temp);
     return { fuente: 'tipico', ajustado: !!A, nubes: g(r.nubes), temp: aj(t50), tempBaja: aj(g(r.temp, 'p10')), tempAlta: aj(g(r.temp, 'p90')), humedad: A ? ajustarHR(A, t50, g(r.humedad), aj(t50), m) : g(r.humedad),
@@ -152,9 +152,9 @@ export class Clima {
   registroDia(f, min) {
     const k = `${f.y}-${String(f.m).padStart(2, '0')}-${String(f.d).padStart(2, '0')}`, D = this.dias[k];
     if (!D || D instanceof Promise) return null;
-    const h = Math.min(23, Math.floor(min / 60)), b = Math.min(23, h + 1), t = (min - h * 60) / 60, v = (key, i) => D.h[key][i] ?? 0;
+    const h = Math.max(0, Math.min(23, Math.floor(min / 60))), b = Math.min(23, h + 1), t = (min - h * 60) / 60, v = (key, i) => D.h[key][i] ?? 0;
     const L = (key) => v(key, h) * (1 - t) + v(key, b) * t;
-    const x = h + t + 0.5, i0 = Math.min(23, Math.floor(x)), i1 = Math.min(23, i0 + 1), u = x - Math.floor(x);
+    const x = h + t + 0.5, i0 = Math.max(0, Math.min(23, Math.floor(x))), i1 = Math.min(23, i0 + 1), u = x - Math.floor(x);
     return { fuente: 'dia', modelo: D.modelo, nubes: L('cloud_cover'), lluvia: v('precipitation', b), temp: L('temperature_2m'), humedad: L('relative_humidity_2m'),
       dni: v('direct_normal_irradiance', i0) * (1 - u) + v('direct_normal_irradiance', i1) * u,
       difusa: D.h.diffuse_radiation ? v('diffuse_radiation', i0) * (1 - u) + v('diffuse_radiation', i1) * u : null, viento: v('wind_speed_10m', b), dir: v('wind_direction_10m', b) };

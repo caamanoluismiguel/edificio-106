@@ -35351,7 +35351,7 @@ var mH = (e) => e >= 4 && e <= 11 ? 1.5 : 1, hH = Date.UTC(2001, 0, 1, 0), gH = 
 	}
 	tipico(e, t) {
 		if (!this.ok) return null;
-		let n = this.r, r = Math.min(23, Math.floor(t / 60)), i = (t, n = "p50") => t[n][e - 1][r], a = (r + 1) % 24, o = this.ajuste, s = (t) => o ? fH(o, t, e, r) : t, c = i(n.temp);
+		let n = this.r, r = Math.max(0, Math.min(23, Math.floor(t / 60))), i = (t, n = "p50") => t[n][e - 1][r], a = (r + 1) % 24, o = this.ajuste, s = (t) => o ? fH(o, t, e, r) : t, c = i(n.temp);
 		return {
 			fuente: "tipico",
 			ajustado: !!o,
@@ -35408,7 +35408,7 @@ var mH = (e) => e >= 4 && e <= 11 ? 1.5 : 1, hH = Date.UTC(2001, 0, 1, 0), gH = 
 	registroDia(e, t) {
 		let n = `${e.y}-${String(e.m).padStart(2, "0")}-${String(e.d).padStart(2, "0")}`, r = this.dias[n];
 		if (!r || r instanceof Promise) return null;
-		let i = Math.min(23, Math.floor(t / 60)), a = Math.min(23, i + 1), o = (t - i * 60) / 60, s = (e, t) => r.h[e][t] ?? 0, c = (e) => s(e, i) * (1 - o) + s(e, a) * o, l = i + o + .5, u = Math.min(23, Math.floor(l)), d = Math.min(23, u + 1), f = l - Math.floor(l);
+		let i = Math.max(0, Math.min(23, Math.floor(t / 60))), a = Math.min(23, i + 1), o = (t - i * 60) / 60, s = (e, t) => r.h[e][t] ?? 0, c = (e) => s(e, i) * (1 - o) + s(e, a) * o, l = i + o + .5, u = Math.max(0, Math.min(23, Math.floor(l))), d = Math.min(23, u + 1), f = l - Math.floor(l);
 		return {
 			fuente: "dia",
 			modelo: r.modelo,
@@ -37213,7 +37213,7 @@ function QU(e) {
 		localStorage.setItem("e106-visto", "1");
 	} catch {}
 	let r = vU(), { sale: i, pone: a } = IB(r.y, r.m, r.d);
-	zU.m1 = r.min, zU.m0 = r.min < i - 45 ? r.min - 60 : r.min > a + 60 ? a - 60 : i - 45, zU.cam0 = $.camera.position.clone(), WU ? zU.t = zU.L : e || (zU.t = .26 * zU.L);
+	zU.m1 = r.min, zU.m0 = r.min < i - 45 ? Math.max(0, r.min - 60) : r.min > a + 60 ? a - 60 : i - 45, zU.cam0 = $.camera.position.clone(), WU ? zU.t = zU.L : e || (zU.t = .26 * zU.L);
 }
 function $U(e) {
 	let t = zU;
@@ -37922,7 +37922,7 @@ function lG(e, t) {
 		}
 		let r = "";
 		if (t.fuente === "mes" ? (d = `${Math.round(t.lluviaMes)} mm`, r = "de lluvia en el mes") : r = t.fuente === "tipico" ? `ERA5 da 1 mm o más en ${Math.round(t.probLluvia)} % de estas horas` : t.albrook && !t.albrook.auto ? DH(t.albrook).replace(/^Albrook /, "Albrook: ").replace(/ a las \d\d:\d\d$/, "") : kW(t) ? `lluvia ${dU(t.lluvia)} mm/h` : (t.lluvia ?? 0) >= .1 ? `lluvia débil en la celda (${dU(t.lluvia)} mm)` : t.llovizna ? "lluvia débil en la zona" : "sin lluvia", t.fuente === "vivo" && !t.albrook) {
-			let e = LU.ok ? LU.r.temp.p50[Q.fecha.m - 1][Math.min(23, Math.floor(Q.min / 60))] : null;
+			let e = LU.ok ? LU.r.temp.p50[Q.fecha.m - 1][Math.max(0, Math.min(23, Math.floor(Q.min / 60)))] : null;
 			if (e != null) {
 				let n = t.temp - e;
 				Math.abs(n) >= 1 && (r += ` · ${n >= 0 ? "+" : "−"}${Math.round(Math.abs(n))} °C frente a la mediana de 2001–2025 de ERA5 sin ajustar (los dos son modelos)`);

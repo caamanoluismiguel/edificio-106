@@ -271,7 +271,7 @@ function empezarIntro(n) {
   // recorrido del sol al final del armado: desde antes del amanecer hasta la hora real de hoy
   const a = ahoraPanama(), { sale, pone } = saleYPone(a.y, a.m, a.d);
   intro.m1 = a.min;
-  intro.m0 = a.min < sale - 45 ? a.min - 60 : a.min > pone + 60 ? pone - 60 : sale - 45;
+  intro.m0 = a.min < sale - 45 ? Math.max(0, a.min - 60) : a.min > pone + 60 ? pone - 60 : sale - 45;   // de 00:00 a 00:59 no hay hora anterior en el mismo día
   intro.cam0 = escena.camera.position.clone();
   // sin puntos no hay nada que juntar: se salta esa parte y el sólido empieza a revelarse casi enseguida
   if (saltoPendiente) intro.t = intro.L; else if (!n) intro.t = 0.26 * intro.L;
@@ -899,7 +899,7 @@ function lecturas(p, c) {
     else if (c.albrook && !c.albrook.auto) agua = textoAlbrook(c.albrook).replace(/^Albrook /, 'Albrook: ').replace(/ a las \d\d:\d\d$/, '');
     else agua = llueve(c) ? `lluvia ${f1(c.lluvia)} mm/h` : (c.lluvia ?? 0) >= 0.1 ? `lluvia débil en la celda (${f1(c.lluvia)} mm)` : c.llovizna ? 'lluvia débil en la zona' : 'sin lluvia';
     if (c.fuente === 'vivo' && !c.albrook) {
-      const t50 = clima.ok ? clima.r.temp.p50[S.fecha.m - 1][Math.min(23, Math.floor(S.min / 60))] : null;   // mediana cruda, sin ajustar
+      const t50 = clima.ok ? clima.r.temp.p50[S.fecha.m - 1][Math.max(0, Math.min(23, Math.floor(S.min / 60)))] : null;   // mediana cruda, sin ajustar
       if (t50 != null) { const dT = c.temp - t50; if (Math.abs(dT) >= 1) agua += ` · ${dT >= 0 ? '+' : '−'}${Math.round(Math.abs(dT))} °C frente a la mediana de 2001–2025 de ERA5 sin ajustar (los dos son modelos)`; }
     }
     det = cielo.join(' · ') + '\n' + agua;
