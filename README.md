@@ -14,15 +14,15 @@ Algunos resultados que salen del propio visor, con su momento para verlo en la e
 
 - **Dos días al año el sol del mediodía casi no deja sombra.** A 9° N pasa por el cenit en abril y en agosto (en 2026, el 12 de abril y el 29 de agosto, a las 12:19). Entre esas dos fechas el sol del mediodía va por el norte, así que de abril a agosto las caras NO y NE también necesitan protección.
 - **Ninguna fachada se libra del sol.** Por el giro de 56° del edificio, las cuatro reciben sol de frente todos los días del año. Sin descontar nubes, la sureste unas 2.500 horas al año y la noroeste unas 1.900.
-- **El alero de 1,65 m hace lo que promete con el sol alto.** Con el sol cerca del cenit, el vidrio bajo el alero queda en sombra mientras la pared sigue al sol.
+- **El alero de 1,65 m deja el vidrio en sombra con el sol alto.** Desde unos 45° de perfil, el vidrio queda en sombra mientras la pared sigue al sol.
 - **El calor de la tarde llega por la fachada lateral suroeste.** En las horas de 30 °C o más (unas 1.300 al año con ERA5 ajustado al aeropuerto de Albrook; unas 440 sin ajustar), el sol está del lado de la SO en el 71 % de ellas.
-- **El viento llega casi siempre del norte y el noroeste.** La fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la entrada natural para ventilar de forma cruzada.
-- **Llueve unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En 2001–2010 ERA5 da entre 6 y 9 % más que Balboa y Albrook; con Tocumen coincide (0,4 %) si se deja fuera 2009, que el INEC da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
+- **El viento llega sobre todo del norte y el noroeste.** La fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la entrada natural para ventilar de forma cruzada.
+- **Llueve unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En 2001–2010 ERA5 da entre 8 y 9 % más que Albrook y Balboa; con Tocumen coincide (0,4 %) si se deja fuera 2009, que el INEC da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
 
 ## Qué se puede hacer
 
 - **Ahora:** el sol de este minuto y el pronóstico de Open-Meteo, con valores cada 15 minutos interpolados; el modelo se actualiza varias veces al día.
-- **Máquina del tiempo:** recorrer un día, un año o los 25 años. La regla del día marca la lluvia y las nubes de cada hora.
+- **Máquina del tiempo:** recorrer un día, un año o los 25 años. La regla del día marca la lluvia de cada hora (llena la que la escena dibuja, tenue la lluvia débil de la celda) y cuánto sol directo falta frente a un cielo despejado; mientras la escena dibuja lluvia, no dibuja sol directo.
 - **Ir a…:** cualquier fecha y hora desde 1940, o un momento calculado con la serie: los días sin sombra, los solsticios, la hora más lluviosa en 25 años, la sequía más larga, el día con más sol y un día típico de cada mes.
 - **Formas de ver:** Foto; Sol (la radiación que incide en cada punto, con la sombra real de los aleros, los árboles y los vecinos); Lluvia (lluvia con viento según ISO 15927-3); Viento (rosa de vientos por temporada); Sombras (la sombra de cada hora sobre el terreno); Partes (el nombre de cada parte del edificio, qué es y qué hace, con una persona de 1,70 m para comparar). Cada una explica qué se ve, cómo leerlo, sus límites y cómo se calcula.
 - **Confort:** la carta psicrométrica con cada hora de 2001 a 2025 sobre las zonas de Givoni y el modelo adaptativo de ASHRAE 55, el UTCI al sol y a la sombra, y «A esta hora conviene»: qué conviene abrir, tapar o ventilar a esa hora según el clima de afuera, con la fuente de cada regla.
