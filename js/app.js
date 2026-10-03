@@ -32567,7 +32567,7 @@ var MV = class {
 		let r = Math.max(0, Math.sin(e * Math.PI / 180)), i = fn.smoothstep(e, -1.5, 6), a = fn.smoothstep(e, 0, 35);
 		this.sun.color.setRGB(1, .55 + .42 * a, .3 + .62 * a);
 		let o = this.lv ?? 0, s = this.kSol ?? 1;
-		this.sun.intensity = 5 * i * (.55 + .45 * Math.min(1, r * 2)) * (1 - .88 * o) * (.1 + .9 * s);
+		this.sun.intensity = 5 * i * (.55 + .45 * Math.min(1, r * 2)) * (.1 + .9 * s);
 		let c = 1 - s;
 		this.sun.shadow.radius = 2 + 3 * c;
 		let l = fn.smoothstep, u = 1 - l(e, -4, 4);
@@ -32777,13 +32777,13 @@ var MV = class {
 		d.colorNode = K(kV, m, X.mat), l && (d.colorNode = K(kV.mul(.35), m, X.mat));
 		let h = t !== "sitio" || /plaster|trim|louvre|frame|soffit|service access|ventilation|plinth|piers|timber|guardrail|entrance/.test(s);
 		if (!u && t !== "contexto" && t !== "vegetacion" && h) {
-			let e = XL, t = RL(yL(e, X.solDir), 0), n = X.dniW.mul(t).mul(TV), r = t.div(RL(X.solDir.y, .087)), i = X.dhiW.mul(X.ai.mul(r).mul(TV).add(G(1).sub(X.ai).mul(e.y.add(1).mul(.5)))).add(X.ghiW.mul(.1).mul(G(1).sub(e.y))), a = n.add(i.mul(X.total)).div(800), o = (e, t) => vR(e, t, a), [s, c, l, u, f] = wV.map((e) => Y(...e)), p = K(K(K(K(s, c, o(0, .25)), l, o(.25, .5)), u, o(.5, .75)), f, o(.75, 1)).mul(X.calor).mul(.8), m = (t, n) => oR(RL(yL(e, Y(t, 0, n)), 0), 3), h = Object.values(zB).map((e) => {
+			let e = XL, t = RL(yL(e, X.solDir), 0), n = X.dniW.mul(t).mul(TV), r = t.div(RL(X.solDir.y, .087)), i = X.dhiW.mul(X.ai.mul(r).mul(TV).add(G(1).sub(X.ai).mul(e.y.add(1).mul(.5)))).add(X.ghiW.mul(.1).mul(G(1).sub(e.y))), a = n.add(i.mul(X.total)).div(800), o = (e, t) => mL(a.sub(e).div(t - e), 0, 1), [s, c, l, u, f] = wV.map((e) => Y(...e)), p = K(K(K(K(s, c, o(0, .25)), l, o(.25, .5)), u, o(.5, .75)), f, o(.75, 1)).mul(X.calor).mul(.8), m = (t, n) => oR(RL(yL(e, Y(t, 0, n)), 0), 3), h = Object.values(zB).map((e) => {
 				let t = NB(0, e.rumbo);
 				return [t.x, t.z];
-			}), g = X.aguaF, _ = m(...h[0]).mul(g.x).add(m(...h[1]).mul(g.y)).add(m(...h[2]).mul(g.z)).add(m(...h[3]).mul(g.w)).add(oR(RL(e.y, 0), 3).mul(X.aguaT)), v = K(K(Y(X.pal0), Y(X.pal1), vR(0, .5, _)), Y(X.pal2), vR(.5, 1, _)).mul(X.agua).mul(.8), y = d.emissiveNode;
-			d.emissiveNode = y ? y.add(v) : v, d.outputNode = AR($L.rgb.add(p), $L.a);
-			let b = RL(X.calor, X.agua);
-			d.colorNode = K(d.colorNode, d.colorNode.mul(.04), b), d.roughnessNode = K(d.roughnessNode ?? LL, G(1), b), d.lenteNode = b;
+			}), g = X.aguaF, _ = m(...h[0]).mul(g.x).add(m(...h[1]).mul(g.y)).add(m(...h[2]).mul(g.z)).add(m(...h[3]).mul(g.w)).add(oR(RL(e.y, 0), 3).mul(X.aguaT)), v = K(K(Y(X.pal0), Y(X.pal1), mL(_.mul(2), 0, 1)), Y(X.pal2), mL(_.mul(2).sub(1), 0, 1)), y = G(1).sub(vR(.35, .6, sL(e.y))), b = X.agua.mul(RL(y, q(.001, X.aguaT))), x = v.mul(b).mul(.8), S = d.emissiveNode;
+			d.emissiveNode = S ? S.add(x) : x, d.outputNode = AR($L.rgb.add(p), $L.a);
+			let C = RL(X.calor, b);
+			d.colorNode = K(d.colorNode, d.colorNode.mul(.04), C), d.roughnessNode = K(d.roughnessNode ?? LL, G(1), C), d.lenteNode = C;
 		}
 		if (!l && !u && !/V017 grass turf/.test(e.name || "")) {
 			let e = J(s.includes("alumin") || s.includes("guardrail") || s.includes("galvan") || s.includes("cabinet") ? .25 : 1), t = vR(.55, .95, XL.y), n = vR(.6, .7, qL(Y(aR.x.mul(.11), aR.z.mul(.11), 3.7)).mul(.5).add(.5)).mul(t).mul(q(aR.y, 1.2)), r = X.mojado.mul(e);
@@ -35315,21 +35315,29 @@ var mH = (e) => e >= 4 && e <= 11 ? 1.5 : 1, hH = Date.UTC(2001, 0, 1, 0), gH = 
 		let n = Math.floor(t / 60), r = (t - n * 60) / 60, i, a;
 		if (this.horario && this.enSerie(e)) {
 			if (i = this.indice(e, n), i < 0) return null;
-			a = (e) => e < 0 || e >= this.n ? null : [
-				this.valor("lluvia", e),
-				this.valor("dni", e),
-				this.valor("viento", e),
-				this.valor("humedad", e)
-			];
+			a = (e) => {
+				if (e < 0 || e >= this.n) return null;
+				let t = this.valor("lluvia", e);
+				return [
+					t >= mH(new Date(hH + e * 36e5).getUTCMonth() + 1) ? t : 0,
+					this.valor("dni", e),
+					this.valor("viento", e),
+					this.valor("humedad", e)
+				];
+			};
 		} else {
 			let t = `${e.y}-${String(e.m).padStart(2, "0")}-${String(e.d).padStart(2, "0")}`, r = this.dias[t];
 			if (!r || r instanceof Promise) return null;
-			i = n, a = (e) => e < 0 || e > 23 ? null : [
-				r.h.precipitation[e] ?? 0,
-				r.h.direct_normal_irradiance[e] ?? 0,
-				r.h.wind_speed_10m[e] ?? 0,
-				r.h.relative_humidity_2m[e] ?? 80
-			];
+			i = n, a = (t) => {
+				if (t < 0 || t > 23) return null;
+				let n = r.h.precipitation[t] ?? 0;
+				return [
+					n >= mH(e.m) ? n : 0,
+					r.h.direct_normal_irradiance[t] ?? 0,
+					r.h.wind_speed_10m[t] ?? 0,
+					r.h.relative_humidity_2m[t] ?? 80
+				];
+			};
 		}
 		let o = 0, s = 0;
 		for (let e = i - 12; e <= i + 1; e++) {
@@ -35525,7 +35533,7 @@ function EH(e, t) {
 		temp: a,
 		recibido: Date.now()
 	};
-	return t.relh != null && (o.humedad = t.relh), t.sknt != null && (o.viento = t.sknt * 1.852, t.drct != null && t.sknt > 0 && (o.dir = t.drct)), o.lluviaMm = e.lluvia, r.auto || (o.lluvia = r.lluvia ? CH[r.lluvia.llovizna ? "llovizna" : r.lluvia.clase] : 0, o.llovizna = !1, r.lluvia || (o.lluviaMm = 0)), o.albrook = {
+	return t.relh != null && (o.humedad = t.relh), t.sknt != null && (o.viento = t.sknt * 1.852, t.drct != null && t.sknt > 0 && (o.dir = t.drct)), o.lluviaMm = e.lluviaModelo, r.auto || (o.lluvia = r.lluvia ? CH[r.lluvia.llovizna ? "llovizna" : r.lluvia.clase] : 0, o.llovizna = !1, r.lluvia || (o.lluviaMm = 0)), o.albrook = {
 		hora: i,
 		auto: r.auto,
 		lluvia: r.lluvia,
@@ -37100,7 +37108,7 @@ async function qU() {
 			return;
 		}
 	}
-	document.documentElement.dataset.backend = $.backend, Z("#motor").textContent = $.backend, WW();
+	document.documentElement.dataset.backend = $.backend, Z("#motor").textContent = $.backend, GW();
 	let i = new k(...DU.pos).add(new k(22, 13, 15));
 	$.camera.position.copy(i), $.camera.lookAt(...DU.tgt), $.setSol(-7.5, 95), IU = new BI($.camera, $.renderer.domElement), IU.enabled = !1, IU.enableDamping = !0, IU.dampingFactor = .075, IU.enablePan = !1, IU.rotateSpeed = .55, IU.zoomSpeed = .8, IU.minDistance = 12, IU.maxDistance = 800, IU.target.set(...DU.tgt), IU.addEventListener("start", CW), X.vaiven.value = +!sU, /[?&]prueba/.test(location.search) && (window.__e106 = {
 		escena: $,
@@ -37121,28 +37129,28 @@ async function qU() {
 		i && ZU(`Modelo · ${dU(r / 1e6)} MB`), t === 1 && n === 1 && YU();
 	});
 	LU.cargarAjuste(UB(oU + "datos/ajuste_albrook.json")).then(() => {
-		sG = "";
+		cG = "", LU.ok && _G();
 	}), LU.cargarResumen(UB(oU + "datos/clima_resumen.json")).then((e) => {
-		e && (mG(), hG(), GK());
+		e && (hG(), _G(), YK());
 	}), fetch(UB(oU + "datos/consultas.json")).then((e) => e.json()).then((e) => {
-		FU = e, GK(), UG(), sG = "";
+		FU = e, YK(), qG(), cG = "";
 	}).catch((e) => iU("aviso", "consultas: " + e));
 	let s = LU.cargarVivo();
 	s.then((e) => {
 		e || [2e4, 6e4].forEach((e) => setTimeout(() => {
 			Q.modo === "ahora" && !LU.vivo && LU.cargarVivo().then(() => {
-				sG = "";
+				cG = "";
 			});
 		}, e));
 	}), setInterval(() => {
 		Q.modo === "ahora" && LU.cargarVivo();
-	}, 6e5), CG();
+	}, 6e5), EG();
 	let c = o.then((e) => e.promesas[CV.find((t) => (e.calidad.grupos ?? CV).includes(t))]).catch(() => {}), l = await Promise.race([
 		t,
 		c.then(() => new Promise((e) => setTimeout(e, 2e3))),
 		KU
 	]), u = l && !WU ? $.construirParticulas(l, e.particulas) : 0;
-	ZU(u ? `${fU(u)} puntos` : "Cargando el modelo…"), QU(u), requestAnimationFrame(PW), $.cargaCompleta.then(async () => {
+	ZU(u ? `${fU(u)} puntos` : "Cargando el modelo…"), QU(u), requestAnimationFrame(FW), $.cargaCompleta.then(async () => {
 		try {
 			await $.precompilar();
 		} catch {}
@@ -37169,9 +37177,9 @@ async function qU() {
 		].map((t) => new k(t & 1 ? e.max.x : e.min.x, t & 2 ? e.max.y : e.min.y, t & 4 ? e.max.z : e.min.z)));
 	}), (!e.serieAlPedir || /[?&]prueba/.test(location.search) || /^#m-20(0[1-9]|1\d|2[0-5])/.test(location.hash)) && $.cargaCompleta.then(() => {
 		globalThis.requestIdleCallback ? requestIdleCallback(() => XU(), { timeout: 3e3 }) : setTimeout(XU, 500);
-	}), s.then(() => RG()), location.hash === "#depurar" && qK(), n && $.cargaCompleta.then(async () => {
+	}), s.then(() => HG()), location.hash === "#depurar" && ZK(), n && $.cargaCompleta.then(async () => {
 		for (; !(innerWidth > 200 && innerHeight > 200 && document.visibilityState === "visible") || zU;) await new Promise((e) => setTimeout(e, 500));
-		setTimeout(KK, 3e3);
+		setTimeout(XK, 3e3);
 	});
 }
 var JU = 0;
@@ -37181,7 +37189,7 @@ function YU() {
 	}, 60);
 }
 function XU() {
-	return LU.horario ? Promise.resolve(!0) : XU.p || performance.now() - (XU.fallo ?? -1e9) < 3e4 ? XU.p ?? Promise.resolve(!1) : XU.p = LU.cargarHorario(oU).then(() => (mG(), RG(), !0)).catch((e) => (console.warn("clima horario", e), XU.fallo = performance.now(), !1)).finally(() => {
+	return LU.horario ? Promise.resolve(!0) : XU.p || performance.now() - (XU.fallo ?? -1e9) < 3e4 ? XU.p ?? Promise.resolve(!1) : XU.p = LU.cargarHorario(oU).then(() => (hG(), HG(), !0)).catch((e) => (console.warn("clima horario", e), XU.fallo = performance.now(), !1)).finally(() => {
 		XU.p = null;
 	});
 }
@@ -37228,9 +37236,9 @@ function $U(e) {
 	$.camera.position.lerpVectors(t.cam0, new k(...DU.pos), u), IU.target.set(...DU.tgt), $.camera.lookAt(IU.target), $.camera.filmOffset = innerWidth > 760 ? -6.5 * (1 - hU(.3, .55, i)) : 0, $.camera.updateProjectionMatrix(), i >= .93 && document.documentElement.classList.add("listo"), i >= 1 && eW();
 }
 function eW() {
-	zU = null, X.build.value = 8.4, X.mat.value = 1, X.puntos.value = 0, X.junta.value = 1, $.camera.filmOffset = 0, $.camera.updateProjectionMatrix(), $.liberarParticulas(), document.documentElement.classList.remove("en-intro", "intro-titulo"), document.documentElement.classList.add("listo"), IU.enabled = !0, xG(!1), !UU && !location.hash && setTimeout(tW, 900);
+	zU = null, X.build.value = 8.4, X.mat.value = 1, X.puntos.value = 0, X.junta.value = 1, $.camera.filmOffset = 0, $.camera.updateProjectionMatrix(), $.liberarParticulas(), document.documentElement.classList.remove("en-intro", "intro-titulo"), document.documentElement.classList.add("listo"), IU.enabled = !0, wG(!1), !UU && !location.hash && setTimeout(tW, 900);
 	let e = location.hash.replace("#", "");
-	zB[e] && (AG(e), PG(e)), rW();
+	zB[e] && (NG(e), LG(e)), rW();
 }
 function tW() {
 	Q.paso == null && Z("#sirve").hidden && Z("#ir-a").hidden && Z("#confort").hidden && !Q.interactuo && (Z("#oferta-recorrido").hidden = !1);
@@ -37241,7 +37249,7 @@ function nW() {
 function rW() {
 	let e = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(?:&(.*))?$/.exec(location.hash);
 	if (!e) return !1;
-	let [t, n, r, i, a] = e.slice(1, 6).map(Number), o = new URLSearchParams(e[6] ?? ""), s = zG[o.get("lente")] ? o.get("lente") : void 0, c = s && BG[s]?.some(([e]) => e === o.get("modo")) ? o.get("modo") : void 0, l = zB["fachada-" + o.get("fachada")] ? o.get("fachada") : void 0, u = !l && jU[o.get("vista")] ? o.get("vista") : void 0, d = (o.get("cam") ?? "").split(",").map(Number);
+	let [t, n, r, i, a] = e.slice(1, 6).map(Number), o = new URLSearchParams(e[6] ?? ""), s = UG[o.get("lente")] ? o.get("lente") : void 0, c = s && WG[s]?.some(([e]) => e === o.get("modo")) ? o.get("modo") : void 0, l = zB["fachada-" + o.get("fachada")] ? o.get("fachada") : void 0, u = !l && jU[o.get("vista")] ? o.get("vista") : void 0, d = (o.get("cam") ?? "").split(",").map(Number);
 	return dW({
 		fecha: {
 			y: t,
@@ -37253,14 +37261,14 @@ function rW() {
 		modo: c,
 		fachada: l,
 		vista: u
-	}), s === "partes" && JG[o.get("parte")] && ZG(o.get("parte")), d.length === 6 && d.every(Number.isFinite) && yW({
+	}), s === "partes" && QG[o.get("parte")] && tK(o.get("parte")), d.length === 6 && d.every(Number.isFinite) && yW({
 		pos: d.slice(0, 3),
 		tgt: d.slice(3)
 	}, 1.4, u ?? null, !1), !0;
 }
 function iW() {
 	let e = Q.fecha, t = (Math.round(Q.min) % 1440 + 1440) % 1440, n = [];
-	Q.lente && Q.lente !== "foto" && n.push("lente=" + Q.lente), VG[Q.lente] && Q[VG[Q.lente]] && n.push("modo=" + Q[VG[Q.lente]]), Q.lente === "partes" && Q.parte && n.push("parte=" + Q.parte);
+	Q.lente && Q.lente !== "foto" && n.push("lente=" + Q.lente), GG[Q.lente] && Q[GG[Q.lente]] && n.push("modo=" + Q[GG[Q.lente]]), Q.lente === "partes" && Q.parte && n.push("parte=" + Q.parte);
 	let r = document.querySelector(".vistas [data-vista][aria-pressed=\"true\"]");
 	Q.fachada ? n.push("fachada=" + Q.fachada.slice(8)) : r && n.push("vista=" + r.dataset.vista);
 	let i = $.camera.position, a = IU.target;
@@ -37271,7 +37279,7 @@ function iW() {
 		a.x,
 		a.y,
 		a.z
-	].map((e) => Math.round(e * 10) / 10).join(",")), `${gK}#m-${e.y}${_K(e.m)}${_K(e.d)}-${_K(Math.floor(t / 60))}${_K(t % 60)}&${n.join("&")}`;
+	].map((e) => Math.round(e * 10) / 10).join(",")), `${bK}#m-${e.y}${xK(e.m)}${xK(e.d)}-${xK(Math.floor(t / 60))}${xK(t % 60)}&${n.join("&")}`;
 }
 async function aW() {
 	let e = iW(), t = Z("#img-estado");
@@ -37289,17 +37297,17 @@ function uW(e) {
 	};
 }
 function dW(e) {
-	LU.enSerie(e.fecha) && XU(), yG(), bG(), Q.mesSerie = null, Q.aguacero = !1, Z("#capa-aguacero").checked = !1, Q.explica = null, Q.momento = e.titulo ? {
+	LU.enSerie(e.fecha) && XU(), SG(), CG(), Q.mesSerie = null, Q.aguacero = !1, Z("#capa-aguacero").checked = !1, Q.explica = null, e.lente && JG(e.lente, e.lente !== "foto" && Q.paso == null), e.modo && GG[e.lente] && (Q[GG[e.lente]] = e.modo), Q.pestana !== "dia" && TG("dia"), Q.momento = e.titulo ? {
 		titulo: e.titulo,
 		texto: e.texto ?? ""
-	} : null, e.lente && WG(e.lente, e.lente !== "foto" && Q.paso == null), e.modo && VG[e.lente] && (Q[VG[e.lente]] = e.modo), Q.pestana !== "dia" && SG("dia"), e.fachada ? jG("fachada-" + e.fachada) : (Q.fachada = null, document.documentElement.classList.remove("en-fachada"));
+	} : null, e.fachada ? PG("fachada-" + e.fachada) : (Q.fachada = null, document.documentElement.classList.remove("en-fachada"));
 	let t = {
 		y: e.fecha.y,
 		m: e.fecha.m,
 		d: e.fecha.d
 	}, n = e.min, r = Math.abs(cW(t, n) - cW(Q.fecha, Q.min)) / 36e5, i = sU || e.inmediato ? 0 : Math.min(2800, Math.max(900, 900 + 350 * Math.log10(1 + r))), a = e.fachada ? MU["fachada-" + e.fachada] : e.vista ? jU[e.vista] : null;
 	if (a && yW(a, Math.max(1.2, i / 1e3), e.fachada ? null : e.vista, !1), !i) {
-		Q.fecha = t, Q.min = n, Q.salto = !0, Q.viaje = null, Q.solViaje = null, X.viaje.value = 0, sG = "", vW(e);
+		Q.fecha = t, Q.min = n, Q.salto = !0, Q.viaje = null, Q.solViaje = null, X.viaje.value = 0, cG = "", vW(e);
 		return;
 	}
 	let o = Q.min, s = ((n - o) % 1440 + 2160) % 1440 - 720, c = t.y === Q.fecha.y && t.m === Q.fecha.m && t.d === Q.fecha.d, l = MB({
@@ -37326,7 +37334,7 @@ function dW(e) {
 		vA: new k(f.x, f.y, f.z),
 		nubes0: VU,
 		d: e
-	}, Z("#viaje-destino").textContent = `${t.d} ${lU[t.m - 1]} ${t.y} · ${mU(n)}`, Z("#viaje").hidden = !1, document.documentElement.classList.add("viajando"), Z("#viaje").classList.remove("llego"), sG = "";
+	}, Z("#viaje-destino").textContent = `${t.d} ${lU[t.m - 1]} ${t.y} · ${mU(n)}`, Z("#viaje").hidden = !1, document.documentElement.classList.add("viajando"), Z("#viaje").classList.remove("llego"), cG = "";
 }
 var fW = new k(), pW = new k(), mW = new k(), hW = (() => {
 	let e = new URLSearchParams(location.search), t = (t, n) => e.has(t) ? Number(e.get(t)) : n;
@@ -37350,7 +37358,7 @@ function _W(e) {
 		let e = t.v0.angleTo(t.vA);
 		e < 1e-4 ? fW.copy(t.vA) : fW.copy(t.v0).multiplyScalar(Math.sin((1 - a) * e)).addScaledVector(t.vA, Math.sin(a * e)).divideScalar(Math.sin(e)), Q.solViaje = uW(fW);
 	}
-	X.viaje.value = Math.sin(Math.PI * n), Z("#viaje-barra").style.transform = `scaleX(${n.toFixed(3)})`, n >= 1 && (Q.fecha = t.f1, Q.min = t.m1, Q.viaje = null, Q.solViaje = null, X.viaje.value = 0, Q.aterrizaje = e, sG = "", vW(t.d));
+	X.viaje.value = Math.sin(Math.PI * n), Z("#viaje-barra").style.transform = `scaleX(${n.toFixed(3)})`, n >= 1 && (Q.fecha = t.f1, Q.min = t.m1, Q.viaje = null, Q.solViaje = null, X.viaje.value = 0, Q.aterrizaje = e, cG = "", vW(t.d));
 }
 function vW(e) {
 	if (document.documentElement.classList.remove("viajando"), TW(), e.aAhora) {
@@ -37360,7 +37368,7 @@ function vW(e) {
 			y: e.y,
 			m: e.m,
 			d: e.d
-		}, Q.min = e.min, sG = "";
+		}, Q.min = e.min, cG = "";
 	}
 	let t = Z("#viaje");
 	t.hidden = !1, t.classList.add("llego"), Z("#viaje-barra").style.transform = "scaleX(1)", clearTimeout(vW.t), vW.t = setTimeout(() => {
@@ -37368,9 +37376,9 @@ function vW(e) {
 	}, 2600);
 }
 function yW(e, t = 1.6, n = null, r = !0) {
-	FG(!1);
+	RG(!1);
 	let i = $.camera.position.clone(), a = IU.target.clone(), o = new k(...e.pos), s = new k(...e.tgt);
-	bW(n), i.distanceTo(o) < .6 && a.distanceTo(s) < .6 ? (n && r && qW(`Ya estás en la vista ${n === "aerea" ? "aérea" : n}.`, 1600), HU.anim = {
+	bW(n), i.distanceTo(o) < .6 && a.distanceTo(s) < .6 ? (n && r && JW(`Ya estás en la vista ${n === "aerea" ? "aérea" : n}.`, 1600), HU.anim = {
 		p0: i.clone().lerp(a, -.03),
 		t0: a,
 		p1: o,
@@ -37431,7 +37439,7 @@ function DW(e, t) {
 		let e = LU.meses[Q.mesSerie];
 		if (e) return LU.horario || XU(), {
 			fuente: "mes",
-			nubes: e.nubes ?? 55,
+			nubes: e.nubes ?? null,
 			lluviaMes: e.lluvia,
 			lluvia: 0,
 			temp: null
@@ -37445,30 +37453,30 @@ function DW(e, t) {
 	};
 	let r = LU.pedirDia(e);
 	return r instanceof Promise && !r._visto && (r._visto = !0, r.then(() => {
-		sG = "";
+		cG = "";
 	})), LU.registroDia(e, t) ?? {
 		...LU.tipico(e.m, t),
 		buscando: r instanceof Promise
 	};
 }
-var OW = (e) => e < .2 ? 0 : Math.min(1, .25 + .75 * Math.log1p(e) / Math.log1p(15)), kW = (e, t = Q.fecha.m) => e?.albrook && !e.albrook.auto ? !!e.albrook.lluvia : (e?.lluvia ?? 0) >= mH(t), AW = (e) => kW(e) ? OW(e.lluvia ?? 0) : 0, jW = "1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre", MW = performance.now(), NW = -1;
-function PW(e) {
-	if (requestAnimationFrame(PW), !Q.pausa) {
+var OW = (e) => e < .2 ? 0 : Math.min(1, .25 + .75 * Math.log1p(e) / Math.log1p(15)), kW = (e, t = Q.fecha.m) => e?.albrook && !e.albrook.auto ? !!e.albrook.lluvia : (e?.lluvia ?? 0) >= mH(t), AW = (e) => kW(e) ? OW(e.lluvia ?? 0) : 0, jW = (e) => Q.aguacero || e?.fuente !== "mes" && e?.fuente !== "viaje" && kW(e), MW = "1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre", NW = performance.now(), PW = -1;
+function FW(e) {
+	if (requestAnimationFrame(FW), !Q.pausa) {
 		if (innerWidth < 2 || innerHeight < 2) {
-			MW = e;
+			NW = e;
 			return;
 		}
 		try {
-			FW(e);
+			IW(e);
 		} catch (e) {
 			iU("cuadro", e?.stack?.split("\n").slice(0, 3).join(" ← ") ?? e);
 		}
 	}
 }
-function FW(e) {
+function IW(e) {
 	Q.midiendo && (Q.midiendo.tFrame = performance.now(), Q.midiendo.giro(), $.renderer.info.reset());
-	let t = Math.min(.25, (e - MW) / 1e3), n = Math.min(.05, t);
-	if (MW = e, zU) $U(t), (Q.dtIntro ??= []).push(e - (Q.lastIntro ?? e)), Q.lastIntro = e;
+	let t = Math.min(.25, (e - NW) / 1e3), n = Math.min(.05, t);
+	if (NW = e, zU) $U(t), (Q.dtIntro ??= []).push(e - (Q.lastIntro ?? e)), Q.lastIntro = e;
 	else if (Q.modo === "ahora") {
 		let e = vU();
 		Q.fecha = {
@@ -37477,7 +37485,7 @@ function FW(e) {
 			d: e.d
 		}, Q.min = e.min;
 	}
-	if (Q.reproduce && _G(n), Q.viaje && _W(e), !xW(t) && !zU) {
+	if (Q.reproduce && bG(n), Q.viaje && _W(e), !xW(t) && !zU) {
 		SW && (SW.k = Math.min(1, SW.k + t / .9), IU.target.lerpVectors(SW.t0, new k(...OU), gU(SW.k)), SW.k >= 1 && (SW = null));
 		let e = $.camera.position.distanceTo(IU.target);
 		IU.maxPolarAngle = Math.acos(fn.clamp((1.4 - IU.target.y) / e, -1, 1)), IU.update(n);
@@ -37497,7 +37505,9 @@ function FW(e) {
 		min: Q.min
 	}), i = DW(Q.fecha, Q.min), a = i?.nubes ?? 30, o = !!Q.salto;
 	Q.salto = !1, VU += (a - VU) * (o ? 1 : Math.min(1, n * 2.5));
-	let s = VB(r.alt), c = r.alt <= .5 ? 1 : i?.dni == null ? 1 - .75 * _U(a / 100) ** 3.4 : _U(i.dni / Math.max(40, s));
+	let s = VB(r.alt);
+	Q.lluviaEsc = !zU && !Q.viaje && jW(i);
+	let c = r.alt <= .5 ? 1 : Q.lluviaEsc ? 0 : i?.dni == null ? 1 - .75 * _U(a / 100) ** 3.4 : _U(i.dni / Math.max(40, s));
 	Q.kSol = (Q.kSol ?? c) + (c - (Q.kSol ?? c)) * (o ? 1 : Math.min(1, n * 2.5)), $.kSol = Q.kSol, $.nb = VU / 100, $.setNubes(.08 + .85 * VU / 100), X.nubeSombra.value = .25 + 2.4 * Q.kSol * (1 - Q.kSol), $.luna = r.alt < 2 ? WV({
 		...Q.fecha,
 		h: 0,
@@ -37517,16 +37527,18 @@ function FW(e) {
 	let m = zU || Q.viaje ? 0 : _U((i?.viento ?? 0) / 35);
 	X.brisa.value += (m - X.brisa.value) * (o ? 1 : Math.min(1, n * 1.5)), $.actualizar(n) && RU.trueno();
 	let h = Q.lente === "sol" && Q.solModo === "anio";
-	X.calor.value += (+(Q.lente === "sol" && !h) - X.calor.value) * Math.min(1, n * 4), X.agua.value += ((Q.lente === "lluvia" || Q.lente === "viento" || h ? 1 : 0) - X.agua.value) * Math.min(1, n * 4), X.total.value += ((Q.solModo === "total" && Q.hayDifusa ? 1 : 0) - X.total.value) * Math.min(1, n * 4), $.uViento.value += (+(Q.lente === "viento" && !Q.viaje) - $.uViento.value) * Math.min(1, n * 4), X.sombras.value += (+(Q.lente === "sombras" && !Q.viaje) - X.sombras.value) * Math.min(1, n * 4);
-	let g = $.camera.getWorldDirection(pW), _ = Infinity, v = -Infinity;
+	X.calor.value += (+(Q.lente === "sol" && !h) - X.calor.value) * Math.min(1, n * 4);
+	let g = Q.lente === "lluvia" && (Q.aguaModo === "anio" || Q.aguaDato) || Q.lente === "viento" && (Q.vientoModo !== "hora" || Q.vientoDato) || h;
+	X.agua.value += (+!!g - X.agua.value) * Math.min(1, n * 4), X.total.value += ((Q.solModo === "total" && Q.hayDifusa ? 1 : 0) - X.total.value) * Math.min(1, n * 4), $.uViento.value += (+(Q.lente === "viento" && !Q.viaje) - $.uViento.value) * Math.min(1, n * 4), X.sombras.value += (+(Q.lente === "sombras" && !Q.viaje) - X.sombras.value) * Math.min(1, n * 4);
+	let _ = $.camera.getWorldDirection(pW), v = Infinity, y = -Infinity;
 	if (gW) for (let e of gW) {
-		let t = mW.subVectors(e, $.camera.position).dot(g);
-		_ = Math.min(_, t), v = Math.max(v, t);
+		let t = mW.subVectors(e, $.camera.position).dot(_);
+		v = Math.min(v, t), y = Math.max(y, t);
 	}
-	else _ = v = mW.subVectors(IU.target, $.camera.position).dot(g);
-	_ = Math.max(.5, _ - hW.margen), v = Math.max(_ + 1, v + hW.margen), $.uFoco.value = (_ + v) / 2, $.uBanda.value = (v - _) / 2, $.uRampa.value = Math.max(20, v * hW.rampa), $.uBokeh.value = hW.bokeh;
-	let y = hW.on && Q.lente !== "sombras" && !Q.fachada && g.y > -.8 ? 1 : 0;
-	if ($.uDesenfoque.value += (y - $.uDesenfoque.value) * Math.min(1, n * 3), Q.lente === "sombras" && !Q.viaje && $.setDiagrama(Q.fecha), JW(r, i), tG(i), Q.lente === "viento") {
+	else v = y = mW.subVectors(IU.target, $.camera.position).dot(_);
+	v = Math.max(.5, v - hW.margen), y = Math.max(v + 1, y + hW.margen), $.uFoco.value = (v + y) / 2, $.uBanda.value = (y - v) / 2, $.uRampa.value = Math.max(20, y * hW.rampa), $.uBokeh.value = hW.bokeh;
+	let b = hW.on && Q.lente !== "sombras" && !Q.fachada && _.y > -.8 ? 1 : 0;
+	if ($.uDesenfoque.value += (b - $.uDesenfoque.value) * Math.min(1, n * 3), Q.lente === "sombras" && !Q.viaje && $.setDiagrama(Q.fecha), YW(r, i), nG(i), Q.lente === "viento") {
 		let e = Q.vientoModo === "hora" ? `h|${Q.vientoDato ? Math.round(i.dir / 5) + "|" + Math.round(i.viento) : "-"}` : Q.vientoModo + (FU ? "1" : "0");
 		e !== Q.claveRosa && (Q.claveRosa = e, Q.vientoModo === "hora" ? $.dibujarViento({
 			hora: !0,
@@ -37534,25 +37546,25 @@ function FW(e) {
 			v: Q.vientoDato ? i.viento : 0
 		}) : FU?.viento && $.dibujarViento(FU.viento[Q.vientoModo]));
 	}
-	let b = $.camera.position.y, x = Q.ayudas && !zU ? 1 : 0;
-	$.uRosa.value += (x * hU(8, 45, b) - $.uRosa.value) * Math.min(1, n * 4);
-	let S = -$.camera.getWorldDirection(iG).y;
-	$.uRuta.value += (x * hU(4, 30, b) * (.35 + .65 * hU(.5, .95, S)) - $.uRuta.value) * Math.min(1, n * 4), RU.actualizar({
+	let x = $.camera.position.y, S = Q.ayudas && !zU ? 1 : 0;
+	$.uRosa.value += (S * hU(8, 45, x) - $.uRosa.value) * Math.min(1, n * 4);
+	let C = -$.camera.getWorldDirection(aG).y;
+	$.uRuta.value += (S * hU(4, 30, x) * (.35 + .65 * hU(.5, .95, C)) - $.uRuta.value) * Math.min(1, n * 4), RU.actualizar({
 		dron: zU ? .35 : .55,
 		velocidad: zU ? .3 : 0,
 		alt: r.alt,
 		lluvia: X.lluvia.value,
 		cenit: r.alt > 89
 	});
-	let C = Math.floor(Q.min / 60);
-	C !== NW && (NW >= 0 && Q.reproduce && RU.clic(), NW = C), oG(r), cG(r, i), zU || EG(e), RW(t), aK();
-	let ee = $.camera.position, w = IU.target, te = [
-		ee.x,
-		ee.y,
-		ee.z,
+	let ee = Math.floor(Q.min / 60);
+	ee !== PW && (PW >= 0 && Q.reproduce && RU.clic(), PW = ee), sG(r), lG(r, i), zU || kG(e), zW(t), lK();
+	let w = $.camera.position, te = IU.target, T = [
 		w.x,
 		w.y,
-		w.z
+		w.z,
+		te.x,
+		te.y,
+		te.z
 	].map((e) => Math.round(e * 60)).join(",") + "|" + [
 		X.build.value * 500,
 		X.mat.value * 200,
@@ -37571,41 +37583,41 @@ function FW(e) {
 		$.uRuta.value * 100,
 		(r.alt ?? 0) * 20,
 		(r.az ?? 0) * 20
-	].map(Math.round).join(",") + `|${Q.fecha.y}-${Q.fecha.m}-${Q.fecha.d}|${innerWidth}x${innerHeight}|${Math.round(IW.dy)}`, T = !!zU || !!$.particulas || X.lluvia.value > .01 || X.relampago.value > 0 || !!Q.midiendo || !!Q.viaje;
-	if (te !== Q.firma || T || $.sucio || e - (Q.ultimoCambio || 0) < 500) {
-		if (te !== Q.firma && (Q.firma = te, Q.ultimoCambio = e), $.render(), Q.dibujados = (Q.dibujados || 0) + 1, Q.midiendo) {
+	].map(Math.round).join(",") + `|${Q.fecha.y}-${Q.fecha.m}-${Q.fecha.d}|${innerWidth}x${innerHeight}|${Math.round(LW.dy)}`, ne = !!zU || !!$.particulas || X.lluvia.value > .01 || X.relampago.value > 0 || !!Q.midiendo || !!Q.viaje;
+	if (T !== Q.firma || ne || $.sucio || e - (Q.ultimoCambio || 0) < 500) {
+		if (T !== Q.firma && (Q.firma = T, Q.ultimoCambio = e), $.render(), Q.dibujados = (Q.dibujados || 0) + 1, Q.midiendo) {
 			let t = performance.now();
 			Q.midiendo.cpu.push(t - Q.midiendo.tFrame), Q.midiendo.dts.push(e - Q.midiendo.last), Q.midiendo.last = e;
-		} else HW(e, t);
+		} else UW(e, t);
 	} else Q.dibujoPrevio = !1;
-	oK(), Q.voladizo && hK(r);
+	uK(), Q.voladizo && yK(r, i);
 }
-var IW = {
+var LW = {
 	dy: 0,
 	aplicado: 0
-}, LW = [
+}, RW = [
 	"#dock",
 	"#rotulo",
 	"#recorrido",
 	"#oferta-recorrido",
 	"#viaje"
 ];
-function RW(e) {
+function zW(e) {
 	let t = innerWidth, n = innerHeight, r = 0;
 	if (t <= 760 && !zU) {
 		let e = Z("#hud")?.getBoundingClientRect().bottom ?? 0, t = n;
-		for (let e of LW) {
+		for (let e of RW) {
 			let r = Z(e)?.getBoundingClientRect();
 			r && r.height > 0 && r.top > n * .3 && (t = Math.min(t, r.top));
 		}
 		t - e > 60 && (r = (e + t) / 2 - n / 2);
 	}
-	if (IW.dy += (r - IW.dy) * (sU ? 1 : Math.min(1, e * 5)), Math.abs(r - IW.dy) < .5 && (IW.dy = r), Math.abs(IW.dy - IW.aplicado) < .25 && IW.W === t && IW.H === n) return;
-	IW.aplicado = IW.dy, IW.W = t, IW.H = n;
+	if (LW.dy += (r - LW.dy) * (sU ? 1 : Math.min(1, e * 5)), Math.abs(r - LW.dy) < .5 && (LW.dy = r), Math.abs(LW.dy - LW.aplicado) < .25 && LW.W === t && LW.H === n) return;
+	LW.aplicado = LW.dy, LW.W = t, LW.H = n;
 	let i = $.camera;
-	Math.abs(IW.dy) < .5 ? i.clearViewOffset() : i.setViewOffset(t, n, 0, -IW.dy, t, n);
+	Math.abs(LW.dy) < .5 ? i.clearViewOffset() : i.setViewOffset(t, n, 0, -LW.dy, t, n);
 }
-var zW = {
+var BW = {
 	iv: [],
 	minIv: 16.7,
 	techo: 0,
@@ -37613,78 +37625,78 @@ var zW = {
 	fija: !1
 };
 try {
-	zW.fija = localStorage.getItem("e106-nitidez") !== "0";
+	BW.fija = localStorage.getItem("e106-nitidez") !== "0";
 } catch {
-	zW.fija = !0;
+	BW.fija = !0;
 }
-var BW = {
+var VW = {
 	suma: 0,
 	n: 0,
 	hecho: /[?&]prueba/.test(location.search)
 };
-function VW(e, t) {
-	if (BW.hecho || $.backend !== "WebGL 2" || $.calidad.nivel === "bajo" || !t || zU || Q.viaje || !$.cargado || $.compilando || e > 250 || document.visibilityState !== "visible" || (BW.suma += e, BW.n++, BW.suma < 1e3)) return;
-	BW.hecho = !0;
-	let n = BW.suma / BW.n;
-	n > 33 && $.bajarNivel() && (iU("aviso", `WebGL 2 a ${dU(n)} ms por cuadro: paso al nivel bajo`), zW.iv = [], zW.techo = 0, UW());
-}
 function HW(e, t) {
+	if (VW.hecho || $.backend !== "WebGL 2" || $.calidad.nivel === "bajo" || !t || zU || Q.viaje || !$.cargado || $.compilando || e > 250 || document.visibilityState !== "visible" || (VW.suma += e, VW.n++, VW.suma < 1e3)) return;
+	VW.hecho = !0;
+	let n = VW.suma / VW.n;
+	n > 33 && $.bajarNivel() && (iU("aviso", `WebGL 2 a ${dU(n)} ms por cuadro: paso al nivel bajo`), BW.iv = [], BW.techo = 0, WW());
+}
+function UW(e, t) {
 	let n = t * 1e3, r = Q.dibujoPrevio;
-	if (Q.dibujoPrevio = !0, VW(n, r), zW.fija) {
-		Math.abs($.renderer.getPixelRatio() - $.dprMax()) > .01 && ($.fijarResolucion($.dprMax()), UW());
+	if (Q.dibujoPrevio = !0, HW(n, r), BW.fija) {
+		Math.abs($.renderer.getPixelRatio() - $.dprMax()) > .01 && ($.fijarResolucion($.dprMax()), WW());
 		return;
 	}
-	if (!r || zU || Q.viaje || n > 90 || document.visibilityState !== "visible" || (zW.iv.push(n), zW.iv.length < 50)) return;
-	let i = zW.iv.sort((e, t) => e - t), a = i[i.length >> 1], o = i[Math.floor(i.length * .1)];
-	zW.iv = [], zW.minIv = Math.max(6, Math.min(zW.minIv, o));
+	if (!r || zU || Q.viaje || n > 90 || document.visibilityState !== "visible" || (BW.iv.push(n), BW.iv.length < 50)) return;
+	let i = BW.iv.sort((e, t) => e - t), a = i[i.length >> 1], o = i[Math.floor(i.length * .1)];
+	BW.iv = [], BW.minIv = Math.max(6, Math.min(BW.minIv, o));
 	let s = $.renderer.getPixelRatio(), c = $.dprMax();
-	if (a > zW.minIv * 1.5 && s > .6) zW.techo = s, zW.tTecho = e, $.fijarResolucion(s - .1), UW();
-	else if (a < zW.minIv * 1.15 && s < c - .005) {
-		if (s + .1 >= zW.techo - .001 && e - zW.tTecho < 3e4) return;
-		$.fijarResolucion(Math.min(c, s + .1)), UW();
+	if (a > BW.minIv * 1.5 && s > .6) BW.techo = s, BW.tTecho = e, $.fijarResolucion(s - .1), WW();
+	else if (a < BW.minIv * 1.15 && s < c - .005) {
+		if (s + .1 >= BW.techo - .001 && e - BW.tTecho < 3e4) return;
+		$.fijarResolucion(Math.min(c, s + .1)), WW();
 	}
 }
-function UW() {
+function WW() {
 	let e = Z("#res-actual");
 	if (!e || !$) return;
 	let t = $.renderer.getPixelRatio(), n = $.dprMax();
-	e.textContent = zW.fija ? `Fija al máximo: ${dU(t, 2)}×.` : `Ahora: ${dU(t, 2)}× de un máximo de ${dU(n, 2)}×${t < n - .005 ? " (el equipo va justo; sube sola cuando va fluido)" : ""}.`;
+	e.textContent = BW.fija ? `Fija al máximo: ${dU(t, 2)}×.` : `Ahora: ${dU(t, 2)}× de un máximo de ${dU(n, 2)}×${t < n - .005 ? " (el equipo va justo; sube sola cuando va fluido)" : ""}.`;
 }
-function WW() {
+function GW() {
 	let e = $.renderer.backend?.device;
 	e && (e.addEventListener("uncapturederror", (e) => {
 		if (innerWidth < 2 || innerHeight < 2 || document.visibilityState === "hidden") {
 			iU("aviso", "GPU con la página oculta: " + (e.error?.message ?? ""));
 			return;
 		}
-		rU.gpu++, iU("GPU", e.error?.message ?? e.error), rU.gpu >= 3 && KW("la tarjeta gráfica rechazó cuadros");
+		rU.gpu++, iU("GPU", e.error?.message ?? e.error), rU.gpu >= 3 && qW("la tarjeta gráfica rechazó cuadros");
 	}), e.lost.then((e) => {
-		e.reason === "destroyed" && GW || (iU("GPU perdida", `${e.reason ?? ""} ${e.message ?? ""}`), KW("se perdió la tarjeta gráfica"));
+		e.reason === "destroyed" && KW || (iU("GPU perdida", `${e.reason ?? ""} ${e.message ?? ""}`), qW("se perdió la tarjeta gráfica"));
 	}));
 }
-var GW = !1;
-async function KW(e) {
-	if (!(GW || $?.backend !== "WebGPU")) {
-		GW = !0, Q.pausa = !0, iU("rescate", `${e}: paso a WebGL`);
+var KW = !1;
+async function qW(e) {
+	if (!(KW || $?.backend !== "WebGPU")) {
+		KW = !0, Q.pausa = !0, iU("rescate", `${e}: paso a WebGL`);
 		try {
 			localStorage.setItem("e106-motor", "webgl");
 		} catch {}
 		try {
-			await $.pasarAWebGL(), IU.disconnect(), IU.connect($.renderer.domElement), document.documentElement.dataset.backend = $.backend, Z("#motor").textContent = $.backend, Q.firma = "", $.sucio = !0, qW("WebGPU falló en este equipo. La escena sigue en modo compatible (WebGL 2).");
+			await $.pasarAWebGL(), IU.disconnect(), IU.connect($.renderer.domElement), document.documentElement.dataset.backend = $.backend, Z("#motor").textContent = $.backend, Q.firma = "", $.sucio = !0, JW("WebGPU falló en este equipo. La escena sigue en modo compatible (WebGL 2).");
 		} catch (e) {
 			iU("rescate", e);
 			try {
 				location.reload();
 			} catch {}
 		}
-		Q.pausa = !1, GW = !1, aU();
+		Q.pausa = !1, KW = !1, aU();
 	}
 }
-function qW(e, t = 6e3) {
+function JW(e, t = 6e3) {
 	let n = Z("#aviso");
-	n || (n = document.createElement("div"), n.id = "aviso", n.setAttribute("role", "status"), document.body.appendChild(n)), n.textContent = e, n.classList.add("ver"), clearTimeout(qW.t), qW.t = setTimeout(() => n.classList.remove("ver"), t);
+	n || (n = document.createElement("div"), n.id = "aviso", n.setAttribute("role", "status"), document.body.appendChild(n)), n.textContent = e, n.classList.add("ver"), clearTimeout(JW.t), JW.t = setTimeout(() => n.classList.remove("ver"), t);
 }
-function JW(e, t) {
+function YW(e, t) {
 	let n = VB(e.alt);
 	t?.dni == null ? n *= 1 - .75 * Math.min(1, (t?.nubes ?? 30) / 100) ** 3.4 : n = t.dni, e.alt <= 0 && (n = 0);
 	let r = Math.max(0, Math.sin(e.alt * Math.PI / 180)), i = e.alt > 0 ? t?.difusa ?? null : 0, a = n * r + (i ?? 0);
@@ -37697,11 +37709,11 @@ function JW(e, t) {
 		return o * n + (c ? i * (s * l + (1 - s) * .5) + .1 * a : 0);
 	}), Q.irrTecho = n * r + (c ? i : 0);
 }
-function YW(e, t, n, r) {
+function XW(e, t, n, r) {
 	let i = Math.cos((n - r) * Math.PI / 180);
 	return i > 0 && e > 0 ? 2 / 9 * (t / 3.6) * e ** (8 / 9) * i : 0;
 }
-var XW = (e) => "#" + new gr().setRGB(e[0], e[1], e[2]).getHexString(), ZW = (e) => `linear-gradient(90deg, ${e.map((t, n) => `${XW(t)} ${Math.round(100 * n / (e.length - 1))}%`).join(", ")})`, QW = {
+var ZW = (e) => "#" + new gr().setRGB(e[0], e[1], e[2]).getHexString(), QW = (e) => `linear-gradient(90deg, ${e.map((t, n) => `${ZW(t)} ${Math.round(100 * n / (e.length - 1))}%`).join(", ")})`, $W = {
 	lluvia: [
 		[
 			.05,
@@ -37753,14 +37765,14 @@ var XW = (e) => "#" + new gr().setRGB(e[0], e[1], e[2]).getHexString(), ZW = (e)
 			.15
 		]
 	]
-}, $W = 1e3;
-function eG(e) {
+}, eG = 1e3;
+function tG(e) {
 	if (Q.lente === "sol" && Q.solModo === "anio") return {
-		c: ZW(QW.sol),
+		c: QW($W.sol),
 		esc: [
 			"0",
 			"500",
-			`≥${fU($W)} kWh/m² año`
+			`≥${fU(eG)} kWh/m² año`
 		]
 	};
 	if (Q.lente === "lluvia") {
@@ -37810,11 +37822,11 @@ function eG(e) {
 		esc: e.esc
 	} : null;
 }
-function tG(e) {
-	let t = Object.keys(zB), n = QW[Q.lente === "viento" ? "viento" : Q.lente === "sol" ? "sol" : "lluvia"];
+function nG(e) {
+	let t = Object.keys(zB), n = $W[Q.lente === "viento" ? "viento" : Q.lente === "sol" ? "sol" : "lluvia"];
 	if (X.pal0.value.setRGB(...n[0]), X.pal1.value.setRGB(...n[1]), X.pal2.value.setRGB(...n[2]), Q.lente === "sol") {
 		let e = FU?.radiacion;
-		X.aguaF.value.set(...t.map((t) => e ? Math.min(1, e.fachadas[t.slice(8)].total / $W) : 0)), X.aguaT.value = e ? Math.min(1, e.techo.total / $W) : 0;
+		X.aguaF.value.set(...t.map((t) => e ? Math.min(1, e.fachadas[t.slice(8)].total / eG) : 0)), X.aguaT.value = e ? Math.min(1, e.techo.total / eG) : 0;
 		return;
 	}
 	if (X.aguaT.value = 0, Q.lente === "viento") {
@@ -37829,7 +37841,10 @@ function tG(e) {
 				"dia",
 				"vivo"
 			].includes(e.fuente);
-			Q.vientoDato = n, Q.vientoF = t.map((t) => n ? Math.max(0, Math.cos((e.dir - zB[t].rumbo) * Math.PI / 180)) * e.viento : 0), X.aguaF.value.set(...Q.vientoF.map((e) => Math.min(1, e / 15)));
+			Q.vientoDato = n, Q.vientoF = t.map((t) => {
+				let r = Math.cos((e.dir - zB[t].rumbo) * Math.PI / 180);
+				return n && r >= .5 && e.viento >= 5 ? r * e.viento : 0;
+			}), X.aguaF.value.set(...Q.vientoF.map((e) => Math.min(1, e / 15)));
 		}
 		return;
 	}
@@ -37837,15 +37852,17 @@ function tG(e) {
 		let e = FU.lluviaViento, n = Math.max(...t.map((t) => e[t.slice(8)].anual));
 		Q.agua = t.map((t) => e[t.slice(8)].anual), X.aguaF.value.set(...Q.agua.map((e) => e / n));
 	} else {
-		let n = e && e.lluvia != null && e.viento != null && e.dir != null && (e.fuente === "serie" || e.fuente === "dia" || e.fuente === "vivo");
-		Q.agua = t.map((t) => n ? YW(e.lluviaMm ?? e.lluvia, e.viento, e.dir, zB[t].rumbo) : 0), Q.aguaDato = n, X.aguaF.value.set(...Q.agua.map((e) => Math.min(1, e / 5)));
+		let n = e ? e.lluviaMm ?? e.lluviaModelo ?? e.lluvia : null;
+		Q.sinMm = !(!e?.albrook || e.albrook.auto || !e.albrook.lluvia || n > 0);
+		let r = e && n != null && e.viento != null && e.dir != null && (e.fuente === "serie" || e.fuente === "dia" || e.fuente === "vivo") && !Q.sinMm;
+		Q.agua = t.map((t) => r ? XW(n, e.viento, e.dir, zB[t].rumbo) : 0), Q.aguaDato = r, X.aguaF.value.set(...Q.agua.map((e) => Math.min(1, e / 5)));
 	}
 }
-var nG = new k(), rG = new k(), iG = new k(), aG = "";
-function oG(e) {
+var rG = new k(), iG = new k(), aG = new k(), oG = "";
+function sG(e) {
 	let t = IU.target;
-	nG.set(t.x, 0, t.z).project($.camera), rG.set(t.x + kU.x * 20, 0, t.z + kU.z * 20).project($.camera);
-	let n = (rG.x - nG.x) * innerWidth, r = (rG.y - nG.y) * innerHeight, i = Math.atan2(n, r) * 180 / Math.PI, a = nG.copy(t).sub($.camera.position);
+	rG.set(t.x, 0, t.z).project($.camera), iG.set(t.x + kU.x * 20, 0, t.z + kU.z * 20).project($.camera);
+	let n = (iG.x - rG.x) * innerWidth, r = (iG.y - rG.y) * innerHeight, i = Math.atan2(n, r) * 180 / Math.PI, a = rG.copy(t).sub($.camera.position);
 	a.y = 0;
 	let o = (Math.atan2(a.x * AU.x + a.z * AU.z, a.x * kU.x + a.z * kU.z) * 180 / Math.PI + 360) % 360, s = [
 		Math.round(i * 2),
@@ -37853,18 +37870,18 @@ function oG(e) {
 		+(e.alt > 0),
 		Math.round(o / 22.5)
 	].join(",");
-	if (s === aG) return;
-	aG = s, Z("#rosa-g").setAttribute("transform", `rotate(${i.toFixed(1)})`);
+	if (s === oG) return;
+	oG = s, Z("#rosa-g").setAttribute("transform", `rotate(${i.toFixed(1)})`);
 	for (let e of document.querySelectorAll("#rosa-g text")) e.setAttribute("transform", `rotate(${(-i).toFixed(1)} ${e.getAttribute("x")} ${e.getAttribute("y")})`);
 	let c = e.az * Math.PI / 180, l = Z("#brujula-sol");
 	l.setAttribute("cx", (40 * Math.sin(c)).toFixed(1)), l.setAttribute("cy", (-40 * Math.cos(c)).toFixed(1)), l.style.opacity = e.alt > 0 ? 1 : .28, Z("#mirando").textContent = a.lengthSq() > 1 ? `Miras hacia el ${RB(o)}` : "Vista desde arriba";
 }
-var sG = "";
-function cG(e, t) {
+var cG = "";
+function lG(e, t) {
 	let n = `${Q.fecha.y}-${Q.fecha.m}-${Q.fecha.d}`;
-	n !== Q.kf && !Q.viaje && (Q.kf = n, pG());
-	let r = n + "|" + +!!LU.horario + "|" + (LU.dias[CU(Q.fecha)] ? LU.dias[CU(Q.fecha)] instanceof Promise ? 1 : 2 : 0) + "|" + +!!LU.ok;
-	r !== Q.kClimaDia && !Q.viaje && (Q.kClimaDia = r, kK());
+	n !== Q.kf && !Q.viaje && (Q.kf = n, mG());
+	let r = n + "|" + +!!LU.horario + "|" + (LU.dias[CU(Q.fecha)] ? LU.dias[CU(Q.fecha)] instanceof Promise ? 1 : 2 : 0) + "|" + +!!LU.ok + "|" + Q.modo + (LU.vivo?.albrook && !LU.vivo.albrook.auto ? "A" : "");
+	r !== Q.kClimaDia && !Q.viaje && (Q.kClimaDia = r, NK());
 	let i = [
 		n,
 		Math.round(Q.min),
@@ -37879,10 +37896,11 @@ function cG(e, t) {
 		Q.fachada,
 		Q.lente,
 		Q.aguaModo,
-		Q.viaje?.fase
+		Q.viaje?.fase,
+		+!!Q.aguacero
 	].join("|");
-	if (zK(e, t), i === sG) return;
-	sG = i;
+	if (UK(e, t), i === cG) return;
+	cG = i;
 	let a = Q.modo === "ahora", o = Q.viaje;
 	Z("#l-hora").textContent = o?.fase === "fecha" ? "··:··" : mU(Q.min);
 	let s = Q.mesSerie === null ? SU(Q.fecha) : `${cU[Q.fecha.m - 1]} de ${Q.fecha.y}`, c = Q.mesSerie === null ? TU(Q.fecha) : `${lU[Q.fecha.m - 1]} ${Q.fecha.y}`, l = Z("#l-fecha");
@@ -37894,45 +37912,54 @@ function cG(e, t) {
 	else if (t) {
 		t.temp != null && (d = Math.round(t.temp) + " °C");
 		let n = [];
-		t.nubes != null && n.push(`${Math.round(t.nubes)} % nubes`), t.dni != null && e.alt > 2 && n.push(`sol ${fU(Math.round(t.dni / 10) * 10)} W/m²`);
+		if (t.nubes != null && n.push(`${Math.round(t.nubes)} % nubes`), t.dni != null && e.alt > 2) {
+			let r = fU(Math.round(t.dni / 10) * 10);
+			n.push(BG(t, e) && !jW(t) ? `sol a ratos · ${r} W/m² de media` : jW(t) ? `sol ${r} W/m² de media` : `sol ${r} W/m²`);
+		}
 		let r = "";
 		if (t.fuente === "mes" ? (d = `${Math.round(t.lluviaMes)} mm`, r = "de lluvia en el mes") : r = t.fuente === "tipico" ? `llueve 1 mm o más en ${Math.round(t.probLluvia)} % de estas horas` : t.albrook && !t.albrook.auto ? DH(t.albrook).replace(/^Albrook /, "Albrook: ").replace(/ a las \d\d:\d\d$/, "") : kW(t) ? `lluvia ${dU(t.lluvia)} mm/h` : (t.lluvia ?? 0) >= .1 ? `lluvia débil en la celda (${dU(t.lluvia)} mm)` : t.llovizna ? "lluvia débil en la zona" : "sin lluvia", t.fuente === "vivo" && !t.albrook) {
-			let e = LU.tipico(Q.fecha.m, Q.min);
-			if (e) {
-				let n = t.temp - e.temp;
-				Math.abs(n) >= 1 && (r += ` · ${n >= 0 ? "+" : "−"}${Math.round(Math.abs(n))} °C vs. típico (pronóstico frente a la mediana 2001–2025)`);
+			let e = LU.ok ? LU.r.temp.p50[Q.fecha.m - 1][Math.min(23, Math.floor(Q.min / 60))] : null;
+			if (e != null) {
+				let n = t.temp - e;
+				Math.abs(n) >= 1 && (r += ` · ${n >= 0 ? "+" : "−"}${Math.round(Math.abs(n))} °C frente a la mediana de 2001–2025 de ERA5 sin ajustar (los dos son modelos)`);
 			}
 		}
-		f = n.join(" · ") + "\n" + r, p = t.fuente === "vivo" ? t.albrook ? t.albrook.auto ? `Temperatura, humedad y viento: parte automático del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. De noche ese parte no dice si llueve: la lluvia, las nubes y la luz son del pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Temperatura, humedad, viento y lluvia: parte del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. Nubes y luz: pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Pronóstico de modelo (Open-Meteo), ${t.hora}. El sol es calculado.` : t.fuente === "serie" ? `Dato de esa hora: ${LU.r?.era5 ? "reanálisis ERA5" : "archivo histórico"} (Open-Meteo), celda de ~28 km${t.ajustado ? "; temperatura y humedad ajustadas al aeropuerto de Albrook, a 4 km (2017–2025)" : ""}.` : t.fuente === "dia" ? t.modelo === "era5" ? "Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km." : "Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea." : t.fuente === "mes" ? "Total del mes en la serie 2001–2025 (Open-Meteo)." : a ? globalThis.MODELO_B64 ? "Típico para esta fecha y hora (2001–2025). En esta vista previa no hay conexión al tiempo real." : "Típico para esta fecha y hora (2001–2025): no se pudo leer el tiempo real." : t.cargandoSerie ? "Cargando la serie horaria 2001–2025…" : t.buscando ? "Buscando el dato de ese día en Open-Meteo…" : globalThis.MODELO_B64 ? "Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión." : "Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.";
+		f = n.join(" · ") + "\n" + r, p = t.fuente === "vivo" ? t.albrook ? t.albrook.auto ? `Temperatura, humedad y viento: parte automático del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. De noche ese parte no dice si llueve: la lluvia, las nubes y la luz son del pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Temperatura, humedad, viento y lluvia: parte del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. Nubes y luz: pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Pronóstico de modelo (Open-Meteo), ${t.hora}. El sol es calculado.` : t.fuente === "serie" ? `Dato de esa hora: ${LU.r?.era5 ? "reanálisis ERA5" : "archivo histórico"} (Open-Meteo), celda de ~28 km${t.ajustado ? "; temperatura y humedad ajustadas al aeropuerto de Albrook, a 4 km (2017–2025)" : ""}.` : t.fuente === "dia" ? t.modelo === "era5" ? "Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km." : "Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea." : t.fuente === "mes" ? "Total del mes de ERA5 (Open-Meteo), celda de ~28 km, serie 2001–2025. La lluvia que cae en la escena es proporcional al total del mes, no la de una hora." : a ? globalThis.MODELO_B64 ? "Típico para esta fecha y hora (2001–2025). En esta vista previa no hay conexión al tiempo real." : "Típico para esta fecha y hora (2001–2025): no se pudo leer el tiempo real." : t.cargandoSerie ? "Cargando la serie horaria 2001–2025…" : t.buscando ? "Buscando el dato de ese día en Open-Meteo…" : globalThis.MODELO_B64 ? "Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión." : "Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.", t.fuente === "tipico" && t.ajustado && !t.cargandoSerie && !t.buscando && (p = p.replace(/\.$/, ", con la temperatura y la humedad ajustadas a Albrook."));
 	}
 	Z("#l-temp").textContent = d, Z("#l-clima").textContent = f, Z("#l-fuente").textContent = p;
-	let m = !t || o ? "" : t.fuente === "vivo" ? t.albrook ? "Albrook" : "pronóstico" : t.fuente === "serie" ? t.ajustado ? "ERA5 ajustado" : "ERA5" : t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "modelo" : t.fuente === "mes" ? "ERA5, mes" : "típico";
-	Z("#lect-resumen-t").textContent = o ? "Viajando…" : (m ? `${m} · ` : "") + (u ? `Sol ${Z("#l-alt").textContent} · sombra ${Z("#l-sombra").textContent} · ${d}` : `Sol bajo el horizonte · ${d}`);
-	let h = Z("#estado-txt");
-	o || (h.textContent = a ? t?.fuente === "vivo" ? `En vivo · ${mU(Q.min)} · ${t.albrook ? Math.round(t.temp) : dU(t.temp)} °C · ${Math.round(t.nubes)} % nubes` : `Ahora · ${mU(Q.min)} en Panamá` : `Explorando · ${Q.mesSerie === null ? SU(Q.fecha) : cU[Q.fecha.m - 1] + " de " + Q.fecha.y}`), Z("#hora").value = Math.round(Q.min) % 1440, Z("#dia-anio").value = yU(Q.fecha), Z("#hora").setAttribute("aria-valuetext", mU(Q.min)), Z("#dia-anio").setAttribute("aria-valuetext", SU(Q.fecha));
-	let g = Q.min % 1440 / 1440 * 1e3;
-	Z("#dia-aguja").setAttribute("x1", g), Z("#dia-aguja").setAttribute("x2", g);
-	let _ = yU(Q.fecha) / 364 * 1e3;
-	Z("#anio-aguja").setAttribute("x1", _), Z("#anio-aguja").setAttribute("x2", _);
-	let v = (Q.fecha.y - 2001) * 12 + Q.fecha.m - 1, y = v >= 0 && v < 300;
-	Z("#mes-serie").value = Math.max(0, Math.min(299, v)), Z("#mes-serie").setAttribute("aria-valuetext", y ? `${cU[Q.fecha.m - 1]} de ${Q.fecha.y}` : `${cU[Q.fecha.m - 1]} de ${Q.fecha.y}, fuera de 2001–2025`);
-	let b = (Math.max(0, Math.min(299, v)) + .5) / 300 * 1e3;
-	Z("#dec-aguja").setAttribute("x1", b), Z("#dec-aguja").setAttribute("x2", b), Z("#dec-aguja").style.opacity = y ? 1 : .25, dG(e, t, u), KG(t), lG(e), Q.fachada && (o ? Z("#fachada-texto").textContent = `Viajando al ${SU(o.f1)}, a las ${mU(o.m1)}.` : LG(e, t)), Object.keys(zB).forEach((e, t) => {
+	let m = !t || o ? "" : t.fuente === "vivo" ? t.albrook ? "Albrook" : "pronóstico" : t.fuente === "serie" ? t.ajustado ? "ERA5 ajustado" : "ERA5" : t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "pronóstico" : t.fuente === "mes" ? "ERA5, mes" : t.ajustado ? "típico ajustado" : "típico", h = Q.aguacero && m ? "aguacero forzado · " + m : m;
+	Q.sello = h, Z("#lect-resumen-t").textContent = o ? "Viajando…" : (h ? `${h} · ` : "") + (t?.fuente === "mes" ? d : u ? `Sol ${Z("#l-alt").textContent} · sombra ${Z("#l-sombra").textContent} · ${d}` : `Sol bajo el horizonte · ${d}`);
+	let g = Z("#estado-txt");
+	o || (g.textContent = a ? t?.fuente === "vivo" ? t.albrook ? `En vivo · ${mU(Q.min)} · ${Math.round(t.temp)} °C en Albrook` : `En vivo · ${mU(Q.min)} · ${Math.round(t.temp)} °C · ${Math.round(t.nubes)} % nubes` : `Ahora · ${mU(Q.min)} en Panamá` : `Explorando · ${Q.mesSerie === null ? SU(Q.fecha) : cU[Q.fecha.m - 1] + " de " + Q.fecha.y}`), Z("#hora").value = Math.round(Q.min) % 1440, Z("#dia-anio").value = yU(Q.fecha), Z("#hora").setAttribute("aria-valuetext", mU(Q.min)), Z("#dia-anio").setAttribute("aria-valuetext", SU(Q.fecha));
+	let _ = Q.min % 1440 / 1440 * 1e3;
+	Z("#dia-aguja").setAttribute("x1", _), Z("#dia-aguja").setAttribute("x2", _);
+	let v = yU(Q.fecha) / 364 * 1e3;
+	Z("#anio-aguja").setAttribute("x1", v), Z("#anio-aguja").setAttribute("x2", v);
+	let y = (Q.fecha.y - 2001) * 12 + Q.fecha.m - 1, b = y >= 0 && y < 300;
+	Z("#mes-serie").value = Math.max(0, Math.min(299, y)), Z("#mes-serie").setAttribute("aria-valuetext", b ? `${cU[Q.fecha.m - 1]} de ${Q.fecha.y}` : `${cU[Q.fecha.m - 1]} de ${Q.fecha.y}, fuera de 2001–2025`);
+	let x = (Math.max(0, Math.min(299, y)) + .5) / 300 * 1e3;
+	Z("#dec-aguja").setAttribute("x1", x), Z("#dec-aguja").setAttribute("x2", x), Z("#dec-aguja").style.opacity = b ? 1 : .25, fG(e, t, u), XG(t), uG(e), Q.fachada && (o ? Z("#fachada-texto").textContent = `Viajando al ${SU(o.f1)}, a las ${mU(o.m1)}.` : VG(e, t)), Object.keys(zB).forEach((e, t) => {
 		let n = document.querySelector(`[data-fachada="${e}"]`);
 		if (!n) return;
 		let r = Q.irr?.[t] ?? 0;
 		n.querySelector("i").style.setProperty("--v", Math.min(1, r / 800)), n.querySelector("b").textContent = fU(r) + " W/m²";
 	});
 }
-function lG(e) {
+function uG(e) {
 	let { sale: t, pone: n } = IB(Q.fecha.y, Q.fecha.m, Q.fecha.d), r = _U((Q.min - t) / (n - t)), i = Math.PI * (1 - r), a = Z("#marca-sol");
 	a.setAttribute("cx", (19 + 16 * Math.cos(i)).toFixed(2)), a.setAttribute("cy", (20 - 16 * Math.sin(i)).toFixed(2)), a.style.opacity = e.alt > -1 ? 1 : .25;
 }
-function uG(e) {
-	let t = $.luna, n = e?.nubes ?? 30, r = kW(e), i = t ? t.frac > .95 ? "la luna llena" : t.frac < .45 ? `una luna ${t.fase < 180 ? "creciente" : "menguante"} delgada` : `la luna ${t.fase < 180 ? "creciente" : "menguante"}` : "";
-	return !t || t.alt <= 0 ? "Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y el poste de la esquina." : t.frac < .05 ? "Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y el poste de la esquina." : r || n >= 70 ? `Es de noche y ${r ? e?.albrook && !e.albrook.auto ? "Albrook, a 4 km, informa lluvia; " : "llueve; " : ""}las nubes tapan ${i}. Alumbran el resplandor de la ciudad en las nubes y el poste de la esquina.` : `Es de noche y alumbra ${i}, hacia el ${RB(t.az)}. Suman algo el cielo de la ciudad y el poste de la esquina.`;
+function dG(e) {
+	let t = $.luna, n = e?.nubes ?? 30, r = kW(e), i = t ? t.frac > .95 ? "la luna llena" : t.frac < .25 ? `una luna ${t.fase < 180 ? "creciente" : "menguante"} delgada` : `la luna ${t.fase < 180 ? "creciente" : "menguante"}` : "";
+	if (!t || t.alt <= 0) return "Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y el poste de la esquina.";
+	if (t.frac < .05) return "Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y el poste de la esquina.";
+	if (r || n >= 70) {
+		let t = Math.round(n), a = "Alumbran el resplandor de la ciudad en las nubes y el poste de la esquina.";
+		return r && e?.albrook && !e.albrook.auto ? `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${t} % del cielo cubierto y la escena tapa ${i}. ${a}` : `Es de noche${r ? " y el modelo da lluvia" : ""}, con ${t} % del cielo cubierto según el dato: la escena tapa ${i}. ${a}`;
+	}
+	return `Es de noche y alumbra ${i}, hacia el ${RB(t.az)}. Suman algo el cielo de la ciudad y el poste de la esquina.`;
 }
-function dG(e, t, n) {
+function fG(e, t, n) {
 	let r = Z("#rotulo-tipo"), i = Z("#rotulo-texto"), a = Z("#rotulo-cerrar"), o = !Q.viaje && !Q.explica && !Q.momento && Q.mesSerie === null && e.alt <= -6;
 	if (Z("#rotulo-noche").hidden = !o, o) {
 		let e = vU(), t = Q.fecha.y === e.y && Q.fecha.m === e.m && Q.fecha.d === e.d;
@@ -37943,7 +37970,7 @@ function dG(e, t, n) {
 		return;
 	}
 	if (Q.explica) {
-		let n = SK(Q.explica, e, t);
+		let n = EK(Q.explica, e, t);
 		if (n) {
 			a.hidden = !1, r.textContent = "Qué significa · " + n[0], i.textContent = n[1];
 			return;
@@ -37954,13 +37981,19 @@ function dG(e, t, n) {
 		return;
 	}
 	if (o) {
-		r.textContent = Q.modo === "ahora" ? "Ahora en Ciudad del Saber" : `${SU(Q.fecha)} · ${mU(Q.min)}`, i.textContent = uG(t);
+		r.textContent = Q.modo === "ahora" ? "Ahora en Ciudad del Saber" : `${SU(Q.fecha)} · ${mU(Q.min)}`, i.textContent = dG(t);
 		return;
 	}
-	let s = e.alt > .5 ? `El sol está a ${dU(e.alt)}° sobre el horizonte, hacia el ${RB(e.az)}; la sombra de un poste de 1 m mide ${n.largo > 99 ? "más de 99 m" : dU(n.largo, 2) + " m"} y se proyecta hacia el ${RB(n.rumbo)}.` : e.alt > -6 ? "El sol acaba de cruzar el horizonte: es el crepúsculo." : uG(t), c = "";
-	t?.fuente === "vivo" && t.albrook && !t.albrook.auto ? c = ` ${DH(t.albrook).replace(/^Albrook /, "El aeropuerto de Albrook, a 4 km, ")}. Cielo con ${Math.round(t.nubes)} % de nubes, según el modelo.` : t?.fuente === "vivo" ? c = kW(t) ? ` El modelo da lluvia en la zona (${dU(t.lluvia)} mm/h).` : t.llovizna ? ` Cielo con ${Math.round(t.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${dU(t.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(t.nubes)} % de nubes.` : t?.fuente === "serie" || t?.fuente === "dia" ? (c = kW(t) ? ` Entre las ${mU(Math.floor(Q.min / 60) * 60)} y las ${mU(Math.floor(Q.min / 60) * 60 + 60)} llovieron ${dU(t.lluvia)} mm.` : (t.lluvia ?? 0) >= .1 ? ` A esa hora ERA5 da una lluvia débil en la celda (${dU(t.lluvia)} mm), que la escena no dibuja; ${Math.round(t.nubes)} % de nubes.` : ` A esa hora no llovía; ${Math.round(t.nubes)} % de nubes.`, c += ` ${dU(t.temp)} °C, humedad ${Math.round(t.humedad)} %, viento ${Math.round(t.viento)} km/h desde el ${RB(t.dir)}.`) : t?.fuente === "mes" && (c = ` En ${cU[Q.fecha.m - 1]} de ${Q.fecha.y} llovieron ${Math.round(t.lluviaMes)} mm (un ${cU[Q.fecha.m - 1]} típico: ${Math.round(LU.r.climMensual[Q.fecha.m - 1])} mm).`), Q.modo === "ahora" ? (r.textContent = "Ahora en Ciudad del Saber", i.textContent = s + c) : (r.textContent = `${SU(Q.fecha)} · ${mU(Q.min)}`, i.textContent = (Q.mesSerie === null ? s : "") + c);
+	let s = e.alt > .5 ? `El sol está a ${dU(e.alt)}° sobre el horizonte, hacia el ${RB(e.az)}; la sombra de un poste de 1 m mide ${n.largo > 99 ? "más de 99 m" : dU(n.largo, 2) + " m"} y se proyecta hacia el ${RB(n.rumbo)}.` : e.alt > -6 ? "El sol acaba de cruzar el horizonte: es el crepúsculo." : dG(t), c = "";
+	if (t?.fuente === "vivo" && t.albrook && !t.albrook.auto) c = ` ${DH(t.albrook).replace(/^Albrook /, "El aeropuerto de Albrook, a 4 km, ")}. Cielo con ${Math.round(t.nubes)} % de nubes, según el modelo.`;
+	else if (t?.fuente === "vivo") c = kW(t) ? ` El modelo da lluvia en la zona (${dU(t.lluvia)} mm/h).` : t.llovizna ? ` Cielo con ${Math.round(t.nubes)} % de nubes; el modelo marca una llovizna leve en la zona (${dU(t.lluviaModelo)} mm/h), que aquí puede no notarse.` : ` Cielo con ${Math.round(t.nubes)} % de nubes.`;
+	else if (t?.fuente === "serie" || t?.fuente === "dia") {
+		let n = t.fuente === "dia" && t.modelo !== "era5" ? "el pronóstico" : "ERA5", r = Math.floor(Q.min / 60) * 60;
+		c = kW(t) ? ` Entre las ${mU(r)} y las ${mU(r + 60)}, ${n} da ${dU(t.lluvia)} mm de lluvia; mientras la escena dibuja lluvia, no dibuja sol directo.` : (t.lluvia ?? 0) >= .1 ? ` A esa hora ${n} da una lluvia débil en la celda (${dU(t.lluvia)} mm), que la escena no dibuja; ${Math.round(t.nubes)} % de nubes.` : ` A esa hora ${n} no da lluvia; ${Math.round(t.nubes)} % de nubes.`, !kW(t) && BG(t, e) && (c += ` Con ${Math.round(t.nubes)} % de nubes y ${fU(Math.round(t.dni / 10) * 10)} W/m² de sol directo de media en la hora, el sol sale a ratos o llega velado: la sombra es la de esa media, no la de este minuto.`), c += ` ${Math.round(t.temp)} °C, humedad ${Math.round(t.humedad)} %, viento ${Math.round(t.viento)} km/h desde el ${RB(t.dir)}.`;
+	} else t?.fuente === "mes" && (c = ` En ${cU[Q.fecha.m - 1]} de ${Q.fecha.y} ERA5 da ${Math.round(t.lluviaMes)} mm (media de ${cU[Q.fecha.m - 1]} en 2001–2025: ${Math.round(LU.r.climMensual[Q.fecha.m - 1])} mm). La lluvia que cae en la escena es proporcional al total del mes, no la de una hora.`);
+	Q.modo === "ahora" ? (r.textContent = "Ahora en Ciudad del Saber", i.textContent = s + c) : (r.textContent = `${SU(Q.fecha)} · ${mU(Q.min)}`, i.textContent = (Q.mesSerie === null ? s : "") + c);
 }
-function fG(e) {
+function pG(e) {
 	let t = [
 		[-18, [
 			10,
@@ -38010,10 +38043,10 @@ function fG(e) {
 	}
 	return t[t.length - 1][1];
 }
-function pG() {
+function mG() {
 	let e = Q.fecha, { sale: t, pone: n } = IB(e.y, e.m, e.d), r = PB(e.y, e.m, e.d), i = "";
 	for (let t = 0; t <= 1440; t += 20) {
-		let n = fG(MB({
+		let n = pG(MB({
 			...e,
 			h: 0,
 			min: t
@@ -38061,7 +38094,7 @@ function pG() {
 		n.style.left = u(t + 1, 15) / 10 + "%", n.textContent = e, f.appendChild(n);
 	});
 }
-function mG() {
+function hG() {
 	let e = LU.meses;
 	if (!e.length) return;
 	let t = Math.max(...e.map((e) => e.lluvia)), n = "";
@@ -38077,15 +38110,33 @@ function mG() {
 	}
 	Z("#dec-leyenda").textContent = `Lluvia de cada mes, 2001–2025 · el más lluvioso: ${Math.round(t)} mm`;
 }
-function hG() {
+function gG() {
+	let e = LU.ajuste?.resultado?.hora_calor;
+	return (LU.r?.momentos ?? []).map((t) => t.id === "hora-calor" && e ? {
+		...t,
+		fecha: e.fecha,
+		hora: e.hora,
+		valor: e.valor,
+		ajustado: !0,
+		crudo: t
+	} : t);
+}
+function _G() {
 	let e = Z("#momentos");
 	e.textContent = "";
-	for (let t of LU.r.momentos ?? []) {
+	for (let t of gG()) {
 		let n = document.createElement("li"), r = document.createElement("button");
-		r.type = "button", r.innerHTML = "<span></span><b></b>", r.querySelector("span").textContent = t.titulo, r.querySelector("b").textContent = `${dU(t.valor, +(t.valor < 100))} ${t.unidad}`, r.addEventListener("click", () => gG(t)), n.appendChild(r), e.appendChild(n);
+		r.type = "button", r.innerHTML = "<span></span><b></b>", r.querySelector("span").textContent = t.titulo, r.querySelector("b").textContent = `${dU(t.valor, +(t.valor < 100))} ${t.unidad}`, r.addEventListener("click", () => yG(t)), n.appendChild(r), e.appendChild(n);
 	}
 }
-function gG(e) {
+function vG(e, t) {
+	let n = `${dU(e.valor, +(e.valor < 100))} ${e.unidad}`;
+	if (e.unidad !== "°C") return `${t}: ${n}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.`;
+	if (!e.ajustado) return `${t}: ${n}, según ERA5 sin ajustar para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un termómetro en el sitio.`;
+	let [r, i, a] = e.crudo.fecha.split("-").map(Number);
+	return `${t}: ${n}, ERA5 ajustado al aeropuerto de Albrook para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un termómetro en el sitio. Sin ajustar, la hora más calurosa de ERA5 es el ${a} de ${cU[i - 1]} de ${r} a las ${mU(e.crudo.hora * 60)}, con ${dU(e.crudo.valor)} °C.`;
+}
+function yG(e) {
 	let [t, n, r] = e.fecha.split("-").map(Number), i = /^mes/.test(e.id), a = /^anio/.test(e.id);
 	if (!i && !a) {
 		let i = `${r} de ${cU[n - 1]} de ${t}${/^hora-lluvia|^dia/.test(e.id) ? `, de ${mU(e.hora * 60 - 60)} a ${mU(e.hora * 60)}` : ", " + mU(e.hora * 60)}`;
@@ -38098,11 +38149,11 @@ function gG(e) {
 			min: /^hora-lluvia|^dia/.test(e.id) ? e.hora * 60 - 30 : e.hora * 60,
 			vista: "esquina",
 			titulo: e.titulo + " de la serie",
-			texto: `${i}: ${dU(e.valor, +(e.valor < 100))} ${e.unidad}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.`
-		}), SG("decadas"), Q.momento = Q.momento;
+			texto: vG(e, i)
+		}), TG("decadas"), Q.momento = Q.momento;
 		return;
 	}
-	bG(), yG(), Q.fecha = {
+	CG(), SG(), Q.fecha = {
 		y: t,
 		m: n,
 		d: r
@@ -38110,18 +38161,18 @@ function gG(e) {
 	let o = a ? `${t}` : i ? `${cU[n - 1]} de ${t}` : `${r} de ${cU[n - 1]} de ${t}${/^hora-lluvia/.test(e.id) ? `, de ${mU(e.hora * 60 - 60)} a ${mU(e.hora * 60)}` : /^hora/.test(e.id) ? ", " + mU(e.hora * 60) : ""}`;
 	Q.momento = {
 		titulo: e.titulo + " de la serie",
-		texto: `${o}: ${dU(e.valor, +(e.valor < 100))} ${e.unidad}, según el reanálisis para la celda que cubre el edificio (~28 km). Es un dato de modelo, no de un pluviómetro en el sitio.`
-	}, Q.mesSerie = i || a ? (t - 2001) * 12 + n - 1 : null, sG = "";
+		texto: vG(e, o)
+	}, Q.mesSerie = i || a ? (t - 2001) * 12 + n - 1 : null, cG = "";
 }
-function _G(e) {
+function bG(e) {
 	let t = sU ? 4 : 1;
 	if (Q.pestana === "dia") {
 		let { sale: n, pone: r } = IB(Q.fecha.y, Q.fecha.m, Q.fecha.d);
-		Q.min += e * 60 * 1.6 * t, Q.min > r + 50 && yG();
+		Q.min += e * 60 * 1.6 * t, Q.min > r + 50 && SG();
 	} else if (Q.pestana === "anio") {
 		let n = yU(Q.fecha) + Math.max(1, Math.round(e * 60)) * t;
 		if (n > 364) {
-			yG();
+			SG();
 			return;
 		}
 		Q.fecha = bU(Q.fecha.y, n);
@@ -38129,7 +38180,7 @@ function _G(e) {
 		Q.acum = 0;
 		let e = (Q.mesSerie ?? -1) + 1;
 		if (e >= 300) {
-			yG();
+			SG();
 			return;
 		}
 		Q.mesSerie = e, Q.fecha = {
@@ -38139,9 +38190,9 @@ function _G(e) {
 		}, Q.min = 900;
 	}
 }
-function vG() {
-	if (Q.reproduce) return yG();
-	if (bG(), Q.momento = null, Q.reproduce = !0, Q.pestana === "dia") {
+function xG() {
+	if (Q.reproduce) return SG();
+	if (CG(), Q.momento = null, Q.reproduce = !0, Q.pestana === "dia") {
 		let { sale: e } = IB(Q.fecha.y, Q.fecha.m, Q.fecha.d);
 		Q.min = e - 25;
 	} else Q.pestana === "anio" ? Q.fecha = {
@@ -38151,14 +38202,14 @@ function vG() {
 	} : (Q.mesSerie = -1, Q.acum = 1);
 	Z("#reproducir").setAttribute("aria-pressed", "true"), Z("#reproducir").setAttribute("aria-label", "Pausar"), EW();
 }
-function yG() {
+function SG() {
 	Q.reproduce = !1, Z("#reproducir").setAttribute("aria-pressed", "false"), Z("#reproducir").setAttribute("aria-label", "Reproducir");
 }
-function bG() {
-	Q.modo !== "explorar" && (Q.modo = "explorar", sG = "");
+function CG() {
+	Q.modo !== "explorar" && (Q.modo = "explorar", cG = "");
 }
-function xG(e = !0) {
-	yG(), Q.mesSerie = null, Q.momento = null, Q.aguacero = !1, Z("#capa-aguacero").checked = !1;
+function wG(e = !0) {
+	SG(), Q.mesSerie = null, Q.momento = null, Q.aguacero = !1, Z("#capa-aguacero").checked = !1;
 	let t = vU();
 	if (e && Q.modo !== "ahora") {
 		dW({
@@ -38178,9 +38229,9 @@ function xG(e = !0) {
 		y: t.y,
 		m: t.m,
 		d: t.d
-	}, Q.min = t.min, e && !Q.fachada && yW(jU.esquina, 1.6, "esquina"), sG = "";
+	}, Q.min = t.min, e && !Q.fachada && yW(jU.esquina, 1.6, "esquina"), cG = "";
 }
-function SG(e) {
+function TG(e) {
 	e !== "dia" && XU(), Q.pestana = e, document.querySelectorAll("[data-tab]").forEach((t) => {
 		t.setAttribute("aria-selected", String(t.dataset.tab === e)), t.tabIndex = t.dataset.tab === e ? 0 : -1;
 	});
@@ -38189,18 +38240,18 @@ function SG(e) {
 		"anio",
 		"decadas"
 	]) Z("#regla-" + t).hidden = t !== e;
-	Z("#momentos-caja").hidden = e !== "decadas", e !== "decadas" && (Q.mesSerie = null, Q.momento = null), sG = "";
+	Z("#momentos-caja").hidden = e !== "decadas", e !== "decadas" && (Q.mesSerie = null, Q.momento = null), cG = "";
 }
-function CG() {
+function EG() {
 	new ResizeObserver(() => document.documentElement.style.setProperty("--dock-h", Z("#dock").offsetHeight + "px")).observe(Z("#dock")), Z("#sonido").addEventListener("click", () => {
 		let e = Z("#sonido").getAttribute("aria-pressed") !== "true";
 		e ? RU.encender() : RU.apagar(), Z("#sonido").setAttribute("aria-pressed", String(e));
 	}), Z("#info").addEventListener("click", () => {
 		let e = Z("#acerca");
 		e.showModal ? e.showModal() : e.setAttribute("open", "");
-	}), Z("#cerrar-acerca").addEventListener("click", () => Z("#acerca").close?.()), Z("#ahora").addEventListener("click", () => xG());
+	}), Z("#cerrar-acerca").addEventListener("click", () => Z("#acerca").close?.()), Z("#ahora").addEventListener("click", () => wG());
 	let e = [...document.querySelectorAll("[data-tab]")], t = (e) => {
-		SG(e.dataset.tab), Q.explica = "tab-" + e.dataset.tab, sG = "", TW();
+		TG(e.dataset.tab), Q.explica = "tab-" + e.dataset.tab, cG = "", TW();
 	};
 	e.forEach((n, r) => {
 		n.addEventListener("click", () => t(n)), n.addEventListener("keydown", (n) => {
@@ -38216,23 +38267,23 @@ function CG() {
 			a.focus(), t(a);
 		});
 	}), document.querySelectorAll("[data-explica]").forEach((e) => {
-		e.addEventListener("click", () => CK(e.dataset.explica)), e.addEventListener("keydown", (t) => {
-			(t.key === "Enter" || t.key === " ") && (t.preventDefault(), CK(e.dataset.explica));
+		e.addEventListener("click", () => DK(e.dataset.explica)), e.addEventListener("keydown", (t) => {
+			(t.key === "Enter" || t.key === " ") && (t.preventDefault(), DK(e.dataset.explica));
 		});
 	}), Z("#rotulo-cerrar").addEventListener("click", () => {
-		TW(), Q.explica = null, document.querySelectorAll("[data-explica]").forEach((e) => e.setAttribute("aria-pressed", "false")), sG = "";
+		TW(), Q.explica = null, document.querySelectorAll("[data-explica]").forEach((e) => e.setAttribute("aria-pressed", "false")), cG = "";
 	}), Z("#rotulo-abrir").addEventListener("click", () => {
-		TG.abierto = !0, TG.t = performance.now(), wG(null);
+		OG.abierto = !0, OG.t = performance.now(), DG(null);
 	}), Z("#lente-info").addEventListener("click", () => {
-		nW(), Q.verLeyenda = !Q.verLeyenda, Q.verLeyenda && wG("leyenda"), sG = "";
+		nW(), Q.verLeyenda = !Q.verLeyenda, Q.verLeyenda && DG("leyenda"), cG = "";
 	}), Z("#ley-cerrar").addEventListener("click", () => {
-		Q.verLeyenda = !1, sG = "";
+		Q.verLeyenda = !1, cG = "";
 	}), Z("#ley-texto").addEventListener("click", () => {
 		let e = Z("#leyenda");
-		GG(e.classList.toggle("texto")), kG(e);
-	}), innerWidth <= 760 && (Z("#ley-mas").open = !1), XG();
+		YG(e.classList.toggle("texto")), MG(e);
+	}), innerWidth <= 760 && (Z("#ley-mas").open = !1), eK();
 	let n = () => {
-		nW(), r(!1), Z("#acerca").close?.(), TK(0);
+		nW(), r(!1), Z("#acerca").close?.(), kK(0);
 	};
 	[
 		"#abrir-recorrido",
@@ -38245,20 +38296,20 @@ function CG() {
 		nW(), r(!0), Z("#sirve").scrollTop = 0;
 	}), Z("#acerca-sirve").addEventListener("click", () => {
 		Z("#acerca").close?.(), r(!0), Z("#sirve").scrollTop = 0;
-	}), Z("#rec-sig").addEventListener("click", () => TK(Q.paso + 1)), Z("#rec-prev").addEventListener("click", () => TK(Q.paso - 1)), Z("#rec-salir").addEventListener("click", () => {
-		TK(null), EK(Z("#abrir-recorrido"));
-	}), Z("#rec-plegar").addEventListener("click", () => DK(!document.documentElement.classList.contains("rec-plegado"))), Z("#rec-ver").addEventListener("click", OK), Z("#capa-nitidez").checked = zW.fija, Z("#capa-nitidez").addEventListener("change", (e) => {
-		zW.fija = e.target.checked, zW.iv = [], zW.techo = 0;
+	}), Z("#rec-sig").addEventListener("click", () => kK(Q.paso + 1)), Z("#rec-prev").addEventListener("click", () => kK(Q.paso - 1)), Z("#rec-salir").addEventListener("click", () => {
+		kK(null), AK(Z("#abrir-recorrido"));
+	}), Z("#rec-plegar").addEventListener("click", () => jK(!document.documentElement.classList.contains("rec-plegado"))), Z("#rec-ver").addEventListener("click", MK), Z("#capa-nitidez").checked = BW.fija, Z("#capa-nitidez").addEventListener("change", (e) => {
+		BW.fija = e.target.checked, BW.iv = [], BW.techo = 0;
 		try {
-			localStorage.setItem("e106-nitidez", zW.fija ? "1" : "0");
+			localStorage.setItem("e106-nitidez", BW.fija ? "1" : "0");
 		} catch {}
-		$.sucio = !0, UW();
+		$.sucio = !0, WW();
 	}), Z("#hora").addEventListener("input", (e) => {
-		yG(), bG(), Q.momento = null, Q.mesSerie = null, Q.min = +e.target.value;
+		SG(), CG(), Q.momento = null, Q.mesSerie = null, Q.min = +e.target.value;
 	}), Z("#dia-anio").addEventListener("input", (e) => {
-		yG(), bG(), Q.momento = null, Q.fecha = bU(Q.fecha.y, +e.target.value);
+		SG(), CG(), Q.momento = null, Q.fecha = bU(Q.fecha.y, +e.target.value);
 	}), Z("#mes-serie").addEventListener("input", (e) => {
-		yG(), bG(), Q.momento = null;
+		SG(), CG(), Q.momento = null;
 		let t = +e.target.value, n = 2001 + Math.floor(t / 12), r = t % 12 + 1;
 		Q.mesSerie = null, Q.fecha = {
 			y: n,
@@ -38266,12 +38317,12 @@ function CG() {
 			d: Math.min(Q.fecha.d, xU(n, r))
 		};
 	}), Z("#reproducir").addEventListener("click", () => {
-		nW(), vG();
+		nW(), xG();
 	}), Z("#lect-resumen").addEventListener("click", () => {
 		let e = !document.documentElement.classList.contains("lect-abiertas");
 		document.documentElement.classList.toggle("lect-abiertas", e), Z("#lect-resumen").setAttribute("aria-expanded", String(e));
 	});
-	for (let e of [Z(".hud-botones"), Z("#leyenda")]) e.addEventListener("scroll", () => kG(e), { passive: !0 }), new ResizeObserver(() => OG(e)).observe(e);
+	for (let e of [Z(".hud-botones"), Z("#leyenda")]) e.addEventListener("scroll", () => MG(e), { passive: !0 }), new ResizeObserver(() => jG(e)).observe(e);
 	for (let e of [
 		"#sirve",
 		"#ir-a",
@@ -38281,8 +38332,8 @@ function CG() {
 		"#rec-cuerpo"
 	].map((e) => Z(e)).filter(Boolean)) {
 		let t = document.createElement("div");
-		t.className = "panel-sigue", t.setAttribute("aria-hidden", "true"), t.textContent = "Hay más abajo ▾", e.append(t), e.addEventListener("scroll", () => kG(e), { passive: !0 });
-		let n = new ResizeObserver(() => OG(e));
+		t.className = "panel-sigue", t.setAttribute("aria-hidden", "true"), t.textContent = "Hay más abajo ▾", e.append(t), e.addEventListener("scroll", () => MG(e), { passive: !0 });
+		let n = new ResizeObserver(() => jG(e));
 		n.observe(e);
 		for (let r of e.children) r !== t && n.observe(r);
 	}
@@ -38294,7 +38345,7 @@ function CG() {
 		nW(), EW();
 	}));
 	let r = (e) => {
-		Z("#sirve").hidden = !e, Z("#abrir-sirve").setAttribute("aria-expanded", String(e)), e && (nW(), cK(!1), wG("sirve"));
+		Z("#sirve").hidden = !e, Z("#abrir-sirve").setAttribute("aria-expanded", String(e)), e && (nW(), fK(!1), DG("sirve"));
 	};
 	Z("#abrir-sirve").addEventListener("click", () => r(Z("#sirve").hidden)), Z("#cerrar-sirve").addEventListener("click", () => r(!1)), document.querySelectorAll(".hallazgo .ver").forEach((e) => e.addEventListener("click", () => {
 		let t = e.closest(".hallazgo"), n = t.dataset;
@@ -38310,7 +38361,7 @@ function CG() {
 		});
 	}));
 	let i = (e) => {
-		if (Z("#ir-a").hidden = !e, Z("#elegir").setAttribute("aria-expanded", String(e)), Z("#abrir-ir").setAttribute("aria-expanded", String(e)), e && (nW(), cK(!1), wG("ir"), XU()), e) {
+		if (Z("#ir-a").hidden = !e, Z("#elegir").setAttribute("aria-expanded", String(e)), Z("#abrir-ir").setAttribute("aria-expanded", String(e)), e && (nW(), fK(!1), DG("ir"), XU()), e) {
 			{
 				let e = vU(), t = new Date(Date.UTC(e.y, e.m - 1, e.d + 15));
 				Z("#ir-fecha").max = CU({
@@ -38319,10 +38370,10 @@ function CG() {
 					d: t.getUTCDate()
 				});
 			}
-			Z("#ir-fecha").value = CU(Q.fecha), Z("#ir-hora").value = mU(Q.min), GK(), innerWidth > 760 && Z("#ir-fecha").focus();
+			Z("#ir-fecha").value = CU(Q.fecha), Z("#ir-hora").value = mU(Q.min), YK(), innerWidth > 760 && Z("#ir-fecha").focus();
 		}
 	};
-	globalThis.__abrirIr = i, Z("#abrir-confort").addEventListener("click", () => NK(Z("#confort").hidden)), Z("#cerrar-confort").addEventListener("click", () => NK(!1)), Z("#elegir").addEventListener("click", () => i(Z("#ir-a").hidden)), Z("#abrir-ir").addEventListener("click", () => i(Z("#ir-a").hidden)), Z("#ir-fecha").addEventListener("change", () => {
+	globalThis.__abrirIr = i, Z("#abrir-confort").addEventListener("click", () => LK(Z("#confort").hidden)), Z("#cerrar-confort").addEventListener("click", () => LK(!1)), Z("#elegir").addEventListener("click", () => i(Z("#ir-a").hidden)), Z("#abrir-ir").addEventListener("click", () => i(Z("#ir-a").hidden)), Z("#ir-fecha").addEventListener("change", () => {
 		let [e, t] = Z("#ir-fecha").value.split("-").map(Number);
 		if (e > 1900 && t) {
 			let n = Q.fecha;
@@ -38330,7 +38381,7 @@ function CG() {
 				...Q.fecha,
 				y: e,
 				m: t
-			}, GK(), Q.fecha = n;
+			}, YK(), Q.fecha = n;
 		}
 	}), Z("#cerrar-ir").addEventListener("click", () => i(!1)), Z("#ir-form").addEventListener("submit", (e) => {
 		e.preventDefault();
@@ -38364,13 +38415,13 @@ function CG() {
 	}), document.querySelectorAll(".lentes [data-lente]").forEach((e) => e.addEventListener("click", () => {
 		nW(), TW();
 		let t = !(e.dataset.lente === "partes" && innerWidth <= 760);
-		WG(e.dataset.lente, t), t && wG("leyenda"), e.dataset.lente === "sombras" && $.camera.position.y < 30 && yW(jU.planta, 1.6, "planta"), e.dataset.lente === "partes" && $.camera.position.y > 60 && yW(jU.esquina, 1.6, "esquina");
+		JG(e.dataset.lente, t), t && DG("leyenda"), e.dataset.lente === "sombras" && $.camera.position.y < 30 && yW(jU.planta, 1.6, "planta"), e.dataset.lente === "partes" && $.camera.position.y > 60 && yW(jU.esquina, 1.6, "esquina");
 	})), Z("#ley-modos").addEventListener("click", (e) => {
 		let t = e.target.closest("[data-modo]");
-		t && VG[Q.lente] && (Q[VG[Q.lente]] = t.dataset.modo, Q.claveRosa = "", sG = "", TW());
-	}), Z("#guardar-img").addEventListener("click", xK), Z("#copiar-enlace").addEventListener("click", aW), Z("#abrir-capas").addEventListener("click", () => {
+		t && GG[Q.lente] && (Q[GG[Q.lente]] = t.dataset.modo, Q.claveRosa = "", cG = "", TW());
+	}), Z("#guardar-img").addEventListener("click", TK), Z("#copiar-enlace").addEventListener("click", aW), Z("#abrir-capas").addEventListener("click", () => {
 		let e = Z("#capas"), t = e.hidden;
-		e.hidden = !t, Z("#abrir-capas").setAttribute("aria-expanded", String(t)), t && (nW(), wG("capas"), UW());
+		e.hidden = !t, Z("#abrir-capas").setAttribute("aria-expanded", String(t)), t && (nW(), DG("capas"), WW());
 	}), Z("#capa-aguacero").addEventListener("change", (e) => {
 		Q.aguacero = e.target.checked;
 	}), Z("#capa-larga").addEventListener("change", (e) => {
@@ -38394,8 +38445,8 @@ function CG() {
 	})), Z("#brujula").addEventListener("click", () => {
 		nW(), yW(jU.planta, 1.6, "planta");
 	}), document.querySelectorAll("[data-ir-fachada]").forEach((e) => e.addEventListener("click", (t) => {
-		t.preventDefault(), AG(e.dataset.irFachada);
-	})), Z("#qr-cerrar").addEventListener("click", () => FG(!0)), Z("#salir-fachada").addEventListener("click", () => {
+		t.preventDefault(), NG(e.dataset.irFachada);
+	})), Z("#qr-cerrar").addEventListener("click", () => RG(!0)), Z("#salir-fachada").addEventListener("click", () => {
 		Q.fachada = null, document.documentElement.classList.remove("en-fachada"), Z("#panel-fachada").hidden = !0;
 		try {
 			history.replaceState(null, "", location.pathname + location.search);
@@ -38403,7 +38454,7 @@ function CG() {
 		yW(jU.esquina, 1.6, "esquina");
 	}), addEventListener("hashchange", () => {
 		let e = location.hash.replace("#", "");
-		zU || (zB[e] ? (AG(e), PG(e)) : rW());
+		zU || (zB[e] ? (NG(e), LG(e)) : rW());
 	}), addEventListener("keydown", (e) => {
 		if (!e.target.closest?.("input, textarea")) {
 			if (e.key === "1" || e.key === "2" || e.key === "3") {
@@ -38414,7 +38465,7 @@ function CG() {
 				][e.key - 1];
 				Q.fachada = null, document.documentElement.classList.remove("en-fachada"), yW(jU[t], 1.6, t);
 			}
-			Q.viaje && (e.key === "Escape" || e.key === " ") ? (Q.viaje.t0 = -1e9, e.preventDefault()) : Q.paso != null && e.key === "ArrowRight" ? TK(Q.paso + 1) : Q.paso != null && e.key === "ArrowLeft" && TK(Q.paso - 1);
+			Q.viaje && (e.key === "Escape" || e.key === " ") ? (Q.viaje.t0 = -1e9, e.preventDefault()) : Q.paso != null && e.key === "ArrowRight" ? kK(Q.paso + 1) : Q.paso != null && e.key === "ArrowLeft" && kK(Q.paso - 1);
 		}
 	}), Z("#saltar-a")?.addEventListener("click", (e) => {
 		e.preventDefault(), Z("#principal").focus();
@@ -38427,70 +38478,70 @@ function CG() {
 			"#confort",
 			"#recorrido"
 		].find((e) => !Z(e).hidden && Z(e).contains(document.activeElement)), n = t === "#recorrido" ? Z("#abrir-recorrido") : t && document.querySelector(`[aria-controls="${t.slice(1)}"][aria-expanded="true"]`);
-		Q.paso != null && !Q.viaje && TK(null), t && (t !== "#recorrido" || Q.paso == null) && setTimeout(() => EK(n), 0);
+		Q.paso != null && !Q.viaje && kK(null), t && (t !== "#recorrido" || Q.paso == null) && setTimeout(() => AK(n), 0);
 	}), addEventListener("keydown", (e) => {
-		e.key === "Escape" && (FG(!Z("#qr").hidden && Z("#qr").contains(document.activeElement)), nW(), cK(!1), Z("#sirve").hidden = !0, Z("#abrir-sirve").setAttribute("aria-expanded", "false"), Z("#capas").hidden = !0, Z("#abrir-capas").setAttribute("aria-expanded", "false"), Z("#ir-a").hidden = !0, Z("#elegir").setAttribute("aria-expanded", "false"), Z("#abrir-ir").setAttribute("aria-expanded", "false"), NK(!1));
+		e.key === "Escape" && (RG(!Z("#qr").hidden && Z("#qr").contains(document.activeElement)), nW(), fK(!1), Z("#sirve").hidden = !0, Z("#abrir-sirve").setAttribute("aria-expanded", "false"), Z("#capas").hidden = !0, Z("#abrir-capas").setAttribute("aria-expanded", "false"), Z("#ir-a").hidden = !0, Z("#elegir").setAttribute("aria-expanded", "false"), Z("#abrir-ir").setAttribute("aria-expanded", "false"), LK(!1));
 	});
 	let a = FB(PU.y);
 	Z("#cenit-txt").textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${PU.y}, el ${a[0].d} de ${cU[a[0].m - 1]} y el ${a[1].d} de ${cU[a[1].m - 1]}, hacia las ${mU(a[0].h * 60 + a[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
 }
-function wG(e) {
-	e !== "sirve" && !Z("#sirve").hidden && (Z("#sirve").hidden = !0, Z("#abrir-sirve").setAttribute("aria-expanded", "false")), e !== "ir" && !Z("#ir-a").hidden && globalThis.__abrirIr?.(!1), e !== "confort" && !Z("#confort").hidden && NK(!1), e !== "capas" && !Z("#capas").hidden && (Z("#capas").hidden = !0, Z("#abrir-capas").setAttribute("aria-expanded", "false")), e !== "leyenda" && Q.verLeyenda && (Q.verLeyenda = !1, sG = "");
+function DG(e) {
+	e !== "sirve" && !Z("#sirve").hidden && (Z("#sirve").hidden = !0, Z("#abrir-sirve").setAttribute("aria-expanded", "false")), e !== "ir" && !Z("#ir-a").hidden && globalThis.__abrirIr?.(!1), e !== "confort" && !Z("#confort").hidden && LK(!1), e !== "capas" && !Z("#capas").hidden && (Z("#capas").hidden = !0, Z("#abrir-capas").setAttribute("aria-expanded", "false")), e !== "leyenda" && Q.verLeyenda && (Q.verLeyenda = !1, cG = "");
 }
-var TG = {
+var OG = {
 	clave: null,
 	t: 0,
 	abierto: !1
 };
-function EG(e) {
-	let t = `${Q.modo}|${Q.momento?.titulo ?? ""}|${Q.explica ?? ""}|${Q.fachada ?? ""}|${Q.viaje ? "v" : ""}`;
-	t !== TG.clave && (TG.clave = t, TG.t = e, TG.abierto = !1);
-	let n = !!Q.explica || !!Q.viaje || !Z("#rotulo-noche").hidden, r = !Z("#leyenda").hidden || !Z("#capas").hidden, i = !n && (r || !TG.abierto && e - TG.t > (Q.momento ? 14e3 : 8e3)), a = document.documentElement;
-	a.classList.contains("rotulo-plegado") !== i && (a.classList.toggle("rotulo-plegado", i), Z("#rotulo-abrir").setAttribute("aria-expanded", String(!i)), oK.f = "");
-}
-var DG = /* @__PURE__ */ new Set();
-function OG(e) {
-	DG.size || requestAnimationFrame(() => {
-		for (let e of DG) kG(e);
-		DG.clear();
-	}), DG.add(e);
-}
 function kG(e) {
+	let t = `${Q.modo}|${Q.momento?.titulo ?? ""}|${Q.explica ?? ""}|${Q.fachada ?? ""}|${Q.viaje ? "v" : ""}`;
+	t !== OG.clave && (OG.clave = t, OG.t = e, OG.abierto = !1);
+	let n = !!Q.explica || !!Q.viaje || !Z("#rotulo-noche").hidden, r = !Z("#leyenda").hidden || !Z("#capas").hidden, i = !n && (r || !OG.abierto && e - OG.t > (Q.momento ? 14e3 : 8e3)), a = document.documentElement;
+	a.classList.contains("rotulo-plegado") !== i && (a.classList.toggle("rotulo-plegado", i), Z("#rotulo-abrir").setAttribute("aria-expanded", String(!i)), uK.f = "");
+}
+var AG = /* @__PURE__ */ new Set();
+function jG(e) {
+	AG.size || requestAnimationFrame(() => {
+		for (let e of AG) MG(e);
+		AG.clear();
+	}), AG.add(e);
+}
+function MG(e) {
 	if (!e) return;
 	let t = e.scrollWidth > e.clientWidth + 2 && getComputedStyle(e).overflowX !== "visible" ? e.scrollLeft + e.clientWidth < e.scrollWidth - 4 : e.scrollTop + e.clientHeight < e.scrollHeight - 4;
 	e.classList.contains("hay-mas") !== t && e.classList.toggle("hay-mas", t);
 }
-function AG(e) {
-	zB[e] && (xG(!1), jG(e), yW(MU[e]));
+function NG(e) {
+	zB[e] && (wG(!1), PG(e), yW(MU[e]));
 }
-function jG(e) {
+function PG(e) {
 	let t = zB[e];
-	t && (TW(), Q.fachada = e, bW(null), document.documentElement.classList.add("en-fachada"), Z("#fachada-titulo").textContent = `${t.nombre}: ${t.lugar}`, Z("#panel-fachada").hidden = !1, sG = "");
+	t && (TW(), Q.fachada = e, bW(null), document.documentElement.classList.add("en-fachada"), Z("#fachada-titulo").textContent = `${t.nombre}: ${t.lugar}`, Z("#panel-fachada").hidden = !1, cG = "");
 }
-var MG = {
+var FG = {
 	se: "sureste",
 	no: "noroeste",
 	ne: "lateral noreste",
 	so: "lateral suroeste"
 };
-function NG(e) {
-	let t = FU, n = (e) => MG[e], r = t ? Object.keys(t.lluviaViento).sort((e, n) => t.lluviaViento[n].anual - t.lluviaViento[e].anual) : null, i = t?.viento?.anio.frente, a = i ? Object.keys(i).sort((e, t) => i[t] - i[e]) : null, o = (e) => {
+function IG(e) {
+	let t = FU, n = (e) => FG[e], r = t ? Object.keys(t.lluviaViento).sort((e, n) => t.lluviaViento[n].anual - t.lluviaViento[e].anual) : null, i = t?.viento?.anio.frente, a = i ? Object.keys(i).sort((e, t) => i[t] - i[e]) : null, o = (e) => {
 		if (!r) return "Cuando llueve con viento, unas paredes se mojan más que otras.";
 		let t = r.indexOf(e);
 		return t === 0 ? "Es la pared que más se moja cuando llueve con viento." : t === 1 ? `Después de la ${n(r[0])}, es la que más se moja cuando llueve con viento.` : t === r.length - 1 ? "Es la pared que menos se moja cuando llueve con viento." : `Se moja menos que la ${n(r[0])} cuando llueve con viento.`;
 	};
 	return {
-		se: ["Recibe el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de incidir sobre el vidrio? Compruébalo con la regla del día.", `El viento llega casi siempre por la cara opuesta, la ${a ? n(a[0]) : "noroeste"}, así que el aire que cruzara el edificio saldría por aquí, si el interior lo deja pasar. ¿Qué ventanas o rejillas lo dejarían salir?`],
+		se: ["Recibe el sol de la mañana. Párate bajo el alero de la entrada: ¿a qué hora crees que el sol deja de incidir sobre el vidrio? Compruébalo con la regla del día.", `El viento llega sobre todo por la cara opuesta, la ${a ? n(a[0]) : "noroeste"} (unas seis de cada diez horas), así que el aire que cruzara el edificio saldría por aquí, si el interior lo deja pasar. ¿Qué ventanas o rejillas lo dejarían salir?`],
 		no: [`${o("no")} ¿Ves manchas de humedad o pintura gastada abajo o bajo las ventanas? Compáralo con la forma de ver «Lluvia».`, `${((e) => a ? a.indexOf(e) === 0 ? `Recibe el viento de frente más horas que ninguna otra: ${fU(i[e])} al año.` : `Recibe el viento de frente unas ${fU(i[e])} horas al año; la ${n(a[0])}, unas ${fU(i[a[0]])}.` : "El viento le llega de frente muchas horas al año.")("no")} Ponte de espaldas a la pared: ¿sientes la brisa en la cara?`],
 		ne: ["Mira al noreste, del lado por donde sale el sol, y solo recibe sol en la mañana. ¿A qué hora crees que queda en sombra? Compruébalo con la regla del día.", `${o("ne")} ¿El zócalo y la pintura se ven más limpios que en la noroeste? Compáralo con la forma de ver «Lluvia».`],
 		so: ["Recibe el sol de la tarde. Párate bajo el alero: ¿a qué hora crees que el sol empieza a incidir sobre el vidrio? Búscala con la regla del día.", `${o("so")} ¿Ves marcas de agua bajo las ventanas o en las esquinas? Compáralo con la forma de ver «Lluvia».`]
 	}[e];
 }
-function PG(e) {
+function LG(e) {
 	let t = zB[e], n = e.replace("fachada-", "");
 	if (!t) return;
 	let r = () => {
-		Z("#qr-t").textContent = `Estás frente a la fachada ${MG[n]}`, Z("#qr-lugar").textContent = t.lugar[0].toUpperCase() + t.lugar.slice(1) + ".", Z("#qr-preg").innerHTML = NG(n).map((e) => `<li>${e}</li>`).join("");
+		Z("#qr-t").textContent = `Estás frente a la fachada ${FG[n]}`, Z("#qr-lugar").textContent = t.lugar[0].toUpperCase() + t.lugar.slice(1) + ".", Z("#qr-preg").innerHTML = IG(n).map((e) => `<li>${e}</li>`).join("");
 	};
 	if (r(), !FU) {
 		let e = setInterval(() => {
@@ -38501,52 +38552,52 @@ function PG(e) {
 	let i = Z("#qr");
 	i.hidden = !1, i.focus({ preventScroll: !0 });
 }
-function FG(e) {
+function RG(e) {
 	let t = Z("#qr");
 	t && !t.hidden && (t.hidden = !0, e && Z("#salir-fachada")?.focus({ preventScroll: !0 }));
 }
-var IG = 120;
-function LG(e, t) {
+var zG = 120, BG = (e, t) => t.alt > 2 && e?.dni != null && e.dni >= zG && (e.nubes ?? 0) >= 90;
+function VG(e, t) {
 	let n = zB[Q.fachada], r = LB(e.alt, e.az), i = BB(e.alt, e.az, n.rumbo);
 	if (!r) {
 		Z("#fachada-texto").textContent = `Son las ${mU(Q.min)} en Panamá y el sol está ${e.alt <= 0 ? "bajo el horizonte" : "en el horizonte"}.`;
 		return;
 	}
-	let a = t?.dni, o = a != null && a < IG, s = `hacia el ${RB(r.rumbo)}`, c = `${dU(r.largo, 2)} veces tu estatura`, l = i <= .02 ? "Esta fachada está en sombra." : a == null ? "El sol mira a esta fachada; si el cielo está despejado, incide sobre ella." : o ? `El sol mira a esta fachada, pero ${VB(e.alt) < IG ? "está tan bajo que su rayo llega débil" : a < 20 ? "las nubes lo tapan" : "las nubes casi lo tapan"}: la radiación directa es de ${fU(Math.round(a))} W/m², menos de los 120 W/m² con que la OMM cuenta horas de sol, y las sombras ${a < 20 ? "no se marcan" : "apenas se marcan"}.` : "Esta fachada recibe sol directo.";
-	Z("#fachada-texto").textContent = `Son las ${mU(Q.min)}. El sol está a ${dU(e.alt)}° de altura, hacia el ${RB(e.az)}. ${l} ` + (o ? `Si el sol se asoma, tu sombra se proyectará ${s} y medirá ${c}.` : `Tu sombra debería proyectarse ${s} y medir ${c}: compárala con la del modelo.`);
+	let a = t?.dni, o = a != null && a < zG, s = `hacia el ${RB(r.rumbo)}`, c = `${dU(r.largo, 2)} veces tu estatura`, l = jW(t), u = l && i > .02, d = !l && !o && BG(t, e), f = i <= .02 ? "Esta fachada está en sombra." : u ? `Llueve en la escena, así que no se dibuja sol directo${a == null ? "" : `; el dato de la hora da ${fU(Math.round(a))} W/m² de directa, el promedio de la hora en una celda de 28 km`}.` : a == null ? "El sol mira a esta fachada; si el cielo está despejado, incide sobre ella." : o ? `El sol mira a esta fachada, pero ${VB(e.alt) < zG ? "está tan bajo que su rayo llega débil" : a < 20 ? "las nubes lo tapan" : "las nubes casi lo tapan"}: la radiación directa es de ${fU(Math.round(a))} W/m², menos de los 120 W/m² con que la OMM cuenta horas de sol, y las sombras ${a < 20 ? "no se marcan" : "apenas se marcan"}.` : d ? `El sol mira a esta fachada; con ${Math.round(t.nubes)} % de nubes llega a ratos o velado (${fU(Math.round(a / 10) * 10)} W/m² de media en la hora).` : "Esta fachada recibe sol directo.";
+	Z("#fachada-texto").textContent = `Son las ${mU(Q.min)}. El sol está a ${dU(e.alt)}° de altura, hacia el ${RB(e.az)}. ${f}` + (l ? "" : o || d ? ` Si el sol se asoma, tu sombra se proyectará ${s} y medirá ${c}.` : ` Tu sombra debería proyectarse ${s} y medir ${c}: compárala con la del modelo.`);
 }
-function RG() {
-	sG = "", Q.kClimaDia = "";
+function HG() {
+	cG = "", Q.kClimaDia = "";
 }
-var zG = {
+var UG = {
 	foto: {
 		t: "Foto: el edificio como se vería",
 		rampa: null,
 		que: "El sol está calculado para este minuto exacto. El cielo, las nubes y la lluvia salen del dato del tiempo de esa hora. El suelo y los muros siguen mojados mientras no se seca lo que llovió en las horas anteriores, y la vegetación se mece con el viento de esa hora.",
-		prueba: "Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, el alero de 1,65 m deja las paredes casi todas en sombra.",
-		porque: "Sirve para comparar con una foto real del mismo día y hora, y para ver el edificio con la luz de cualquier momento desde 1940.",
-		ojo: "La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.",
+		prueba: "Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, la sombra del alero de 1,65 m cubre las ventanas y casi todo el muro de cada piso.",
+		porque: "Sirve para comparar con una foto real del mismo día y hora el sol y las sombras, que están calculados al minuto, y para ver el edificio con la luz de cualquier momento desde 1940. La lluvia y la fuerza del sol de esa hora son de ERA5 y casi nunca coinciden con lo que se ve en una hora concreta.",
+		ojo: "La fuerza del sol de cada hora es el promedio de ERA5 en su celda: mientras la escena dibuja lluvia no dibuja sol directo, pero en una hora sin lluvia en el dato puede dibujar sombras aunque en el sitio llueva (pasó en seis de cada diez horas de 9 a 14 en que el observador de Albrook informó lluvia, 2017–2025). La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.",
 		tec: "Posición del sol: algoritmo de NOAA (hasta 0,03° en altura y 0,11° en azimut frente a NREL SPA). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras: contra el trazado de rayos sobre la geometría, bajo el alero salen unos 5 cm más cortas."
 	},
 	sol: {
 		t: "Sol: la irradiancia solar que incide en cada punto del edificio",
 		u: "W/m²",
-		rampa: ZW(wV),
+		rampa: QW(wV),
 		esc: [
 			"nada",
 			"400 W/m²",
 			"800 o más"
 		],
 		que: "Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio, la de los árboles y la de los vecinos más cercanos (el 105, el salón de un piso de enfrente y Balboa Academy): bajo el alero, el color baja.",
-		leer: "«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que con los cielos nublados de Panamá pesan mucho. Los números de abajo son los de una pared sin alero de cada orientación, y el techo: en W/m² en esta hora, y en kWh/m² en «Año típico».",
+		leer: "«Solo sol directo» es el rayo del sol. «Total» le suma la luz difusa del cielo y la que refleja el suelo, que en un año son entre el 57 y el 76 % del total en las paredes. Los números de abajo son los de una pared sin alero de cada orientación, y el techo: en W/m² en esta hora, y en kWh/m² en «Año típico».",
 		prueba: "Abre «Para qué sirve» → el hallazgo del alero (fachada SE, 15 de enero, 7:30) y pasa la regla hasta las 10:00: el muro sigue al sol, pero el vidrio bajo el alero queda en sombra. Luego cambia a «Total»: de día ninguna parte queda en cero.",
 		porque: "Es el asoleamiento del edificio: muestra qué partes necesitan protección y cuánto protege el alero, ventana por ventana. En un año, contando solo el sol directo, la sureste y la suroeste reciben más del doble que la noroeste; sumando la difusa y la reflejada, la noroeste recibe unos siete décimos de lo que recibe la sureste{RAD_NO_SE}.",
-		ojo: "La difusa usa un cielo que brilla más alrededor del sol (Hay-Davies); esa parte cercana al sol se tapa con la sombra del alero, pero el resto del cielo que tapan el alero o los vecinos no se descuenta: bajo el alero la exagera un poco. La reflejada supone que el suelo devuelve el 20 %. Los vecinos son volúmenes sobre las huellas de OpenStreetMap con alturas estimadas; los que están a más de ~60 m no proyectan sombra. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.",
+		ojo: "La difusa usa un cielo que brilla más alrededor del sol (Hay-Davies); esa parte cercana al sol se tapa con la sombra del alero, pero el resto del cielo que tapan el alero o los vecinos no se descuenta: en el vidrio bajo el alero, la difusa del cielo sale cerca del doble de la que llega. La reflejada supone que el suelo devuelve el 20 %. Los vecinos son volúmenes sobre las huellas de OpenStreetMap con alturas estimadas; los que están a más de ~60 m no proyectan sombra. Y no es temperatura: mucho sol en una pared no dice cuánto calor entra al edificio.",
 		tec: "Directa: radiación directa normal (DNI), que Open-Meteo deriva de la directa horizontal de ERA5 (resolución de 4 W/m²), × coseno del ángulo entre el sol y la superficie × sombra, con el mismo mapa de sombras de la escena. Difusa: modelo de Hay-Davies con la difusa horizontal de ERA5: la parte circunsolar (según cuánto sol directo llega frente al que llega fuera de la atmósfera) va con el ángulo del sol y con la sombra; el resto, × (1 + cos de la inclinación) / 2. Reflejada: global horizontal × 0,2 × (1 − cos de la inclinación) / 2."
 	},
 	lluvia: {
 		t: "Lluvia: qué fachada se moja cuando llueve con viento",
-		rampa: ZW(QW.lluvia),
+		rampa: QW($W.lluvia),
 		esc: [
 			"nada",
 			"",
@@ -38556,22 +38607,22 @@ var zG = {
 		leer: "«Esta hora» usa la lluvia y el viento de esa hora, en litros por metro cuadrado. «Año típico» es el promedio de un año, sumando 25 años de datos.",
 		prueba: "Pasa a «Año típico»: la noroeste se moja más de cinco veces lo que la fachada lateral noreste. Luego abre «Ir a…» y elige «La fachada que más se moja».",
 		porque: "Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados, y dónde no conviene poner materiales que sufren con el agua.",
-		ojo: "Es un índice para comparar las fachadas entre sí, no el agua que de verdad llega al muro: no descuenta el alero, los árboles ni los edificios vecinos, y el viento del modelo no tiene ráfagas. En las superficies oblicuas el color mezcla el de dos fachadas vecinas.",
+		ojo: "Es un índice para comparar las fachadas entre sí, no el agua que de verdad llega al muro: no descuenta el alero, los árboles ni los edificios vecinos, y el viento del modelo no tiene ráfagas. La norma no vale donde más del 25 % de la lluvia del año viene de tormentas convectivas fuertes; en Albrook una de cada tres horas con lluvia trae tormenta, así que aquí el índice ordena fachadas pero no es la cifra de la norma. Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material.",
 		tec: "Índice de lluvia batiente de la norma ISO 15927-3 en campo abierto: (2/9) · v · r^(8/9) · cos(D − θ), con v el viento a 10 m de altura (m/s), r la lluvia (mm/h), D de dónde viene el viento y θ hacia dónde mira la fachada. Datos ERA5, celda de unos 28 km."
 	},
 	viento: {
 		t: "Viento: de dónde viene y qué fachada lo recibe de frente",
-		rampa: ZW(QW.viento),
+		rampa: QW($W.viento),
 		esc: [
 			"nada",
 			"",
 			"mucho"
 		],
 		que: "En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.",
-		leer: "«Esta hora» muestra con flechas el viento de esa hora. «Seca» (diciembre a abril; para el IMHPA, diciembre y abril son meses de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.",
+		leer: "«Esta hora» muestra con flechas el viento de esa hora y, abajo, cuánto llega de frente a cada fachada (a menos de 60° de su perpendicular y desde 5 km/h). «Seca» (diciembre a abril; para el IMHPA, diciembre y abril son meses de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.",
 		prueba: "Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 12 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.",
 		porque: "Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.900 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.",
-		ojo: "Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, suele ser bastante más flojo y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). En las superficies oblicuas el color mezcla el de dos fachadas vecinas. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste queda casi igual (unas 5.200 horas al año) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.",
+		ojo: "Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, es de 0,6 a 0,8 veces el de 10 m (UN-Habitat, 2014, p. 29), y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste baja a unas 5.200 horas al año (ERA5, en los mismos años, unas 5.500) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.",
 		tec: "Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos."
 	},
 	sombras: {
@@ -38597,7 +38648,7 @@ var zG = {
 		ojo: "Los nombres son los de uso común en arquitectura. Las medidas salen del modelo 3D, que tiene una escala aproximada (±12 %), no de planos oficiales. El modelo muestra lo que se ve por fuera: no dice cómo es la estructura por dentro (columnas, vigas, refuerzos).",
 		tec: "Cada etiqueta se ancla a un punto del modelo y se dibuja en la cara que mira hacia ti. Medidas tomadas de la geometría: planta de 45,5 × 23 m; aleros a 3,74, 7,40 y 11,10 m, que salen 1,65 m del muro; base de 0,65 m; cumbrera a 15,7 m."
 	}
-}, BG = {
+}, WG = {
 	sol: [
 		["directa", "Solo directo"],
 		["total", "Total"],
@@ -38610,16 +38661,16 @@ var zG = {
 		["lluvias", "Lluvias"],
 		["anio", "Año"]
 	]
-}, VG = {
+}, GG = {
 	sol: "solModo",
 	lluvia: "aguaModo",
 	viento: "vientoModo"
 };
-function HG(e) {
+function KG(e) {
 	let t = FU?.radiacion?.fachadas;
 	return e.replace("{RAD_NO_SE}", t ? ` (~${pU(t.no.total)} contra ~${pU(t.se.total)} kWh/m² al año en una pared sin alero)` : "");
 }
-function UG() {
+function qG() {
 	let e = FU?.radiacion;
 	if (!e) return;
 	document.querySelectorAll("[data-rad]").forEach((t) => {
@@ -38633,23 +38684,23 @@ function UG() {
 	let n = Z("#leyenda");
 	n && (n.dataset.lente = "");
 }
-function WG(e, t = !0) {
-	e in zG || (e = "foto"), Q.lente = e, t && (Q.verLeyenda = !0), document.querySelectorAll(".lentes [data-lente]").forEach((t) => t.setAttribute("aria-pressed", String(t.dataset.lente === e))), QG(), oK.f = "", document.documentElement.classList.toggle("en-partes", e === "partes"), sG = "";
+function JG(e, t = !0) {
+	e in UG || (e = "foto"), Q.lente = e, t && (Q.verLeyenda = !0), document.querySelectorAll(".lentes [data-lente]").forEach((t) => t.setAttribute("aria-pressed", String(t.dataset.lente === e))), nK(), uK.f = "", document.documentElement.classList.toggle("en-partes", e === "partes"), cG = "";
 }
-function GG(e) {
+function YG(e) {
 	let t = Z("#ley-texto");
 	t.setAttribute("aria-expanded", String(e)), t.textContent = e ? "Menos" : "Leer";
 }
-function KG(e) {
-	let t = zG[Q.lente], n = Z("#leyenda");
+function XG(e) {
+	let t = UG[Q.lente], n = Z("#leyenda");
 	if (n.hidden = !Q.verLeyenda, Z("#lente-info").setAttribute("aria-expanded", String(!!Q.verLeyenda)), !Q.verLeyenda) return;
-	let r = Q.lente === "sol" && Q.solModo === "anio", i = Q.lente === "partes", a = i ? JG[Q.parte] ?? JG.alero : null, o = Q.lente + (r ? "-anio" : "") + (i ? "-" + Q.parte : ""), s = t.rampa ? eG(t) : null, c = s ? s.c + s.esc.join("|") : "";
+	let r = Q.lente === "sol" && Q.solModo === "anio", i = Q.lente === "partes", a = i ? QG[Q.parte] ?? QG.alero : null, o = Q.lente + (r ? "-anio" : "") + (i ? "-" + Q.parte : ""), s = t.rampa ? tG(t) : null, c = s ? s.c + s.esc.join("|") : "";
 	if (n.dataset.escala !== c && (n.dataset.escala = c, Z("#ley-rampa").hidden = Z("#ley-escala").hidden = !s, s && (Z("#ley-rampa").style.background = s.c, Z("#ley-escala").innerHTML = s.esc.map((e) => `<span>${e}</span>`).join(""))), n.dataset.lente !== o) {
-		n.dataset.lente = o, n.classList.contains("texto") && (n.classList.remove("texto"), GG(!1)), Z("#ley-t").textContent = i ? a.t : t.t, Z("#ley-que").textContent = i ? a.que : t.que, Z("#ley-parte").hidden = !i, i && (Z("#lp-aqui").textContent = a.aqui, Z("#lp-hace").textContent = a.hace, Z("#lp-hace-k").textContent = a.hk ?? "Qué hace:", Z("#lp-tabla").hidden = Q.parte !== "escala", Z("#lp-voladizo").hidden = Q.parte !== "alero"), Z("#ley-leer").textContent = t.leer ?? "", Z("#ley-leer").hidden = !t.leer, Z("#ley-prueba").textContent = t.prueba, Z("#ley-porque").textContent = HG(t.porque), Z("#ley-ojo").textContent = t.ojo, Z("#ley-tec").textContent = t.tec;
-		let e = BG[Q.lente];
+		n.dataset.lente = o, n.classList.contains("texto") && (n.classList.remove("texto"), YG(!1)), Z("#ley-t").textContent = i ? a.t : t.t, Z("#ley-que").textContent = i ? a.que : t.que, Z("#ley-parte").hidden = !i, i && (Z("#lp-aqui").textContent = a.aqui, Z("#lp-hace").textContent = a.hace, Z("#lp-hace-k").textContent = a.hk ?? "Qué hace:", Z("#lp-tabla").hidden = Q.parte !== "escala", Z("#lp-voladizo").hidden = Q.parte !== "alero"), Z("#ley-leer").textContent = t.leer ?? "", Z("#ley-leer").hidden = !t.leer, Z("#ley-prueba").textContent = t.prueba, Z("#ley-porque").textContent = KG(t.porque), Z("#ley-ojo").textContent = t.ojo, Z("#ley-tec").textContent = t.tec;
+		let e = WG[Q.lente];
 		Z("#ley-modos").innerHTML = e ? e.map(([e, t]) => `<button type="button" data-modo="${e}">${t}</button>`).join("") : "", Z("#ley-modos").hidden = !e, Z("#ley-modos").dataset.lente = Q.lente;
 	}
-	let l = Q[VG[Q.lente]];
+	let l = Q[GG[Q.lente]];
 	Z("#ley-modos").querySelectorAll("[data-modo]").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.modo === l))), i && document.querySelectorAll("#ley-parte [data-mostrar]").forEach((e) => e.setAttribute("aria-pressed", String(!!Q[e.dataset.mostrar])));
 	let u = Object.keys(zB), d = {
 		"fachada-se": "SE",
@@ -38663,10 +38714,10 @@ function KG(e) {
 	} else if (Q.lente === "sol") f = u.map((e, t) => `<li><span>${d[e]}</span><b>${fU(Q.irr?.[t] ?? 0)}</b><small>W/m²</small></li>`).join("") + `<li><span>TECHO</span><b>${fU(Q.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
 	else if (Q.lente === "viento") {
 		let e = Q.vientoModo === "hora";
-		f = u.map((t, n) => `<li><span>${d[t]}</span><b>${e ? fU(Q.vientoF?.[n] ?? 0) : pU(Q.vientoF?.[n] ?? 0)}</b><small>${e ? "km/h de frente" : Q.vientoModo === "anio" ? "h al año" : "h por temporada"}</small></li>`).join("");
+		f = u.map((t, n) => `<li><span>${d[t]}</span><b>${e ? Q.vientoDato ? fU(Q.vientoF?.[n] ?? 0) : "—" : pU(Q.vientoF?.[n] ?? 0)}</b><small>${e ? "km/h de frente" : Q.vientoModo === "anio" ? "h al año" : "h por temporada"}</small></li>`).join("");
 	} else if (Q.lente === "lluvia") {
 		let e = Q.aguaModo === "anio";
-		f = u.map((t, n) => `<li><span>${d[t]}</span><b>${e ? pU(Q.agua?.[n] ?? 0) : dU(Q.agua?.[n] ?? 0)}</b><small>${e ? "L/m² al año" : "L/m² en la hora"}</small></li>`).join("");
+		f = u.map((t, n) => `<li><span>${d[t]}</span><b>${e ? pU(Q.agua?.[n] ?? 0) : Q.aguaDato ? dU(Q.agua?.[n] ?? 0) : "—"}</b><small>${e ? "L/m² al año" : "L/m² en la hora"}</small></li>`).join("");
 	}
 	Z("#ley-fachadas").innerHTML = f, Z("#ley-fachadas").hidden = !f, Z("#ley-fachadas").classList.toggle("cinco", Q.lente === "sol");
 	let p = "", m = MB({
@@ -38674,7 +38725,7 @@ function KG(e) {
 		h: 0,
 		min: Q.min
 	});
-	if (Q.lente === "sol" && (p = m.alt <= 0 ? "Ahora es de noche: nada recibe sol. Mueve la regla del día a la mañana o a la tarde." : `Ahora el sol está hacia el ${RB(m.az)}, a ${dU(m.alt)}° de altura${(Q.irr ?? []).every((e) => e < 5) ? ": a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan." : "."}`, Q.solModo === "total" && !Q.hayDifusa && (p += " Para esta hora no hay dato de luz difusa (hay entre 2001 y 2025 y en los días consultados en línea): se muestra solo el sol directo."), r)) {
+	if (Q.lente === "sol" && (p = m.alt <= 0 ? "Ahora es de noche: nada recibe sol. Mueve la regla del día a la mañana o a la tarde." : `Ahora el sol está hacia el ${RB(m.az)}, a ${dU(m.alt)}° de altura${(Q.irr ?? []).every((e) => e < 5) ? ": a esta hora ninguna pared lo recibe de frente, o las nubes lo tapan." : "."}`, m.alt > 0 && jW(e) && !r && (p += " Llueve en la escena: la Foto no dibuja sol directo, y aquí se pinta la directa media de la hora que da el dato."), Q.solModo === "total" && !Q.hayDifusa && (p += " Para esta hora no hay dato de luz difusa (hay entre 2001 y 2025 y en los días consultados en línea): se muestra solo el sol directo."), r)) {
 		let e = FU?.radiacion?.fachadas;
 		p = e ? `Total de un año típico (2001–2025) en una pared sin alero de cada orientación. La escala de color llega a 1.000 kWh/m²: el techo, ~1.800, queda en el tope. Solo el sol directo: SE ${fU(e.se.directa)} · SO ${fU(e.so.directa)} · NE ${fU(e.ne.directa)} · NO ${fU(e.no.directa)} kWh/m²; la difusa del cielo suma entre ${fU(Math.min(e.se.difusa, e.so.difusa, e.ne.difusa, e.no.difusa))} y ${fU(Math.max(e.se.difusa, e.so.difusa, e.ne.difusa, e.no.difusa))} según la orientación, y la reflejada por el suelo ${fU(e.se.reflejada)} en cada una. En «Año típico» cada pared se pinta según su orientación, sin descontar la sombra del alero.` : "Cargando los totales del año…";
 	}
@@ -38682,12 +38733,12 @@ function KG(e) {
 		if (Q.vientoModo === "hora") p = Q.vientoDato ? `Ahora el viento viene del ${RB(e.dir)} a ${Math.round(e.viento)} km/h.` : "Para esta hora no hay dato de viento con dirección (solo valores típicos). Elige «Seca», «Lluvias» o «Año», o una fecha entre 2001 y 2025.";
 		else if (FU?.viento) {
 			let e = FU.viento[Q.vientoModo];
-			p = `${Q.vientoModo === "seca" ? "Temporada seca (diciembre a abril)" : Q.vientoModo === "lluvias" ? "Temporada de lluvias (mayo a noviembre)" : "Todo el año"}, 2001–2025: velocidad media ${Math.round(e.media)} km/h; viento flojo (menos de 1 m/s) el ${Math.round(e.calma)} % del tiempo. El color es relativo: el más claro es la fachada que más lo recibe.`;
+			p = `${Q.vientoModo === "seca" ? "Temporada seca (diciembre a abril)" : Q.vientoModo === "lluvias" ? "Temporada de lluvias (mayo a noviembre)" : "Todo el año"}, 2001–2025: velocidad media ${Math.round(e.media)} km/h; viento flojo (menos de 1 m/s) el ${Math.round(e.calma)} % del tiempo. El color de las fachadas es relativo: el más claro es la que más lo recibe. Pétalos: el largo es el % de horas; más claro, más rápido (de 0 a 18 km/h o más de media). El verde de las fachadas es otra cosa: horas con viento de frente.`;
 		}
 	}
-	Q.lente === "lluvia" && Q.aguaModo === "hora" && !Q.viaje && (Q.aguaDato ? (Q.agua ?? []).some((e) => e > .05) || (p = "A esta hora no llueve con viento contra ninguna fachada. Pasa a «Año típico» o busca un aguacero en «Ir a…».") : p = "Para esta hora no hay dato de lluvia y viento (solo valores típicos). Pasa a «Año típico» o elige una fecha entre 2001 y 2025."), Q.lente === "lluvia" && Q.aguaModo === "anio" && (p = "Promedio de un año, 2001–2025. El color es relativo: el más claro es la fachada más expuesta."), Q.lente === "sombras" && (p = $._diagClave ? `Sombras del ${SU(Q.fecha)}. Se ven mejor desde arriba: botón «Planta».` : "El diagrama aparece cuando termina de cargar el modelo."), i && (p = "Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente."), Z("#ley-nota").textContent = p, Z("#ley-nota").hidden = !p, kG(n);
+	Q.lente === "lluvia" && Q.aguaModo === "hora" && !Q.viaje && (Q.sinMm ? p = "Albrook informa lluvia, pero el parte no da milímetros y el modelo no da lluvia a esta hora: no se puede calcular el índice." : Q.aguaDato ? (Q.agua ?? []).some((e) => e > .05) ? !kW(e) && (e?.lluviaMm ?? e?.lluviaModelo ?? e?.lluvia ?? 0) >= .1 && (p = `${e.fuente === "serie" || e.modelo === "era5" ? "ERA5" : "El modelo de pronóstico"} da una lluvia débil en la celda (${dU(e.lluviaMm ?? e.lluviaModelo ?? e.lluvia)} mm) que la escena no dibuja; el índice la cuenta, como en el año típico.`) : p = "A esta hora no llueve con viento contra ninguna fachada. Pasa a «Año típico» o busca un aguacero en «Ir a…»." : p = "Para esta hora no hay dato de lluvia y viento (solo valores típicos). Pasa a «Año típico» o elige una fecha entre 2001 y 2025."), Q.lente === "lluvia" && Q.aguaModo === "anio" && (p = "Promedio de un año, 2001–2025. El color es relativo: el más claro es la fachada más expuesta."), (Q.lente === "sol" && !r || Q.lente === "lluvia" && Q.aguaModo === "hora" || Q.lente === "viento" && Q.vientoModo === "hora") && p && (e?.fuente === "vivo" || e?.fuente === "dia" && e.modelo !== "era5") && (p += ` Esta hora: pronóstico de modelo${e.albrook ? "; el viento, del parte de Albrook" : ""}.`), Q.lente === "sombras" && (p = $._diagClave ? `Sombras del ${SU(Q.fecha)}. Se ven mejor desde arriba: botón «Planta».` : "El diagrama aparece cuando termina de cargar el modelo."), i && (p = "Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente."), Z("#ley-nota").textContent = p, Z("#ley-nota").hidden = !p, MG(n);
 }
-var qG = {
+var ZG = {
 	se: [
 		0,
 		0,
@@ -38708,7 +38759,7 @@ var qG = {
 		0,
 		0
 	]
-}, JG = {
+}, QG = {
 	techo: {
 		e: "Techo a cuatro aguas",
 		t: "Techo a cuatro aguas",
@@ -38875,7 +38926,7 @@ var qG = {
 		],
 		que: "La franja de abajo del edificio, más alta que el terreno.",
 		aqui: "0,65 m de alto, en todo el perímetro.",
-		hace: "Eleva el piso y aleja el arranque del muro del agua que salpica cuando llueve. La humedad que sube del terreno se corta con una barrera impermeable, no con la altura."
+		hace: "Eleva el piso y aleja el arranque del muro del agua que salpica cuando llueve."
 	},
 	escala: {
 		e: "1,70 m",
@@ -38888,9 +38939,9 @@ var qG = {
 		hk: "Qué enseña:",
 		que: "Una persona de 1,70 m junto a la esquina del jardín, para comparar el edificio con el cuerpo.",
 		aqui: "Con «Alturas» se ven las medidas en la esquina. Cada fila compara una medida con personas de 1,70 m:",
-		hace: "Un piso alto aleja la cabeza del techo caliente y, si hay aberturas arriba, deja escapar el aire caliente. Sin ellas, la ganancia es pequeña."
+		hace: "Un piso alto aleja la cabeza del techo caliente y, con aberturas arriba, deja escapar el aire caliente (UN-Habitat, 2014, p. 115)."
 	}
-}, YG = [
+}, $G = [
 	[[
 		22.75,
 		.65,
@@ -38921,32 +38972,32 @@ var qG = {
 		"der"
 	]
 ];
-function XG() {
+function eK() {
 	let e = Z("#partes-capa");
-	e.innerHTML = Object.entries(JG).map(([e, t]) => `<button type="button" class="parte${e === "escala" ? " persona" : ""}" data-parte="${e}" aria-pressed="false" hidden><i></i><span>${t.e}</span></button>`).join("") + YG.map(([, e, t], n) => `<span class="cota${t ? " der" : ""}" data-cota="${n}" hidden>${e}</span>`).join(""), e.addEventListener("click", (e) => {
+	e.innerHTML = Object.entries(QG).map(([e, t]) => `<button type="button" class="parte${e === "escala" ? " persona" : ""}" data-parte="${e}" aria-pressed="false" hidden><i></i><span>${t.e}</span></button>`).join("") + $G.map(([, e, t], n) => `<span class="cota${t ? " der" : ""}" data-cota="${n}" hidden>${e}</span>`).join(""), e.addEventListener("click", (e) => {
 		let t = e.target.closest("[data-parte]");
-		t && ZG(t.dataset.parte);
+		t && tK(t.dataset.parte);
 	}), document.querySelectorAll("#ley-parte [data-mostrar]").forEach((e) => e.addEventListener("click", () => {
 		let t = e.dataset.mostrar;
-		Q[t] = !Q[t], !Q.persona && Q.parte === "escala" && (Q.parte = "alero"), QG(), oK.f = "", sG = "", Z("#leyenda").dataset.lente = "";
-	})), Z("#lp-voladizo").addEventListener("click", () => cK(!0)), Z("#cerrar-voladizo").addEventListener("click", () => cK(!1)), document.querySelectorAll("#voladizo [data-largo]").forEach((e) => e.addEventListener("click", () => {
-		Q.largo = +e.dataset.largo, lK();
+		Q[t] = !Q[t], !Q.persona && Q.parte === "escala" && (Q.parte = "alero"), nK(), uK.f = "", cG = "", Z("#leyenda").dataset.lente = "";
+	})), Z("#lp-voladizo").addEventListener("click", () => fK(!0)), Z("#cerrar-voladizo").addEventListener("click", () => fK(!1)), document.querySelectorAll("#voladizo [data-largo]").forEach((e) => e.addEventListener("click", () => {
+		Q.largo = +e.dataset.largo, pK();
 	})), document.querySelectorAll("#corte [data-corte]").forEach((e) => e.addEventListener("click", () => {
-		Q.corteF = e.dataset.corte, hK();
-	})), lK();
+		Q.corteF = e.dataset.corte, yK();
+	})), pK();
 }
-function ZG(e) {
-	JG[e] && (TW(), Q.parte = e, Q.verLeyenda = !0, e === "escala" && (Q.persona = !0, Q.alturas = !0), QG(), oK.f = "", sG = "");
+function tK(e) {
+	QG[e] && (TW(), Q.parte = e, Q.verLeyenda = !0, e === "escala" && (Q.persona = !0, Q.alturas = !0), nK(), uK.f = "", cG = "");
 }
-function QG() {
+function nK() {
 	let e = Q.lente === "partes";
 	$?.setPartes({
 		persona: e && Q.persona,
 		alturas: e && Q.alturas,
 		modulo: e && Q.parte === "modulo"
-	}), document.querySelectorAll(".parte").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.parte === Q.parte))), e || cK(!1);
+	}), document.querySelectorAll(".parte").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.parte === Q.parte))), e || fK(!1);
 }
-var $G = new k(), eK = new k(), tK = [
+var rK = new k(), iK = new k(), aK = [
 	"#brujula",
 	"#mirando",
 	".vistas",
@@ -38967,14 +39018,14 @@ var $G = new k(), eK = new k(), tK = [
 	"#viaje",
 	"#aviso-noche"
 ];
-function nK(e) {
+function oK(e) {
 	let t = [[
 		0,
 		0,
 		e,
 		66
 	]];
-	for (let e of tK) {
+	for (let e of aK) {
 		let n = document.querySelector(e);
 		if (!n || n.hidden) continue;
 		let r = n.getBoundingClientRect();
@@ -38987,7 +39038,7 @@ function nK(e) {
 	}
 	return t;
 }
-var rK = (e, t, n = 5) => e[0] < t[0] + t[2] + n && t[0] < e[0] + e[2] + n && e[1] < t[1] + t[3] + n && t[1] < e[1] + e[3] + n, iK = [
+var sK = (e, t, n = 5) => e[0] < t[0] + t[2] + n && t[0] < e[0] + e[2] + n && e[1] < t[1] + t[3] + n && t[1] < e[1] + e[3] + n, cK = [
 	12,
 	6,
 	18,
@@ -39002,7 +39053,7 @@ var rK = (e, t, n = 5) => e[0] < t[0] + t[2] + n && t[0] < e[0] + e[2] + n && e[
 	11,
 	13
 ];
-function aK() {
+function lK() {
 	let e = $?.diagRotulos, t = $?.rutaRotulos ?? [];
 	if (!e) return;
 	let n = $.camera, r = innerWidth, i = innerHeight, a = X.sombras.value > .01 && !!$._diagClave, o = $.uRuta.value > .01 && X.sombras.value < .5, s = document.documentElement, c = [
@@ -39012,7 +39063,7 @@ function aK() {
 		IU.target.x,
 		IU.target.y,
 		IU.target.z
-	].map((e) => Math.round(e * 20)).join(",") + `|${r}x${i}|${a}|${o}|${$._diagClave}|${$._ruta}|${s.className}|${Q.lente}|${Q.parte}|${Q.verLeyenda}|${Q.paso}|${Math.round(IW.dy)}` + [
+	].map((e) => Math.round(e * 20)).join(",") + `|${r}x${i}|${a}|${o}|${$._diagClave}|${$._ruta}|${s.className}|${Q.lente}|${Q.parte}|${Q.verLeyenda}|${Q.paso}|${Math.round(LW.dy)}` + [
 		"#sirve",
 		"#ir-a",
 		"#capas",
@@ -39022,28 +39073,28 @@ function aK() {
 		"#qr",
 		"#viaje"
 	].map((e) => +!Z(e)?.hidden).join("");
-	if (c === aK.f) return;
-	aK.f = c;
-	let l = a || o ? nK(r) : [], u = [], d = i / (2 * Math.tan(fn.degToRad(n.fov) / 2)), f = (e, t) => {
+	if (c === lK.f) return;
+	lK.f = c;
+	let l = a || o ? oK(r) : [], u = [], d = i / (2 * Math.tan(fn.degToRad(n.fov) / 2)), f = (e, t) => {
 		let a = !1;
-		if (t && (eK.copy(e.position).project(n), eK.z < 1 && eK.z > -1)) {
-			let t = (eK.x + 1) / 2 * r, o = (1 - eK.y) / 2 * i, s = d / Math.max(1, n.position.distanceTo(e.position)), c = e.scale.x * s * .7, f = e.scale.y * s * .62, p = [
+		if (t && (iK.copy(e.position).project(n), iK.z < 1 && iK.z > -1)) {
+			let t = (iK.x + 1) / 2 * r, o = (1 - iK.y) / 2 * i, s = d / Math.max(1, n.position.distanceTo(e.position)), c = e.scale.x * s * .7, f = e.scale.y * s * .62, p = [
 				t - c / 2,
 				o - f / 2,
 				c,
 				f
 			];
-			a = l.some((e) => rK(p, e, 0)) || u.some((e) => rK(p, e, 8)), a || u.push(p);
+			a = l.some((e) => sK(p, e, 0)) || u.some((e) => sK(p, e, 8)), a || u.push(p);
 		}
 		!!e.userData.tapado !== a && (e.userData.tapado = a, $.sucio = !0);
 	}, p = new Map(e.map((e) => [e.userData.h, e]));
-	for (let e of iK) {
+	for (let e of cK) {
 		let t = p.get(e);
 		t && f(t, a && t.userData.vale);
 	}
 	for (let e of t) f(e, o && e.userData.arriba);
 }
-function oK() {
+function uK() {
 	let e = Z("#partes-capa");
 	if (!e || !$) return;
 	let t = Q.lente === "partes" && !zU && !Q.viaje && !Q.voladizo;
@@ -39056,9 +39107,9 @@ function oK() {
 		IU.target.y,
 		IU.target.z
 	].map((e) => Math.round(e * 50)).join(",") + `|${r}x${i}|${Q.persona}|${Q.alturas}|${Q.parte}|${Q.verLeyenda}|${Q.paso}|${Z("#sirve").hidden}${Z("#ir-a").hidden}${Z("#capas").hidden}`;
-	if (a === oK.f) return;
-	oK.f = a;
-	let o = nK(r), s = rK, c = (e) => o.some((t) => s(e, t, 0)), l = [], u = (e) => (eK.set(e[0], e[1], e[2]).project(n), eK.z > 1 || eK.z < -1 || Math.abs(eK.x) > .98 || Math.abs(eK.y) > .98 ? null : [(eK.x + 1) / 2 * r, (1 - eK.y) / 2 * i]), d = /* @__PURE__ */ new Map();
+	if (a === uK.f) return;
+	uK.f = a;
+	let o = oK(r), s = sK, c = (e) => o.some((t) => s(e, t, 0)), l = [], u = (e) => (iK.set(e[0], e[1], e[2]).project(n), iK.z > 1 || iK.z < -1 || Math.abs(iK.x) > .98 || Math.abs(iK.y) > .98 ? null : [(iK.x + 1) / 2 * r, (1 - iK.y) / 2 * i]), d = /* @__PURE__ */ new Map();
 	e.querySelectorAll(".parte, .cota").forEach((e) => {
 		if (!e._w) {
 			let t = e.hidden;
@@ -39066,7 +39117,7 @@ function oK() {
 		}
 		d.set(e, e._w || 110);
 	}), e.querySelectorAll(".cota").forEach((e) => {
-		let t = Q.alturas ? u(YG[+e.dataset.cota][0]) : null, n = t && [
+		let t = Q.alturas ? u($G[+e.dataset.cota][0]) : null, n = t && [
 			t[0] + 12,
 			t[1] - 13,
 			d.get(e),
@@ -39074,14 +39125,14 @@ function oK() {
 		], r = n && !c(n) && !l.some((e) => s(n, e, 2));
 		e.hidden = !r, r && (l.push(n), e.style.transform = `translate(${t[0].toFixed(1)}px, ${t[1].toFixed(1)}px)`);
 	});
-	for (let [t, i] of Object.entries(JG)) {
+	for (let [t, i] of Object.entries(QG)) {
 		let a = e.querySelector(`[data-parte="${t}"]`);
 		if (!a) continue;
 		let o = null;
 		if (t !== "escala" || Q.persona) for (let [e, t] of i.a) {
 			if (t) {
-				let r = qG[t];
-				if ($G.set(e[0], e[1], e[2]), eK.copy(n.position).sub($G).normalize(), r[0] * eK.x + r[1] * eK.y + r[2] * eK.z < .12) continue;
+				let r = ZG[t];
+				if (rK.set(e[0], e[1], e[2]), iK.copy(n.position).sub(rK).normalize(), r[0] * iK.x + r[1] * iK.y + r[2] * iK.z < .12) continue;
 			}
 			if (o = u(e), o && c([
 				o[0] - 6,
@@ -39140,7 +39191,7 @@ function oK() {
 		g.tallo = !0, a.hidden = !1, l.push(h[2], g), a.style.transform = `translate(${o[0].toFixed(1)}px, ${o[1].toFixed(1)}px)`, a.style.setProperty("--dx", h[0].toFixed(1) + "px"), a.style.setProperty("--dy", h[1] + "px");
 	}
 }
-var sK = {
+var dK = {
 	pos: [
 		34.6,
 		7.5,
@@ -39152,14 +39203,14 @@ var sK = {
 		11
 	]
 };
-function cK(e) {
+function fK(e) {
 	let t = Z("#voladizo");
-	t && !!Q.voladizo !== e && (Q.voladizo = e, t.hidden = !e, oK.f = "", e ? (Z("#sirve").hidden = !0, Z("#abrir-sirve").setAttribute("aria-expanded", "false"), globalThis.__abrirIr?.(!1), Q.fachada && (Q.corteF = Q.fachada.slice(8)), Q.fachada = null, document.documentElement.classList.remove("en-fachada"), Q.vistaPrevia = {
+	t && !!Q.voladizo !== e && (Q.voladizo = e, t.hidden = !e, uK.f = "", e ? (Z("#sirve").hidden = !0, Z("#abrir-sirve").setAttribute("aria-expanded", "false"), globalThis.__abrirIr?.(!1), Q.fachada && (Q.corteF = Q.fachada.slice(8)), Q.fachada = null, document.documentElement.classList.remove("en-fachada"), Q.vistaPrevia = {
 		pos: $.camera.position.toArray(),
 		tgt: IU.target.toArray()
-	}, yW(sK, 1.6, null)) : (Q.vistaPrevia && Q.lente === "partes" && yW(Q.vistaPrevia, 1.4, null), Q.vistaPrevia = null));
+	}, yW(dK, 1.6, null)) : (Q.vistaPrevia && Q.lente === "partes" && yW(Q.vistaPrevia, 1.4, null), Q.vistaPrevia = null));
 }
-function lK() {
+function pK() {
 	let e = Q.largo ?? 1.65, t = uU, n = e * 150, r = 14 * (e / 1.65) ** 4, i = (e) => r * (e * e * (6 - 4 * e + e * e) / 3), a = (e) => Array.from({ length: 25 }, (t, r) => {
 		let a = r / 24;
 		return [46 + a * n, 70 + e + i(a)];
@@ -39190,10 +39241,10 @@ function lK() {
     <text x="${p.toFixed(0)}" y="${m.toFixed(0)}" class="vt" fill="#7cc4ec">compresión: se aprieta</text>
     <text x="52" y="179" class="vt" fill="#f4b545">momento: máximo en la raíz</text>
     <text x="504" y="30" text-anchor="end" class="vt m">deformación exagerada</text>`;
-	let h = (e / 1.65) ** 2, g = (e / 1.65) ** 4, _ = Math.atan(1.65 / e) * 180 / Math.PI, v = Math.abs(e - 1.65) < .01;
+	let h = (e / 1.65) ** 2, g = (e / 1.65) ** 4, _ = Math.atan((mK.alero - mK.vidAbajo) / (e + mK.rehundido)) * 180 / Math.PI, v = Math.abs(e - 1.65) < .01;
 	Z("#vol-m").textContent = v ? "igual" : "×" + t(h, h < 1 ? 2 : 1), Z("#vol-d").textContent = v ? "igual" : "×" + t(g, g < 1 ? 2 : 1), Z("#vol-a").textContent = Math.round(_) + "°", document.querySelectorAll("#voladizo [data-largo]").forEach((t) => t.setAttribute("aria-pressed", String(Math.abs(+t.dataset.largo - e) < .01)));
 }
-var uK = {
+var mK = {
 	alero: 7.4,
 	losa: 3.74,
 	esp: .2,
@@ -39201,24 +39252,24 @@ var uK = {
 	vidArriba: 7.12,
 	rehundido: .1,
 	muro: .25
-}, dK = {
+}, hK = {
 	se: "SE",
 	no: "NO",
 	ne: "NE",
 	so: "SO"
-}, fK = {
+}, gK = {
 	sombra: "a la sombra",
 	casiSombra: "casi todo a la sombra",
 	medias: "a medias",
 	casiSol: "casi todo al sol",
 	sol: "al sol"
 };
-function pK(e, t, n) {
+function _K(e, t, n) {
 	let r = Math.cos((t - n) * Math.PI / 180);
 	return e <= 0 || r <= .01 ? null : Math.atan(Math.tan(e * Math.PI / 180) / r) * 180 / Math.PI;
 }
-function mK(e, t, n) {
-	let r = uK, i = pK(e.alt, e.az, zB["fachada-" + n].rumbo);
+function vK(e, t, n) {
+	let r = mK, i = _K(e.alt, e.az, zB["fachada-" + n].rumbo);
 	if (i == null) return {
 		pf: i,
 		motivo: e.alt <= 0 ? "noche" : "detras"
@@ -39235,99 +39286,102 @@ function mK(e, t, n) {
 		pisoEntero: r.alero - o <= r.losa + r.esp
 	};
 }
-function hK(e) {
-	let t = Z("#corte-svg");
-	if (!t) return;
+function yK(e, t) {
+	let n = Z("#corte-svg");
+	if (!n) return;
 	e ??= Q.solViaje ?? MB({
 		...Q.fecha,
 		h: 0,
 		min: Q.min
-	});
-	let n = Q.largo ?? 1.65, r = Q.corteF ?? "se", i = [
-		n,
+	}), t ??= Q.viaje ? null : DW(Q.fecha, Q.min);
+	let r = Q.largo ?? 1.65, i = Q.corteF ?? "se", a = [
 		r,
+		i,
 		e.alt.toFixed(2),
-		e.az.toFixed(2)
+		e.az.toFixed(2),
+		Math.round((t?.dni ?? -10) / 10),
+		Math.round(t?.nubes ?? -1),
+		+!!jW(t)
 	].join("|");
-	if (i === hK.f) return;
-	hK.f = i, document.querySelectorAll("#corte [data-corte]").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.corte === r))), Z("#corte-t").textContent = `Corte del piso 2, fachada ${dK[r]}, con el sol de esta hora`;
-	let a = uK, o = mK(e, n, r), s = (e, t = 2) => uU(e, t), c = (e) => 302 - (e - 3.3) * 58, l = (e) => 64 + e * 58, u = l(n), d = a.losa + a.esp, f = c(a.vidArriba), p = c(a.vidAbajo), m = (e, t, n, r, i) => `<rect x="${Math.min(e, n).toFixed(1)}" y="${Math.min(t, r).toFixed(1)}" width="${Math.abs(n - e).toFixed(1)}" height="${Math.abs(r - t).toFixed(1)}" ${i}></rect>`, h = "";
-	h += m(0, c(a.losa), u, c(d), "fill=\"#56615f\"") + m(0, c(a.alero), u, c(a.alero + a.esp), "fill=\"#56615f\""), h += m(l(-a.muro), c(d), 64, p, "fill=\"#3a4448\"") + m(l(-a.muro), f, 64, c(a.alero), "fill=\"#3a4448\""), h += m(l(-a.rehundido) - 3, f, l(-a.rehundido), p, "fill=\"#4aa8dc\" fill-opacity=\"0.55\"");
-	let g = (e, t, n, r) => n > t ? `<line x1="${e.toFixed(1)}" y1="${c(n).toFixed(1)}" x2="${e.toFixed(1)}" y2="${c(t).toFixed(1)}" stroke="${r ? "#f4b545" : "#7f8a86"}" stroke-width="${r ? 5 : 3}" stroke-linecap="butt"></line>` : "", _ = [
+	if (a === yK.f) return;
+	yK.f = a, document.querySelectorAll("#corte [data-corte]").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.corte === i))), Z("#corte-t").textContent = `Corte del piso 2, fachada ${hK[i]}, con el sol de esta hora`;
+	let o = mK, s = vK(e, r, i), c = (e, t = 2) => uU(e, t), l = (e) => 302 - (e - 3.3) * 58, u = (e) => 64 + e * 58, d = u(r), f = o.losa + o.esp, p = l(o.vidArriba), m = l(o.vidAbajo), h = (e, t, n, r, i) => `<rect x="${Math.min(e, n).toFixed(1)}" y="${Math.min(t, r).toFixed(1)}" width="${Math.abs(n - e).toFixed(1)}" height="${Math.abs(r - t).toFixed(1)}" ${i}></rect>`, g = "";
+	g += h(0, l(o.losa), d, l(f), "fill=\"#56615f\"") + h(0, l(o.alero), d, l(o.alero + o.esp), "fill=\"#56615f\""), g += h(u(-o.muro), l(f), 64, m, "fill=\"#3a4448\"") + h(u(-o.muro), p, 64, l(o.alero), "fill=\"#3a4448\""), g += h(u(-o.rehundido) - 3, p, u(-o.rehundido), m, "fill=\"#4aa8dc\" fill-opacity=\"0.55\"");
+	let _ = (e, t, n, r) => n > t ? `<line x1="${e.toFixed(1)}" y1="${l(n).toFixed(1)}" x2="${e.toFixed(1)}" y2="${l(t).toFixed(1)}" stroke="${r ? "#f4b545" : "#7f8a86"}" stroke-width="${r ? 5 : 3}" stroke-linecap="butt"></line>` : "", v = [
 		[
 			66.5,
-			d,
-			a.vidAbajo,
-			o.dw
+			f,
+			o.vidAbajo,
+			s.dw
 		],
 		[
 			66.5,
-			a.vidArriba,
-			a.alero,
-			o.dw
+			o.vidArriba,
+			o.alero,
+			s.dw
 		],
 		[
-			l(-a.rehundido) + 2.5,
-			a.vidAbajo,
-			a.vidArriba,
-			o.dg
+			u(-o.rehundido) + 2.5,
+			o.vidAbajo,
+			o.vidArriba,
+			s.dg
 		]
 	];
-	for (let [e, t, n, r] of _) {
-		if (o.pf == null) {
-			h += g(e, t, n, !1);
+	for (let [e, t, n, r] of v) {
+		if (s.pf == null) {
+			g += _(e, t, n, !1);
 			continue;
 		}
-		let i = Math.min(n, Math.max(t, a.alero - r));
-		h += g(e, t, i, !0) + g(e, i, n, !1);
+		let i = Math.min(n, Math.max(t, o.alero - r));
+		g += _(e, t, i, !0) + _(e, i, n, !1);
 	}
-	if (h += `<text x="4" y="${(c(a.alero) + 15).toFixed(1)}" class="m">${s(a.alero)} m</text><text x="4" y="${(c(a.losa) + 15).toFixed(1)}" class="m">${s(a.losa)} m</text>`, h += `<text x="${(l(-a.muro) - 4).toFixed(1)}" y="${((p + c(d)) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">muro</text>`, h += `<text x="${(l(-a.muro) - 4).toFixed(1)}" y="${((f + p) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">vidrio</text>`, h += `<text x="${((64 + u) / 2).toFixed(1)}" y="${(c(a.alero + a.esp) - 6).toFixed(1)}" text-anchor="middle">alero ${s(n)} m</text>`, h += "<text x=\"4\" y=\"16\" class=\"m\">esquema · alero continuo, sin retornos laterales</text>", h += `<text x="396" y="${(c(d) - 8).toFixed(1)}" text-anchor="end" class="m">fachada ${dK[r]} · exterior →</text>`, o.pf == null) h += `<text x="${(u + 12).toFixed(1)}" y="${c(6.4).toFixed(1)}" class="s">${o.motivo === "noche" ? "El sol está bajo el horizonte" : "El sol está detrás de esta fachada"}</text>`, h += `<text x="${(u + 12).toFixed(1)}" y="${(c(6.4) + 17).toFixed(1)}" class="m">sin rayo directo a esta hora</text>`;
+	if (g += `<text x="4" y="${(l(o.alero) + 15).toFixed(1)}" class="m">${c(o.alero)} m</text><text x="4" y="${(l(o.losa) + 15).toFixed(1)}" class="m">${c(o.losa)} m</text>`, g += `<text x="${(u(-o.muro) - 4).toFixed(1)}" y="${((m + l(f)) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">muro</text>`, g += `<text x="${(u(-o.muro) - 4).toFixed(1)}" y="${((p + m) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">vidrio</text>`, g += `<text x="${((64 + d) / 2).toFixed(1)}" y="${(l(o.alero + o.esp) - 6).toFixed(1)}" text-anchor="middle">alero ${c(r)} m</text>`, g += "<text x=\"4\" y=\"16\" class=\"m\">esquema · alero continuo, sin retornos laterales</text>", g += `<text x="396" y="${(l(f) - 8).toFixed(1)}" text-anchor="end" class="m">fachada ${hK[i]} · exterior →</text>`, s.pf == null) g += `<text x="${(d + 12).toFixed(1)}" y="${l(6.4).toFixed(1)}" class="s">${s.motivo === "noche" ? "El sol está bajo el horizonte" : "El sol está detrás de esta fachada"}</text>`, g += `<text x="${(d + 12).toFixed(1)}" y="${(l(6.4) + 17).toFixed(1)}" class="m">sin rayo directo a esta hora</text>`;
 	else {
-		let e = o.pf * Math.PI / 180, t = Math.cos(e), n = Math.sin(e), r = c(a.alero), i = 64, f = o.hSombra;
-		if (o.hSombra < a.vidArriba && o.hSombra > a.vidAbajo) {
-			let e = a.alero - o.dg;
-			e >= a.vidAbajo && (i = l(-a.rehundido), f = e);
+		let e = s.pf * Math.PI / 180, t = Math.cos(e), n = Math.sin(e), r = l(o.alero), i = 64, a = s.hSombra;
+		if (s.hSombra < o.vidArriba && s.hSombra > o.vidAbajo) {
+			let e = o.alero - s.dg;
+			e >= o.vidAbajo && (i = u(-o.rehundido), a = e);
 		}
-		f < d && (f = d, i = u - (a.alero - d) / o.t * 58);
+		a < f && (a = f, i = d - (o.alero - f) / s.t * 58);
 		let p = (e, r) => {
 			let i = Math.min((396 - e) / t, (r - 36) / n);
 			return {
 				x0: e + t * i,
 				y0: r - n * i
 			};
-		}, m = i, g = c(f), _ = p(u, r);
+		}, m = i, h = l(a), _ = p(d, r);
 		for (let e = 1; e <= 3; e++) {
-			let t = f - e * .62;
-			if (t < d + .05) break;
-			let n = t > a.vidAbajo && t < a.vidArriba ? l(-a.rehundido) : 64, r = c(t), i = p(n, r);
-			h += `<line x1="${i.x0.toFixed(1)}" y1="${i.y0.toFixed(1)}" x2="${n.toFixed(1)}" y2="${r.toFixed(1)}" stroke="#f4b545" stroke-opacity="0.45" stroke-width="1.5"></line>`;
+			let t = a - e * .62;
+			if (t < f + .05) break;
+			let n = t > o.vidAbajo && t < o.vidArriba ? u(-o.rehundido) : 64, r = l(t), i = p(n, r);
+			g += `<line x1="${i.x0.toFixed(1)}" y1="${i.y0.toFixed(1)}" x2="${n.toFixed(1)}" y2="${r.toFixed(1)}" stroke="#f4b545" stroke-opacity="0.45" stroke-width="1.5"></line>`;
 		}
-		h += `<line x1="${_.x0.toFixed(1)}" y1="${_.y0.toFixed(1)}" x2="${m.toFixed(1)}" y2="${g.toFixed(1)}" stroke="#ffd27a" stroke-width="2.5"></line>`, h += `<circle cx="${_.x0.toFixed(1)}" cy="${_.y0.toFixed(1)}" r="9" fill="#f4b545"></circle>`;
-		let v = u + 34 * t, y = r - 34 * n;
-		h += `<path d="M${(u + 34).toFixed(1)} ${r.toFixed(1)} A34 34 0 0 0 ${v.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="#ffd27a" stroke-width="1.5"></path>`, h += `<line x1="${u.toFixed(1)}" y1="${r.toFixed(1)}" x2="${(u + 34 + 12).toFixed(1)}" y2="${r.toFixed(1)}" stroke="#ffd27a" stroke-width="1" stroke-dasharray="3 3"></line>`;
-		let b = u + 48 * Math.cos(e / 2), x = r - 48 * Math.sin(e / 2) + 5;
-		h += `<text x="${b.toFixed(1)}" y="${x.toFixed(1)}" class="s">${Math.round(o.pf)}°</text>`;
-		let S = Math.max(d, o.hSombra);
-		h += `<path d="M78 ${r.toFixed(1)} L78 ${c(S).toFixed(1)} M74 ${r.toFixed(1)} L82 ${r.toFixed(1)} M74 ${c(S).toFixed(1)} L82 ${c(S).toFixed(1)}" stroke="#b6bdb9" stroke-width="1.2"></path>`, !o.pisoEntero && o.dw > .7 && (h += `<text x="85" y="${((r + c(S)) / 2 + 4).toFixed(1)}" class="m">sombra ${s(o.dw)} m</text>`);
+		g += `<line x1="${_.x0.toFixed(1)}" y1="${_.y0.toFixed(1)}" x2="${m.toFixed(1)}" y2="${h.toFixed(1)}" stroke="#ffd27a" stroke-width="2.5"></line>`, g += `<circle cx="${_.x0.toFixed(1)}" cy="${_.y0.toFixed(1)}" r="9" fill="#f4b545"></circle>`;
+		let v = d + 34 * t, y = r - 34 * n;
+		g += `<path d="M${(d + 34).toFixed(1)} ${r.toFixed(1)} A34 34 0 0 0 ${v.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="#ffd27a" stroke-width="1.5"></path>`, g += `<line x1="${d.toFixed(1)}" y1="${r.toFixed(1)}" x2="${(d + 34 + 12).toFixed(1)}" y2="${r.toFixed(1)}" stroke="#ffd27a" stroke-width="1" stroke-dasharray="3 3"></line>`;
+		let b = d + 48 * Math.cos(e / 2), x = r - 48 * Math.sin(e / 2) + 5;
+		g += `<text x="${b.toFixed(1)}" y="${x.toFixed(1)}" class="s">${Math.round(s.pf)}°</text>`;
+		let S = Math.max(f, s.hSombra);
+		g += `<path d="M78 ${r.toFixed(1)} L78 ${l(S).toFixed(1)} M74 ${r.toFixed(1)} L82 ${r.toFixed(1)} M74 ${l(S).toFixed(1)} L82 ${l(S).toFixed(1)}" stroke="#b6bdb9" stroke-width="1.2"></path>`, !s.pisoEntero && s.dw > .7 && (g += `<text x="85" y="${((r + l(S)) / 2 + 4).toFixed(1)}" class="m">sombra ${c(s.dw)} m</text>`);
 	}
-	let v = mU(Q.min), y = `fachada ${dK[r]}`, b, x = `Corte esquemático del piso 2, ${y}, con un alero de ${s(n)} m. `;
-	if (o.pf == null) b = o.motivo === "noche" ? `A las ${v} el sol está bajo el horizonte: no hay rayo directo en ninguna fachada.` : `A las ${v} el sol está detrás de la ${y}: esta cara está a la sombra con o sin alero. Prueba otra fachada o mueve la hora.`, x += o.motivo === "noche" ? "El sol está bajo el horizonte." : "El sol está detrás de la fachada, sin rayo directo.", Z("#corte-perfil").textContent = "–", Z("#corte-sombra").textContent = "–", Z("#corte-vidrio").textContent = "sin sol";
+	let y = mU(Q.min), b = `fachada ${hK[i]}`, x, S = `Corte esquemático del piso 2, ${b}, con un alero de ${c(r)} m. `;
+	if (s.pf == null) x = s.motivo === "noche" ? `A las ${y} el sol está bajo el horizonte: no hay rayo directo en ninguna fachada.` : `A las ${y} el sol está detrás de la ${b}: esta cara está a la sombra con o sin alero. Prueba otra fachada o mueve la hora.`, S += s.motivo === "noche" ? "El sol está bajo el horizonte." : "El sol está detrás de la fachada, sin rayo directo.", Z("#corte-perfil").textContent = "–", Z("#corte-sombra").textContent = "–", Z("#corte-vidrio").textContent = "sin sol";
 	else {
-		let e = `${s(o.pf, 1)}°`, t = o.pisoEntero ? "todo el piso" : `${s(o.dw)} m`;
-		Z("#corte-perfil").textContent = e, Z("#corte-sombra").textContent = t, Z("#corte-vidrio").textContent = fK[o.vidrio], b = `A las ${v} el sol incide sobre la ${y} con un ángulo de perfil de ${e}. `, o.pisoEntero ? b += "La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo." : o.vidrio === "sombra" ? b += `La sombra baja ${s(o.dw)} m por el muro y tapa todo el vidrio; el sol solo incide en la franja de muro que queda debajo, hasta ${s(o.hSombra)} m del suelo.` : o.vidrio === "sol" ? b += `El sol entra por debajo del alero e incide en todo el vidrio. La sombra solo baja ${s(o.dw)} m${o.dw > .05 ? ", sobre el muro que hay encima de la ventana" : ""}.` : b += `La sombra baja ${s(o.dw)} m: cubre ${o.vidrio === "casiSol" ? "solo" : ""} la parte de arriba del vidrio (${Math.round(o.frac * 100)} %) y el resto recibe sol.`.replace("cubre  la", "cubre la"), x += `Sol de perfil a ${Math.round(o.pf)} grados. ${o.pisoEntero ? "La sombra del alero cubre todo el piso." : `La sombra del alero baja ${s(o.dw)} m por el muro.`} El vidrio queda ${o.vidrio === "sombra" || o.vidrio === "sol" ? fK[o.vidrio] : `${fK[o.vidrio]}, ${Math.round(o.frac * 100)} % a la sombra`}.`;
+		let n = `${c(s.pf, 1)}°`, r = s.pisoEntero ? "todo el piso" : `${c(s.dw)} m`;
+		Z("#corte-perfil").textContent = n, Z("#corte-sombra").textContent = r, Z("#corte-vidrio").textContent = gK[s.vidrio], x = `A las ${y} el sol incide sobre la ${b} con un ángulo de perfil de ${n}. `, jW(t) ? x += "Es la geometría del rayo: a esta hora la escena dibuja lluvia y no sol directo. " : t?.dni != null && t.dni < zG ? x += `Es la geometría del rayo: a esta hora las nubes casi tapan el sol (${fU(Math.round(t.dni))} W/m² de directa). ` : BG(t, e) && (x += `El sol llega a ratos o velado (${fU(Math.round(t.dni / 10) * 10)} W/m² de media en la hora, con ${Math.round(t.nubes)} % de nubes). `), s.pisoEntero ? x += "La sombra del alero cubre todo este piso: el vidrio y el muro quedan sin sol directo." : s.vidrio === "sombra" ? x += `La sombra baja ${c(s.dw)} m por el muro y tapa todo el vidrio; el sol solo incide en la franja de muro que queda debajo, hasta ${c(s.hSombra)} m del suelo.` : s.vidrio === "sol" ? x += `El sol entra por debajo del alero e incide en todo el vidrio. La sombra solo baja ${c(s.dw)} m${s.dw > .05 ? ", sobre el muro que hay encima de la ventana" : ""}.` : x += `La sombra baja ${c(s.dw)} m: cubre ${s.vidrio === "casiSol" ? "solo" : ""} la parte de arriba del vidrio (${Math.round(s.frac * 100)} %) y el resto recibe sol.`.replace("cubre  la", "cubre la"), S += `Sol de perfil a ${Math.round(s.pf)} grados. ${s.pisoEntero ? "La sombra del alero cubre todo el piso." : `La sombra del alero baja ${c(s.dw)} m por el muro.`} El vidrio queda ${s.vidrio === "sombra" || s.vidrio === "sol" ? gK[s.vidrio] : `${gK[s.vidrio]}, ${Math.round(s.frac * 100)} % a la sombra`}.`;
 	}
-	t.innerHTML = `<desc id="corte-desc">${x}</desc>${h}`, Z("#corte-txt").textContent = b;
+	n.innerHTML = `<desc id="corte-desc">${S}</desc>${g}`, Z("#corte-txt").textContent = x;
 }
-var gK = "https://caamanoluismiguel.github.io/edificio-106/", _K = (e) => String(e).padStart(2, "0");
-function vK(e) {
+var bK = "https://caamanoluismiguel.github.io/edificio-106/", xK = (e) => String(e).padStart(2, "0");
+function SK(e) {
 	let t = [...e.matchAll(/(#[0-9a-f]{3,8})(?:\s+([\d.]+)%)?/gi)];
 	return t.map((e, n) => [e[2] == null ? n / Math.max(1, t.length - 1) : e[2] / 100, e[1]]);
 }
-var yK = 2400;
-function bK() {
-	let e = $.renderer, t = e.getPixelRatio(), n = $._w, r = $._h, i = Math.max(n, r), a = e.backend?.device?.limits?.maxTextureDimension2D ?? e.backend?.gl?.getParameter?.(e.backend.gl.MAX_RENDERBUFFER_SIZE) ?? 4096, o = [.../* @__PURE__ */ new Set([...[yK, 1600].map((e) => Math.min(e, a) / i), t])];
+var CK = 2400;
+function wK() {
+	let e = $.renderer, t = e.getPixelRatio(), n = $._w, r = $._h, i = Math.max(n, r), a = e.backend?.device?.limits?.maxTextureDimension2D ?? e.backend?.gl?.getParameter?.(e.backend.gl.MAX_RENDERBUFFER_SIZE) ?? 4096, o = [.../* @__PURE__ */ new Set([...[CK, 1600].map((e) => Math.min(e, a) / i), t])];
 	for (let e of [...$.diagRotulos ?? [], ...$.rutaRotulos ?? []]) e.userData.tapado = !1;
-	aK.f = "";
+	lK.f = "";
 	try {
 		for (let t of o) {
 			e.setPixelRatio(t), $.render();
@@ -39349,19 +39403,19 @@ function bK() {
 		e.setPixelRatio(t), $.sucio = !0, $.render();
 	}
 }
-async function xK() {
+async function TK() {
 	let e = Z("#guardar-img"), t = Z("#img-estado");
 	if (!$ || e.getAttribute("aria-busy") === "true") return;
 	let n = e.textContent;
 	e.setAttribute("aria-busy", "true"), e.disabled = !0, e.textContent = "Generando imagen…", t.textContent = "";
 	try {
-		let e = Q.fecha, n = (Math.round(Q.min) % 1440 + 1440) % 1440, r = Math.floor(n / 60), i = n % 60, a = iW(), o = zG[Q.lente], s = BG[Q.lente]?.find(([e]) => e === Q[VG[Q.lente]])?.[1], c = o.t.split(":")[0] + (s ? ` · ${s}` : "") + (Q.lente === "partes" ? ` · ${(JG[Q.parte] ?? JG.alero).t}` : ""), l = document.querySelector(".vistas [data-vista][aria-pressed=\"true\"]"), u = Q.fachada ? Q.fachada.slice(8) : null, d = Q.fachada ? zB[Q.fachada].nombre : l ? `Vista ${l.textContent.trim().toLowerCase()}` : "Vista libre", f = MB({
+		let e = Q.fecha, n = (Math.round(Q.min) % 1440 + 1440) % 1440, r = Math.floor(n / 60), i = n % 60, a = iW(), o = UG[Q.lente], s = WG[Q.lente]?.find(([e]) => e === Q[GG[Q.lente]])?.[1], c = o.t.split(":")[0] + (s ? ` · ${s}` : "") + (Q.lente === "partes" ? ` · ${(QG[Q.parte] ?? QG.alero).t}` : ""), l = document.querySelector(".vistas [data-vista][aria-pressed=\"true\"]"), u = Q.fachada ? Q.fachada.slice(8) : null, d = Q.fachada ? zB[Q.fachada].nombre : l ? `Vista ${l.textContent.trim().toLowerCase()}` : "Vista libre", f = MB({
 			...e,
 			h: 0,
 			min: Q.min
 		}), p = f.alt > .5 ? `Sol a ${dU(f.alt)}° de altura, hacia el ${RB(f.az)}` : "El sol está bajo el horizonte";
 		Q.lente === "sol" && Q.solModo;
-		let m = eG(o), h = document.createElement("canvas");
+		let m = tG(o), h = document.createElement("canvas");
 		await tU.toCanvas(h, a, {
 			margin: 2,
 			width: 360,
@@ -39374,7 +39428,7 @@ async function xK() {
 		try {
 			await document.fonts.ready;
 		} catch {}
-		let { cap: g, W: _, H: v } = bK(), y = Math.min(3, Math.max(.7, _ / 1200)), b = 26 * y, x = 150 * y, S = document.createElement("canvas"), C = S.getContext("2d"), ee = (e, t, n = "texto") => `${e} ${Math.round(t * y)}px ${n === "datos" ? "\"IBM Plex Mono\", ui-monospace, monospace" : n === "display" ? "\"Bricolage Grotesque\", system-ui, sans-serif" : "\"Atkinson Hyperlegible Next\", \"Atkinson Hyperlegible\", system-ui, sans-serif"}`, w = _ - 3 * b - x, te = (e, t, n) => {
+		let { cap: g, W: _, H: v } = wK(), y = Math.min(3, Math.max(.7, _ / 1200)), b = 26 * y, x = 150 * y, S = document.createElement("canvas"), C = S.getContext("2d"), ee = (e, t, n = "texto") => `${e} ${Math.round(t * y)}px ${n === "datos" ? "\"IBM Plex Mono\", ui-monospace, monospace" : n === "display" ? "\"Bricolage Grotesque\", system-ui, sans-serif" : "\"Atkinson Hyperlegible Next\", \"Atkinson Hyperlegible\", system-ui, sans-serif"}`, w = _ - 3 * b - x, te = (e, t, n) => {
 			C.font = t;
 			let r = e.split(" "), i = [], a = "";
 			for (let e of r) {
@@ -39400,8 +39454,14 @@ async function xK() {
 				color: "#b6bdb9",
 				lin: te(`${p}. Edificio 106 · Isthmus, Ciudad del Saber, Panamá.`, ee(400, 17), w),
 				alto: 23
+			},
+			{
+				font: ee(400, 15),
+				color: "#b6bdb9",
+				lin: te(`${Q.sello ? Q.sello + " · " : ""}${Z("#l-fuente").textContent}${Q.aguacero ? " Aguacero forzado en Capas: no es el dato." : ""}`.trim(), ee(400, 15), w),
+				alto: 21
 			}
-		], ne = T.reduce((e, t) => e + t.lin.length * t.alto * y, 0) + 8 * y, re = m ? 46 * y : 0, ie = te(a, ee(500, 15, "datos"), w), ae = (18 + ie.length * 20) * y, oe = Math.ceil(Math.max(ne + re + ae, x + 24 * y) + 2 * b);
+		].filter((e) => e.lin.length), ne = T.reduce((e, t) => e + t.lin.length * t.alto * y, 0) + 8 * y, re = m ? 46 * y : 0, ie = te(a, ee(500, 15, "datos"), w), ae = (18 + ie.length * 20) * y, oe = Math.ceil(Math.max(ne + re + ae, x + 24 * y) + 2 * b);
 		S.width = _, S.height = v + oe, C.drawImage(g, 0, 0), C.fillStyle = "#0e171b", C.fillRect(0, v, _, oe), C.fillStyle = "#f4b545", C.fillRect(0, v, _, Math.max(2, 3 * y)), C.textBaseline = "alphabetic";
 		let se = v + b;
 		for (let e of T) {
@@ -39410,7 +39470,7 @@ async function xK() {
 		}
 		if (se += 8 * y, m) {
 			let e = Math.min(420 * y, w), t = C.createLinearGradient(b, 0, b + e, 0);
-			for (let [e, n] of vK(m.c)) t.addColorStop(Math.min(1, Math.max(0, e)), n);
+			for (let [e, n] of SK(m.c)) t.addColorStop(Math.min(1, Math.max(0, e)), n);
 			C.fillStyle = t, C.fillRect(b, se, e, 14 * y), C.strokeStyle = "rgba(239,233,222,0.35)", C.lineWidth = Math.max(1, y), C.strokeRect(b, se, e, 14 * y), C.font = ee(500, 14, "datos"), C.fillStyle = "#b6bdb9", m.esc.forEach((t, n) => {
 				t && (C.textAlign = n === 0 ? "left" : n === m.esc.length - 1 ? "right" : "center", C.fillText(t, b + e * n / (m.esc.length - 1), se + 34 * y));
 			}), C.textAlign = "left", se += re;
@@ -39419,8 +39479,8 @@ async function xK() {
 		for (let e of ie) se += 20 * y, C.fillText(e, b, se);
 		let ce = _ - b - x, le = v + b;
 		C.fillStyle = "#ffffff", C.fillRect(ce, le, x, x), C.imageSmoothingEnabled = !1, C.drawImage(h, ce, le, x, x), C.imageSmoothingEnabled = !0, C.font = ee(500, 12, "datos"), C.fillStyle = "#b6bdb9", C.textAlign = "center", C.fillText(u ? `fachada ${u.toUpperCase()} · QR del momento` : "QR del momento", ce + x / 2, le + x + 17 * y), C.textAlign = "left";
-		let ue = `edificio106_${e.y}-${_K(e.m)}-${_K(e.d)}_${_K(r)}${_K(i)}_${Q.lente}_${u ? "fachada-" + u : "vista-" + (l?.dataset.vista ?? "libre")}.png`, de = await new Promise((e, t) => S.toBlob((n) => n ? e(n) : t(/* @__PURE__ */ Error("toBlob")), "image/png")), fe = document.createElement("a");
-		fe.href = URL.createObjectURL(de), fe.download = ue, document.body.appendChild(fe), fe.click(), fe.remove(), setTimeout(() => URL.revokeObjectURL(fe.href), 4e3), xK.ultima = {
+		let ue = `edificio106_${e.y}-${xK(e.m)}-${xK(e.d)}_${xK(r)}${xK(i)}_${Q.lente}_${u ? "fachada-" + u : "vista-" + (l?.dataset.vista ?? "libre")}.png`, de = await new Promise((e, t) => S.toBlob((n) => n ? e(n) : t(/* @__PURE__ */ Error("toBlob")), "image/png")), fe = document.createElement("a");
+		fe.href = URL.createObjectURL(de), fe.download = ue, document.body.appendChild(fe), fe.click(), fe.remove(), setTimeout(() => URL.revokeObjectURL(fe.href), 4e3), TK.ultima = {
 			nombre: ue,
 			W: S.width,
 			H: S.height
@@ -39431,26 +39491,26 @@ async function xK() {
 		e.removeAttribute("aria-busy"), e.disabled = !1, e.textContent = n;
 	}
 }
-function SK(e, t, n) {
+function EK(e, t, n) {
 	let r = LB(t.alt, t.az);
 	if (e === "hora") return ["La hora", `Es la hora de Panamá, que usa UTC−5 todo el año (no tiene horario de verano). El sol se calcula para este minuto exacto: ${SU(Q.fecha)}, ${mU(Q.min)}. Arrastra la regla de abajo para cambiarla, o usa «Ir a…» para una fecha exacta.`];
 	if (e === "sol") return ["El sol: altura y rumbo", t.alt <= .5 ? `Ahora el sol está ${dU(-t.alt)}° bajo el horizonte: es de noche o está por salir. La altura es el ángulo del sol sobre el horizonte (0° al salir o ponerse, 90° justo encima) y el rumbo, hacia dónde está, medido desde el norte.` : `La altura es el ángulo del sol sobre el horizonte: 0° al salir o ponerse, 90° justo encima. Ahora está a ${dU(t.alt)}°. El rumbo dice hacia dónde está, medido desde el norte en el sentido del reloj: ${Math.round(t.az)}° es hacia el ${RB(t.az)}. A 9° al norte del ecuador, el sol del mediodía pasa casi encima todo el año; por eso el techo recibe mucho más sol que las paredes.`];
 	if (e === "sombra") return ["La sombra de 1 m", r ? `Es lo que mide ahora la sombra de un palo de 1 m: ${dU(r.largo, 2)} m, hacia el ${RB(r.rumbo)}. Sirve de regla para cualquier cosa: una persona de 1,70 m hace una sombra de ${dU(1.7 * r.largo, 1)} m y un poste de luz de 6 m, una de ${dU(6 * r.largo, 1)} m. Mientras más corta la sombra, más alto está el sol.` : "Ahora no hay sol, así que no hay sombra solar. Mueve la regla del día a una hora con sol."];
 	if (e === "clima") {
 		if (!n || n.fuente === "viaje") return ["El tiempo", "Se está cargando el dato del tiempo."];
-		if (n.fuente === "tipico") return ["El tiempo: valores típicos", `Para esta fecha no hay dato de esa hora, así que se muestra lo típico: la mediana de 2001–2025 para ${cU[Q.fecha.m - 1]} a esta hora. ${dU(n.temp)} °C y ${Math.round(n.nubes)} % del cielo con nubes; llueve 1 mm o más en el ${Math.round(n.probLluvia)} % de estas horas. Entre 2001 y 2025 hay dato de cada hora; desde 1940 se consulta en línea.`];
-		if (n.fuente === "mes") return ["La lluvia del mes", `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(n.lluviaMes)} mm, es decir, ${Math.round(n.lluviaMes)} litros por metro cuadrado. Un ${cU[Q.fecha.m - 1]} típico tiene ${Math.round(LU.r.climMensual[Q.fecha.m - 1])} mm.`];
-		let e = VB(t.alt), r = [`${dU(n.temp)} °C de temperatura del aire`, `${Math.round(n.nubes)} % del cielo cubierto de nubes`];
-		n.dni != null && t.alt > 2 && r.push(`${fU(Math.round(n.dni / 10) * 10)} W/m² de sol directo (con cielo despejado, a esta altura, serían unos ${fU(Math.round(e / 10) * 10)} W/m², según el modelo sencillo de Meinel y Meinel, 1976)`);
-		let i = n.lluvia ?? 0, a = n.albrook && !n.albrook.auto ? "" : i >= .1 && !kW(n) ? `Da ${dU(i)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${jW}).` : kW(n) ? `Llueven ${dU(i)} mm en la hora: ${dU(i)} litros por cada metro cuadrado. Desde unos 8 mm en una hora ya se considera lluvia fuerte (más de 7,6 mm/h, según el glosario de la AMS).` : "No llueve a esa hora.";
-		return ["El tiempo de esa hora", `${r.join(", ")}. ${a} ${n.fuente === "vivo" ? n.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${n.albrook.hora} (el parte redondea al grado entero)${n.albrook.auto ? "; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico" : `, y ${DH(n.albrook).replace(/^Albrook /, "")}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : "Es el pronóstico de modelo de Open-Meteo para ahora." : (n.ajustado ? "Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero" : "Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero") + " muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, ERA5 marca lluvia en la misma hora una de cada cinco veces que allí llovió (2017–2025). La escena dibuja lluvia desde 1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre: con esos umbrales, ERA5 tiene unas 0,8 veces las horas con lluvia que informa el observador de Albrook de diciembre a marzo, y unas 1,15 veces de abril a noviembre (2017–2025)."}`];
+		if (n.fuente === "tipico") return ["El tiempo: valores típicos", `Para esta fecha no hay dato de esa hora, así que se muestra lo típico: la mediana de 2001–2025${n.ajustado ? " (temperatura y humedad ajustadas a Albrook)" : ""} para ${cU[Q.fecha.m - 1]} a esta hora. ${Math.round(n.temp)} °C y ${Math.round(n.nubes)} % del cielo con nubes; llueve 1 mm o más en el ${Math.round(n.probLluvia)} % de estas horas. Entre 2001 y 2025 hay dato de cada hora; desde 1940 se consulta en línea.`];
+		if (n.fuente === "mes") return ["La lluvia del mes", `En la vista de 25 años se muestra la lluvia total del mes: ${Math.round(n.lluviaMes)} mm, es decir, ${Math.round(n.lluviaMes)} litros por metro cuadrado. La media de ${cU[Q.fecha.m - 1]} en 2001–2025 es de ${Math.round(LU.r.climMensual[Q.fecha.m - 1])} mm.`];
+		let e = VB(t.alt), r = [`${Math.round(n.temp)} °C de temperatura del aire`, `${Math.round(n.nubes)} % del cielo cubierto de nubes`];
+		n.dni != null && t.alt > 2 && r.push(`${fU(Math.round(n.dni / 10) * 10)} W/m² de sol directo${BG(n, t) ? " de media en la hora, a ratos o velado" : ""} (el modelo sencillo de Meinel y Meinel, 1976, da ${fU(Math.round(e / 10) * 10)} W/m² con cielo despejado a esta altura; ERA5, en las horas casi sin nubes, da cerca de las tres cuartas partes de eso)`);
+		let i = n.lluvia ?? 0, a = n.albrook && !n.albrook.auto ? "" : i >= .1 && !kW(n) ? `Da ${dU(i)} mm en la hora: una lluvia débil en la celda, por debajo del umbral con que la escena dibuja lluvia (${MW}).` : kW(n) ? `Llueven ${dU(i)} mm en la hora: ${dU(i)} litros por cada metro cuadrado. Desde 10 mm en una hora la OMM la llama lluvia fuerte (WMO-No. 8, 2023, vol. I, p. 484).` : "No llueve a esa hora.";
+		return ["El tiempo de esa hora", `${r.join(", ")}. ${a} ${n.fuente === "vivo" ? n.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${n.albrook.hora} (el parte redondea al grado entero)${n.albrook.auto ? "; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico" : `, y ${DH(n.albrook).replace(/^Albrook /, "")}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : "Es el pronóstico de modelo de Open-Meteo para ahora." : n.fuente === "dia" && n.modelo !== "era5" ? "Es el pronóstico de modelo de Open-Meteo para ese día, consultado en línea: no es ERA5 ni está ajustado a Albrook." : (n.ajustado ? "Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero" : "Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero") + " muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, a la hora de un parte con lluvia la escena dibuja lluvia una de cada seis veces (2017–2025). El sol directo es el promedio de la hora en la celda: en las horas de 9 a 14 en que Albrook informó lluvia, ERA5 daba 300 W/m² o más en casi la mitad (48 %). La escena dibuja lluvia desde 1 mm en la hora de diciembre a marzo y 1,5 mm de abril a noviembre: con esos umbrales, ERA5 tiene unas 0,8 veces las horas con lluvia que informa el observador de Albrook de diciembre a marzo, y unas 1,15 veces de abril a noviembre (2017–2025). Mientras la escena dibuja lluvia, no dibuja sol directo."}`];
 	}
-	return e === "tab-dia" ? ["La regla del día", "Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras azules son la lluvia de cada hora y lo gris, las horas en que las nubes tapan el sol. Arrástrala para recorrer el día."] : e === "tab-anio" ? ["La regla del año", "Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año."] : e === "tab-decadas" ? ["25 años de lluvia", "Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie."] : null;
+	return e === "tab-dia" ? ["La regla del día", `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${MW}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de un cielo despejado, y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`] : e === "tab-anio" ? ["La regla del año", "Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año."] : e === "tab-decadas" ? ["25 años de lluvia", "Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie."] : null;
 }
-function CK(e) {
-	TW(), Q.explica = Q.explica === e ? null : e, document.querySelectorAll("[data-explica]").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.explica === Q.explica))), sG = "";
+function DK(e) {
+	TW(), Q.explica = Q.explica === e ? null : e, document.querySelectorAll("[data-explica]").forEach((e) => e.setAttribute("aria-pressed", String(e.dataset.explica === Q.explica))), cG = "";
 }
-function wK() {
+function OK() {
 	let e = vU(), t = e.y, n = FB(t)[0];
 	return [
 		{
@@ -39472,7 +39532,7 @@ function wK() {
 		{
 			t: "El norte y el recorrido del sol",
 			txt: "La rosa del suelo marca el norte real. El edificio no mira al norte: su eje largo gira 56°, así que sus cuatro fachadas miran al sureste, noroeste, noreste y suroeste. El arco dorado es el recorrido del sol hoy, con las horas marcadas.",
-			dis: "A 9° al norte del ecuador el sol pasa muy alto al mediodía durante todo el año. Por eso aquí el techo recibe más sol que cualquier pared.",
+			dis: "A 9° al norte del ecuador el sol del mediodía pasa a más de 57° de altura durante todo el año. Por eso aquí el techo recibe más sol que cualquier pared.",
 			ir: () => {
 				yW(jU.aerea, 1.8, "aerea", !1), Q.ayudas = !0, Z("#capa-ayudas").checked = !0;
 			}
@@ -39482,7 +39542,7 @@ function wK() {
 			txt: "El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol sube, los aleros dejan las ventanas en sombra; lo que cuenta es su ángulo visto de perfil contra cada fachada.",
 			dis: "Eso hace un alero de 1,65 m en el trópico: con el sol alto protege el vidrio; con el sol bajo de la tarde, no alcanza.",
 			ir: () => {
-				yW(jU.esquina, 1.6, "esquina", !1), WG("foto", !1), SG("dia"), vG();
+				yW(jU.esquina, 1.6, "esquina", !1), JG("foto", !1), TG("dia"), xG();
 			}
 		},
 		{
@@ -39633,7 +39693,7 @@ function wK() {
 			txt: "La forma de ver «Partes» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. Toca una etiqueta para saber qué es, cómo es en este edificio y qué hace. La persona de 1,70 m junto a la esquina sirve para comparar tamaños.",
 			dis: "El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos.",
 			ir: () => {
-				yW(jU.esquina, 1.6, "esquina", !1), WG("partes", !1), ZG("alero");
+				yW(jU.esquina, 1.6, "esquina", !1), JG("partes", !1), tK("alero");
 			}
 		},
 		{
@@ -39641,18 +39701,18 @@ function wK() {
 			txt: "Con «Ir a…» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia la forma de ver con Foto, Sol, Lluvia, Viento, Sombras o Partes. En «Confort», abajo a la derecha, ves qué sugiere el clima de afuera a cada hora: por dónde entraría la brisa y en qué vidrios incide el sol.",
 			dis: "«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.",
 			ir: () => {
-				Q.aguaModo = "hora", xG(!0), WG("foto", !1);
+				Q.aguaModo = "hora", wG(!0), JG("foto", !1);
 			}
 		}
 	];
 }
-function TK(e) {
-	let t = Q.pasos ??= wK();
+function kK(e) {
+	let t = Q.pasos ??= OK();
 	if (e == null || e < 0 || e >= t.length) {
-		Q.paso = null, Q.pasos = null, Z("#recorrido").hidden = !0, document.documentElement.classList.remove("en-recorrido"), Q.reproduce && yG(), sG = "";
+		Q.paso = null, Q.pasos = null, Z("#recorrido").hidden = !0, document.documentElement.classList.remove("en-recorrido"), Q.reproduce && SG(), cG = "";
 		return;
 	}
-	Q.paso = e, Q.explica = null, yG(), DK(!1);
+	Q.paso = e, Q.explica = null, SG(), jK(!1);
 	let n = t[e];
 	Z("#rec-n").textContent = `Paso ${e + 1} de ${t.length}`, Z("#rec-t").textContent = n.t, Z("#rec-txt").textContent = n.txt, Z("#rec-dis").textContent = n.dis;
 	let r = !!n.pre, i = Z("#recorrido").contains(document.activeElement);
@@ -39663,56 +39723,57 @@ function TK(e) {
 		"#confort"
 	].forEach((e) => {
 		Z(e).hidden = !0;
-	}), cK(!1), (r ? n.antes : n.ir)(), Q.momento = null, Q.verLeyenda = Q.lente !== "foto", sG = "", r && i && Z("#rec-ver").focus();
+	}), fK(!1), (r ? n.antes : n.ir)(), Q.momento = null, Q.verLeyenda = Q.lente !== "foto", cG = "", r && i && Z("#rec-ver").focus();
 }
-function EK(e) {
+function AK(e) {
 	e && (e.checkVisibility ? e.checkVisibility() : e.offsetParent !== null) ? e.focus() : Z("#principal")?.focus();
 }
-function DK(e) {
+function jK(e) {
 	document.documentElement.classList.toggle("rec-plegado", e);
 	let t = Z("#rec-plegar");
 	t.textContent = e ? "Leer el paso" : "Ver el edificio", t.setAttribute("aria-expanded", String(!e));
 }
-function OK() {
+function MK() {
 	let e = Q.pasos?.[Q.paso];
 	if (!e || !Z("#rec-respuesta").hidden) return;
 	let t = Z("#recorrido");
-	t.setAttribute("aria-live", "off"), Z("#rec-ver").hidden = !0, Z("#rec-respuesta").hidden = !1, Z("#rec-txt").focus(), setTimeout(() => t.setAttribute("aria-live", "polite"), 400), e.ir(), Q.momento = null, Q.verLeyenda = Q.lente !== "foto", sG = "";
+	t.setAttribute("aria-live", "off"), Z("#rec-ver").hidden = !0, Z("#rec-respuesta").hidden = !1, Z("#rec-txt").focus(), setTimeout(() => t.setAttribute("aria-live", "polite"), 400), e.ir(), Q.momento = null, Q.verLeyenda = Q.lente !== "foto", cG = "";
 }
-function kK() {
+function NK() {
 	let e = Q.fecha, t = Z("#dia-clima");
 	if (!t) return;
-	let n = "", r = "", i = (t) => LU.registro(e, t) ?? LU.registroDia(e, t), a = !!i(0);
+	let n = "", r = "", i = (t) => LU.registro(e, t) ?? LU.registroDia(e, t), a = i(0), o = !!a, s = mH(e.m);
 	for (let t = 0; t < 24; t++) {
-		let o = t / 24 * 1e3 + 2, s = 1e3 / 24 - 4;
-		if (a) {
-			let a = i(t * 60), c = i(t * 60 + 30), l = MB({
+		let r = t / 24 * 1e3 + 2, a = 1e3 / 24 - 4;
+		if (o) {
+			let o = i(t * 60), c = i(t * 60 + 30), l = MB({
 				...e,
 				h: t,
 				min: 30
-			}).alt;
+			}).alt, u = o?.lluvia ?? 0;
 			if (l > 2 && c?.dni != null) {
-				let e = _U(c.dni / Math.max(40, VB(l)));
-				e < .85 && (n += `<rect class="nube" x="${o - 2}" y="6" width="41.666666666666664" height="16" opacity="${(.62 * (1 - e)).toFixed(2)}"></rect>`);
+				let e = u >= s ? 0 : _U(c.dni / Math.max(40, VB(l)));
+				e < .85 && (n += `<rect class="nube" x="${r - 2}" y="6" width="41.666666666666664" height="16" opacity="${(.62 * (1 - e)).toFixed(2)}"></rect>`);
 			}
-			let u = a?.lluvia ?? 0;
-			if (u >= .1) {
+			if (u >= s) {
 				let e = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(u) / Math.log1p(15)));
-				n += `<rect class="gota" x="${o}" y="${22 - e}" width="${s}" height="${e}" rx="1.5"><title>${mU(t * 60)}–${mU(t * 60 + 60)}: ${dU(u)} mm</title></rect>`;
-			}
-			r = "lluvia y nubes de cada hora (ERA5)";
+				n += `<rect class="gota" x="${r}" y="${22 - e}" width="${a}" height="${e}" rx="1.5"><title>${mU(t * 60)}–${mU(t * 60 + 60)}: ${dU(u)} mm</title></rect>`;
+			} else u >= .1 && (n += `<rect class="gota debil" x="${r}" y="20" width="${a}" height="2" rx="1"><title>${mU(t * 60)}–${mU(t * 60 + 60)}: ${dU(u)} mm, lluvia débil en la celda (la escena no la dibuja)</title></rect>`);
 		} else if (LU.ok) {
 			let i = LU.tipico(e.m, t * 60)?.probLluvia ?? 0;
 			if (i >= 5) {
-				let r = Math.max(1.5, 16 * i / 100);
-				n += `<rect class="prob" x="${o}" y="${22 - r}" width="${s}" height="${r}" rx="1.5"><title>${mU(t * 60)}–${mU(t * 60 + 60)}: llueve en ${Math.round(i)} % de estas horas (típico de ${cU[e.m - 1]})</title></rect>`;
+				let o = Math.max(1.5, 16 * i / 100);
+				n += `<rect class="prob" x="${r}" y="${22 - o}" width="${a}" height="${o}" rx="1.5"><title>${mU(t * 60)}–${mU(t * 60 + 60)}: llueve 1 mm o más en ${Math.round(i)} % de estas horas (típico de ${cU[e.m - 1]})</title></rect>`;
 			}
-			r = `probabilidad de lluvia típica de ${cU[e.m - 1]}`;
 		}
 	}
-	t.innerHTML = n, Z("#dia-ley").textContent = r ? "▮ " + r : "";
+	if (o) {
+		let e = a.fuente === "serie" ? "ERA5" : a.modelo === "era5" ? "ERA5, consultado en línea" : "pronóstico de modelo (Open-Meteo)", t = Q.modo === "ahora" && LU.vivo?.albrook && !LU.vivo.albrook.auto ? "; el ahora sigue el parte de Albrook" : "";
+		r = `▮ lluvia desde ${dU(s, s % 1 ? 1 : 0)} mm en la hora · ▁ lluvia débil en la celda · gris: sol directo que falta · ${e}${t}`;
+	} else LU.ok && (r = `▮ probabilidad típica de 1 mm o más en la hora (${cU[e.m - 1]})`);
+	t.innerHTML = n, Z("#dia-ley").textContent = r;
 }
-function AK() {
+function PK() {
 	let e = FU, t = Q.fecha.y, n = FB(t), r = (e) => {
 		let t = PB(e.y, e.m, e.d);
 		return t.h * 60 + t.min;
@@ -39799,7 +39860,7 @@ function AK() {
 			fachada: "no",
 			lente: "sol",
 			v: "día típico",
-			txt: "En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, que casi todo el año queda a la sombra. Suele estar nublado: mira el valor en W/m²."
+			txt: `En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, la que menos sol directo recibe en el año (${fU(e.radiacion?.fachadas.no.directa ?? 144)} kWh/m², contra ${fU(e.radiacion?.fachadas.se.directa ?? 374)} de la SE). Suele estar nublado: mira el valor en W/m².`
 		});
 		let o = a("Lluvia"), c = e.horasLluvia.map((e) => ({
 			f: wU(e.fecha),
@@ -39827,14 +39888,14 @@ function AK() {
 			lente: "foto",
 			rank: l
 		});
-		let u = e.lluviaViento.no.max, d = Object.entries(e.lluviaViento).sort((e, t) => t[1].anual - e[1].anual).map(([e, t]) => `${e.toUpperCase()} ${fU(t.anual)}`).join(" · ");
+		let u = e.lluviaViento.no.max, d = Object.entries(e.lluviaViento).sort((e, t) => t[1].anual - e[1].anual).map(([e, t]) => `${e.toUpperCase()} ${pU(t.anual)}`).join(" · ");
 		o({
 			t: "La fachada que más se moja",
 			f: wU(u.fecha),
 			min: u.hora * 60 - 30,
 			fachada: "no",
 			lente: "lluvia",
-			v: `NO · ${fU(e.lluviaViento.no.anual)} L/m²·año`,
+			v: `NO · ${pU(e.lluviaViento.no.anual)} L/m²·año`,
 			txt: `Índice anual de lluvia con viento (L/m²): ${d}. Aquí, su hora más fuerte: ${dU(u.mm)} mm con viento de ${u.viento} km/h que llega casi de frente. Ordena fachadas; no mide el agua sobre el muro.`
 		});
 		let f = e.rachaSeca;
@@ -39845,7 +39906,7 @@ function AK() {
 			vista: "aerea",
 			lente: "foto",
 			v: `${f.dias} días`,
-			txt: `${f.dias} días seguidos con menos de 1 mm, del ${SU(wU(f.desde))} al ${SU(wU(f.hasta))}. Referencia para el riego del jardín o una cisterna de agua lluvia.`
+			txt: `${f.dias} días seguidos con menos de 1 mm, del ${SU(wU(f.desde))} al ${SU(wU(f.hasta))}.`
 		});
 		let p = a("Viento");
 		if (e.viento) {
@@ -39875,8 +39936,8 @@ function AK() {
 				fachada: "no",
 				lente: "viento",
 				modo: "anio",
-				v: `NO · ${fU(e.viento.anio.frente.no)} h al año`,
-				txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${fU(e.viento.anio.frente.no)}, NE ${fU(e.viento.anio.frente.ne)}, SO ${fU(e.viento.anio.frente.so)}, SE ${fU(e.viento.anio.frente.se)}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.`
+				v: `NO · ${pU(e.viento.anio.frente.no)} h al año`,
+				txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${pU(e.viento.anio.frente.no)}, NE ${pU(e.viento.anio.frente.ne)}, SO ${pU(e.viento.anio.frente.so)}, SE ${pU(e.viento.anio.frente.se)}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.`
 			});
 		}
 		let m = a("Luz y cielo"), h = e.diasSol.map((t) => ({
@@ -39918,7 +39979,7 @@ function AK() {
 	}
 	return i;
 }
-var jK = null, MK = {
+var FK = null, IK = {
 	4: "#8fa39b",
 	5: "#f2c46b",
 	6: "#e8913a",
@@ -39926,32 +39987,32 @@ var jK = null, MK = {
 	8: "#9e2f1c",
 	9: "#5e1a12"
 };
-async function NK(e) {
+async function LK(e) {
 	if (Z("#confort").hidden = !e, Z("#abrir-confort").setAttribute("aria-expanded", String(e)), e) {
-		if (XU(), nW(), cK(!1), wG("confort"), !jK) {
+		if (XU(), nW(), fK(!1), DG("confort"), !FK) {
 			try {
-				jK = await (await fetch(UB(oU + "datos/confort.json"))).json();
+				FK = await (await fetch(UB(oU + "datos/confort.json"))).json();
 			} catch (e) {
 				iU("aviso", "confort: " + e), Z("#carta-cifras").textContent = "No se pudieron cargar los datos de confort.";
 				return;
 			}
-			LK(), WK();
+			VK(), JK();
 		}
-		RK = "", zK(MB({
+		HK = "", UK(MB({
 			...Q.fecha,
 			h: 0,
 			min: Q.min
 		}), DW(Q.fecha, Q.min));
 	}
 }
-var PK = {
+var RK = {
 	x0: 34,
 	x1: 366,
 	y0: 12,
 	y1: 226
-}, FK = (e) => PK.x0 + (e - jK.carta.t0) / (jK.carta.t1 - jK.carta.t0) * (PK.x1 - PK.x0), IK = (e) => PK.y1 - (e - jK.carta.w0) / (jK.carta.w1 - jK.carta.w0) * (PK.y1 - PK.y0);
-function LK() {
-	let e = jK, t = e.carta, n = [], r = t.celdas.flat().filter((e) => e > 0).sort((e, t) => e - t), i = [
+}, zK = (e) => RK.x0 + (e - FK.carta.t0) / (FK.carta.t1 - FK.carta.t0) * (RK.x1 - RK.x0), BK = (e) => RK.y1 - (e - FK.carta.w0) / (FK.carta.w1 - FK.carta.w0) * (RK.y1 - RK.y0);
+function VK() {
+	let e = FK, t = e.carta, n = [], r = t.celdas.flat().filter((e) => e > 0).sort((e, t) => e - t), i = [
 		.2,
 		.4,
 		.6,
@@ -39964,7 +40025,7 @@ function LK() {
 		.8
 	];
 	t.celdas.forEach((e, r) => e.forEach((e, i) => {
-		e && n.push(`<rect x="${FK(t.t0 + i).toFixed(1)}" y="${IK(t.w0 + r + 1).toFixed(1)}" width="${(FK(1) - FK(0)).toFixed(1)}" height="${(IK(0) - IK(1)).toFixed(1)}" fill="#4aa8dc" fill-opacity="${o[a(e)]}"><title>${t.t0 + i}–${t.t0 + i + 1} °C · ${t.w0 + r}–${t.w0 + r + 1} g/kg: ${fU(e)} h</title></rect>`);
+		e && n.push(`<rect x="${zK(t.t0 + i).toFixed(1)}" y="${BK(t.w0 + r + 1).toFixed(1)}" width="${(zK(1) - zK(0)).toFixed(1)}" height="${(BK(0) - BK(1)).toFixed(1)}" fill="#4aa8dc" fill-opacity="${o[a(e)]}"><title>${t.t0 + i}–${t.t0 + i + 1} °C · ${t.w0 + r}–${t.w0 + r + 1} g/kg: ${fU(e)} h</title></rect>`);
 	}));
 	for (let e of [
 		50,
@@ -39975,31 +40036,32 @@ function LK() {
 		let r = [];
 		for (let n = t.t0; n <= t.t1; n += .5) {
 			let i = cH(n, e);
-			i <= t.w1 + .01 && r.push(`${FK(n).toFixed(1)},${IK(Math.max(t.w0, i)).toFixed(1)}`);
+			i <= t.w1 + .01 && r.push(`${zK(n).toFixed(1)},${BK(Math.max(t.w0, i)).toFixed(1)}`);
 		}
 		if (n.push(`<polyline points="${r.join(" ")}" fill="none" stroke="rgba(239,233,222,${e === 100 ? .6 : .25})" stroke-width="${e === 100 ? 1.4 : 1}"/>`), e === 50 || e === 100) {
 			let r = e === 100 ? 18.2 : 34;
-			n.push(`<text x="${FK(r) + 3}" y="${IK(Math.min(t.w1, cH(r, e))) + (e === 100 ? -6 : 12)}" fill="#b6bdb9" font-size="10">${e === 100 ? "HR 100 %" : e + " %"}</text>`);
+			n.push(`<text x="${zK(r) + 3}" y="${BK(Math.min(t.w1, cH(r, e))) + (e === 100 ? -6 : 12)}" fill="#b6bdb9" font-size="10">${e === 100 ? "HR 100 %" : e + " %"}</text>`);
 		}
 	}
 	let s = .31 * e.tpma.min + 17.8 - 3.5, c = .31 * e.tpma.max + 17.8 + 3.5;
-	n.push(`<rect x="${FK(s).toFixed(1)}" y="${PK.y0}" width="${(FK(c) - FK(s)).toFixed(1)}" height="${PK.y1 - PK.y0}" fill="none" stroke="#b6bdb9" stroke-width="1" stroke-dasharray="2 3"/>`), n.push(`<rect x="${FK(c).toFixed(1)}" y="${PK.y0}" width="${(FK(c + 2.2) - FK(c)).toFixed(1)}" height="${PK.y1 - PK.y0}" fill="none" stroke="#b6bdb9" stroke-width="1" stroke-dasharray="1 4"/>`), n.push(`<text x="${FK(s) + 3}" y="${PK.y0 + 10}" fill="#b6bdb9" font-size="9.5">ASHRAE 55</text>`);
-	let l = (e) => e.map(([e, n]) => `${FK(e).toFixed(1)},${IK(Math.max(t.w0, n)).toFixed(1)}`).join(" ");
+	n.push(`<rect x="${zK(s).toFixed(1)}" y="${RK.y0}" width="${(zK(c) - zK(s)).toFixed(1)}" height="${RK.y1 - RK.y0}" fill="none" stroke="#b6bdb9" stroke-width="1" stroke-dasharray="2 3"/>`), n.push(`<rect x="${zK(c).toFixed(1)}" y="${RK.y0}" width="${(zK(c + 2.2) - zK(c)).toFixed(1)}" height="${RK.y1 - RK.y0}" fill="none" stroke="#b6bdb9" stroke-width="1" stroke-dasharray="1 4"/>`), n.push(`<text x="${zK(s) + 3}" y="${RK.y0 + 10}" fill="#b6bdb9" font-size="9.5">ASHRAE 55</text>`);
+	let l = (e) => e.map(([e, n]) => `${zK(e).toFixed(1)},${BK(Math.max(t.w0, n)).toFixed(1)}`).join(" ");
 	n.push(`<polygon points="${l(lH.ventilacion)}" fill="none" stroke="#f4b545" stroke-width="1.6" stroke-dasharray="6 4"/>`), n.push(`<polygon points="${l(lH.quieto)}" fill="none" stroke="#f4b545" stroke-width="2"/>`);
-	for (let e = t.t0; e <= t.t1; e += 2) n.push(`<line x1="${FK(e)}" x2="${FK(e)}" y1="${PK.y1}" y2="${PK.y1 + 4}" stroke="#7f8a86"/><text x="${FK(e)}" y="${PK.y1 + 15}" fill="#b6bdb9" font-size="10" text-anchor="middle">${e}</text>`);
-	for (let e = t.w0; e <= t.w1; e += 4) n.push(`<line x1="${PK.x0 - 4}" x2="${PK.x0}" y1="${IK(e)}" y2="${IK(e)}" stroke="#7f8a86"/><text x="${PK.x0 - 7}" y="${IK(e) + 3.5}" fill="#b6bdb9" font-size="10" text-anchor="end">${e}</text>`);
-	n.push(`<text x="${(PK.x0 + PK.x1) / 2}" y="${PK.y1 + 31}" fill="#b6bdb9" font-size="10" text-anchor="middle">temperatura del aire (°C)</text>`), n.push(`<text x="10" y="${(PK.y0 + PK.y1) / 2}" fill="#b6bdb9" font-size="10" text-anchor="middle" transform="rotate(-90 10 ${(PK.y0 + PK.y1) / 2})">humedad (g/kg)</text>`), n.push("<g id=\"carta-punto\"></g>"), Z("#carta").innerHTML = `<desc id="carta-desc">Densidad de ${fU(e.horas)} horas de clase en temperatura y humedad, con ERA5 ajustado al aeropuerto de Albrook.</desc>` + n.join("");
+	for (let e = t.t0; e <= t.t1; e += 2) n.push(`<line x1="${zK(e)}" x2="${zK(e)}" y1="${RK.y1}" y2="${RK.y1 + 4}" stroke="#7f8a86"/><text x="${zK(e)}" y="${RK.y1 + 15}" fill="#b6bdb9" font-size="10" text-anchor="middle">${e}</text>`);
+	for (let e = t.w0; e <= t.w1; e += 4) n.push(`<line x1="${RK.x0 - 4}" x2="${RK.x0}" y1="${BK(e)}" y2="${BK(e)}" stroke="#7f8a86"/><text x="${RK.x0 - 7}" y="${BK(e) + 3.5}" fill="#b6bdb9" font-size="10" text-anchor="end">${e}</text>`);
+	n.push(`<text x="${(RK.x0 + RK.x1) / 2}" y="${RK.y1 + 31}" fill="#b6bdb9" font-size="10" text-anchor="middle">temperatura del aire (°C)</text>`), n.push(`<text x="10" y="${(RK.y0 + RK.y1) / 2}" fill="#b6bdb9" font-size="10" text-anchor="middle" transform="rotate(-90 10 ${(RK.y0 + RK.y1) / 2})">humedad (g/kg)</text>`), n.push("<g id=\"carta-punto\"></g>"), Z("#carta").innerHTML = `<desc id="carta-desc">Densidad de ${fU(e.horas)} horas de clase en temperatura y humedad, con ERA5 ajustado al aeropuerto de Albrook.</desc>` + n.join("");
 	let u = e.pct, d = (e, t, n) => `<li><i style="border:2px ${t} ${e};background:none"></i>${n}</li>`;
 	Z("#carta-cifras").innerHTML = [
+		`<li><i style="background:#4aa8dc;opacity:.5"></i>Tono: horas en cada celda de 1 °C × 1 g/kg, en cinco clases: hasta ${fU(i[0])}, hasta ${fU(i[1])}, hasta ${fU(i[2])}, hasta ${fU(i[3])} y más de ${fU(i[3])} h</li>`,
 		d("#f4b545", "solid", `Givoni, aire quieto: <b>${Math.round(u.quieto)} %</b> de las horas de clase`),
 		d("#f4b545", "dashed", `Givoni, con ventilación de ~2 m/s: <b>${Math.round(u.ventilacion)} %</b>`),
 		d("#b6bdb9", "dotted", `ASHRAE 55 adaptativo, aire quieto: <b>hasta ${Math.round(u.adaptativo80)} %</b> · con aire a 0,6 m/s: <b>hasta ${Math.round(u.adaptativo80_06)} %</b> (cota superior: usa el aire de afuera a la sombra)`),
 		e.crudo ? `<li><i style="background:none"></i>Con ERA5 sin ajustar a Albrook: Givoni ${Math.round(e.crudo.quieto)} % y ${Math.round(e.crudo.ventilacion)} %; ASHRAE hasta ${Math.round(e.crudo.adaptativo80)} % y ${Math.round(e.crudo.adaptativo80_06)} %.</li>` : ""
 	].join("");
 }
-var RK = "";
-function zK(e, t) {
-	if (!jK || Z("#confort").hidden) return;
+var HK = "";
+function UK(e, t) {
+	if (!FK || Z("#confort").hidden) return;
 	let n = t && t.temp != null && t.humedad != null, r = n ? [
 		Math.round(t.temp * 10),
 		Math.round(t.humedad),
@@ -40011,21 +40073,21 @@ function zK(e, t) {
 		Math.round(e.alt),
 		Math.round(e.az)
 	].join("|") : "no";
-	if (r === RK) return;
-	RK = r;
+	if (r === HK) return;
+	HK = r;
 	let i = Z("#carta-punto");
 	if (!n) {
 		i && (i.innerHTML = ""), Z("#conviene").innerHTML = "<li class=\"accion\">Esta hora no tiene temperatura ni humedad: elige una hora de la serie (2001–2025) o «Ahora».</li>", Z("#conviene-porque").innerHTML = "", Z("#conviene-resumen").textContent = "Por qué", Z("#utci-hora").textContent = "Esta hora no tiene temperatura ni humedad (elige una hora de la serie o «Ahora»).";
 		return;
 	}
-	let a = UK(e, t), o = (e) => `<span class="sr">${e === "●" ? "Sí: " : e === "◐" ? "Con condición: " : "No alcanza: "}</span>`;
-	Z("#conviene").innerHTML = a.hacer.map((e) => `<li class="accion">${e}</li>`).join(""), Z("#conviene-porque").innerHTML = a.porque.map(([e, t, n]) => `<li${e ? ` class="${e}"` : ""}>${t ? `<i aria-hidden="true">${t}</i>` : ""}<span>${t ? o(t) : ""}${n}</span></li>`).join("") + a.datos.map((e) => `<li class="cierre">${e}</li>`).join(""), Z("#conviene-resumen").textContent = `Por qué · Givoni ${a.porque[0][1]} · Guía de Panamá ${a.porque[1][1]}`, Z("#conviene-sello").textContent = `Clima de afuera, no del aula · ${t.fuente === "vivo" ? t.albrook ? `Albrook ${t.albrook.hora}, a 4 km` : `pronóstico ${t.hora ?? ""}`.trim() : t.fuente === "serie" ? t.ajustado ? "ERA5 ajustado a Albrook" : "ERA5" : t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "modelo" : "típico"} · viento a 10 m`;
-	let s = cH(t.temp, t.humedad), c = jK.carta, l = t.temp >= c.t0 && t.temp <= c.t1 && s >= c.w0 && s <= c.w1;
-	i && (i.innerHTML = l ? `<circle cx="${FK(t.temp).toFixed(1)}" cy="${IK(s).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${dU(t.temp)} °C, ${dU(s)} g/kg</title></circle>` : "");
+	let a = qK(e, t), o = (e) => `<span class="sr">${e === "●" ? "Sí: " : e === "◐" ? "Con condición: " : "No alcanza: "}</span>`;
+	Z("#conviene").innerHTML = a.hacer.map((e) => `<li class="accion">${e}</li>`).join(""), Z("#conviene-porque").innerHTML = a.porque.map(([e, t, n]) => `<li${e ? ` class="${e}"` : ""}>${t ? `<i aria-hidden="true">${t}</i>` : ""}<span>${t ? o(t) : ""}${n}</span></li>`).join("") + a.datos.map((e) => `<li class="cierre">${e}</li>`).join(""), Z("#conviene-resumen").textContent = `Por qué · Givoni ${a.porque[0][1]} · Guía de Panamá ${a.porque[1][1]}`, Z("#conviene-sello").textContent = `Clima de afuera, no del aula · ${t.fuente === "vivo" ? t.albrook ? `Albrook ${t.albrook.hora}, a 4 km` : `pronóstico ${t.hora ?? ""}`.trim() : t.fuente === "serie" ? t.ajustado ? "ERA5 ajustado a Albrook" : "ERA5" : t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "pronóstico" : t.ajustado ? "típico ajustado" : "típico"} · viento a 10 m`;
+	let s = cH(t.temp, t.humedad), c = FK.carta, l = t.temp >= c.t0 && t.temp <= c.t1 && s >= c.w0 && s <= c.w1;
+	i && (i.innerHTML = l ? `<circle cx="${zK(t.temp).toFixed(1)}" cy="${BK(s).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${Math.round(t.temp)} °C, ${Math.round(s)} g/kg</title></circle>` : "");
 	let u = (t.viento ?? 0) / 3.6, d = `${mU(Q.min)}`;
 	if (e.alt <= 0 || t.dni == null) {
 		let e = JV(t.temp, t.temp, u, t.humedad, { recortarViento: !0 }), n = XV(e);
-		Z("#utci-hora").innerHTML = `A las ${d} (de noche o sin radiación): UTCI <b>${Math.round(e)} °C</b>, ${YV[n]?.nombre.toLowerCase() ?? "—"}. Aire ${dU(t.temp)} °C · ${dU(s)} g/kg.`;
+		Z("#utci-hora").innerHTML = `A las ${d} (de noche o sin radiación): UTCI <b>${Math.round(e)} °C</b>, ${YV[n]?.nombre.toLowerCase() ?? "—"}. Aire ${Math.round(t.temp)} °C · ${Math.round(s)} g/kg.`;
 		return;
 	}
 	let f = JV(t.temp, oH({
@@ -40039,63 +40101,73 @@ function zK(e, t) {
 		altSol: e.alt,
 		dni: t.dni
 	}), u, t.humedad, { recortarViento: !0 }), m = (e) => YV[XV(e)]?.nombre.toLowerCase() ?? "—";
-	Z("#utci-hora").innerHTML = `A las ${d}: al sol se siente <b>${Math.round(f)} °C</b> (${m(f)}); bajo el alero <b>${Math.round(p)} °C</b> (${m(p)}). Aire ${dU(t.temp)} °C · ${dU(s)} g/kg.`;
+	Z("#utci-hora").innerHTML = `A las ${d}: al sol${BG(t, e) || kW(t) ? ", cuando sale," : ""} se siente <b>${Math.round(f)} °C</b> (${m(f)}); bajo el alero <b>${Math.round(p)} °C</b> (${m(p)}). Aire ${Math.round(t.temp)} °C · ${Math.round(s)} g/kg.`;
 }
-var BK = {
+var WK = {
 	"fachada-se": "SE",
 	"fachada-no": "NO",
 	"fachada-ne": "NE",
 	"fachada-so": "SO"
-}, VK = ["fachada-no", "fachada-se"], HK = {
+}, GK = ["fachada-no", "fachada-se"], KK = {
 	"fachada-se": "fachada-no",
 	"fachada-no": "fachada-se",
 	"fachada-ne": "fachada-so",
 	"fachada-so": "fachada-ne"
 };
-function UK(e, t) {
-	let n = [], r = cH(t.temp, t.humedad), i = e.alt > 0, a = Q.fecha.m, o = a === 12 || a <= 4, s = Q.min / 60, c = !!(t.albrook || t.ajustado), l = dU(t.temp), u = dU(r), d = c ? .6 : o ? 1 : .5, f = c ? .5 : 1, p = uH(t.temp, r, lH.quieto), m = uH(t.temp, r, lH.ventilacion), h = [
+function qK(e, t) {
+	let n = [], r = cH(t.temp, t.humedad), i = e.alt > 0, a = Q.fecha.m, o = a === 12 || a <= 4, s = Q.min / 60, c = !!(t.albrook || t.ajustado), l = String(Math.round(t.temp)), u = String(Math.round(r)), d = c ? .6 : o ? 1 : .5, f = c ? .5 : 1, p = uH(t.temp, r, lH.quieto), m = uH(t.temp, r, lH.ventilacion), h = [
 		[f, 0],
 		[-f, 0],
 		[0, d],
 		[0, -d]
-	].some(([e, n]) => uH(t.temp + e, r + n, lH.ventilacion) !== m), g;
-	g = t.temp < 20 ? ["●", "<b>Givoni: fresco.</b> Ventilar poco."] : p ? ["●", "<b>Givoni: confort con el aire quieto.</b> Basta la sombra."] : h ? ["◐", `<b>Givoni: en el borde.</b> Con ${l} °C y ${u} g/kg, ${c ? "" : " y la humedad de ERA5 algo alta,"} puede quedar dentro o fuera de la zona con brisa.`] : m ? ["◐", `<b>Givoni: confort si se mueve el aire</b> (${l} °C, ${u} g/kg).`] : r > 19 ? o ? ["◐", `<b>Givoni: fuera por poco</b> (${u} g/kg).${c ? "" : " En esta época la humedad medida en tierra suele ser algo menor que la de ERA5."}`] : ["○", `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${u} g/kg). Mover el aire igual ayuda.`] : ["○", `<b>Givoni: demasiado caluroso</b> (${l} °C).`], n.push(["", ...g]);
-	let _;
-	_ = t.temp < 23.5 ? ["●", "<b>Guía de Panamá: fresco para su rango</b> (23,5 a 28,5 °C)."] : t.temp <= 28.5 ? ["●", "<b>Guía de Panamá: dentro del rango</b> (23,5 a 28,5 °C)."] : t.temp <= 29.7 ? ["◐", `<b>Guía de Panamá: aceptable con ventilador o brisa suave</b> (${l} °C, el rango llega a 28,5).`] : ["○", `<b>Guía de Panamá: caluroso</b> (${l} °C, aun con el aire en movimiento).`], n.push(["", ..._]), n.push([
+	].some(([e, n]) => uH(t.temp + e, r + n, lH.ventilacion) !== m), g, _ = !1;
+	if (t.temp < 20) g = ["●", "<b>Givoni: fresco.</b> Ventilar poco."];
+	else if (p) g = ["●", "<b>Givoni: confort con el aire quieto.</b> Basta la sombra."];
+	else if (h) g = ["◐", `<b>Givoni: en el borde.</b> Con ${l} °C y ${u} g/kg, ${c ? "" : " y la humedad de ERA5 algo alta,"} puede quedar dentro o fuera de la zona con brisa.`];
+	else if (m) g = ["◐", `<b>Givoni: confort si se mueve el aire</b> (${l} °C, ${u} g/kg).`];
+	else {
+		let e = r <= 15.7 ? 32 : 32 - 2.1 * (r - 15.7) / 3.3;
+		_ = r <= 19 && t.temp > e || r > 19 && t.temp > 29.9;
+		let n = t.temp >= 25.4 ? 19 : 13.5 + (t.temp - 20) * 5.5 / 5.4;
+		g = _ ? ["○", `<b>Givoni: demasiado calor para la zona con brisa</b> (${l} °C, ${u} g/kg).`] : o ? ["○", `<b>Givoni: fuera por la humedad</b> (${u} g/kg; con ${l} °C, la zona con brisa llega a ${dU(n)}).${c ? "" : " En esta época la humedad medida en tierra suele ser algo menor que la de ERA5."}`] : ["○", `<b>Givoni: demasiado húmedo para el confort pasivo</b> (${u} g/kg). Mover el aire igual ayuda (UN-Habitat, 2014, p. 41).`];
+	}
+	n.push(["", ...g]);
+	let v;
+	v = t.temp < 23.5 ? ["●", "<b>Guía de Panamá: fresco para su rango</b> (23,5 a 28,5 °C)."] : t.temp <= 28.5 ? ["●", "<b>Guía de Panamá: dentro del rango</b> (23,5 a 28,5 °C)."] : t.temp <= 29.7 ? ["◐", `<b>Guía de Panamá: aceptable con ventilador o brisa suave</b> (${l} °C, el rango llega a 28,5).`] : ["○", `<b>Guía de Panamá: caluroso</b> (${l} °C, más de lo que ASHRAE 55 acepta con aire a 0,6 m/s).`], n.push(["", ...v]), n.push([
 		"cierre",
 		"",
-		g[0] === _[0] ? "Coinciden." : "No coinciden porque Givoni mira la humedad y la Guía solo la temperatura."
+		g[0] === v[0] ? "Coinciden." : "No coinciden porque Givoni mira la humedad y la Guía solo la temperatura."
 	]);
-	let v = [], y = [];
-	if (i && (t.dni ?? 0) >= IG) {
+	let y = [], b = [];
+	if (i && !kW(t) && (t.dni ?? 0) >= zG) {
 		let t = [];
 		for (let n of Object.keys(zB)) {
 			let r = Math.cos((e.az - zB[n].rumbo) * Math.PI / 180);
 			if (r <= .05) continue;
 			let i = Math.atan(Math.tan(e.alt * Math.PI / 180) / r) * 180 / Math.PI;
-			i < 45 && t.push(`${BK[n]} (perfil ${Math.round(i)}°)`);
+			i < 45 && t.push(`${WK[n]} (perfil ${Math.round(i)}°)`);
 		}
-		t.length && (v.push(`<b>Baja las persianas o cortinas de la ${t.map((e) => e.split(" ")[0]).join(" y la ")}.</b> El sol entra por debajo del alero; las ventanas pueden seguir abiertas.${s >= 13 && s < 16 ? " A esta hora es lo que más importa." : ""}`), y.push(`Sol en el vidrio con ángulo de perfil ${t.map((e) => e.replace(" (perfil ", " ").replace("°)", "°")).join(" y ")}; el alero tapa el vidrio desde unos 45°.`));
+		t.length && (y.push(`<b>Baja las persianas o cortinas de la ${t.map((e) => e.split(" ")[0]).join(" y la ")}.</b> El sol entra por debajo del alero; las ventanas pueden seguir abiertas.${s >= 13 && s < 16 ? " A esta hora es lo que más importa." : ""}`), b.push(`Sol en el vidrio con ángulo de perfil ${t.map((e) => e.replace(" (perfil ", " ").replace("°)", "°")).join(" y ")}; el alero tapa el vidrio desde unos 45°.`));
 	}
-	let b = t.viento ?? 0, x = a >= 5 && a <= 11 ? " (en esta época la dirección cambia de hora en hora)" : "";
-	if (t.dir == null || b < 6) v.push("<b>Si hay ventiladores, préndelos.</b> Casi no hay viento; si hay ventanas altas, ábrelas para que salga el aire caliente."), y.push(`Viento de ${Math.round(b)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`);
+	let x = t.viento ?? 0, S = a >= 5 && a <= 11 ? " (en esta época el viento llega de más direcciones y puede cambiar en la hora)" : "";
+	if (t.dir == null || x < 5) y.push("<b>Si hay ventiladores, préndelos.</b> El viento es flojo (menos de 5 km/h a 10 m de altura); si hay ventanas altas, ábrelas para que salga el aire caliente."), b.push(`Viento de ${Math.round(x)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`);
 	else {
-		let e = VK[0], n = 180;
-		for (let r of VK) {
+		let e = GK[0], n = 180;
+		for (let r of GK) {
 			let i = Math.abs((t.dir - zB[r].rumbo + 540) % 360 - 180);
 			i < n && (n = i, e = r);
 		}
-		n <= 30 ? v.push(`<b>Abre las ventanas de la ${BK[e]} y de la ${BK[HK[e]]}.</b> La brisa entra de frente por la ${BK[e]} y sale por la otra.`) : n <= 60 ? v.push("<b>Abre las ventanas de las dos fachadas largas, NO y SE.</b> La brisa llega de lado y entra más o menos la mitad del aire.") : v.push("<b>Si hay ventiladores, préndelos.</b> La brisa corre paralela a las fachadas largas y casi no entra."), o && s >= 5 && s < 9 && (v[v.length - 1] += " Aprovecha: es la hora más fresca del día."), y.push(`Viento del ${RB(t.dir)} a ${Math.round(b)} km/h a 10 m de altura, a ${Math.round(n)}° de la perpendicular de la ${BK[e]}${x}. Conviene que la salida sea igual o mayor que la entrada.`);
+		_ ? y.push(`<b>Si hay ventiladores, préndelos; abre solo si adentro está más caliente que afuera.</b> Con el aire de afuera a ${l} °C, ventilar ya no da confort (Givoni, 1992, p. 16); el ventilador mueve el aire sin meter calor (p. 17).`) : n <= 30 ? y.push(`<b>Abre las ventanas de la ${WK[e]} y de la ${WK[KK[e]]}.</b> La brisa entra de frente por la ${WK[e]} y sale por la otra.`) : n <= 60 ? y.push("<b>Abre las ventanas de las dos fachadas largas, NO y SE.</b> La brisa llega de lado y entra más o menos la mitad del aire.") : y.push("<b>Si hay ventiladores, préndelos.</b> La brisa corre paralela a las fachadas largas y casi no entra."), o && !_ && s >= 5 && s < 8 && (y[y.length - 1] += " Aprovecha: de 5 a 8 h es lo más fresco del día."), b.push(`Viento del ${RB(t.dir)} a ${Math.round(x)} km/h a 10 m de altura, a ${Math.round(n)}° de la perpendicular de la ${WK[e]}${S}. Conviene que la salida sea igual o mayor que la entrada.`);
 	}
-	let S = v.slice(0, 2);
-	return kW(t) && S.push(`<b>Cierra lo que el alero no protege.</b> ${t.albrook && !t.albrook.auto ? "El aeropuerto de Albrook, a 4 km, informa lluvia" : "Llueve"} y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.`), i || (S.push("<b>Si el aula puede quedar abierta de noche sin riesgo, déjala ventilada.</b> En clima cálido húmedo conviene ventilar a toda hora. Cuánto se enfrían los muros depende de cuánto refresque la noche: mira «Por qué»."), y.push("Givoni (1992, p. 17) considera el enfriamiento nocturno de los muros aplicable sobre todo en regiones áridas: en un edificio pesado, aislado y en sombra, cerrado de día y ventilado solo de noche, la máxima de adentro puede bajar un 45 a 55 % de la diferencia entre la máxima y la mínima de afuera. En el aeropuerto de Albrook, a 4 km, esa diferencia es de unos 5 a 8 °C según el mes (partes METAR, días completos de 2019 a 2025); ERA5 la aplana a unos 4 a 6 °C. Sin una medición en el sitio no se sabe cuánto rendiría aquí.")), {
-		hacer: S,
+	let C = y.slice(0, 2);
+	return kW(t) && C.push(`<b>Cierra lo que el alero no protege.</b> ${t.albrook && !t.albrook.auto ? "El aeropuerto de Albrook, a 4 km, informa lluvia" : "El dato da lluvia"} y el agua puede entrar por cualquier lado; las persianas de vidrio pueden quedar abiertas.`), i || (C.push("<b>Si el aula puede quedar abierta de noche sin riesgo, déjala ventilada.</b> En clima cálido húmedo conviene ventilar a toda hora. Cuánto se enfrían los muros depende de cuánto refresque la noche: mira «Por qué»."), b.push("Givoni (1992, p. 17) considera el enfriamiento nocturno de los muros aplicable sobre todo en regiones áridas: en un edificio pesado, aislado y en sombra, cerrado de día y ventilado solo de noche, la máxima de adentro puede bajar un 45 a 55 % de la diferencia entre la máxima y la mínima de afuera. En el aeropuerto de Albrook, a 4 km, esa diferencia es de unos 5 a 8 °C según el mes (partes METAR, días completos de 2019 a 2025); ERA5 la aplana a unos 4 a 6 °C. Sin una medición en el sitio no se sabe cuánto rendiría aquí.")), {
+		hacer: C,
 		porque: n,
-		datos: y
+		datos: b
 	};
 }
-function WK() {
-	let e = jK.utci, t = [], n = 334 / 12, r = [
+function JK() {
+	let e = FK.utci, t = [], n = 334 / 12, r = [
 		4,
 		5,
 		6,
@@ -40107,7 +40179,7 @@ function WK() {
 		let s = 118, c = 38 + i * n + n * .12 + o * 11.133333333333333;
 		for (let n of r) {
 			let r = e.horas ? e[a][n] / e.horas * 110 : 0;
-			r <= 0 || (s -= r, t.push(`<rect x="${c.toFixed(1)}" y="${s.toFixed(1)}" width="${10.02.toFixed(1)}" height="${r.toFixed(1)}" fill="${MK[n]}"><title>${cU[i]}, ${a === "sol" ? "al sol" : "bajo el alero"}: ${YV[n].nombre.toLowerCase()}, ${Math.round(100 * e[a][n] / e.horas)} % de las horas de día</title></rect>`));
+			r <= 0 || (s -= r, t.push(`<rect x="${c.toFixed(1)}" y="${s.toFixed(1)}" width="${10.02.toFixed(1)}" height="${r.toFixed(1)}" fill="${IK[n]}"><title>${cU[i]}, ${a === "sol" ? "al sol" : "bajo el alero"}: ${YV[n].nombre.toLowerCase()}, ${Math.round(100 * e[a][n] / e.horas)} % de las horas de día</title></rect>`));
 		}
 	})), lU.forEach((e, r) => t.push(`<text x="${(38 + r * n + n / 2).toFixed(1)}" y="130" fill="#b6bdb9" font-size="10" text-anchor="middle">${e}</text>`));
 	for (let e of [
@@ -40117,12 +40189,12 @@ function WK() {
 	]) t.push(`<text x="33" y="${(118 - e / 100 * 110 + 3.5).toFixed(1)}" fill="#7f8a86" font-size="9.5" text-anchor="end">${e} %</text>`);
 	Z("#utci").innerHTML = "<desc id=\"utci-desc\">Por mes, la parte de las horas de día en cada categoría de estrés térmico, al sol y bajo el alero.</desc>" + t.join("");
 	let i = (t, n) => Math.round(100 * e.anual[t][n] / e.anual.horas);
-	Z("#utci-ley").innerHTML = "<li style=\"grid-column:1/-1\">En cada mes, la barra de la izquierda es al sol y la de la derecha, bajo el alero.</li>" + r.map((e) => `<li><i style="background:${MK[e]}"></i>${YV[e].nombre} · sol ${i("sol", e)} % · alero ${i("sombra", e)} %</li>`).join("") + `<li style="grid-column:1/-1">El alero baja la sensación térmica unos <b>${Math.round(e.alivioMedioAlero)} °C</b> en promedio.</li>`;
+	Z("#utci-ley").innerHTML = "<li style=\"grid-column:1/-1\">En cada mes, la barra de la izquierda es al sol y la de la derecha, bajo el alero.</li>" + r.map((e) => `<li><i style="background:${IK[e]}"></i>${YV[e].nombre} · sol ${i("sol", e)} % · alero ${i("sombra", e)} %</li>`).join("") + `<li style="grid-column:1/-1">El alero baja la sensación térmica unos <b>${Math.round(e.alivioMedioAlero)} °C</b> en promedio.</li>`;
 }
-function GK() {
+function YK() {
 	let e = Z("#consultas");
 	if (!e) return;
-	let t = AK();
+	let t = PK();
 	Q.listaConsultas = t;
 	let n = "", r = "";
 	t.forEach((e, t) => {
@@ -40131,7 +40203,7 @@ function GK() {
 		n += `<li><button type="button" class="c-item" data-i="${t}"><span class="c-t">${e.t}</span><span class="c-d num">${TU(e.f)} · ${mU(e.min)} · ${e.fachada ? "fachada " + e.fachada.toUpperCase() : e.vista === "aerea" ? "aérea" : e.vista}</span><span class="c-v num">${e.v ?? ""}</span><span class="c-txt">${e.txt ?? ""}</span></button>${i}</li>`;
 	}), r && (n += "</ul></section>"), FU || (n += "<p class=\"nota\">Cargando los extremos de la serie…</p>"), e.innerHTML = n, Z("#consultas-anio").textContent = Q.fecha.y;
 }
-async function KK() {
+async function XK() {
 	let e = document.createElement("pre");
 	e.style.cssText = "position:fixed;left:12px;top:70px;z-index:99;background:#000e;color:#cfe;font:13px/1.45 ui-monospace,monospace;padding:12px 14px;margin:0;border-radius:10px;max-width:92vw;white-space:pre-wrap", document.body.appendChild(e);
 	let t = $.renderer, n = t.getPixelRatio(), r = [], i = () => Math.round(innerWidth * innerHeight * t.getPixelRatio() ** 2 / 1e4) / 100, a = (e, t) => {
@@ -40196,9 +40268,9 @@ async function KK() {
 		}, l = t.info.render;
 		r.push(`${n.padEnd(20)} ${String(i()).padStart(5)} MP  mediana ${s(o.dts, .5).toFixed(1).padStart(5)} ms  p90 ${s(o.dts, .9).toFixed(1).padStart(5)} ms  (${Math.round(1e3 / s(o.dts, .5))} fps)  cpu ${s(o.cpu, .5).toFixed(1)} ms  llamadas ${l.drawCalls ?? l.calls ?? "?"}  triángulos ${Math.round((l.triangles ?? 0) / 1e3)}k`), e.textContent = c + r.join("\n");
 	}
-	Q.muevesol = !1, Q.aguacero = !1, xG(), t.info.autoReset = !0, l("contexto", !0), t.setPixelRatio(n), $.setSalida($.bloomOn ? "conBloom" : "sinBloom"), IU.enabled = !0, e.textContent = c + r.join("\n") + "\nLISTO";
+	Q.muevesol = !1, Q.aguacero = !1, wG(), t.info.autoReset = !0, l("contexto", !0), t.setPixelRatio(n), $.setSalida($.bloomOn ? "conBloom" : "sinBloom"), IU.enabled = !0, e.textContent = c + r.join("\n") + "\nLISTO";
 }
-function qK() {
+function ZK() {
 	aU();
 	let e = 0, t = performance.now(), n = () => {
 		e++;
@@ -40225,7 +40297,7 @@ globalThis.__e106 = {
 		return zU;
 	},
 	clima: LU,
-	rescatar: KW
+	rescatar: qW
 }, qU();
 //#endregion
 export { nU as VERSION };
