@@ -110,6 +110,13 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 - **Primera visita:** `guia()` da tres pasos sobre el control real y termina en la oferta del recorrido. Con `?prueba` solo sale si se pide `?guia`.
 - **Auditoría de que nada se pierde:** el inventario de 196 elementos contra `d81073d` (antes del plan) pasó en 390, 820 y 1440 px. Ante un cambio grande de interfaz, repetirla: LM exige que todo siga conectado y que no se pierda el objetivo pedagógico (recorrido del sol, sombras, incidencia de sol, lluvia y viento, y sus análisis, Confort incluido).
 
+## Luz y sombra (fieles al dato, 3 de octubre de 2026)
+
+- El sol del dato se compara con lo más despejado de ERA5 (`DESPEJADO_ERA5 = 0.8` de Meinel en sol.js, el p95 de 2001–2025), no con Meinel.
+- El relleno de cielo se ata a la difusa del dato (`fRel` en escena.js, Hay-Davies): solo baja, sin lluvia ni de noche. `KAPPA` sale de una sola medición; si se toca la luz, hay que medir de nuevo la razón sol/sombra en escena (con la salida AgX invertida) contra (DNI·sen h + DHI)/(DHI·(1 − Ai)).
+- La franja bajo el alero es `aoNode` (oclusión de cielo): nunca debe apagar el sol directo que entra bajo el alero.
+- **Nunca un contraste fijo en «Cómo se ve»:** pintaría un día nublado como despejado. Los realces van en las lentes analíticas y rotulados.
+
 ## Gotchas
 
 - **Entorno (`contexto.glb`):** se rehace con `node contexto.mjs` (ver README, «El entorno»). Una malla grande pierde precisión al cuantizar (17 cm en 6 km): lo cercano va en mallas propias. `dedup` funde materiales iguales aunque cambie el nombre. En WebGPU no cambiar `mesh.geometry` de algo ya dibujado. Los barcos son ilustrativos (1 cada 2 h por vía).
