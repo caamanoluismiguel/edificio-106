@@ -1,0 +1,135 @@
+{
+ "descripcion": "Árboles reales a 150 m o menos del 106 que reemplazan el anillo de relleno de vegetacion.glb (arboles-reales.mjs). Solo copas detectadas en el mapa de altura de copa y vistas en Street View; sin especie.",
+ "fuente": "Meta y WRI, High Resolution Canopy Height Maps v1 (Tolan et al. 2024, Remote Sensing of Environment 300:113888), CC BY 4.0, tesela 032221132; imágenes © Maxar del 2018-10-04. Error absoluto medio de altura 2,8 m en la validación del artículo (otros sitios)",
+ "metodo": "Copas sacadas por nuestro script con máximos locales y cuencas sobre el CHM (~/projects/edificio-106-arboles/copas.py, en la máquina de LM); altura = CHM en el pico (entera); diámetro = diámetro de un círculo de igual área que la copa, cortada a la mitad de la altura del pico y con un radio de 0,75 veces la altura como máximo",
+ "comprobacion": "Mirado el 2026-10-04 en Street View (imágenes de nov 2022): cada copa desde la cámara más cercana con el rumbo hacia ella; se quedan solo las vistas (revisado por el verificador). Fuera: la palma junto a #2336 (el CHM la da de 4 m), las no vistas (#1823, #2265) y las que no se pudieron mirar",
+ "fecha": "2026-10-04",
+ "arboles": [
+  {
+   "id": 967,
+   "lon": -79.5827442,
+   "lat": 8.9988822,
+   "altura_m": 12,
+   "diametro_copa_m": 17.0,
+   "street_view": "nov 2022",
+   "nota": "visto: copa ancha sobre el rumbo, tronco a ~5 m al lado (giro-967.png, cámara a 11,7 m)"
+  },
+  {
+   "id": 1010,
+   "lon": -79.582315,
+   "lat": 8.998861,
+   "altura_m": 11,
+   "diametro_copa_m": 16.0,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1122,
+   "lon": -79.5819717,
+   "lat": 8.9984372,
+   "altura_m": 10,
+   "diametro_copa_m": 15.1,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1182,
+   "lon": -79.581961,
+   "lat": 8.9995604,
+   "altura_m": 10,
+   "diametro_copa_m": 13.8,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1210,
+   "lon": -79.5817893,
+   "lat": 8.9997406,
+   "altura_m": 10,
+   "diametro_copa_m": 9.3,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1211,
+   "lon": -79.5821433,
+   "lat": 8.9985007,
+   "altura_m": 10,
+   "diametro_copa_m": 12.1,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1217,
+   "lon": -79.5818108,
+   "lat": 8.9999949,
+   "altura_m": 10,
+   "diametro_copa_m": 8.6,
+   "street_view": "nov 2022",
+   "nota": "visto: árbol redondo oscuro en el rumbo"
+  },
+  {
+   "id": 1219,
+   "lon": -79.5821112,
+   "lat": 8.9984583,
+   "altura_m": 10,
+   "diametro_copa_m": 12.2,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1355,
+   "lon": -79.5823901,
+   "lat": 8.9996558,
+   "altura_m": 9,
+   "diametro_copa_m": 9.4,
+   "street_view": "nov 2022",
+   "nota": "visto: árbol en el rumbo (giro-1355.png, cámara a 17 m)"
+  },
+  {
+   "id": 1449,
+   "lon": -79.5819288,
+   "lat": 8.9986067,
+   "altura_m": 8,
+   "diametro_copa_m": 10.1,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1553,
+   "lon": -79.5821863,
+   "lat": 8.998257,
+   "altura_m": 7,
+   "diametro_copa_m": 10.4,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 1836,
+   "lon": -79.5827549,
+   "lat": 8.9981722,
+   "altura_m": 6,
+   "diametro_copa_m": 7.8,
+   "street_view": "nov 2022",
+   "nota": "visto (algo corrido)"
+  },
+  {
+   "id": 1885,
+   "lon": -79.5823901,
+   "lat": 8.9997512,
+   "altura_m": 6,
+   "diametro_copa_m": 4.6,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  },
+  {
+   "id": 2303,
+   "lon": -79.5823365,
+   "lat": 8.9985007,
+   "altura_m": 4,
+   "diametro_copa_m": 3.3,
+   "street_view": "nov 2022",
+   "nota": "visto"
+  }
+ ]
+}
