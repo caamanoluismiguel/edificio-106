@@ -601,8 +601,10 @@ export class Escena {
     const tex = new THREE.TextureLoader();
     const texturas = {};
     const cargaTex = (f) => texturas[f] ??= tex.loadAsync(conVersion(base + 'texturas/' + f)).then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
-    const lista = (this.calidad.grupos ?? GRUPOS).filter((g) => g !== 'arboles' || !/[?&]arboles=0/.test(location.search));   // ?arboles=0: sin las copas de CdS
-    const diferidos = GRUPOS.filter((g) => this.calidad.diferidos?.includes(g) && lista.includes(g));
+    const sinArboles = (g) => g !== 'arboles' || !/[?&]arboles=0/.test(location.search);   // ?arboles=0: sin los árboles de CdS
+    const lista = (this.calidad.grupos ?? GRUPOS).filter(sinArboles);
+    // los diferidos NO están en `lista` en el teléfono (se piden aparte): solo se les quita arboles con ?arboles=0
+    const diferidos = GRUPOS.filter((g) => this.calidad.diferidos?.includes(g) && sinArboles(g));
     const livianas = !!this.calidad.tejasLivianas;
     const leerGLB = async (nombre) => {
       const bytes = await binario(base + 'modelo/' + nombre + '.glb', (l, t) => onProgress?.(nombre, l, t));

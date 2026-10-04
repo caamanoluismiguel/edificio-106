@@ -32676,13 +32676,13 @@ var FV = class {
 		try {
 			await cB.ready, n.setMeshoptDecoder(cB);
 		} catch {}
-		let r = new Is(), i = {}, a = (t) => i[t] ??= r.loadAsync(KB(e + "texturas/" + t)).then((e) => (e.wrapS = e.wrapT = f, e.colorSpace = lt, e.anisotropy = 8, e)).catch(() => null), o = (this.calidad.grupos ?? EV).filter((e) => e !== "arboles" || !/[?&]arboles=0/.test(location.search)), s = EV.filter((e) => this.calidad.diferidos?.includes(e) && o.includes(e)), c = !!this.calidad.tejasLivianas, l = async (r) => {
+		let r = new Is(), i = {}, a = (t) => i[t] ??= r.loadAsync(KB(e + "texturas/" + t)).then((e) => (e.wrapS = e.wrapT = f, e.colorSpace = lt, e.anisotropy = 8, e)).catch(() => null), o = (e) => e !== "arboles" || !/[?&]arboles=0/.test(location.search), s = (this.calidad.grupos ?? EV).filter(o), c = EV.filter((e) => this.calidad.diferidos?.includes(e) && o(e)), l = !!this.calidad.tejasLivianas, u = async (r) => {
 			let i = await ZB(e + "modelo/" + r + ".glb", (e, n) => t?.(r, e, n));
 			return n.parseAsync(i.buffer.slice(i.byteOffset, i.byteOffset + i.byteLength), e + "modelo/");
 		};
 		this.listos = /* @__PURE__ */ new Set();
-		let u = async (e) => {
-			let n = EV.indexOf(e === "arboles" ? "vegetacion" : e), r = (await l(c && (e === "cubiertas" || e === "arboles") ? e + "_movil" : e)).scene;
+		let d = async (e) => {
+			let n = EV.indexOf(e === "arboles" ? "vegetacion" : e), r = (await u(l && (e === "cubiertas" || e === "arboles") ? e + "_movil" : e)).scene;
 			r.updateMatrixWorld(!0);
 			let i = new Nr().setFromObject(r), o = {
 				root: r,
@@ -32690,7 +32690,7 @@ var FV = class {
 				minY: i.min.y,
 				maxY: i.max.y,
 				box: i
-			}, u = J(i.min.y), f = J(i.max.y), p = [], m = [], h = (e) => {
+			}, s = J(i.min.y), d = J(i.max.y), f = [], m = [], h = (e) => {
 				let t = a(e);
 				return m.push(t), t;
 			};
@@ -32698,26 +32698,26 @@ var FV = class {
 				if (!t.isMesh) return;
 				let r = e === "cubiertas" && /terracotta/i.test(t.material?.name || ""), i = !1;
 				for (let e = t; e && !i; e = e.parent) i = !!e.userData?.sombra;
-				t.castShadow = (e !== "contexto" || i) && (!r || c), t.receiveShadow = !0, t.castShadow && t.layers.enable(1), t.material = this.#c(t.material, e, n, u, f, h), p.push(t.material);
-			}), o.materiales = p;
+				t.castShadow = (e !== "contexto" || i) && (!r || l), t.receiveShadow = !0, t.castShadow && t.layers.enable(1), t.material = this.#c(t.material, e, n, s, d, h), f.push(t.material);
+			}), o.materiales = f;
 			try {
 				await Promise.all(m), await this.#i(r);
 			} catch {}
 			let g = [];
 			return r.traverse((e) => {
 				e.isMesh && e.layers.isEnabled(1) && (g.push(e), e.layers.disable(1));
-			}), this.grupos[e] = o, this.scene.add(r), this.sun.shadow.needsUpdate = !0, this.sucio = !0, this.#o(g), this.listos.add(e), t?.(e, 1, 1, this.listos.size / (d.length + s.length)), e === "cubiertas" && !c && this.#s(l, n, u, f), o;
-		}, d = EV.filter((e) => o.includes(e) && !s.includes(e)), p = {}, m = 0, h = () => {
-			if (m >= d.length) return null;
-			let e = d[m++];
-			return (p[e] = u(e).catch((t) => {
+			}), this.grupos[e] = o, this.scene.add(r), this.sun.shadow.needsUpdate = !0, this.sucio = !0, this.#o(g), this.listos.add(e), t?.(e, 1, 1, this.listos.size / (p.length + c.length)), e === "cubiertas" && !l && this.#s(u, n, s, d), o;
+		}, p = EV.filter((e) => s.includes(e) && !c.includes(e)), m = {}, h = 0, g = () => {
+			if (h >= p.length) return null;
+			let e = p[h++];
+			return (m[e] = d(e).catch((t) => {
 				console.warn("grupo", e, t), this.listos.add(e);
-			})).then(h);
+			})).then(g);
 		};
-		this.cargaCompleta = Promise.all([h(), h()]).then((e) => (this.cargado = !0, e)), this.promesas = p;
-		let g = () => new Promise((e) => (window.requestIdleCallback ?? ((e) => setTimeout(e, 200)))(e, { timeout: 2e3 }));
-		return this.cargaDiferida = s.length ? this.cargaCompleta.then(async () => {
-			for (let e of s) await g(), await (p[e] = u(e).catch((t) => {
+		this.cargaCompleta = Promise.all([g(), g()]).then((e) => (this.cargado = !0, e)), this.promesas = m;
+		let _ = () => new Promise((e) => (window.requestIdleCallback ?? ((e) => setTimeout(e, 200)))(e, { timeout: 2e3 }));
+		return this.cargaDiferida = c.length ? this.cargaCompleta.then(async () => {
+			for (let e of c) await _(), await (m[e] = d(e).catch((t) => {
 				console.warn("grupo", e, t), this.listos.add(e);
 			}));
 		}) : this.cargaCompleta, this;
