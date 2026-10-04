@@ -1,0 +1,166 @@
+{
+ "descripcion": "Copas de arboles_cds.geojson que arboles-cds.mjs no pone: las que en 2026 tienen un NDVI más bajo que la mediana de los edificios (Sentinel-2, estación seca) y que Street View no confirma.",
+ "criterio": "NDVI 2026 (Sentinel-2 L2A, mediana de enero a abril, píxel de 10 m en el centro de la copa) < 0.261 (mediana de 264 edificios de OSM en el recuadro) y no vista en Street View",
+ "revisadas": 36,
+ "vistas": {
+  "1039": "palmas en el rumbo",
+  "1285": "árbol en el rumbo",
+  "1490": "árbol en el rumbo",
+  "1615": "malinche a ~5 m (bota las hojas en verano)",
+  "2250": "copa encima de la cámara",
+  "2336": "palma junto al rumbo"
+ },
+ "excluidas": [
+  {
+   "id": 968,
+   "motivo": "Street View nov 2022: pared con enredadera, sin árbol",
+   "ndvi_2026": 0.16
+  },
+  {
+   "id": 1408,
+   "motivo": "Street View nov 2022: edificio de celosías (calle Hawking)",
+   "ndvi_2026": 0.238
+  },
+  {
+   "id": 1611,
+   "motivo": "Street View nov 2022: galpones y cerca",
+   "ndvi_2026": 0.101
+  },
+  {
+   "id": 1617,
+   "motivo": "Street View nov 2022: edificio de celosías (calle Hawking)",
+   "ndvi_2026": 0.248
+  },
+  {
+   "id": 1712,
+   "motivo": "Street View nov 2022: anexo de un edificio",
+   "ndvi_2026": 0.201
+  },
+  {
+   "id": 1823,
+   "motivo": "Street View nov 2022: edificio y una palma chica",
+   "ndvi_2026": 0.241
+  },
+  {
+   "id": 1865,
+   "motivo": "Street View nov 2022: contenedores apilados",
+   "ndvi_2026": 0.131
+  },
+  {
+   "id": 1948,
+   "motivo": "Street View nov 2022: estacionamiento",
+   "ndvi_2026": 0.101
+  },
+  {
+   "id": 2076,
+   "motivo": "Street View nov 2022: contenedores apilados",
+   "ndvi_2026": 0.173
+  },
+  {
+   "id": 2093,
+   "motivo": "Street View nov 2022: césped en el rumbo; un árbol a un lado, más lejos (dudoso)",
+   "ndvi_2026": 0.158
+  },
+  {
+   "id": 2095,
+   "motivo": "Street View nov 2022: edificio de celosías (calle Hawking)",
+   "ndvi_2026": 0.142
+  },
+  {
+   "id": 2249,
+   "motivo": "Street View nov 2022: estacionamiento, nada en el rumbo",
+   "ndvi_2026": 0.23
+  },
+  {
+   "id": 2312,
+   "motivo": "Street View nov 2022: edificio de dos pisos",
+   "ndvi_2026": 0.244
+  },
+  {
+   "id": 665,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.256
+  },
+  {
+   "id": 1203,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.257
+  },
+  {
+   "id": 1368,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.118
+  },
+  {
+   "id": 1487,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.172
+  },
+  {
+   "id": 1538,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.251
+  },
+  {
+   "id": 1576,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.218
+  },
+  {
+   "id": 1601,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.25
+  },
+  {
+   "id": 1858,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.103
+  },
+  {
+   "id": 1902,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.16
+  },
+  {
+   "id": 1934,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.12
+  },
+  {
+   "id": 1965,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.07
+  },
+  {
+   "id": 2068,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.152
+  },
+  {
+   "id": 2232,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.19
+  },
+  {
+   "id": 2234,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.06
+  },
+  {
+   "id": 2253,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.203
+  },
+  {
+   "id": 2318,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.153
+  },
+  {
+   "id": 2322,
+   "motivo": "sin imagen útil en Street View",
+   "ndvi_2026": 0.24
+  }
+ ],
+ "fecha": "2026-10-04"
+}

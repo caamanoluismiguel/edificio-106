@@ -6,6 +6,7 @@
 // Cada una: el molde (molde-arbol.glb) podado (Cook et al. 2007, como optimize2.mjs), girado al azar fijo y
 // escalado a su altura y su diámetro de copa, con el pie en el suelo del modelo. El tronco se corre hasta 5 m si cae en
 // calle, estacionamiento, bordillo, vía o agua, o pegado a un edificio (como arboles-acomodar.mjs); si no hay lugar, no entra.
+// No entran las de arboles_excluidos.json: NDVI de edificio en 2026 (Sentinel-2) y sin confirmar en Street View.
 //
 //   cd fuente && node arboles-cds.mjs [--geojson=ruta] [--hojas=0.12] [--hojas-masa=0.2]   escribe arboles.glb y arboles_movil.glb
 import { Document, NodeIO } from '@gltf-transform/core';
@@ -32,8 +33,9 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies(
 // 1) las copas, en la escena
 const { rotacionGrados: g, centroOSM106: c0 } = osmRegistrado().registro, th = g * Math.PI / 180;
 const reg = (lat, lon) => { const [x, z] = aEscena(lat, lon), dx = x - c0[0], dz = z - c0[1]; return [dx * Math.cos(th) - dz * Math.sin(th), dx * Math.sin(th) + dz * Math.cos(th)]; };
+const EXCLUIDAS = new Set(JSON.parse(fs.readFileSync(path.join(AQUI, 'arboles_excluidos.json'), 'utf8')).excluidas.map((e) => e.id));   // Sentinel-2 + Street View: no son árboles hoy
 const copas = JSON.parse(fs.readFileSync(GEOJSON, 'utf8')).features.map((f, id) => ({ id, ...f.properties, p: reg(f.geometry.coordinates[1], f.geometry.coordinates[0]) }))
-  .filter((c) => Math.hypot(...c.p) > CERCA_106)
+  .filter((c) => Math.hypot(...c.p) > CERCA_106 && !EXCLUIDAS.has(c.id))
   .map((c) => ({ ...c, masa: !(c.copa_separada && !c.en_bosque_osm) }));   // masa: copa que toca otra o en un bosque de OSM (molde más liviano)
 
 // 2) suelo y obstáculos del modelo, en una rejilla de 4 m (para buscar rápido)
