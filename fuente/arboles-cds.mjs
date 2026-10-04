@@ -1,11 +1,11 @@
-// ESPIGA: modelo/arboles.glb con las copas sueltas de Ciudad del Saber como instancias (EXT_mesh_gpu_instancing) de un molde
-// liviano. Datos: arboles_cds.geojson (copas sacadas del mapa de altura de copa de Meta y WRI con copas.py, imágenes Maxar de
-// 2018). Entran las copas con copa_separada y fuera de los bosques de OSM, a más de 150 m del 106 (ahí están los árboles de
-// vegetacion.glb). Cada una: el molde (molde-arbol.glb) podado (Cook et al. 2007, como optimize2.mjs), girado al azar fijo y
+// modelo/arboles.glb: las copas de Ciudad del Saber como instancias (EXT_mesh_gpu_instancing) de un molde liviano. Datos:
+// arboles_cds.geojson (copas sacadas del mapa de altura de copa de Meta y WRI con copas.py, imágenes Maxar de 2018). Entran todas
+// las copas a más de 150 m del 106 (ahí están los árboles de vegetacion.glb): las sueltas con el 12 % de las hojas del molde y las
+// de masa (tocan otra copa o están en un bosque de OSM) con el 20 %, para que el bosque se lea tupido sin superficies inventadas. Cada una: el molde (molde-arbol.glb) podado (Cook et al. 2007, como optimize2.mjs), girado al azar fijo y
 // escalado a su altura y su diámetro de copa, con el pie en el suelo del modelo. El tronco se corre hasta 5 m si cae en
 // calle, estacionamiento, bordillo, vía o agua, o pegado a un edificio (como arboles-acomodar.mjs); si no hay lugar, no entra.
 //
-//   cd fuente && node arboles-cds.mjs [--geojson=ruta] [--hojas=0.06]
+//   cd fuente && node arboles-cds.mjs [--geojson=ruta] [--hojas=0.12] [--hojas-masa=0.2]   escribe arboles.glb y arboles_movil.glb
 import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, EXTMeshGPUInstancing, EXTMeshoptCompression } from '@gltf-transform/extensions';
 import { prune } from '@gltf-transform/functions';
@@ -17,7 +17,7 @@ import { aEscena, osmRegistrado } from './contexto-osm.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d;
-const GEOJSON = arg('geojson', path.join(AQUI, 'arboles_cds.geojson')), K_HOJAS = +arg('hojas', 0.06);
+const GEOJSON = arg('geojson', path.join(AQUI, 'arboles_cds.geojson')), K_HOJAS = +arg('hojas', 0.12), K_MASA = +arg('hojas-masa', 0.2);
 const CERCA_106 = 150, MAX = 5, PASO = 0.5, GIROS = 16, R_TRONCO = 0.6, HOLGURA = 0.5;
 const SUELO = /grass|turf|asphalt|paving|road paint|kerb|street|ballast|water/i, DURO = /asphalt|road paint|kerb|ballast|water/i;
 const rnd = (i) => { let x = (i * 2654435761) >>> 0; x ^= x >>> 16; x = Math.imul(x, 2246822507) >>> 0; x ^= x >>> 13; x = Math.imul(x, 3266489909) >>> 0; x ^= x >>> 16; return (x >>> 0) / 4294967296; };
@@ -30,7 +30,8 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies(
 const { rotacionGrados: g, centroOSM106: c0 } = osmRegistrado().registro, th = g * Math.PI / 180;
 const reg = (lat, lon) => { const [x, z] = aEscena(lat, lon), dx = x - c0[0], dz = z - c0[1]; return [dx * Math.cos(th) - dz * Math.sin(th), dx * Math.sin(th) + dz * Math.cos(th)]; };
 const copas = JSON.parse(fs.readFileSync(GEOJSON, 'utf8')).features.map((f, id) => ({ id, ...f.properties, p: reg(f.geometry.coordinates[1], f.geometry.coordinates[0]) }))
-  .filter((c) => c.copa_separada && !c.en_bosque_osm && Math.hypot(...c.p) > CERCA_106);
+  .filter((c) => Math.hypot(...c.p) > CERCA_106)
+  .map((c) => ({ ...c, masa: !(c.copa_separada && !c.en_bosque_osm) }));   // masa: copa que toca otra o en un bosque de OSM (molde más liviano)
 
 // 2) suelo y obstáculos del modelo, en una rejilla de 4 m (para buscar rápido)
 const C = 4, rej = { suelo: new Map(), obst: new Map() }, clave = (i, k) => i * 65536 + k;
@@ -101,49 +102,59 @@ for (const c of copas) {
   puestos.push({ c, x, z, y: suelo(x, z).y, corrido: Math.hypot(...hecho) });
 }
 
-// 4) el molde liviano: una fracción de las hojas, agrandadas 1/√k; el tronco simplificado
-const doc = new Document(), buf = doc.createBuffer(), escena = doc.createScene('arboles');
-const inst = doc.createExtension(EXTMeshGPUInstancing).setRequired(true);
-const ac = (a, t) => doc.createAccessor().setType(t).setArray(a).setBuffer(buf);
-const raiz = doc.createNode('arboles'); escena.addChild(raiz);
-const T = new Float32Array(puestos.length * 3), Q = new Float32Array(puestos.length * 4), S = new Float32Array(puestos.length * 3);
-puestos.forEach(({ c, x, y, z }, i) => {
-  const a = rnd(c.id) * Math.PI; T.set([x, y, z], 3 * i); Q.set([0, Math.sin(a), 0, Math.cos(a)], 4 * i);
-  S.set([c.diametro_copa_m / MOLDE.diam, c.altura_m / MOLDE.alto, c.diametro_copa_m / MOLDE.diam], 3 * i);
-});
-const aT = ac(T, 'VEC3'), aQ = ac(Q, 'VEC4'), aS = ac(S, 'VEC3');
-let tris = 0;
-for (const m of molde.getRoot().listMeshes()) {
-  const p0 = m.listPrimitives()[0], A = p0.getAttribute('POSITION').getArray(), N = p0.getAttribute('NORMAL').getArray(), I = p0.getIndices().getArray();
-  const tronco = /bark/.test(m.getName());
-  // hojas: componentes conexas (cada hoja), se queda una fracción K_HOJAS agrandada alrededor de su centro
-  let P = Array.from(A), NN = Array.from(N), II = Array.from(I);
-  if (tronco) {                     // el tronco, a una sexta parte de sus triángulos (meshoptimizer)
-    const [ind] = MeshoptSimplifier.simplify(Uint32Array.from(I), Float32Array.from(A), 3, Math.max(36, Math.floor(I.length / 6 / 3) * 3), 0.02);
-    II = Array.from(ind);
-  } else {
-    const par = Int32Array.from({ length: A.length / 3 }, (_, i) => i), f = (x) => { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
-    for (let t = 0; t < I.length; t += 3) { const r = f(I[t]); par[f(I[t + 1])] = r; par[f(I[t + 2])] = r; }
-    const hojas = new Map(); for (let t = 0; t < I.length; t += 3) { const r = f(I[t]); if (!hojas.has(r)) hojas.set(r, []); hojas.get(r).push(t); }
-    const fac = 1 / Math.sqrt(K_HOJAS); P = []; NN = []; II = []; let j = 0;
-    for (const [r, ts] of hojas) {
-      if (rnd(r * 7919 + 13) >= K_HOJAS) continue;
-      const vs = [...new Set(ts.flatMap((t) => [I[t], I[t + 1], I[t + 2]]))], cen = [0, 1, 2].map((e) => vs.reduce((s, v) => s + A[3 * v + e], 0) / vs.length), nuevo = new Map();
-      for (const v of vs) { nuevo.set(v, j++); for (let e = 0; e < 3; e++) { P.push(cen[e] + (A[3 * v + e] - cen[e]) * fac); NN.push(N[3 * v + e]); } }
-      for (const t of ts) II.push(nuevo.get(I[t]), nuevo.get(I[t + 1]), nuevo.get(I[t + 2]));
+// 4) el molde liviano: una fracción de las hojas, agrandadas 1/√k; el tronco simplificado. Dos archivos: arboles.glb con todas
+//    las copas y arboles_movil.glb solo con las sueltas (el teléfono, como cubiertas_movil.glb)
+async function escribir(archivo, conMasa) {
+  const doc = new Document(), buf = doc.createBuffer(), escena = doc.createScene('arboles');
+  const inst = doc.createExtension(EXTMeshGPUInstancing).setRequired(true);
+  const ac = (a, t) => doc.createAccessor().setType(t).setArray(a).setBuffer(buf);
+  const raiz = doc.createNode('arboles'); escena.addChild(raiz);
+  const materiales = new Map();
+  let tris = 0;
+  function plantilla(lista, k, sufijo) {
+    if (!lista.length) return;
+    const T = new Float32Array(lista.length * 3), Q = new Float32Array(lista.length * 4), S = new Float32Array(lista.length * 3);
+    lista.forEach(({ c, x, y, z }, i) => {
+      const a = rnd(c.id) * Math.PI; T.set([x, y, z], 3 * i); Q.set([0, Math.sin(a), 0, Math.cos(a)], 4 * i);
+      S.set([c.diametro_copa_m / MOLDE.diam, c.altura_m / MOLDE.alto, c.diametro_copa_m / MOLDE.diam], 3 * i);
+    });
+    const aT = ac(T, 'VEC3'), aQ = ac(Q, 'VEC4'), aS = ac(S, 'VEC3');
+    for (const m of molde.getRoot().listMeshes()) {
+      const p0 = m.listPrimitives()[0], A = p0.getAttribute('POSITION').getArray(), N = p0.getAttribute('NORMAL').getArray(), I = p0.getIndices().getArray();
+      const tronco = /bark/.test(m.getName());
+      // hojas: componentes conexas (cada hoja), se queda una fracción k agrandada alrededor de su centro
+      let P = Array.from(A), NN = Array.from(N), II = Array.from(I);
+      if (tronco) {                     // el tronco, a una sexta parte de sus triángulos (meshoptimizer)
+        const [ind] = MeshoptSimplifier.simplify(Uint32Array.from(I), Float32Array.from(A), 3, Math.max(36, Math.floor(I.length / 6 / 3) * 3), 0.02);
+        II = Array.from(ind);
+      } else {
+        const par = Int32Array.from({ length: A.length / 3 }, (_, i) => i), f = (x) => { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
+        for (let t = 0; t < I.length; t += 3) { const r = f(I[t]); par[f(I[t + 1])] = r; par[f(I[t + 2])] = r; }
+        const hojas = new Map(); for (let t = 0; t < I.length; t += 3) { const r = f(I[t]); if (!hojas.has(r)) hojas.set(r, []); hojas.get(r).push(t); }
+        const fac = 1 / Math.sqrt(k); P = []; NN = []; II = []; let j = 0;
+        for (const [r, ts] of hojas) {
+          if (rnd(r * 7919 + 13) >= k) continue;
+          const vs = [...new Set(ts.flatMap((t) => [I[t], I[t + 1], I[t + 2]]))], cen = [0, 1, 2].map((e) => vs.reduce((s, v) => s + A[3 * v + e], 0) / vs.length), nuevo = new Map();
+          for (const v of vs) { nuevo.set(v, j++); for (let e = 0; e < 3; e++) { P.push(cen[e] + (A[3 * v + e] - cen[e]) * fac); NN.push(N[3 * v + e]); } }
+          for (const t of ts) II.push(nuevo.get(I[t]), nuevo.get(I[t + 1]), nuevo.get(I[t + 2]));
+        }
+      }
+      const mm = p0.getMaterial();
+      if (!materiales.has(mm.getName())) materiales.set(mm.getName(), doc.createMaterial(mm.getName()).setBaseColorFactor(mm.getBaseColorFactor()).setRoughnessFactor(mm.getRoughnessFactor()).setMetallicFactor(0).setDoubleSided(mm.getDoubleSided()).setExtras(mm.getExtras()));
+      const alt = new Float32Array(P.length / 3); for (let i = 0; i < alt.length; i++) alt[i] = Math.min(1.6, Math.max(0, P[3 * i + 1]) * 0.06);   // para el viento: ~altura sobre el suelo /10 de un árbol típico (escala vertical ~0,6)
+      const prim = doc.createPrimitive().setMaterial(materiales.get(mm.getName())).setAttribute('POSITION', ac(Float32Array.from(P), 'VEC3')).setAttribute('NORMAL', ac(Float32Array.from(NN), 'VEC3')).setAttribute('_ALTURA', ac(alt, 'SCALAR')).setIndices(ac(Uint32Array.from(II), 'SCALAR'));
+      const malla = doc.createMesh(m.getName().replace('molde ', `V019 cds ${sufijo} `)).addPrimitive(prim);
+      raiz.addChild(doc.createNode(malla.getName()).setMesh(malla).setExtension('EXT_mesh_gpu_instancing', inst.createInstancedMesh().setAttribute('TRANSLATION', aT).setAttribute('ROTATION', aQ).setAttribute('SCALE', aS)));
+      tris += (II.length / 3) * lista.length;
     }
   }
-  const mat = doc.createMaterial(p0.getMaterial().getName()).setBaseColorFactor(p0.getMaterial().getBaseColorFactor()).setRoughnessFactor(p0.getMaterial().getRoughnessFactor()).setMetallicFactor(0).setDoubleSided(p0.getMaterial().getDoubleSided());
-  mat.setExtras(p0.getMaterial().getExtras());
-  const prim = doc.createPrimitive().setMaterial(mat).setAttribute('POSITION', ac(Float32Array.from(P), 'VEC3')).setAttribute('NORMAL', ac(Float32Array.from(NN), 'VEC3')).setIndices(ac(Uint32Array.from(II), 'SCALAR'));
-  const malla = doc.createMesh(m.getName().replace('molde ', 'V019 cds tree ')).addPrimitive(prim);
-  const nodo = doc.createNode(malla.getName()).setMesh(malla).setExtension('EXT_mesh_gpu_instancing', inst.createInstancedMesh().setAttribute('TRANSLATION', aT).setAttribute('ROTATION', aQ).setAttribute('SCALE', aS));
-  raiz.addChild(nodo);
+  plantilla(puestos.filter((p) => !p.c.masa), K_HOJAS, 'tree');
+  if (conMasa) plantilla(puestos.filter((p) => p.c.masa), K_MASA, 'stand');
+  await doc.transform(prune());
+  doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
+  await io.write(path.join(AQUI, `../modelo/${archivo}`), doc);
+  console.log(`${archivo}: ${(fs.statSync(path.join(AQUI, `../modelo/${archivo}`)).size / 1024).toFixed(0)} KB, ${(tris / 1e6).toFixed(2)} M triángulos dibujados`);
 }
-for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) tris += p.getIndices().getCount() / 3;
-await doc.transform(prune());
-doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
-await io.write(path.join(AQUI, '../modelo/arboles.glb'), doc);
-const kb = fs.statSync(path.join(AQUI, '../modelo/arboles.glb')).size / 1024;
-console.log(`copas sueltas a más de ${CERCA_106} m del 106: ${copas.length}; puestas ${puestos.length} (corridas: ${puestos.filter((p) => p.corrido > 0).length}); fuera: ${JSON.stringify(fuera)}`);
-console.log(`molde liviano: ${tris} triángulos (${(tris * puestos.length / 1e6).toFixed(2)} M dibujados); arboles.glb ${kb.toFixed(0)} KB; suelo de ${Math.min(...puestos.map((p) => p.y)).toFixed(1)} a ${Math.max(...puestos.map((p) => p.y)).toFixed(1)} m`);
+console.log(`copas a más de ${CERCA_106} m del 106: ${copas.length}; puestas ${puestos.length} (${puestos.filter((p) => !p.c.masa).length} sueltas, ${puestos.filter((p) => p.c.masa).length} de masa; corridas ${puestos.filter((p) => p.corrido > 0).length}); fuera: ${JSON.stringify(fuera)}; suelo de ${Math.min(...puestos.map((p) => p.y)).toFixed(1)} a ${Math.max(...puestos.map((p) => p.y)).toFixed(1)} m`);
+await escribir('arboles.glb', true);
+await escribir('arboles_movil.glb', false);

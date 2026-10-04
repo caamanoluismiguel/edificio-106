@@ -6,7 +6,7 @@ import {
   positionWorld, normalWorld, time, hash, shapeCircle, instancedBufferAttribute, mx_noise_float,
   mx_fractal_noise_float, oneMinus, step, length, pass, texture, uv, select, mrt, normalView, velocity, sample,
   packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property,
-  modelWorldMatrix, modelWorldMatrixInverse, output, normalize
+  modelWorldMatrix, modelWorldMatrixInverse, output, normalize, attribute
 } from 'three/tsl';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -611,7 +611,7 @@ export class Escena {
     this.listos = new Set();
     const uno = async (nombre) => {
       const idx = GRUPOS.indexOf(nombre === 'arboles' ? 'vegetacion' : nombre);   // las copas de CdS se revelan con la vegetación (el armado llega hasta 8,4)
-      const gltf = await leerGLB(nombre === 'cubiertas' && livianas ? 'cubiertas_movil' : nombre);
+      const gltf = await leerGLB(livianas && (nombre === 'cubiertas' || nombre === 'arboles') ? nombre + '_movil' : nombre);   // arboles_movil: solo las copas sueltas
       const root = gltf.scene;
       root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(root);
@@ -862,7 +862,8 @@ export class Escena {
     // (~20 cm en la copa de una palma de 10 m con 35 km/h; los setos casi no se mueven). Solo se ve mientras la escena se redibuja.
     if (grupo === 'vegetacion' || grupo === 'arboles') {   // con instancias, positionLocal ya trae la de cada árbol (three la aplica antes)
       const pw = modelWorldMatrix.mul(vec4(positionLocal, 1)).xyz;
-      const h = min(max(pw.y, 0).div(10), 1.6);
+      // en arboles.glb la altura sobre el suelo de cada árbol viene en el atributo _altura (el árbol puede estar en una loma)
+      const h = grupo === 'arboles' ? attribute('_altura', 'float') : min(max(pw.y, 0).div(10), 1.6);
       const fase = time.mul(1.3).add(pw.x.mul(0.21)).add(pw.z.mul(0.17));
       const vaiven = sin(fase).mul(0.65).add(sin(fase.mul(2.3).add(1.7)).mul(0.35)).mul(U.vaiven);
       const amp = U.brisa.mul(h.mul(h)).mul(0.22);
