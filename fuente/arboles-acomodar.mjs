@@ -8,7 +8,7 @@
 //   node arboles-acomodar.mjs --comprobar            revisa los árboles en su lugar actual (con el corrimiento ya guardado)
 //
 // El suelo y los obstáculos salen de los GLB de ../modelo (sitio, contexto, arquitectura, cubiertas, detalles, entrada); la
-// vegetación no cuenta. La copa de cada árbol se toma como la del molde escalada (`molde` en el json, medido por
+// vegetación no cuenta, ni las caras verticales (un muro o poste sin tapa arriba no es obstáculo: comprobar aparte sobre la geometría). La copa de cada árbol se toma como la del molde escalada (`molde` en el json, medido por
 // `node arboles-reales.mjs --medir` sobre el anillo de relleno): alcance de las hojas en planta y altura donde empieza.
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';

@@ -2,7 +2,7 @@
  "descripcion": "Árboles reales a 150 m o menos del 106 que reemplazan el anillo de relleno de vegetacion.glb (arboles-reales.mjs). Solo copas detectadas en el mapa de altura de copa y vistas en Street View; sin especie.",
  "fuente": "Meta y WRI, High Resolution Canopy Height Maps v1 (Tolan et al. 2024, Remote Sensing of Environment 300:113888), CC BY 4.0, tesela 032221132; imágenes © Maxar del 2018-10-04. Error absoluto medio de altura 2,8 m en la validación del artículo (otros sitios)",
  "metodo": "Copas sacadas por nuestro script con máximos locales y cuencas sobre el CHM (~/projects/edificio-106-arboles/copas.py, en la máquina de LM); altura = CHM en el pico (entera); diámetro = diámetro de un círculo de igual área que la copa, cortada a la mitad de la altura del pico y con un radio de 0,75 veces la altura como máximo",
- "comprobacion": "Mirado el 2026-10-04 en Street View (imágenes de nov 2022): cada copa desde la cámara más cercana con el rumbo hacia ella; se quedan solo las vistas (revisado por el verificador). Fuera: la palma junto a #2336 (el CHM la da de 4 m), las no vistas (#1823, #2265) y las que no se pudieron mirar",
+ "comprobacion": "Mirado el 2026-10-04 en Street View (imágenes de nov 2022): cada copa desde la cámara más cercana con el rumbo hacia ella; se quedan solo las vistas (revisado por el verificador). Fuera: la palma junto a #2336 (el CHM la da de 4 m), las no vistas (#1823, #2265) y las que no se pudieron mirar. Después, arboles-acomodar.mjs dejó fuera #1836 (tronco en el asfalto de un estacionamiento)",
  "fecha": "2026-10-04",
  "arboles": [
   {
