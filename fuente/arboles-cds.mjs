@@ -1,7 +1,9 @@
-// modelo/arboles.glb: las copas de Ciudad del Saber como instancias (EXT_mesh_gpu_instancing) de un molde liviano. Datos:
-// arboles_cds.geojson (copas sacadas del mapa de altura de copa de Meta y WRI con copas.py, imágenes Maxar de 2018). Entran todas
-// las copas a más de 150 m del 106 (ahí están los árboles de vegetacion.glb): las sueltas con el 12 % de las hojas del molde y las
-// de masa (tocan otra copa o están en un bosque de OSM) con el 20 %, para que el bosque se lea tupido sin superficies inventadas. Cada una: el molde (molde-arbol.glb) podado (Cook et al. 2007, como optimize2.mjs), girado al azar fijo y
+// modelo/arboles.glb: todos los árboles de Ciudad del Saber como instancias (EXT_mesh_gpu_instancing) de un molde liviano. Datos:
+// arboles_cds.geojson (copas sacadas del mapa de altura de copa de Meta y WRI con copas.py, imágenes Maxar de 2018). A 150 m o
+// menos del 106 van los árboles de arboles_reales.json (miradas en Street View) con el molde completo; más allá, todas
+// las copas del mapa: las sueltas con el 12 % de las hojas del molde y las
+// de masa (tocan otra copa o están en un bosque de OSM) con el 20 %, para que el bosque se lea tupido sin superficies inventadas.
+// Cada una: el molde (molde-arbol.glb) podado (Cook et al. 2007, como optimize2.mjs), girado al azar fijo y
 // escalado a su altura y su diámetro de copa, con el pie en el suelo del modelo. El tronco se corre hasta 5 m si cae en
 // calle, estacionamiento, bordillo, vía o agua, o pegado a un edificio (como arboles-acomodar.mjs); si no hay lugar, no entra.
 //
@@ -14,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { aEscena, osmRegistrado } from './contexto-osm.mjs';
+import { arbolesReales } from './arboles-reales.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d;
@@ -102,6 +105,9 @@ for (const c of copas) {
   puestos.push({ c, x, z, y: suelo(x, z).y, corrido: Math.hypot(...hecho) });
 }
 
+// 3b) los árboles reales cerca del 106 (arboles_reales.json, ya acomodados por arboles-acomodar.mjs), con el pie en el suelo
+const cercanos = arbolesReales().map((r) => ({ c: { id: r.id, altura_m: r.alto, diametro_copa_m: r.diam }, x: r.x, z: r.z, y: suelo(r.x, r.z)?.y ?? 0 }));
+
 // 4) el molde liviano: una fracción de las hojas, agrandadas 1/√k; el tronco simplificado. Dos archivos: arboles.glb con todas
 //    las copas y arboles_movil.glb solo con las sueltas (el teléfono, como cubiertas_movil.glb)
 async function escribir(archivo, conMasa) {
@@ -111,7 +117,7 @@ async function escribir(archivo, conMasa) {
   const raiz = doc.createNode('arboles'); escena.addChild(raiz);
   const materiales = new Map();
   let tris = 0;
-  function plantilla(lista, k, sufijo) {
+  function plantilla(lista, k, sufijo, troncoCompleto = false) {
     if (!lista.length) return;
     const T = new Float32Array(lista.length * 3), Q = new Float32Array(lista.length * 4), S = new Float32Array(lista.length * 3);
     lista.forEach(({ c, x, y, z }, i) => {
@@ -124,10 +130,10 @@ async function escribir(archivo, conMasa) {
       const tronco = /bark/.test(m.getName());
       // hojas: componentes conexas (cada hoja), se queda una fracción k agrandada alrededor de su centro
       let P = Array.from(A), NN = Array.from(N), II = Array.from(I);
-      if (tronco) {                     // el tronco, a una sexta parte de sus triángulos (meshoptimizer)
+      if (tronco && !troncoCompleto) {  // el tronco, a una sexta parte de sus triángulos (meshoptimizer)
         const [ind] = MeshoptSimplifier.simplify(Uint32Array.from(I), Float32Array.from(A), 3, Math.max(36, Math.floor(I.length / 6 / 3) * 3), 0.02);
         II = Array.from(ind);
-      } else {
+      } else if (!tronco && k < 1) {
         const par = Int32Array.from({ length: A.length / 3 }, (_, i) => i), f = (x) => { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
         for (let t = 0; t < I.length; t += 3) { const r = f(I[t]); par[f(I[t + 1])] = r; par[f(I[t + 2])] = r; }
         const hojas = new Map(); for (let t = 0; t < I.length; t += 3) { const r = f(I[t]); if (!hojas.has(r)) hojas.set(r, []); hojas.get(r).push(t); }
@@ -148,6 +154,7 @@ async function escribir(archivo, conMasa) {
       tris += (II.length / 3) * lista.length;
     }
   }
+  plantilla(cercanos, 1, 'near', true);   // junto al 106: el molde completo (se ven de cerca y dan sombra al edificio)
   plantilla(puestos.filter((p) => !p.c.masa), K_HOJAS, 'tree');
   if (conMasa) plantilla(puestos.filter((p) => p.c.masa), K_MASA, 'stand');
   await doc.transform(prune());
@@ -155,6 +162,6 @@ async function escribir(archivo, conMasa) {
   await io.write(path.join(AQUI, `../modelo/${archivo}`), doc);
   console.log(`${archivo}: ${(fs.statSync(path.join(AQUI, `../modelo/${archivo}`)).size / 1024).toFixed(0)} KB, ${(tris / 1e6).toFixed(2)} M triángulos dibujados`);
 }
-console.log(`copas a más de ${CERCA_106} m del 106: ${copas.length}; puestas ${puestos.length} (${puestos.filter((p) => !p.c.masa).length} sueltas, ${puestos.filter((p) => p.c.masa).length} de masa; corridas ${puestos.filter((p) => p.corrido > 0).length}); fuera: ${JSON.stringify(fuera)}; suelo de ${Math.min(...puestos.map((p) => p.y)).toFixed(1)} a ${Math.max(...puestos.map((p) => p.y)).toFixed(1)} m`);
+console.log(`cerca del 106: ${cercanos.length} árboles reales con el molde completo; copas a más de ${CERCA_106} m del 106: ${copas.length}; puestas ${puestos.length} (${puestos.filter((p) => !p.c.masa).length} sueltas, ${puestos.filter((p) => p.c.masa).length} de masa; corridas ${puestos.filter((p) => p.corrido > 0).length}); fuera: ${JSON.stringify(fuera)}; suelo de ${Math.min(...puestos.map((p) => p.y)).toFixed(1)} a ${Math.max(...puestos.map((p) => p.y)).toFixed(1)} m`);
 await escribir('arboles.glb', true);
 await escribir('arboles_movil.glb', false);

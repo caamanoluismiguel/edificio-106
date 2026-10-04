@@ -15,7 +15,7 @@ import { corregirBarandas } from './barandas.mjs';   // barandas de los accesos 
 import { corregirEntrada } from './entrada.mjs';     // losa bajo el pórtico y escalera retirada hasta la puerta, como en WA0014 (ver entrada.mjs)
 import { corregirPortico } from './portico.mjs';     // pórtico más angosto y alto, escalera más estrecha y columna trasera, como en WA0014 (ver portico.mjs)
 import { reducirArboles } from './arboles.mjs';      // árboles del anillo de relleno que caían en edificios, calles o el estacionamiento (ver arboles.mjs)
-import { ponerArbolesReales } from './arboles-reales.mjs';   // y después el anillo entero se cambia por los árboles reales (ver arboles-reales.mjs)
+import { quitarArbolesDeVegetacion } from './arboles-reales.mjs';   // y después se quita el anillo entero: los árboles van en arboles.glb (arboles-cds.mjs)
 await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
 const groups = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion'];   // contexto: contexto.mjs
@@ -87,7 +87,7 @@ for (const g of groups) {
   } else if (SIMPL[g]) await doc.transform(simplify({ simplifier: MeshoptSimplifier, ratio: SIMPL[g][0], error: SIMPL[g][1], lockBorder: false }));
   const t1 = cnt();
   await doc.transform(dedup(), prune(), quantize({ quantizePosition: 16, quantizeNormal: 10 }), meshopt({ encoder: MeshoptEncoder, level: 'high' }));
-  if (g === 'vegetacion') console.log([...corregirArbustos(doc), ...reducirArboles(doc), ...ponerArbolesReales(doc)].join('\n'));
+  if (g === 'vegetacion') console.log([...corregirArbustos(doc), ...reducirArboles(doc), ...quitarArbolesDeVegetacion(doc)].join('\n'));
   if (g === 'entrada' || g === 'sitio') console.log(corregirBarandas(doc, g).join('\n'));
   if (g === 'entrada') console.log(corregirEntrada(doc).join('\n'));   // después de barandas.mjs: mueve sus pasamanos con la escalera
   if (g === 'entrada') console.log(corregirPortico(doc).join('\n'));   // después de entrada.mjs: angosta su escalera y corre sus pasamanos

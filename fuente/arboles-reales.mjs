@@ -1,19 +1,17 @@
-// Cambia el anillo de árboles de relleno de vegetacion.glb («V016 tropical tree bark» + «V016 broadleaf shade 0–6», árboles
-// iguales puestos en rejilla en la v016) por los árboles reales de arboles_reales.json: copas detectadas en el mapa de altura de
-// copa de Meta y WRI (rejilla de 1,18 m en el suelo, imágenes de 2018) y miradas en 2026 en Street View (imágenes de nov 2022), a 150 m
-// o menos del 106. Sin especie.
-//
-// Cada árbol real es una copia del árbol de relleno más completo (el molde), girada al azar (fijo por árbol) y escalada: en
-// alto, a la altura del dato; en planta, para que el círculo de igual área que la copa del molde mida el diámetro del dato
-// (la misma definición que usa copas.py; en vertical la hoja no queda igual a la del molde). La posición sale de la latitud y longitud con el mismo registro que el entorno de OSM
-// (contexto-osm.mjs). Las mallas nuevas se llaman «V018 real tree…» y usan los mismos materiales que el anillo.
-// Paso reproducible y sin efecto si se repite (si ya no hay anillo, no hace nada).
+// Los árboles reales cerca del 106 (arboles_reales.json: copas del mapa de altura de copa de Meta y WRI, imágenes de 2018, miradas
+// en 2026 en Street View, imágenes de nov 2022; arboles-acomodar.mjs las corre hasta 5 m para que no caigan en la calle ni dentro
+// de un edificio). Desde que todos los árboles van en arboles.glb (arboles-cds.mjs), este archivo:
+//  · da la lista de esos árboles en la escena (arbolesReales), que arboles-cds.mjs pone con el molde completo;
+//  · mide el molde: el árbol más completo del anillo de relleno de la v016 (medirAnillo, para molde-arbol.mjs y --medir);
+//  · quita de vegetacion.glb el anillo de relleno («V016 tropical tree bark» + «V016 broadleaf shade 0–6») o los árboles reales
+//    que se pusieron ahí antes («V018 real tree…»). Las palmas, las cañas y los setos no se tocan. Sin efecto si se repite.
 //
 //   cd fuente && node arboles-reales.mjs            corrige ../modelo/vegetacion.glb en su lugar
 //   node arboles-reales.mjs entrada.glb salida.glb  o de un archivo a otro
-//   node arboles-reales.mjs --medir                 lista el molde y los árboles sin escribir nada
+//   node arboles-reales.mjs --medir [glb]           mide el molde (en un GLB que todavía tenga el anillo, p. ej. el de b08b86b)
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
+import { prune } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,11 +19,9 @@ import { fileURLToPath } from 'node:url';
 import { aEscena, osmRegistrado } from './contexto-osm.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
-const ANILLO = /^V016 (tropical tree bark|broadleaf shade \d)$/;
-const NUEVO = (n) => n.replace('V016 tropical tree bark', 'V018 real tree bark').replace(/V016 broadleaf shade (\d)/, 'V018 real tree broadleaf $1');
+const ANILLO = /^V016 (tropical tree bark|broadleaf shade \d)$/, PUESTOS = /^V018 real tree /;
 
 const aplicar = (M, [x, y, z]) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]];
-const rnd = (i) => { let x = (i * 2654435761) >>> 0; x ^= x >>> 16; x = Math.imul(x, 2246822507) >>> 0; x ^= x >>> 13; x = Math.imul(x, 3266489909) >>> 0; x ^= x >>> 16; return (x >>> 0) / 4294967296; };
 function cascoArea(pts) {          // área del casco convexo (Andrew), en m²
   const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]), cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
   const lo = [], hi = [];
@@ -46,7 +42,8 @@ export function arbolesReales(archivo = path.join(AQUI, 'arboles_reales.json')) 
 }
 
 /** Corrige el documento de vegetacion.glb en su lugar. Devuelve un resumen de lo hecho. */
-export function ponerArbolesReales(doc, { medir = false, molde: soloMolde = false } = {}) {
+/** Mide el anillo de relleno y su molde. Devuelve { molde, piezas (primitiva → triángulos del molde), res (texto) } o null. */
+export function medirAnillo(doc) {
   // 1) las mallas del anillo, con cada vértice en el mundo, y sus piezas (componentes conexas)
   const prims = [];
   for (const n of doc.getRoot().listNodes()) {
@@ -68,7 +65,7 @@ export function ponerArbolesReales(doc, { medir = false, molde: soloMolde = fals
     }
     prims.push({ n, m, p, I, P, Nr, tronco: /bark/.test(m.getName()), piezas: [...piezas.values()].map((s) => ({ ...s, c: [s.x / s.n, s.z / s.n] })) });
   }
-  if (!prims.length) return ['el anillo ya no está (los árboles reales ya se pusieron)'];
+  if (!prims.length) return null;
   // 2) árboles del anillo: el pie de cada tronco, y cada pieza al pie más cercano (como arboles.mjs)
   const pies = [];
   for (const pr of prims) if (pr.tronco) for (const s of pr.piezas) if (s.y0 < 0.3) {
@@ -93,59 +90,18 @@ export function ponerArbolesReales(doc, { medir = false, molde: soloMolde = fals
     a.base = yb - y0;                                                                                // donde empieza la copa
   }
   const molde = pies.reduce((b, a) => (a.hojas > b.hojas ? a : b));
-  if (soloMolde) { const piezas = new Map(); for (const { pr, s } of molde.piezas) { if (!piezas.has(pr.p)) piezas.set(pr.p, []); piezas.get(pr.p).push(...s.tris); } return { molde, piezas }; }   // para molde-arbol.mjs
-  const reales = arbolesReales();
-  const res = [`anillo: ${pies.length} árboles de relleno; molde en (${molde.c.map((v) => v.toFixed(1)).join(', ')}), ${molde.alto.toFixed(1)} m de alto, copa de ${molde.diam.toFixed(1)} m, ${molde.hojas} triángulos de hoja`];
-  for (const r of reales) res.push(`árbol real #${r.id} en (${r.x.toFixed(1)}, ${r.z.toFixed(1)}): ${r.alto} m de alto, copa de ${r.diam} m (escala ${(r.diam / molde.diam).toFixed(2)} en planta, ${(r.alto / molde.alto).toFixed(2)} en alto)`);
-  if (medir) return Object.assign(res, { molde: { alto: molde.alto, diam: molde.diam, alcance: molde.alcance, base: molde.base } });
-  // 4) cada primitiva del anillo se rehace con las copias del molde, una por árbol real
-  // En las copas más chicas que el molde se conserva solo una fracción k = (escala en planta)² de las hojas, y cada hoja
-  // conservada se agranda 1/√k alrededor de su centro (poda estocástica de Cook et al. 2007, la misma de optimize2.mjs): la
-  // copa tapa lo mismo, las hojas quedan del tamaño de las del molde y el archivo no crece con cada árbol chico.
-  const pos = [], nor = [], ind = new Map(prims.map((pr) => [pr, []]));
-  let hojas = 0;
-  prims.forEach((pr, ip) => {
-    const piezas = molde.piezas.filter((q) => q.pr === pr).map(({ s }) => {
-      const vs = [...new Set(s.tris.flatMap((t) => [pr.I[3 * t], pr.I[3 * t + 1], pr.I[3 * t + 2]]))], c = [0, 0, 0];
-      for (const v of vs) for (let j = 0; j < 3; j++) c[j] += pr.P[3 * v + j] / vs.length;
-      return { s, vs, c };
-    });
-    const P = [], Nn = [], I = ind.get(pr);
-    reales.forEach((r) => {
-      const sh = r.diam / molde.diam, sv = r.alto / molde.alto, a = rnd(r.id) * 2 * Math.PI, co = Math.cos(a), si = Math.sin(a);
-      const k = pr.tronco ? 1 : Math.min(1, sh * sh), f = 1 / Math.sqrt(k);
-      piezas.forEach(({ s, vs, c }, j) => {
-        if (rnd(r.id * 100003 + ip * 7919 + j) >= k) return;
-        if (!pr.tronco) hojas += s.tris.length;
-        const o = P.length / 3, nuevo = new Map(vs.map((v, i) => [v, o + i]));
-        for (const v of vs) {
-          const q = [0, 1, 2].map((e) => c[e] + (pr.P[3 * v + e] - c[e]) * f);   // la hoja agrandada alrededor de su centro
-          const dx = (q[0] - molde.c[0]) * sh, dz = (q[2] - molde.c[1]) * sh;
-          P.push(r.x + dx * co - dz * si, molde.y0 + (q[1] - molde.y0) * sv, r.z + dx * si + dz * co);
-          const nx = pr.Nr[3 * v] / sh, ny = pr.Nr[3 * v + 1] / sv, nz = pr.Nr[3 * v + 2] / sh, l = Math.hypot(nx, ny, nz) || 1;   // inversa transpuesta de la escala
-          Nn.push((nx * co - nz * si) / l, ny / l, (nx * si + nz * co) / l);
-        }
-        for (const t of s.tris) for (let e = 0; e < 3; e++) I.push(nuevo.get(pr.I[3 * t + e]));
-      });
-    });
-    pos.push(Float64Array.from(P)); nor.push(Float64Array.from(Nn));
-  });
-  prims.forEach((pr, ip) => {
-    const P = pos[ip], Nn = nor[ip], I = ind.get(pr), nv = P.length / 3;
-    // misma cuantización que el resto del archivo: posiciones int16 normalizadas con escala uniforme y traslación en el nodo
-    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
-    for (let i = 0; i < nv; i++) for (let j = 0; j < 3; j++) { lo[j] = Math.min(lo[j], P[3 * i + j]); hi[j] = Math.max(hi[j], P[3 * i + j]); }
-    const T = lo.map((v, j) => (v + hi[j]) / 2), S = Math.max(...hi.map((v, j) => (v - lo[j]) / 2)) || 1;
-    const A = pr.p.getAttribute('POSITION'), N = pr.p.getAttribute('NORMAL');
-    const qp = new (A.getArray().constructor)(nv * 3), qn = new (N.getArray().constructor)(nv * 3);
-    const maxP = 2 ** (8 * qp.BYTES_PER_ELEMENT - 1) - 1, maxN = 2 ** (8 * qn.BYTES_PER_ELEMENT - 1) - 1;
-    for (let i = 0; i < nv * 3; i++) { qp[i] = Math.round((P[i] - T[i % 3]) / S * maxP); qn[i] = Math.round(Nn[i] * maxN); }
-    A.setArray(qp); N.setArray(qn);
-    const idx = pr.p.getIndices(); idx.setArray(nv > 65535 ? Uint32Array.from(I) : Uint16Array.from(I));
-    pr.n.setMatrix([S, 0, 0, 0, 0, S, 0, 0, 0, 0, S, 0, T[0], T[1], T[2], 1]);
-    pr.n.setName(NUEVO(pr.n.getName())); pr.m.setName(NUEVO(pr.m.getName()));
-  });
-  res.push(`puestos ${reales.length} árboles reales en lugar de los ${pies.length} de relleno (${hojas} triángulos de hoja)`);
+  const piezas = new Map(); for (const { pr, s } of molde.piezas) { if (!piezas.has(pr.p)) piezas.set(pr.p, []); piezas.get(pr.p).push(...s.tris); }
+  const res = [`anillo: ${pies.length} árboles de relleno; molde en (${molde.c.map((v) => v.toFixed(1)).join(', ')}), ${molde.alto.toFixed(2)} m de alto, copa de ${molde.diam.toFixed(2)} m, alcance ${molde.alcance.toFixed(2)} m, la copa empieza a ${molde.base.toFixed(2)} m, ${molde.hojas} triángulos de hoja`];
+  return { molde, piezas, res };
+}
+
+/** Quita de vegetacion.glb el anillo de relleno o los árboles reales puestos ahí antes. Devuelve un resumen. */
+export function quitarArbolesDeVegetacion(doc) {
+  const res = [];
+  for (const n of doc.getRoot().listNodes()) {
+    const m = n.getMesh(); if (!m || !(ANILLO.test(m.getName()) || PUESTOS.test(m.getName()))) continue;
+    res.push(`quitado «${m.getName()}»`); n.dispose(); m.dispose();
+  }
   return res;
 }
 
@@ -155,10 +111,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const args = process.argv.slice(2).filter((a) => !a.startsWith('--')), medir = process.argv.includes('--medir');
   const ent = args[0] ?? path.join(AQUI, '../modelo/vegetacion.glb'), sal = args[1] ?? ent;
   const doc = await io.read(ent);
-  const r = ponerArbolesReales(doc, { medir });
-  console.log(r.join('\n'));
-  if (!medir && !/ya no está/.test(r[0])) {
-    doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
-    await io.write(sal, doc); console.log('escrito', sal);
+  if (medir) { const r = medirAnillo(doc); console.log(r ? r.res.join('\n') : 'este GLB ya no tiene el anillo de relleno'); }
+  else {
+    const r = quitarArbolesDeVegetacion(doc);
+    console.log(r.length ? r.join('\n') : 'nada que quitar');
+    if (r.length) {
+      await doc.transform(prune());
+      doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
+      await io.write(sal, doc); console.log('escrito', sal);
+    }
   }
 }

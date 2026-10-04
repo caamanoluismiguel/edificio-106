@@ -10,14 +10,14 @@ import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ponerArbolesReales } from './arboles-reales.mjs';
+import { medirAnillo } from './arboles-reales.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 await MeshoptDecoder.ready; await MeshoptEncoder.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder, 'meshopt.encoder': MeshoptEncoder });
 const bytes = execFileSync('git', ['show', 'b08b86b:modelo/vegetacion.glb'], { cwd: AQUI, maxBuffer: 1 << 26 });
 const doc = await io.readBinary(new Uint8Array(bytes));
-const { molde, piezas } = ponerArbolesReales(doc, { molde: true });
+const { molde, piezas } = medirAnillo(doc);
 // cada primitiva del anillo se queda solo con los triángulos del molde, en coordenadas con el pie en el origen
 for (const n of doc.getRoot().listNodes()) {
   const m = n.getMesh(), p = m?.listPrimitives()[0], tris = p && piezas.get(p);

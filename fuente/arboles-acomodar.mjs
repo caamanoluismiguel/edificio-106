@@ -1,7 +1,7 @@
 // Acomoda los árboles reales de arboles_reales.json sobre el modelo: busca para cada uno el corrimiento más corto (hasta 5 m,
 // el orden del error de posición: distancia mediana de 4,9 m entre las copas y los árboles de OSM) que deja el tronco sobre
 // pasto o concreto (no en calle, estacionamiento, bordillo, vía ni agua) y la copa sin tocar ningún edificio, muro, techo ni poste del modelo. Escribe `corrimiento_escena_m` en el json;
-// arboles-reales.mjs lo suma a la posición. Si ningún lugar a 5 m o menos sirve, el árbol se marca `fuera` y no se pone.
+// arbolesReales() (arboles-reales.mjs) lo suma a la posición. Si ningún lugar a 5 m o menos sirve, el árbol se marca `fuera` y no se pone.
 //
 //   cd fuente && node arboles-acomodar.mjs           escribe los corrimientos en arboles_reales.json
 //   node arboles-acomodar.mjs --medir                solo los lista
@@ -9,7 +9,7 @@
 //
 // El suelo y los obstáculos salen de los GLB de ../modelo (sitio, contexto, arquitectura, cubiertas, detalles, entrada); la
 // vegetación no cuenta, ni las caras verticales (un muro o poste sin tapa arriba no es obstáculo: comprobar aparte sobre la geometría). La copa de cada árbol se toma como la del molde escalada (`molde` en el json, medido por
-// `node arboles-reales.mjs --medir` sobre el anillo de relleno): alcance de las hojas en planta y altura donde empieza.
+// `node arboles-reales.mjs --medir` sobre el vegetacion.glb de b08b86b): alcance de las hojas en planta y altura donde empieza.
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { MeshoptDecoder } from 'meshoptimizer';
