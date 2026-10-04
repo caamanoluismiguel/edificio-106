@@ -21,9 +21,9 @@ import { binario, conVersion } from './datos.js';
 import { Barcos } from './barcos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
 
-export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto'];
+export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto', 'arboles'];   // arboles: las copas de Ciudad del Saber (arboles-cds.mjs), al final para no mover el índice de los demás
 // Reparto de partículas por grupo (fracción del total)
-const CUOTA = { sitio: 0.11, arquitectura: 0.19, ventanas: 0.10, cubiertas: 0.20, entrada: 0.05, detalles: 0.05, vegetacion: 0.2, contexto: 0.10 };
+const CUOTA = { sitio: 0.11, arquitectura: 0.19, ventanas: 0.10, cubiertas: 0.20, entrada: 0.05, detalles: 0.05, vegetacion: 0.2, contexto: 0.10, arboles: 0.02 };
 
 /** Paradas de la rampa de la lente «Sol» (RGB lineal, a 0, 200, 400, 600 y 800 W/m²). La leyenda se arma con estas mismas,
  *  pasadas a sRGB (main.js), para que el color de la leyenda sea el que se pinta antes de la luz de la escena. */
@@ -601,8 +601,8 @@ export class Escena {
     const tex = new THREE.TextureLoader();
     const texturas = {};
     const cargaTex = (f) => texturas[f] ??= tex.loadAsync(conVersion(base + 'texturas/' + f)).then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
-    const lista = this.calidad.grupos ?? GRUPOS;
-    const diferidos = GRUPOS.filter((g) => this.calidad.diferidos?.includes(g));
+    const lista = (this.calidad.grupos ?? GRUPOS).filter((g) => g !== 'arboles' || !/[?&]arboles=0/.test(location.search));   // ?arboles=0: sin las copas de CdS
+    const diferidos = GRUPOS.filter((g) => this.calidad.diferidos?.includes(g) && lista.includes(g));
     const livianas = !!this.calidad.tejasLivianas;
     const leerGLB = async (nombre) => {
       const bytes = await binario(base + 'modelo/' + nombre + '.glb', (l, t) => onProgress?.(nombre, l, t));
@@ -610,7 +610,7 @@ export class Escena {
     };
     this.listos = new Set();
     const uno = async (nombre) => {
-      const idx = GRUPOS.indexOf(nombre);
+      const idx = GRUPOS.indexOf(nombre === 'arboles' ? 'vegetacion' : nombre);   // las copas de CdS se revelan con la vegetación (el armado llega hasta 8,4)
       const gltf = await leerGLB(nombre === 'cubiertas' && livianas ? 'cubiertas_movil' : nombre);
       const root = gltf.scene;
       root.updateMatrixWorld(true);
@@ -749,7 +749,7 @@ export class Escena {
     }
     // bajo los aleros: las caras que miran hacia abajo solo ven el suelo y la sombra del propio alero (en las fotos se leen
     // como una franja parda oscura); no reciben sol directo, así que oscurecerlas no cambia ninguna sombra del análisis
-    if (!leaf && !glass && grupo !== 'sitio' && grupo !== 'vegetacion') {
+    if (!leaf && !glass && grupo !== 'sitio' && grupo !== 'vegetacion' && grupo !== 'arboles') {
       const abajo = smoothstep(-0.2, -0.75, normalWorld.y).mul(smoothstep(2.4, 3.2, positionWorld.y));
       colorFinal = colorFinal.mul(mix(float(1), float(0.22), abajo));   // cabios y sofitos: en las fotos, una franja parda oscura
     }
@@ -772,7 +772,7 @@ export class Escena {
     // Formas de ver sobre el edificio (muros, cubiertas y vidrio). El grupo «sitio» trae también partes del edificio (el muro
     // de la planta baja de la fachada suroeste, rejillas, marcos, pilares del acceso): esas sí se pintan; el suelo, no.
     const delEdificio = grupo !== 'sitio' || /plaster|trim|louvre|frame|soffit|service access|ventilation|plinth|piers|timber|guardrail|entrance/.test(nm);
-    if (!leaf && grupo !== 'contexto' && grupo !== 'vegetacion' && delEdificio) {   // solo el edificio
+    if (!leaf && grupo !== 'contexto' && grupo !== 'vegetacion' && grupo !== 'arboles' && delEdificio) {   // solo el edificio
       const n = normalWorld;
       // Sol: la radiación que llega a cada punto, con la sombra real (el mismo mapa de sombras de la escena)
       const cosInc = max(dot(n, U.solDir), 0);
@@ -860,7 +860,7 @@ export class Escena {
 
     // el viento de esa hora mueve la vegetación: la base queda fija en el suelo y la copa se inclina y se mece, más con más viento
     // (~20 cm en la copa de una palma de 10 m con 35 km/h; los setos casi no se mueven). Solo se ve mientras la escena se redibuja.
-    if (grupo === 'vegetacion') {
+    if (grupo === 'vegetacion' || grupo === 'arboles') {   // con instancias, positionLocal ya trae la de cada árbol (three la aplica antes)
       const pw = modelWorldMatrix.mul(vec4(positionLocal, 1)).xyz;
       const h = min(max(pw.y, 0).div(10), 1.6);
       const fase = time.mul(1.3).add(pw.x.mul(0.21)).add(pw.z.mul(0.17));

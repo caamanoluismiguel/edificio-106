@@ -90,7 +90,7 @@ function calidad() {
   // teléfono: las tejas livianas (cubiertas_movil.glb, 1,0 MB en vez de 1,4 MB por la red) y la vegetación y el entorno
   // después de armar el edificio, en un rato libre (la intro no los espera); la serie horaria, solo si hace falta (pedirSerie)
   if (movil) return { nivel: 'bajo', dpr: 1.5, px: 1.6e6, sombras: 2048, particulas: 40000, bloom: false, tejasLivianas: true,
-    grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto'), diferidos: ['vegetacion', 'contexto'], serieAlPedir: true };
+    grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto' && g !== 'arboles'), diferidos: ['vegetacion', 'contexto', 'arboles'], serieAlPedir: true };
   if (!navigator.gpu) return { nivel: 'medio', dpr: 1.25, px: 2.4e6, sombras: 2048, particulas: 60000, bloom: false };
   const ultra = location.hash === '#ultra';
   return { nivel: 'alto', dpr: ultra ? 2 : 1.5, px: ultra ? 6e6 : 3.7e6, sombras: 4096, particulas: ultra ? 120000 : 90000, bloom: true, ao: ultra };
@@ -2644,8 +2644,8 @@ async function medir() {
     ['×0,5 sin cielo', () => { escena.sky.visible = false; }],
     ['×1 sin cielo', () => { r.setPixelRatio(d0); }],
     ['×1 sin tejas', () => { escena.sky.visible = true; vis('cubiertas', false); }],
-    ['×1 sin follaje', () => { vis('cubiertas', true); vis('vegetacion', false); }],
-    ['×1 sin contexto', () => { vis('vegetacion', true); vis('contexto', false); }],
+    ['×1 sin follaje', () => { vis('cubiertas', true); vis('vegetacion', false); vis('arboles', false); }],
+    ['×1 sin contexto', () => { vis('vegetacion', true); vis('arboles', true); vis('contexto', false); }],
     ['sol en movimiento', () => { vis('contexto', true); S.modo = 'explorar'; S.muevesol = true; }],
     ['lluvia', () => { S.muevesol = false; S.aguacero = true; }],
     ['lluvia + sol', () => { S.muevesol = true; }],

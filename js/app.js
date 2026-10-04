@@ -32226,7 +32226,8 @@ var TV = [
 	"entrada",
 	"detalles",
 	"vegetacion",
-	"contexto"
+	"contexto",
+	"arboles"
 ], EV = [
 	[
 		.01,
@@ -32673,13 +32674,13 @@ var PV = class {
 		try {
 			await sB.ready, n.setMeshoptDecoder(sB);
 		} catch {}
-		let r = new Is(), i = {}, a = (t) => i[t] ??= r.loadAsync(GB(e + "texturas/" + t)).then((e) => (e.wrapS = e.wrapT = f, e.colorSpace = lt, e.anisotropy = 8, e)).catch(() => null), o = this.calidad.grupos ?? TV, s = TV.filter((e) => this.calidad.diferidos?.includes(e)), c = !!this.calidad.tejasLivianas, l = async (r) => {
+		let r = new Is(), i = {}, a = (t) => i[t] ??= r.loadAsync(GB(e + "texturas/" + t)).then((e) => (e.wrapS = e.wrapT = f, e.colorSpace = lt, e.anisotropy = 8, e)).catch(() => null), o = (this.calidad.grupos ?? TV).filter((e) => e !== "arboles" || !/[?&]arboles=0/.test(location.search)), s = TV.filter((e) => this.calidad.diferidos?.includes(e) && o.includes(e)), c = !!this.calidad.tejasLivianas, l = async (r) => {
 			let i = await XB(e + "modelo/" + r + ".glb", (e, n) => t?.(r, e, n));
 			return n.parseAsync(i.buffer.slice(i.byteOffset, i.byteOffset + i.byteLength), e + "modelo/");
 		};
 		this.listos = /* @__PURE__ */ new Set();
 		let u = async (e) => {
-			let n = TV.indexOf(e), r = (await l(e === "cubiertas" && c ? "cubiertas_movil" : e)).scene;
+			let n = TV.indexOf(e === "arboles" ? "vegetacion" : e), r = (await l(e === "cubiertas" && c ? "cubiertas_movil" : e)).scene;
 			r.updateMatrixWorld(!0);
 			let i = new Nr().setFromObject(r), o = {
 				root: r,
@@ -32775,7 +32776,7 @@ var PV = class {
 			let e = qL(aR.mul(1.7)).mul(.5).add(.5);
 			m = f.mul(Y(1.2, .85, .7)).mul(K(.78, 1.25, e));
 		}
-		if (!u && !l && t !== "sitio" && t !== "vegetacion") {
+		if (!u && !l && t !== "sitio" && t !== "vegetacion" && t !== "arboles") {
 			let e = vR(-.2, -.75, XL.y).mul(vR(2.4, 3.2, aR.y));
 			m = m.mul(K(G(1), G(.22), e));
 		}
@@ -32785,7 +32786,7 @@ var PV = class {
 		}
 		d.colorNode = K(jV, m, X.mat), l && (d.colorNode = K(jV.mul(.35), m, X.mat));
 		let h = t !== "sitio" || /plaster|trim|louvre|frame|soffit|service access|ventilation|plinth|piers|timber|guardrail|entrance/.test(s);
-		if (!u && t !== "contexto" && t !== "vegetacion" && h) {
+		if (!u && t !== "contexto" && t !== "vegetacion" && t !== "arboles" && h) {
 			let e = XL, t = RL(yL(e, X.solDir), 0), n = X.dniW.mul(t).mul(DV), r = t.div(RL(X.solDir.y, .087)), i = X.dhiW.mul(X.ai.mul(r).mul(DV).add(G(1).sub(X.ai).mul(e.y.add(1).mul(.5)))).add(X.ghiW.mul(.1).mul(G(1).sub(e.y))), a = n.add(i.mul(X.total)).div(800), o = (e, t) => mL(a.sub(e).div(t - e), 0, 1), [s, c, l, u, f] = EV.map((e) => Y(...e)), p = K(K(K(K(s, c, o(0, .25)), l, o(.25, .5)), u, o(.5, .75)), f, o(.75, 1)).mul(X.calor).mul(.8), m = (t, n) => oR(RL(yL(e, Y(t, 0, n)), 0), 3), h = Object.values(zB).map((e) => {
 				let t = NB(0, e.rumbo);
 				return [t.x, t.z];
@@ -32807,7 +32808,7 @@ var PV = class {
 				d.emissiveNode = d.emissiveNode.add(Y(X.posteCol).mul(X.poste).mul(e).mul(.08));
 			}
 		}
-		if (t === "vegetacion") {
+		if (t === "vegetacion" || t === "arboles") {
 			let e = HL.mul(AR(iR, 1)).xyz, t = zL(RL(e.y, 0).div(10), 1.6), n = CR.mul(1.3).add(e.x.mul(.21)).add(e.z.mul(.17)), r = _R(n).mul(.65).add(_R(n.mul(2.3).add(1.7)).mul(.35)).mul(X.vaiven), i = X.brisa.mul(t.mul(t)).mul(.22), a = Y(X.vientoDir.x, 0, X.vientoDir.y).mul(i.mul(G(.55).add(r.mul(.45))));
 			u && (a = a.add(Y(_R(n.mul(4.1).add(e.y)), 0, _L(n.mul(3.7).add(e.x))).mul(X.brisa.mul(X.vaiven).mul(zL(t, 1)).mul(.035)))), d.positionNode = iR.add(UL.mul(AR(a, 0)).xyz);
 		}
@@ -37000,8 +37001,12 @@ function OU() {
 		particulas: 4e4,
 		bloom: !1,
 		tejasLivianas: !0,
-		grupos: TV.filter((e) => e !== "vegetacion" && e !== "contexto"),
-		diferidos: ["vegetacion", "contexto"],
+		grupos: TV.filter((e) => e !== "vegetacion" && e !== "contexto" && e !== "arboles"),
+		diferidos: [
+			"vegetacion",
+			"contexto",
+			"arboles"
+		],
 		serieAlPedir: !0
 	};
 	if (!navigator.gpu) return {
@@ -40500,10 +40505,10 @@ async function lq() {
 			$.sky.visible = !0, l("cubiertas", !1);
 		}],
 		["×1 sin follaje", () => {
-			l("cubiertas", !0), l("vegetacion", !1);
+			l("cubiertas", !0), l("vegetacion", !1), l("arboles", !1);
 		}],
 		["×1 sin contexto", () => {
-			l("vegetacion", !0), l("contexto", !1);
+			l("vegetacion", !0), l("arboles", !0), l("contexto", !1);
 		}],
 		["sol en movimiento", () => {
 			l("contexto", !0), Q.modo = "explorar", Q.muevesol = !0;

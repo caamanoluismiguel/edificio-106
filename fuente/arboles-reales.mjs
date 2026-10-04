@@ -46,7 +46,7 @@ export function arbolesReales(archivo = path.join(AQUI, 'arboles_reales.json')) 
 }
 
 /** Corrige el documento de vegetacion.glb en su lugar. Devuelve un resumen de lo hecho. */
-export function ponerArbolesReales(doc, { medir = false } = {}) {
+export function ponerArbolesReales(doc, { medir = false, molde: soloMolde = false } = {}) {
   // 1) las mallas del anillo, con cada vértice en el mundo, y sus piezas (componentes conexas)
   const prims = [];
   for (const n of doc.getRoot().listNodes()) {
@@ -93,6 +93,7 @@ export function ponerArbolesReales(doc, { medir = false } = {}) {
     a.base = yb - y0;                                                                                // donde empieza la copa
   }
   const molde = pies.reduce((b, a) => (a.hojas > b.hojas ? a : b));
+  if (soloMolde) { const piezas = new Map(); for (const { pr, s } of molde.piezas) { if (!piezas.has(pr.p)) piezas.set(pr.p, []); piezas.get(pr.p).push(...s.tris); } return { molde, piezas }; }   // para molde-arbol.mjs
   const reales = arbolesReales();
   const res = [`anillo: ${pies.length} árboles de relleno; molde en (${molde.c.map((v) => v.toFixed(1)).join(', ')}), ${molde.alto.toFixed(1)} m de alto, copa de ${molde.diam.toFixed(1)} m, ${molde.hojas} triángulos de hoja`];
   for (const r of reales) res.push(`árbol real #${r.id} en (${r.x.toFixed(1)}, ${r.z.toFixed(1)}): ${r.alto} m de alto, copa de ${r.diam} m (escala ${(r.diam / molde.diam).toFixed(2)} en planta, ${(r.alto / molde.alto).toFixed(2)} en alto)`);
