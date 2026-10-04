@@ -40,8 +40,9 @@ function cascoArea(pts) {          // área del casco convexo (Andrew), en m²
 export function arbolesReales(archivo = path.join(AQUI, 'arboles_reales.json')) {
   const j = JSON.parse(fs.readFileSync(archivo, 'utf8'));
   const { rotacionGrados: g, centroOSM106: c0 } = osmRegistrado().registro, th = g * Math.PI / 180, co = Math.cos(th), si = Math.sin(th);
-  return j.arboles.map((a) => { const [x, z] = aEscena(a.lat, a.lon), dx = x - c0[0], dz = z - c0[1];
-    return { id: a.id, x: dx * co - dz * si, z: dx * si + dz * co, alto: a.altura_m, diam: a.diametro_copa_m }; });
+  return j.arboles.filter((a) => !a.fuera).map((a) => { const [x, z] = aEscena(a.lat, a.lon), dx = x - c0[0], dz = z - c0[1];
+    const [cx, cz] = a.corrimiento_escena_m ?? [0, 0];   // corrimiento de --acomodar (tronco en pasto, copa sin tocar edificios)
+    return { id: a.id, x: dx * co - dz * si + cx, z: dx * si + dz * co + cz, alto: a.altura_m, diam: a.diametro_copa_m }; });
 }
 
 /** Corrige el documento de vegetacion.glb en su lugar. Devuelve un resumen de lo hecho. */
@@ -87,12 +88,15 @@ export function ponerArbolesReales(doc, { medir = false } = {}) {
       if (!pr.tronco) planta.push([pr.P[3 * v], pr.P[3 * v + 2]]);
     }
     a.y0 = y0; a.alto = y1 - y0; a.diam = planta.length > 2 ? 2 * Math.sqrt(cascoArea(planta) / Math.PI) : 0;
+    a.alcance = Math.max(0, ...planta.map(([x, z]) => Math.hypot(x - a.c[0], z - a.c[1])));   // la hoja más lejana del pie
+    let yb = Infinity; for (const { pr, s } of a.piezas) if (!pr.tronco) for (const t of s.tris) for (let j = 0; j < 3; j++) yb = Math.min(yb, pr.P[3 * pr.I[3 * t + j] + 1]);
+    a.base = yb - y0;                                                                                // donde empieza la copa
   }
   const molde = pies.reduce((b, a) => (a.hojas > b.hojas ? a : b));
   const reales = arbolesReales();
   const res = [`anillo: ${pies.length} árboles de relleno; molde en (${molde.c.map((v) => v.toFixed(1)).join(', ')}), ${molde.alto.toFixed(1)} m de alto, copa de ${molde.diam.toFixed(1)} m, ${molde.hojas} triángulos de hoja`];
   for (const r of reales) res.push(`árbol real #${r.id} en (${r.x.toFixed(1)}, ${r.z.toFixed(1)}): ${r.alto} m de alto, copa de ${r.diam} m (escala ${(r.diam / molde.diam).toFixed(2)} en planta, ${(r.alto / molde.alto).toFixed(2)} en alto)`);
-  if (medir) return res;
+  if (medir) return Object.assign(res, { molde: { alto: molde.alto, diam: molde.diam, alcance: molde.alcance, base: molde.base } });
   // 4) cada primitiva del anillo se rehace con las copias del molde, una por árbol real
   // En las copas más chicas que el molde se conserva solo una fracción k = (escala en planta)² de las hojas, y cada hoja
   // conservada se agranda 1/√k alrededor de su centro (poda estocástica de Cook et al. 2007, la misma de optimize2.mjs): la

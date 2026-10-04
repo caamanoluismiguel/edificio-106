@@ -10,7 +10,7 @@ Lo usan docentes, estudiantes y pares académicos de arquitectura. **Lo que más
 - **`fuente/`** tiene el código:
   - `cuerpo.html` es la página, con todo el texto y el CSS;
   - `src/` es la app: `main.js` (interfaz), `escena.js` (three.js con WebGPU y WebGL 2), `sol.js`, `clima.js`, `confort.js`, `luna.js`, `interiores.js`;
-  - los scripts que tocan los GLB: `entrada.mjs`, `portico.mjs`, `barandas.mjs`, `arbustos.mjs`, `contexto.mjs`, `arboles.mjs`, `arboles-reales.mjs` (árboles reales en lugar del anillo de relleno, desde `arboles_reales.json`);
+  - los scripts que tocan los GLB: `entrada.mjs`, `portico.mjs`, `barandas.mjs`, `arbustos.mjs`, `contexto.mjs`, `arboles.mjs`, `arboles-reales.mjs` (árboles reales en lugar del anillo de relleno, desde `arboles_reales.json`; `arboles-acomodar.mjs` los corre hasta 5 m para que no caigan en la calle ni dentro de un edificio);
   - el clima: `descargar_era5.py` y `clima_bin.py`;
   - las pruebas: `verificar.mjs`, `guardia.mjs` y `verificar-geometria.mjs`.
 - **`ar/`** es la realidad aumentada sobre la tarjeta impresa, autocontenida. No usa el build de `fuente/`: tiene import map y la carpeta `vendor/`.

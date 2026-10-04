@@ -10,18 +10,28 @@
    "lon": -79.5827442,
    "lat": 8.9988822,
    "altura_m": 12,
-   "diametro_copa_m": 17.0,
+   "diametro_copa_m": 17,
    "street_view": "nov 2022",
-   "nota": "visto: copa ancha sobre el rumbo, tronco a ~5 m al lado (giro-967.png, cámara a 11,7 m)"
+   "nota": "visto: copa ancha sobre el rumbo, tronco a ~5 m al lado (giro-967.png, cámara a 11,7 m)",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1010,
    "lon": -79.582315,
    "lat": 8.998861,
    "altura_m": 11,
-   "diametro_copa_m": 16.0,
+   "diametro_copa_m": 16,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1122,
@@ -30,7 +40,12 @@
    "altura_m": 10,
    "diametro_copa_m": 15.1,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1182,
@@ -39,7 +54,12 @@
    "altura_m": 10,
    "diametro_copa_m": 13.8,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1210,
@@ -48,7 +68,12 @@
    "altura_m": 10,
    "diametro_copa_m": 9.3,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1211,
@@ -57,7 +82,12 @@
    "altura_m": 10,
    "diametro_copa_m": 12.1,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1217,
@@ -66,7 +96,12 @@
    "altura_m": 10,
    "diametro_copa_m": 8.6,
    "street_view": "nov 2022",
-   "nota": "visto: árbol redondo oscuro en el rumbo"
+   "nota": "visto: árbol redondo oscuro en el rumbo",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1219,
@@ -75,7 +110,12 @@
    "altura_m": 10,
    "diametro_copa_m": 12.2,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1355,
@@ -84,7 +124,12 @@
    "altura_m": 9,
    "diametro_copa_m": 9.4,
    "street_view": "nov 2022",
-   "nota": "visto: árbol en el rumbo (giro-1355.png, cámara a 17 m)"
+   "nota": "visto: árbol en el rumbo (giro-1355.png, cámara a 17 m)",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    -0.28,
+    0.42
+   ]
   },
   {
    "id": 1449,
@@ -93,7 +138,12 @@
    "altura_m": 8,
    "diametro_copa_m": 10.1,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0.5,
+    0
+   ]
   },
   {
    "id": 1553,
@@ -102,7 +152,12 @@
    "altura_m": 7,
    "diametro_copa_m": 10.4,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   },
   {
    "id": 1836,
@@ -111,7 +166,8 @@
    "altura_m": 6,
    "diametro_copa_m": 7.8,
    "street_view": "nov 2022",
-   "nota": "visto (algo corrido)"
+   "nota": "visto (algo corrido)",
+   "fuera": "tronco sobre Weathered asphalt 02 — photographic 3m"
   },
   {
    "id": 1885,
@@ -120,7 +176,12 @@
    "altura_m": 6,
    "diametro_copa_m": 4.6,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    -3.75,
+    0
+   ]
   },
   {
    "id": 2303,
@@ -129,7 +190,19 @@
    "altura_m": 4,
    "diametro_copa_m": 3.3,
    "street_view": "nov 2022",
-   "nota": "visto"
+   "nota": "visto",
+   "suelo": "Leafy grass — photographic 2m",
+   "corrimiento_escena_m": [
+    0,
+    0
+   ]
   }
- ]
+ ],
+ "molde": {
+  "alto": 18.22,
+  "diam": 18.11,
+  "alcance": 10.42,
+  "base": 7.13,
+  "nota": "árbol del anillo de relleno con más hojas (vegetacion.glb de main antes de este cambio), medido por arboles-reales.mjs --medir: alto, diámetro de igual área, hoja más lejana del pie en planta y altura donde empieza la copa, en m"
+ }
 }
