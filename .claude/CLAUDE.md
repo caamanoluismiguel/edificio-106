@@ -26,7 +26,7 @@ Lo usan docentes, estudiantes y pares académicos de arquitectura. **Lo que más
 
 1. `git fetch` y comprobar las dos direcciones contra `origin/main`. Codex y otras sesiones de Claude empujan a main en paralelo. Si main avanzó, rebase y recompilar.
 2. Si se tocó un GLB: `cd fuente && node estado.mjs --comprobar` contra la foto de `fuente/estado/` (pieza por pieza); solo pueden aparecer las piezas que el cambio dice tocar. Al aprobarse, `node estado.mjs` rehace la foto. Checklist legible en `fuente/estado/ESTADO.md`.
-3. `cd fuente && node guardia.mjs`: git (avance rápido, sin borrados), modelo (GLB byte a byte y nodo a nodo) y 18 cuadros píxel a píxel contra main. Con un efecto nuevo, correrlo también con `--url=<param>=0`.
+3. `cd fuente && node guardia.mjs`: git (avance rápido, sin borrados), modelo (GLB byte a byte y nodo a nodo), 18 cuadros píxel a píxel contra main y la carga (`probar-carga.mjs`: el sitio como teléfono y como computador, todos los grupos deben llegar). «ALGO NO CARGA» bloquea siempre. Con un efecto nuevo, correrlo también con `--url=<param>=0`. Los cuadros y `verificar.mjs` son solo de computador: todo cambio en la carga de grupos, la calidad o `main.js` se prueba también como teléfono.
 4. Si se tocó la escena: `cd fuente && node verificar.mjs` (7 comprobaciones, unos 6,5 min). Los controles que deben fallar: `--control-sesgo=0.35` (comprobación 2) y `--control-bias=-0.004` (comprobación 7).
 5. Si se tocó `ar/`: `node ar/probar.mjs --video=<cámara falsa>.y4m`, `node ar/silueta.mjs` y `bash ar/verificar-huellas.sh`.
 6. Escanear secretos en lo que se va a comitear (`AIza`, `sk_`, `sbp_`, `whsec_`).

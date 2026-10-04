@@ -4,7 +4,8 @@
 //   2. modelo: cada modelo/*.glb byte a byte y, si cambia, nodo a nodo y pieza a pieza (verificacion/entrada/comparar.mjs)
 //   3. imagen: el mismo cuadro en las dos versiones, píxel a píxel, en ~20 casos (vistas, fachadas, lentes, noche, lluvia),
 //      con el reloj de los sombreadores congelado (grano, vegetación, lluvia) y Math.random con semilla fija
-// Uso:  cd fuente && node guardia.mjs [revisión] [--webgl] [--solo=git,modelo,imagen] [--casos=esquina,lente-sol] [--url=dof=0]
+// Uso:  cd fuente && node guardia.mjs [revisión] [--webgl] [--solo=git,modelo,imagen,carga] [--casos=esquina,lente-sol] [--url=dof=0]
+//   4. carga: probar-carga.mjs, el sitio de esta carpeta como teléfono y como computador (todos los grupos deben llegar)
 // Resultado en fuente/verificacion/guardia/ (ignorado por git): informe.json y, en cada caso que difiere, antes, después
 // y un mapa de las diferencias. Código de salida: 0 si no cambia nada, 1 si algo cambia, 2 si el script no pudo correr.
 import http from 'node:http';
@@ -21,7 +22,7 @@ const RAIZ = path.resolve(AQUI, '..');
 const ARGS = process.argv.slice(2);
 const REV = ARGS.find((a) => !a.startsWith('--')) ?? 'origin/main';
 const GL = ARGS.includes('--webgl');
-const SOLO = (ARGS.find((a) => a.startsWith('--solo=')) ?? '--solo=git,modelo,imagen').slice(7).split(',');
+const SOLO = (ARGS.find((a) => a.startsWith('--solo=')) ?? '--solo=git,modelo,imagen,carga').slice(7).split(',');
 const FILTRO = (ARGS.find((a) => a.startsWith('--casos=')) ?? '').slice(8).split(',').filter(Boolean);
 // --url=dof=0: parámetros extra en la URL de las dos versiones (p. ej. apagar un efecto nuevo para probar que, sin él, todo queda igual)
 const EXTRA = (ARGS.find((a) => a.startsWith('--url=')) ?? '').slice(6);
@@ -200,7 +201,19 @@ if (SOLO.includes('imagen')) {
   } finally { await nav.close(); sA.close(); sB.close(); fs.rmSync(viejo, { recursive: true, force: true }); }
 }
 
+// ---------------- 4. carga ----------------
+// las imágenes son de computador: probar-carga.mjs abre también el perfil de teléfono (grupos diferidos, modelos livianos) y
+// exige que lleguen todos los grupos. No es una comparación con main: si algo no carga, falla aunque main tampoco cargue.
+let cargaMal = false;
+if (SOLO.includes('carga')) {
+  titulo('4. carga: teléfono y computador, con y sin ?arboles=0');
+  const r = spawnSync(process.execPath, [path.join(AQUI, 'probar-carga.mjs')], { cwd: AQUI, encoding: 'utf8', maxBuffer: 1 << 24 });
+  process.stdout.write(r.stdout); if (r.stderr) process.stdout.write(r.stderr);
+  informe.carga = { ok: r.status === 0, salida: r.stdout };
+  if (r.status !== 0) { cargaMal = true; falla = true; }
+}
+
 fs.writeFileSync(path.join(SALIDA, 'informe.json'), JSON.stringify(informe, null, 1));
-titulo(falla ? 'RESULTADO: HAY CAMBIOS (revisar antes de publicar)' : 'RESULTADO: ni el modelo ni la imagen cambian');
+titulo(cargaMal ? 'RESULTADO: ALGO NO CARGA (no publicar)' : falla ? 'RESULTADO: HAY CAMBIOS (revisar antes de publicar)' : 'RESULTADO: ni el modelo ni la imagen cambian');
 console.log(`Informe: ${path.relative(AQUI, SALIDA)}/informe.json`);
 process.exit(falla ? 1 : 0);
