@@ -1,6 +1,6 @@
 # Árboles de Ciudad del Saber desde el mapa de altura de copa
 
-Scripts que generan `../arboles_cds.geojson` y revisan las copas con Sentinel-2. Corren en una carpeta de trabajo fuera del repo (la tesela pesa 463 MB), con Python 3, `rasterio`, `numpy`, `scipy`, `scikit-image`, `shapely`, `pyproj` y `requests`.
+Scripts que generan `../arboles_cds.geojson` y revisan las copas con Sentinel-2. Corren con la carpeta de trabajo como directorio actual y la ruta del repo para el script (`python …/fuente/arboles-chm/copas.py`): leen `../osm-amplio.json` junto a ellos. La carpeta de trabajo va fuera del repo (la tesela pesa 463 MB), con Python 3, `rasterio`, `numpy`, `scipy`, `scikit-image`, `shapely`, `pyproj` y `requests`.
 
 1. Bajar la tesela de Meta y WRI (High Resolution Canopy Height Maps v1, CC BY 4.0) y sus fechas:
    `curl -O https://dataforgood-fb-data.s3.amazonaws.com/forests/v1/alsgedi_global_v6_float/chm/032221132.tif` y

@@ -3,12 +3,14 @@
  "criterio": "NDVI 2026 (Sentinel-2 L2A, mediana de enero a abril, píxel de 10 m en el centro de la copa) < 0.261 (mediana de 264 edificios de OSM en el recuadro) y no vista en Street View",
  "revisadas": 36,
  "vistas": {
-  "1039": "palmas en el rumbo",
+  "1039": "árboles en el rumbo",
   "1285": "árbol en el rumbo",
   "1490": "árbol en el rumbo",
-  "1615": "malinche a ~5 m (bota las hojas en verano)",
+  "1615": "árbol a ~5 m del rumbo",
   "2250": "copa encima de la cámara",
-  "2336": "palma junto al rumbo"
+  "2336": "árbol junto al rumbo, más alto que los 4 m del CHM",
+  "2076": "árbol pegado al rumbo, junto a unos contenedores",
+  "2093": "árbol dentro del ancho de la copa, a un lado del rumbo"
  },
  "excluidas": [
   {
@@ -38,7 +40,7 @@
   },
   {
    "id": 1823,
-   "motivo": "Street View nov 2022: edificio y una palma chica",
+   "motivo": "Street View nov 2022: edificio y un árbol chico a un lado",
    "ndvi_2026": 0.241
   },
   {
@@ -50,16 +52,6 @@
    "id": 1948,
    "motivo": "Street View nov 2022: estacionamiento",
    "ndvi_2026": 0.101
-  },
-  {
-   "id": 2076,
-   "motivo": "Street View nov 2022: contenedores apilados",
-   "ndvi_2026": 0.173
-  },
-  {
-   "id": 2093,
-   "motivo": "Street View nov 2022: césped en el rumbo; un árbol a un lado, más lejos (dudoso)",
-   "ndvi_2026": 0.158
   },
   {
    "id": 2095,
