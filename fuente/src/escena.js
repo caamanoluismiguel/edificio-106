@@ -256,7 +256,8 @@ export class Escena {
   }
 
   /** En WebGL 2 (pedido con #webgl, sin WebGPU o de rescate) el nivel 'alto' no cabe: con sombras de 4.096, bloom y profundidad
-   *  de campo, el jurado midió 28 cuadros por segundo al girar (p95 de 50 ms). Pasa al nivel 'medio', el mismo que ya usa un
+   *  de campo, el jurado midió 28 cuadros por segundo al girar (p95 de 50 ms). Pasa al nivel 'medio' (sin bloom; la profundidad
+   *  de campo se queda, en todos los niveles), el mismo que ya usa un
    *  navegador sin WebGPU. Cambia el objeto de calidad en su lugar (main.js lee de él las partículas). En WebGPU no hace nada. */
   #nivelWebGL() {
     const q = this.calidad;
@@ -316,8 +317,10 @@ export class Escena {
     // profundidad de campo (idea de sael.net/internet): nítido en una franja alrededor del punto que se mira y suave fuera de
     // ella, lo lejano más que lo cercano. main.js mueve el foco con la cámara y apaga el efecto donde el suelo o la fachada son
     // lo que se lee (planta, diagrama de sombras, tarjeta de fachada). Con uDesenfoque = 0 la imagen sale idéntica (CoC = 0).
+    // En todos los niveles (teléfono y WebGL 2 incluidos): LM la quiere siempre por defecto (4 de octubre de 2026).
     this.uFoco = uniform(60); this.uBanda = uniform(20); this.uRampa = uniform(40); this.uDesenfoque = uniform(0); this.uBokeh = uniform(4);
-    if (this.calidad.nivel === 'alto') {
+    this.conDof = true;
+    {
       const d = scenePass.getViewZNode().negate().sub(this.uFoco);                 // + detrás del foco, − delante
       const fuera = max(abs(d).sub(this.uBanda), 0).mul(select(d.lessThan(0), float(0.6), float(1))).mul(this.uDesenfoque);
       col = dof(col, this.uFoco.add(select(d.lessThan(0), fuera.negate(), fuera)).negate(), this.uFoco, this.uRampa, this.uBokeh);

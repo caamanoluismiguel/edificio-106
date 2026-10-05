@@ -32500,7 +32500,8 @@ var FV = class {
 			let u = iz(r, s, c, n);
 			u.useSubpixelCorrection = !1, i = u, this.aoPass = l;
 		}
-		if (this.uFoco = J(60), this.uBanda = J(20), this.uRampa = J(40), this.uDesenfoque = J(0), this.uBokeh = J(4), this.calidad.nivel === "alto") {
+		this.uFoco = J(60), this.uBanda = J(20), this.uRampa = J(40), this.uDesenfoque = J(0), this.uBokeh = J(4), this.conDof = !0;
+		{
 			let e = r.getViewZNode().negate().sub(this.uFoco), t = zL(sL(e).sub(this.uBanda), 0).mul(gR(e.lessThan(0), G(.6), G(1))).mul(this.uDesenfoque);
 			i = OB(i, this.uFoco.add(gR(e.lessThan(0), t.negate(), t)).negate(), this.uFoco, this.uRampa, this.uBokeh);
 		}

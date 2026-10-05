@@ -28,6 +28,7 @@ const CASOS = [
   { nombre: 'computador', disp: { viewport: { width: 1600, height: 1000 } }, q: '', esperados: GRUPOS, archivos: ['cubiertas.glb', 'arboles.glb'], pc: true },
   { nombre: 'computador ?arboles=0', disp: { viewport: { width: 1600, height: 1000 } }, q: '&arboles=0', esperados: GRUPOS.filter((g) => g !== 'arboles') },
   // un navegador que quedó en WebGL por un fallo viejo (antes se guardaba «webgl» para siempre) vuelve a WebGPU con la versión nueva
+  { nombre: 'computador en WebGL 2', disp: { viewport: { width: 1600, height: 1000 } }, q: '&webgl', esperados: GRUPOS },
   { nombre: 'computador con «webgl» viejo guardado', disp: { viewport: { width: 1600, height: 1000 } }, q: '', esperados: GRUPOS, motorViejo: 'webgl', pc: true },
 ];
 let falla = false;
@@ -45,16 +46,16 @@ for (const c of CASOS) {
     await pg.waitForFunction(() => window.__e106?.escena?.cargado, null, { timeout: 180000, polling: 500 });
     await pg.evaluate(() => Promise.race([window.__e106.escena.cargaDiferida, new Promise((ok) => setTimeout(ok, 120000))]));
     await pg.waitForTimeout(2500);   // la profundidad de campo entra suave (~1 s)
-    r = await pg.evaluate(() => ({ grupos: Object.keys(window.__e106.escena.grupos ?? {}), nivel: window.__e106.escena.calidad?.nivel, backend: window.__e106.escena.backend, dof: window.__e106.escena.uDesenfoque?.value }));
+    r = await pg.evaluate(() => ({ grupos: Object.keys(window.__e106.escena.grupos ?? {}), nivel: window.__e106.escena.calidad?.nivel, backend: window.__e106.escena.backend, dof: window.__e106.escena.uDesenfoque?.value, conDof: !!window.__e106.escena.conDof }));
   } catch (e) { errores.push('no cargó: ' + String(e).slice(0, 200)); r = { grupos: [] }; }
   const faltan = c.esperados.filter((g) => !r.grupos.includes(g)), sobran = r.grupos.filter((g) => !c.esperados.includes(g));
   const sinArchivo = (c.archivos ?? []).filter((f) => !pedidos.includes(f));
-  // en computador con WebGPU: calidad «alto» y profundidad de campo encendida (el desenfoque solo existe en ese nivel)
-  const pcMal = c.pc && (r.backend !== 'WebGPU' || r.nivel !== 'alto' || !(r.dof > 0.9));
-  if (pcMal) errores.push(`computador: ${r.backend} · nivel ${r.nivel} · profundidad de campo ${r.dof?.toFixed?.(2) ?? r.dof} (se espera WebGPU, alto y 1)`);
+  // profundidad de campo armada y encendida en todos los casos (LM la quiere siempre); en computador, además, WebGPU y nivel alto
+  if (!r.conDof || !(r.dof > 0.9)) errores.push(`profundidad de campo: armada ${r.conDof} · ${r.dof?.toFixed?.(2) ?? r.dof} (se espera armada y 1)`);
+  if (c.pc && (r.backend !== 'WebGPU' || r.nivel !== 'alto')) errores.push(`computador: ${r.backend} · nivel ${r.nivel} (se espera WebGPU y alto)`);
   const mal = faltan.length || sobran.length || sinArchivo.length || errores.length;
   if (mal) falla = true;
-  console.log(`${mal ? '✗' : '✓'} ${c.nombre} (${r.backend ?? '?'}, nivel ${r.nivel ?? '?'}${c.pc ? `, profundidad de campo ${r.dof?.toFixed?.(2)}` : ''}): ${r.grupos.length} grupos` + (faltan.length ? ` · FALTAN ${faltan.join(', ')}` : '') + (sobran.length ? ` · SOBRAN ${sobran.join(', ')}` : '')
+  console.log(`${mal ? '✗' : '✓'} ${c.nombre} (${r.backend ?? '?'}, nivel ${r.nivel ?? '?'}${`, profundidad de campo ${r.conDof ? (r.dof?.toFixed?.(2)) : 'no'}`}): ${r.grupos.length} grupos` + (faltan.length ? ` · FALTAN ${faltan.join(', ')}` : '') + (sobran.length ? ` · SOBRAN ${sobran.join(', ')}` : '')
     + (sinArchivo.length ? ` · no pidió ${sinArchivo.join(', ')}` : '') + (errores.length ? `\n    ${errores.slice(0, 5).join('\n    ')}` : ''));
   await ctx.close();
 }
