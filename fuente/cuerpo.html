@@ -631,7 +631,7 @@
   .fachadas i { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--sol) calc(var(--v, 0) * 100%), var(--linea) 0); }
   .fachadas b { font-weight: 500; color: var(--cal); text-align: right; font-variant-numeric: tabular-nums; }
   /* encuadres (Capas): dos columnas de tarjetas; la vista aérea, primera y a lo ancho */
-  #encuadres-caja { display: grid; gap: 8px; } #encuadres-caja h2 { margin: 0; }
+  #encuadres-caja { display: grid; gap: 8px; } #encuadres-caja[hidden] { display: none; } #encuadres-caja h2 { margin: 0; }
   #encuadres { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   #encuadres li.aerea { grid-column: 1 / -1; }
   #encuadres button { width: 100%; height: 100%; min-height: 44px; display: grid; gap: 4px; align-content: start; text-align: left; color: var(--cal); border: 1px solid var(--linea);
@@ -1373,7 +1373,7 @@
   </div>
   <div id="encuadres-caja">
     <h2 id="encuadres-t">Encuadres</h2>
-    <p class="lamina-nota">Planos para conocer Ciudad del Saber, cada uno en una fecha y hora de la serie con buena luz. Al tocar uno, la cámara va hasta ahí y puedes girar alrededor de lo que muestra. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
+    <p class="lamina-nota">Planos para conocer Ciudad del Saber, cada uno en una fecha y hora de la serie ERA5 sin lluvia y con sol directo de más de 650 W/m². Al tocar uno, la cámara va hasta ahí y puedes girar alrededor de lo que muestra. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
     <p id="encuadres-nota" class="lamina-nota" hidden>La ciudad está apagada, así que solo quedan los encuadres del 106 y de las esclusas.<br><button class="boton" type="button" id="encuadres-encender">Encender la ciudad</button></p>
     <ul id="encuadres" aria-labelledby="encuadres-t"></ul>
   </div>

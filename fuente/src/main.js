@@ -591,12 +591,13 @@ function girarDespacio() { if (reduce || !S.encuadre?.aerea) return; controls.au
 function pararGiro() { if (controls?.autoRotate) controls.autoRotate = false; }
 function prepararEncuadres() {
   const ul = $('#encuadres'); if (!ul) return;
+  if (/[?&]ligero/.test(location.search)) { $('#encuadres-caja').hidden = true; return; }   // ?ligero no trae la ciudad ni el entorno
   for (const e of ENCUADRES) {
     const li = document.createElement('li'), b = document.createElement('button'), [y, m, d] = e.fecha.split('-').map(Number), [hh, mi] = e.hora.split(':').map(Number);
     b.type = 'button'; b.dataset.encuadre = e.id; b.setAttribute('aria-pressed', 'false');
     if (e.aerea) { li.className = 'aerea'; const i = document.createElement('i'); i.textContent = 'Vista aérea'; b.append(i); }
     const n = document.createElement('span'); n.textContent = e.nombre;
-    const s = document.createElement('small'); s.textContent = `${d} ${MES3[m - 1]} ${y} · ${hhmm(hh * 60 + mi)}`;
+    const s = document.createElement('small'); s.textContent = `${d} ${MES3[m - 1]} ${y} · ${hh}:${String(mi).padStart(2, '0')}`;   // como en los textos: 9:00
     b.append(n, s); li.append(b); ul.append(li);
   }
   ul.addEventListener('click', (ev) => {
@@ -616,7 +617,6 @@ function pintarEncuadres() {
   const ul = $('#encuadres'); if (!ul || !escena) return;
   const apagada = ciudadApagada(), nota = $('#encuadres-nota');
   if (nota) nota.hidden = !apagada;
-  const boton = $('#encuadres-encender'); if (boton) boton.hidden = /[?&]ligero/.test(location.search);
   ul.querySelectorAll('[data-encuadre]').forEach((b) => {
     const e = ENCUADRES.find((x) => x.id === b.dataset.encuadre);
     b.setAttribute('aria-pressed', String(S.encuadre?.id === e.id));

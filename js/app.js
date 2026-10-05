@@ -38723,8 +38723,8 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		fov: 38,
 		fecha: "2020-02-29",
 		hora: "16:30",
-		texto: "Ciudad del Saber, el antiguo Fort Clayton, con el canal y las esclusas de Miraflores al fondo a la izquierda. Solo el 106 está medido: los demás edificios son una maqueta aproximada.",
-		luz: "29 de febrero de 2020, 16:30, estación seca: el sol está a 28° de altura hacia el oeste (256°) y las sombras largas dibujan los árboles y el relieve."
+		texto: "Ciudad del Saber, el antiguo Fort Clayton, con el canal hacia el Lago Miraflores al fondo a la izquierda. Solo el 106 está medido: los demás edificios son una maqueta aproximada.",
+		luz: "29 de febrero de 2020, 16:30, estación seca: el sol está a 28° de altura hacia el oeste (256°) y cada sombra mide casi el doble de la altura de lo que la proyecta."
 	},
 	{
 		id: "106",
@@ -38742,7 +38742,7 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		fov: 38,
 		fecha: "2022-02-21",
 		hora: "09:00",
-		texto: "El 106, el único edificio medido, entre cuarteles de tres pisos. El 103, el 105 y el 107 repiten su volumen; el 100, el 101 y el 102 se arman con el kit de piezas.",
+		texto: "El 106, el único edificio medido, entre cuarteles de tres pisos. Con la ciudad encendida, el 103 y el 107 repiten su volumen y el 100, el 101 y el 102 se arman con el kit de piezas; con la ciudad apagada, los cinco son copias del 106.",
 		luz: "21 de febrero de 2022, 9:00: el sol está a 34° de altura hacia el este (109°) e incide en las fachadas sureste y noreste; la noroeste y la suroeste quedan a la sombra."
 	},
 	{
@@ -38763,8 +38763,8 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		fov: 30,
 		fecha: "2017-01-25",
 		hora: "16:30",
-		texto: "Diecisiete cuarteles de tres pisos sobre una planta baja de servicio, en fila a lo largo de la curva de la calle. Según el informe CERL, en 1987 las mediaguas de los cuarteles del área 200 pasaron a tejas rojas de fibra de vidrio.",
-		luz: "25 de enero de 2017, 16:30: el sol de la tarde está a 25° de altura hacia el suroeste (244°) e incide de lado en las fachadas largas, que miran al sur."
+		texto: "Diecisiete cuarteles de tres pisos sobre una planta baja de servicio, alrededor de una misma manzana; aquí se ven del 221 al 225. Según el informe CERL, en 1987 las mediaguas de los cuarteles del área 200 del Ejército pasaron a tejas rojas de fibra de vidrio. Se identifican con estos por la cantidad, la forma y el lugar, no por el número, porque la numeración de CERL no es la de Ciudad del Saber.",
+		luz: "25 de enero de 2017, 16:30: el sol de la tarde está a 25° de altura hacia el suroeste (244°) e incide en las fachadas largas, que miran al sur, y en los extremos que miran al oeste."
 	},
 	{
 		id: "cenit",
@@ -38784,7 +38784,7 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		fov: 34,
 		fecha: "2016-04-12",
 		hora: "12:19",
-		texto: "Las filas de dúplex de 1941 a 1943, que el informe CERL llama «tropical duplexes»: dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.",
+		texto: "Las filas de dúplex de 1941 a 1943, que según el informe CERL se conocían como «tropical duplexes»: dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.",
 		luz: "12 de abril de 2016, 12:19: el sol está a 90° de altura, casi exactamente en el cenit, y cada casa queda sobre su propia sombra. A esta latitud pasa dos veces al año, en abril y en agosto."
 	},
 	{
@@ -38805,8 +38805,8 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		fov: 26,
 		fecha: "2023-02-21",
 		hora: "16:30",
-		texto: "Una fila de dúplex vista a lo largo: el techo a cuatro aguas, la mediagua y la planta baja abierta sobre pilotes se repiten casa tras casa.",
-		luz: "21 de febrero de 2023, 16:30: el sol está a 28° de altura hacia el oeste (253°) y la planta baja abierta queda a la sombra del piso de arriba."
+		texto: "Una fila de dúplex vista a lo largo: el techo a cuatro aguas, la mediagua y la planta baja sobre pilotes, con un cuarto al centro y un estacionamiento a cada lado, se repiten casa tras casa.",
+		luz: "21 de febrero de 2023, 16:30: el sol está a 28° de altura hacia el oeste (253°) y entra unos metros bajo el piso de arriba por el extremo oeste; más adentro, la planta baja queda a la sombra."
 	},
 	{
 		id: "colonels",
@@ -38852,12 +38852,12 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		],
 		fecha: "2010-12-21",
 		hora: "09:00",
-		texto: "Casas de oficiales de 1941 a 1943: dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.",
+		texto: "Casas de oficiales de 1941 a 1943: dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El 426 y el 427 tienen el número de la lista de CERL; las demás se asignan por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.",
 		luz: "21 de diciembre de 2010, 9:00, solsticio de diciembre: el sol sale más al sur que en todo el año y a esta hora está a 32° de altura hacia el sureste (125°)."
 	},
 	{
 		id: "nco",
-		nombre: "Casas NCO de 1949",
+		nombre: "Casas tipo NCO de 1949",
 		ciudad: !0,
 		foco: 50,
 		pos: [
@@ -38873,8 +38873,8 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		fov: 36,
 		fecha: "2016-01-11",
 		hora: "09:00",
-		texto: "Casas de suboficiales de 1949, de un piso sobre losa. Según CERL fueron el primer diseño del fuerte sin piso elevado, con techo de pendiente baja de asbesto corrugado rojo que imita la teja.",
-		luz: "11 de enero de 2016, 9:00: el sol está a 31° de altura hacia el sureste (122°). Sin mediaguas, el sol incide en el muro hasta el alero."
+		texto: "Casas de un piso sobre losa, del tipo que CERL describe como las de suboficiales (NCO) de 1949: el primer diseño del fuerte sin piso elevado, con techo de pendiente baja de asbesto corrugado rojo que imita la teja. El tipo se asigna por la forma, porque la numeración de CERL no es la de Ciudad del Saber.",
+		luz: "11 de enero de 2016, 9:00: el sol está a 31° de altura hacia el sureste (122°). Sin mediaguas, el sol incide en el muro sureste por debajo de la franja que sombrea el alero."
 	},
 	{
 		id: "crance",
@@ -38899,8 +38899,8 @@ var aG = /* @__PURE__ */ s(((e, t) => {
 		],
 		fecha: "2012-02-14",
 		hora: "16:30",
-		texto: "Dieciséis bloques de dos pisos con techo de teja a dos aguas a lo largo de la calle Gonzalo Crance.",
-		luz: "14 de febrero de 2012, 16:30: el sol de la tarde está a 27° de altura hacia el oeste (250°) y alumbra de lado los bloques."
+		texto: "Dieciséis bloques de dos pisos con techo de lámina a dos aguas a lo largo de la calle Gonzalo Crance.",
+		luz: "14 de febrero de 2012, 16:30: el sol de la tarde está a 27° de altura hacia el oeste (250°) e incide casi de frente en los extremos que miran al suroeste; las fachadas largas que miran al sureste quedan a la sombra."
 	},
 	{
 		id: "esclusas",
@@ -39820,6 +39820,10 @@ function vq() {
 function yq() {
 	let e = Z("#encuadres");
 	if (e) {
+		if (/[?&]ligero/.test(location.search)) {
+			Z("#encuadres-caja").hidden = !0;
+			return;
+		}
 		for (let t of NG) {
 			let n = document.createElement("li"), r = document.createElement("button"), [i, a, o] = t.fecha.split("-").map(Number), [s, c] = t.hora.split(":").map(Number);
 			if (r.type = "button", r.dataset.encuadre = t.id, r.setAttribute("aria-pressed", "false"), t.aerea) {
@@ -39830,7 +39834,7 @@ function yq() {
 			let l = document.createElement("span");
 			l.textContent = t.nombre;
 			let u = document.createElement("small");
-			u.textContent = `${o} ${GG[a - 1]} ${i} · ${XG(s * 60 + c)}`, r.append(l, u), n.append(r), e.append(n);
+			u.textContent = `${o} ${GG[a - 1]} ${i} · ${s}:${String(c).padStart(2, "0")}`, r.append(l, u), n.append(r), e.append(n);
 		}
 		e.addEventListener("click", (e) => {
 			let t = e.target.closest("[data-encuadre]");
@@ -39851,9 +39855,7 @@ function bq() {
 	let e = Z("#encuadres");
 	if (!e || !$) return;
 	let t = pq(), n = Z("#encuadres-nota");
-	n && (n.hidden = !t);
-	let r = Z("#encuadres-encender");
-	r && (r.hidden = /[?&]ligero/.test(location.search)), e.querySelectorAll("[data-encuadre]").forEach((e) => {
+	n && (n.hidden = !t), e.querySelectorAll("[data-encuadre]").forEach((e) => {
 		let n = NG.find((t) => t.id === e.dataset.encuadre);
 		e.setAttribute("aria-pressed", String(Q.encuadre?.id === n.id)), n.ciudad && t ? e.setAttribute("aria-disabled", "true") : e.removeAttribute("aria-disabled");
 	});
