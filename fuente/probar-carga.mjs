@@ -25,13 +25,15 @@ const nav = await chromium.launch({ headless: true, args: ['--enable-unsafe-webg
 const CASOS = [
   { nombre: 'teléfono', disp: devices['Pixel 7'], q: '', esperados: GRUPOS, archivos: ['cubiertas_movil.glb', 'arboles_movil.glb'] },
   { nombre: 'teléfono ?arboles=0', disp: devices['Pixel 7'], q: '&arboles=0', esperados: GRUPOS.filter((g) => g !== 'arboles') },
-  { nombre: 'computador', disp: { viewport: { width: 1600, height: 1000 } }, q: '', esperados: GRUPOS, archivos: ['cubiertas.glb', 'arboles.glb'] },
+  { nombre: 'computador', disp: { viewport: { width: 1600, height: 1000 } }, q: '', esperados: GRUPOS, archivos: ['cubiertas.glb', 'arboles.glb'], pc: true },
   { nombre: 'computador ?arboles=0', disp: { viewport: { width: 1600, height: 1000 } }, q: '&arboles=0', esperados: GRUPOS.filter((g) => g !== 'arboles') },
+  // un navegador que quedó en WebGL por un fallo viejo (antes se guardaba «webgl» para siempre) vuelve a WebGPU con la versión nueva
+  { nombre: 'computador con «webgl» viejo guardado', disp: { viewport: { width: 1600, height: 1000 } }, q: '', esperados: GRUPOS, motorViejo: 'webgl', pc: true },
 ];
 let falla = false;
 for (const c of CASOS) {
   const ctx = await nav.newContext({ ...c.disp, timezoneId: 'America/Panama', locale: 'es-PA' });
-  await ctx.addInitScript(() => { try { localStorage.setItem('e106-visto', '1'); } catch (e) { /* nada */ } });
+  await ctx.addInitScript((viejo) => { try { localStorage.setItem('e106-visto', '1'); if (viejo && !sessionStorage.getItem('puesto')) { localStorage.setItem('e106-motor', viejo); sessionStorage.setItem('puesto', '1'); } } catch (e) { /* nada */ } }, c.motorViejo ?? null);
   const pg = await ctx.newPage(), errores = [], pedidos = [];
   pg.on('pageerror', (e) => errores.push('página: ' + String(e).slice(0, 200)));
   pg.on('console', (m) => { if (m.type() === 'error') errores.push('consola: ' + m.text().slice(0, 200)); });
@@ -42,13 +44,17 @@ for (const c of CASOS) {
     await pg.goto(base + '?prueba&rapido' + c.q, { waitUntil: 'load' });
     await pg.waitForFunction(() => window.__e106?.escena?.cargado, null, { timeout: 180000, polling: 500 });
     await pg.evaluate(() => Promise.race([window.__e106.escena.cargaDiferida, new Promise((ok) => setTimeout(ok, 120000))]));
-    r = await pg.evaluate(() => ({ grupos: Object.keys(window.__e106.escena.grupos ?? {}), nivel: window.__e106.escena.calidad?.nivel }));
+    await pg.waitForTimeout(2500);   // la profundidad de campo entra suave (~1 s)
+    r = await pg.evaluate(() => ({ grupos: Object.keys(window.__e106.escena.grupos ?? {}), nivel: window.__e106.escena.calidad?.nivel, backend: window.__e106.escena.backend, dof: window.__e106.escena.uDesenfoque?.value }));
   } catch (e) { errores.push('no cargó: ' + String(e).slice(0, 200)); r = { grupos: [] }; }
   const faltan = c.esperados.filter((g) => !r.grupos.includes(g)), sobran = r.grupos.filter((g) => !c.esperados.includes(g));
   const sinArchivo = (c.archivos ?? []).filter((f) => !pedidos.includes(f));
+  // en computador con WebGPU: calidad «alto» y profundidad de campo encendida (el desenfoque solo existe en ese nivel)
+  const pcMal = c.pc && (r.backend !== 'WebGPU' || r.nivel !== 'alto' || !(r.dof > 0.9));
+  if (pcMal) errores.push(`computador: ${r.backend} · nivel ${r.nivel} · profundidad de campo ${r.dof?.toFixed?.(2) ?? r.dof} (se espera WebGPU, alto y 1)`);
   const mal = faltan.length || sobran.length || sinArchivo.length || errores.length;
   if (mal) falla = true;
-  console.log(`${mal ? '✗' : '✓'} ${c.nombre} (nivel ${r.nivel ?? '?'}): ${r.grupos.length} grupos` + (faltan.length ? ` · FALTAN ${faltan.join(', ')}` : '') + (sobran.length ? ` · SOBRAN ${sobran.join(', ')}` : '')
+  console.log(`${mal ? '✗' : '✓'} ${c.nombre} (${r.backend ?? '?'}, nivel ${r.nivel ?? '?'}${c.pc ? `, profundidad de campo ${r.dof?.toFixed?.(2)}` : ''}): ${r.grupos.length} grupos` + (faltan.length ? ` · FALTAN ${faltan.join(', ')}` : '') + (sobran.length ? ` · SOBRAN ${sobran.join(', ')}` : '')
     + (sinArchivo.length ? ` · no pidió ${sinArchivo.join(', ')}` : '') + (errores.length ? `\n    ${errores.slice(0, 5).join('\n    ')}` : ''));
   await ctx.close();
 }

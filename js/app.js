@@ -37210,7 +37210,8 @@ async function XU() {
 	});
 	let n = /^#medir/.test(location.hash), r = /[?&]webgl/.test(location.search) || location.hash === "#medir-gl" || location.hash === "#webgl";
 	try {
-		localStorage.getItem("e106-motor") === "webgl" && location.hash !== "#webgpu" && (r = !0), location.hash === "#webgpu" && localStorage.removeItem("e106-motor");
+		let e = localStorage.getItem("e106-motor");
+		e === "webgl|" + aU && location.hash !== "#webgpu" ? r = !0 : e && localStorage.removeItem("e106-motor"), location.hash === "#webgpu" && localStorage.removeItem("e106-motor");
 	} catch {}
 	try {
 		$ = await new FV(Z("#lienzo"), e).init(r);
@@ -37838,7 +37839,7 @@ async function eG(e) {
 	if (!($W || $?.backend !== "WebGPU")) {
 		$W = !0, Q.pausa = !0, sU("rescate", `${e}: paso a WebGL`);
 		try {
-			localStorage.setItem("e106-motor", "webgl");
+			localStorage.setItem("e106-motor", "webgl|" + aU);
 		} catch {}
 		try {
 			await $.pasarAWebGL(), zU.disconnect(), zU.connect($.renderer.domElement), document.documentElement.dataset.backend = $.backend, Z("#motor").textContent = $.backend, Q.firma = "", $.sucio = !0, tG("WebGPU falló en este equipo. La escena sigue en modo compatible (WebGL 2).");

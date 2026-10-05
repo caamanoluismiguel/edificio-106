@@ -171,7 +171,14 @@ async function arrancar() {
   });
   const MIDE = /^#medir/.test(location.hash);
   let pideGL = /[?&]webgl/.test(location.search) || location.hash === '#medir-gl' || location.hash === '#webgl';
-  try { if (localStorage.getItem('e106-motor') === 'webgl' && location.hash !== '#webgpu') pideGL = true; if (location.hash === '#webgpu') localStorage.removeItem('e106-motor'); } catch (e) { /* sin almacenamiento */ }
+  // el paso a WebGL (rescatar) vale solo para el armado en que pasó: con una versión nueva se vuelve a probar WebGPU (antes quedaba
+  // en WebGL para siempre, en calidad «medio» y sin profundidad de campo, aunque el fallo ya no existiera)
+  try {
+    const m = localStorage.getItem('e106-motor');
+    if (m === 'webgl|' + VERSION && location.hash !== '#webgpu') pideGL = true;
+    else if (m) localStorage.removeItem('e106-motor');
+    if (location.hash === '#webgpu') localStorage.removeItem('e106-motor');
+  } catch (e) { /* sin almacenamiento */ }
   try { escena = await new Escena($('#lienzo'), q).init(pideGL); }
   catch (e) {
     try { escena = await new Escena($('#lienzo'), { ...q, nivel: 'medio', sombras: 2048, bloom: false }).init(true); }
@@ -779,7 +786,7 @@ async function rescatar(motivo) {
   if (rescatando || escena?.backend !== 'WebGPU') return;
   rescatando = true; S.pausa = true;
   anotar('rescate', `${motivo}: paso a WebGL`);
-  try { localStorage.setItem('e106-motor', 'webgl'); } catch (e) { /* sin almacenamiento */ }
+  try { localStorage.setItem('e106-motor', 'webgl|' + VERSION); } catch (e) { /* sin almacenamiento */ }
   try {
     await escena.pasarAWebGL();
     controls.disconnect(); controls.connect(escena.renderer.domElement);
