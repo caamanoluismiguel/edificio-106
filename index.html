@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=59d753d0f4" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=a546647d92" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -424,6 +424,23 @@
   html.girado .pista { opacity: 0; }
   .pista .tactil { display: none; }
   @media (pointer: coarse) { .pista .raton { display: none; } .pista .tactil { display: inline; } }
+  /* navegación libre: «Volver al 106», la nota de lejos, la tarjeta del edificio y la pista de la primera vez */
+  #lejos { display: grid; justify-items: end; gap: 6px; max-width: 280px; }
+  #lejos[hidden], #tarjeta-edificio[hidden], #pista-navegar[hidden], #te-acerca[hidden] { display: none; }
+  #lejos-nota { margin: 0; font: 400 12px/1.35 var(--texto); color: var(--cal-2); text-align: right; background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; padding: 6px 10px; backdrop-filter: blur(10px); }
+  #tarjeta-edificio { width: min(320px, calc(100vw - 32px)); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(12px); }
+  #tarjeta-edificio .te-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #te-t { margin: 0; font: 700 18px/1.2 var(--display); color: var(--cal); }
+  #te-cerrar { flex: none; width: 44px; height: 44px; margin: -10px -10px -10px 0; border: 0; background: none; color: var(--cal-2); font: 400 22px/1 var(--texto); cursor: pointer; border-radius: 999px; }
+  #te-cerrar:hover { color: var(--cal); background: rgba(239,233,222,.08); }
+  #te-txt p { margin: 6px 0 0; font: 400 13px/1.4 var(--texto); color: var(--cal-2); }
+  #te-txt p:first-child { font-size: 14px; color: var(--cal); }
+  #te-acerca { margin-top: 10px; }
+  #pista-navegar { position: fixed; z-index: 7; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 70px); transform: translateX(-50%); margin: 0; max-width: calc(100vw - 32px); box-sizing: border-box;
+    font: 500 12px/1.35 var(--datos); color: var(--cal-2); text-align: center; background: var(--panel-2); border: 1px solid var(--linea); border-radius: 12px; padding: 6px 10px; backdrop-filter: blur(10px); pointer-events: none; }
+  #pista-navegar .tactil { display: none; }
+  #lienzo:focus { outline: none; } #lienzo:focus-visible { outline: 2px solid var(--sol); outline-offset: -4px; border-radius: 0; }
+  @media (pointer: coarse) { #pista-navegar .raton { display: none; } #pista-navegar .tactil { display: inline; } }
 
   /* ---------- máquina del tiempo ---------- */
   #dia .gota { fill: var(--lluvia); } #dia .gota.debil { opacity: .45; } #dia .prob { fill: var(--lluvia); opacity: .42; } #dia .nube { fill: #56616b; }
@@ -691,6 +708,9 @@
     #mirando, .pista { display: none; }
     #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
     #brujula text { font-size: 13px; } #brujula text.n { font-size: 15px; }
+    #lejos { grid-column: 1; grid-row: 1; justify-self: end; align-self: start; max-width: 100%; }
+    #tarjeta-edificio { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; width: auto; }
+    #pista-navegar { top: calc(env(safe-area-inset-top, 0px) + 124px); }
     .hud-botones { display: contents; }
     .vistas { grid-column: 1; grid-row: 1; justify-self: start; }
     .lentes { grid-column: 1 / -1; grid-row: 2; }
@@ -930,7 +950,7 @@
 </head><body>
 
 <a id="saltar-a" class="saltar-a" href="#principal">Saltar a los controles</a>
-<div id="lienzo"></div>
+<div id="lienzo" tabindex="0" role="region" aria-label="Escena 3D. Con el teclado: flechas o W, A, S y D para recorrer la ciudad, Q y E para girar, más y menos para acercarte, Inicio para volver al 106."></div>
 
 <header class="barra">
   <div class="menu-ayuda">
@@ -1025,6 +1045,16 @@
     </svg>
   </button>
   <p id="mirando">Miras hacia el suroeste</p>
+  <!-- navegación libre: lejos del 106 (src/navegar.js, LEJOS), el botón para volver y la nota de que la ciudad es aproximada -->
+  <div id="lejos" hidden>
+    <button type="button" id="volver-106" class="boton">Volver al 106</button>
+    <p id="lejos-nota"></p>
+  </div>
+  <section id="tarjeta-edificio" hidden aria-labelledby="te-t">
+    <div class="te-cab"><h2 id="te-t"></h2><button type="button" id="te-cerrar" aria-label="Cerrar la tarjeta del edificio">×</button></div>
+    <div id="te-txt"></div>
+    <button type="button" id="te-acerca" class="boton" hidden>Acerca del modelo</button>
+  </section>
   <div class="hud-botones">
   <div class="vistas" role="group" aria-label="¿Desde dónde?">
     <button type="button" data-vista="esquina">Esquina</button>
@@ -1081,6 +1111,7 @@
   </div>
   <p class="pista"><span class="raton">Arrastra para girar · rueda para acercarte</span><span class="tactil">Arrastra para girar · pellizca para acercarte</span></p>
 </aside>
+<p id="pista-navegar" hidden role="status"><span class="raton">Clic derecho y arrastra para recorrer la ciudad · doble clic en un edificio</span><span class="tactil">Arrastra con dos dedos para recorrer la ciudad · toca dos veces un edificio</span></p>
 <div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
 
 <aside id="voladizo" hidden aria-labelledby="vol-t">
@@ -1472,4 +1503,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=59d753d0f4"></script></body></html>
+<script type="module" src="js/app.js?v=a546647d92"></script></body></html>

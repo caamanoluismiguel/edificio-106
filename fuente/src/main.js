@@ -11,6 +11,7 @@ import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
 import { ENCUADRES } from './encuadres.js';
+import { Mapa, LEJOS, CERCA, BORDE_BLANDO, tarjeta } from './navegar.js';
 
 const $ = (s) => document.querySelector(s);
 // la versión es la huella del armado (js/app.js?v=…, la escribe armar-raiz.sh); sin ella, el servidor de desarrollo
@@ -202,9 +203,13 @@ async function arrancar() {
   controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.8; controls.minDistance = 12; controls.maxDistance = 800;   // desde lejos se ve Ciudad del Saber entera con el canal y las esclusas de Miraflores controls.minPolarAngle = 0.01;
   controls.target.set(...ESQUINA.tgt);
   controls.addEventListener('start', alTomar);
+  controls.addEventListener('end', () => { NAV.arrastra = false; });
+  // navegación libre (src/navegar.js): el arrastre con dos dedos, el clic derecho, Mayús o la rueda apretada mueven el punto que se
+  // mira sobre el suelo. Se enciende cuando llega el mapa de la ciudad (límite, suelo, huellas); hasta entonces, como siempre
+  controls.screenSpacePanning = false; controls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
   U.vaiven.value = reduce ? 0 : 1;
   // gancho para las comprobaciones automáticas (fuente/verificar.mjs): solo existe con ?prueba en la URL
-  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, enlaceMomento, VISTAS, VISTA_FACHADA, posicionSol };
+  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, enlaceMomento, VISTAS, VISTA_FACHADA, posicionSol, NAV, elegirEn, volverAl106 };
 
   const bytes = {};
   const pModelo = escena.cargar(BASE, (g, l, t) => {
@@ -214,6 +219,8 @@ async function arrancar() {
     if (l === 1 && t === 1) compilarPronto();
   });
   escena.alCambiarCiudad = pintarCiudad;
+  if (!/[?&]ligero/.test(location.search)) pModelo.then(() => escena.cargaCompleta).then(() => fetch(conVersion(BASE + 'datos/ciudad_mapa.json'))).then((r) => r.json())
+    .then((j) => { NAV.mapa = new Mapa(j); controls.enablePan = true; }).catch((e) => anotar('aviso', 'mapa de la ciudad: ' + e));
   pModelo.then(() => escena.arrancarCiudad(pFinIntro));
   clima.cargarAjuste(conVersion(BASE + 'datos/ajuste_albrook.json')).then(() => { lastLect = ''; if (clima.ok) pintarMomentos(); });
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
@@ -517,6 +524,9 @@ function volarA(v, dur = 1.6, clave = null, avisar = true) {
   const fov0 = escena.camera.fov, fov1 = v.fov ?? fovBase(), extra = { fov0, fov1, arco: v.arco, alLlegar: v.alLlegar };
   if (v.encuadre) controls.maxDistance = Math.max(800, p1.distanceTo(t1));   // la vista aérea está más lejos que el tope de siempre
   marcarVista(clave);
+  // de un lugar de la ciudad a otro (el punto que se mira se corre más de 120 m), el mismo vuelo de los encuadres: la cámara sube y
+  // pasa por encima. Entre las vistas del 106 el punto que se mira se corre menos de 30 m: esos vuelos no cambian
+  if (extra.arco === undefined && t0.distanceTo(t1) > 120) { const dist = p0.distanceTo(p1); extra.arco = Math.min(350, dist * 0.3); dur = Math.max(dur, Math.min(3.4, 1.4 + dist / 700)); }
   if (p0.distanceTo(p1) < 0.6 && t0.distanceTo(t1) < 0.6) {           // ya estás ahí: un pequeño empujón para que se note
     if (clave && avisar) aviso(`Ya estás en la vista ${clave === 'aerea' ? 'aérea' : clave}.`, 1600);
     cam.anim = { p0: p0.clone().lerp(t0, -0.03), t0, p1, t1, k: 0, dur: reduce ? 0.01 : 0.45, clave, ...extra, arco: undefined };
@@ -526,6 +536,7 @@ function volarA(v, dur = 1.6, clave = null, avisar = true) {
 /** El lente de siempre (el mismo de Escena.resize): 58° en pantallas verticales, 38° en las apaisadas. */
 function fovBase() { return innerWidth / innerHeight < 0.8 ? 58 : 38; }
 function marcarVista(clave) {
+  if (VISTAS[clave]) NAV.vista = clave;                  // la última vista del 106 elegida: «Volver al 106» vuelve a ella
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === clave)); b.style.setProperty('--p', b.dataset.vista === clave ? 0 : 1); });
 }
 function pasoCamara(dt) {
@@ -538,7 +549,9 @@ function pasoCamara(dt) {
   controls.target.lerpVectors(a.t0, a.t1, e);
   if (a.fov0 !== a.fov1) { escena.camera.fov = a.fov0 + (a.fov1 - a.fov0) * e; escena.camera.updateProjectionMatrix(); }
   escena.camera.lookAt(controls.target);
-  if (a.k >= 1) { cam.anim = null; controls.enabled = !intro; controls.update(); a.alLlegar?.(); }
+  // al llegar: el punto que se mira y su altura sobre el suelo se toman de nuevo (navegar no corre durante el vuelo), y los límites de
+  // la cámara son los de la pose de llegada (antes quedaban los de la salida: la Esquina, viniendo de la Planta, llegaba a 5,7 m de altura)
+  if (a.k >= 1) { cam.anim = null; NAV.tx = NAV.tz = NAV.hs = null; controls.enabled = !intro; limitesCamara(); controls.update(); a.alLlegar?.(); }
   return true;
 }
 // al empezar a girar desde la esquina, el pivote se desliza al centro del edificio
@@ -548,7 +561,27 @@ function alTomar() {
   document.documentElement.classList.add('girado');
   marcarVista(null);
   // en un encuadre se gira alrededor de lo que el encuadre mira, no del 106
-  if (!S.encuadre && controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
+  // (solo junto al 106: lejos, se gira alrededor de lo que se mira)
+  const dc = Math.hypot(controls.target.x - CENTRO[0], controls.target.z - CENTRO[2]);
+  // (no al mover el punto que se mira: con el clic derecho, Mayús, la rueda apretada o dos dedos, el punto se queda donde la persona
+  // lo lleva; con dos dedos también se acerca, y antes ese gesto sí deslizaba el pivote)
+  const girando = ![2, 4, 5].includes(controls.state);                  // PAN, TOUCH_PAN y TOUCH_DOLLY_PAN de OrbitControls
+  if (!S.encuadre && girando && dc < 25 && controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
+  NAV.arrastra = true; NAV.hs = null;
+  pistaNavegar();
+}
+
+/** Los límites de la cámara para la pose de ahora (antes de cada controls.update). */
+function limitesCamara() {
+  const d = escena.camera.position.distanceTo(controls.target);
+  estarLejos();
+  // la cámara no baja del nivel de los ojos: el ángulo máximo depende de la distancia. Lejos del 106, los ojos sobre el suelo que hay
+  // bajo la cámara (el terreno baja hacia el canal y sube en las lomas)
+  const ojo = NAV.lejos && NAV.mapa ? NAV.mapa.suelo(escena.camera.position.x, escena.camera.position.z) + 1.4 : 1.4;
+  controls.maxPolarAngle = Math.acos(THREE.MathUtils.clamp((ojo - controls.target.y) / d, -1, 1));
+  // la vista aérea de un encuadre está más lejos que el tope de 800 m: desde ahí se puede acercar, no alejar más. Lejos del 106 el
+  // tope es 1.500 m (la ciudad entera desde cualquier punto); al volver cerca no se corta de golpe: se puede acercar, no alejar más
+  controls.maxDistance = S.encuadre && d > 800 ? d : NAV.lejos ? 1500 : Math.max(800, Math.min(d, 1500));
 }
 
 // ---------------- Encuadres (Capas → «Encuadres», datos en encuadres.js) ----------------
@@ -646,6 +679,171 @@ function pintarEncuadres() {
   });
 }
 
+// ---------------- Navegación libre por la ciudad (src/navegar.js) ----------------
+// Arrastrar con dos dedos, con el clic derecho, con Mayús o con la rueda apretada mueve el punto que se mira sobre el suelo, dentro del
+// límite propuesto de la ciudad (con un borde blando de BORDE_BLANDO m que vuelve al soltar). Las flechas o WASD hacen lo mismo con
+// el teclado; Q y E giran, + y − acercan, Inicio vuelve al 106. Dos toques (o doble clic) sobre un edificio vuelan a él y abren su
+// tarjeta; sobre el suelo, llevan ahí el punto que se mira. Lejos del 106 (más de LEJOS m) aparecen «Volver al 106» y la nota de que
+// la ciudad es aproximada; las formas de ver que miden el 106 vuelven primero a él. Sin tocar nada, todo queda como antes.
+const NAV = { mapa: null, lejos: false, arrastra: false, vista: 'esquina', hs: null, tx: null, tz: null, cam: null, tarjeta: null };
+const _np = new THREE.Vector3();
+/** Cada cuadro, después de controls.update: el punto que se mira sigue al suelo, no sale del límite y la cámara no entra en un
+ *  edificio ni baja del suelo. Solo actúa si algo se movió. */
+function navegar(dt) {
+  const M = NAV.mapa; if (!M) return;
+  const t = controls.target, c = escena.camera.position;
+  estarLejos();
+  // un vuelo o un salto (un enlace, una prueba) no es un arrastre: la altura sobre el suelo se toma de nuevo después
+  const salto = NAV.tx !== null && Math.hypot(t.x - NAV.tx, t.z - NAV.tz) > 20 + 0.2 * c.distanceTo(t);
+  if (cam.anim || salto || deslizar) NAV.hs = null;
+  const movio = NAV.tx === null || Math.abs(t.x - NAV.tx) > 1e-4 || Math.abs(t.z - NAV.tz) > 1e-4;
+  let dx = 0, dy = 0, dz = 0;
+  if (movio && NAV.tx !== null && !cam.anim && !deslizar && !salto) {
+    // el punto que se mira conserva su altura sobre el suelo (en el sitio del 106, la misma: el sitio es plano)
+    NAV.hs ??= t.y - M.suelo(NAV.tx, NAV.tz);
+    dy = M.suelo(t.x, t.z) + NAV.hs - t.y;
+  }
+  // el límite: mientras se arrastra, hasta BORDE_BLANDO m afuera; al soltar, vuelve al borde
+  const b = M.borde(t.x, t.z);
+  if (b.d > 0 && !cam.anim) {
+    if (NAV.arrastra && b.d > BORDE_BLANDO) { const k = 1 - BORDE_BLANDO / b.d; dx = (b.x - t.x) * k; dz = (b.z - t.z) * k; }
+    else if (!NAV.arrastra) { const k = b.d < 0.02 ? 1 : reduce ? 1 : Math.min(1, dt * 4); dx = (b.x - t.x) * k; dz = (b.z - t.z) * k; }
+  }
+  if (dx || dy || dz) { t.x += dx; t.y += dy; t.z += dz; c.x += dx; c.y += dy; c.z += dz; }
+  // nunca bajo el suelo: el punto que se mira, a 0,5 m como mínimo; la cámara, a 1 m (lejos del 106; junto a él manda el ángulo de siempre)
+  if (NAV.lejos && !cam.anim) {
+    const gt = M.suelo(t.x, t.z) + 0.5; if (t.y < gt) { c.y += gt - t.y; t.y = gt; }
+    const gc = M.suelo(c.x, c.z) + 1; if (c.y < gc) c.y = gc;
+  }
+  // lejos del 106, la cámara no entra en un edificio de la ciudad (su caja aproximada): sube por encima del techo. Junto al 106 todo
+  // queda como siempre (las vistas de las fachadas están a menos de 2 m de los vecinos, y al 106 se entra a mirar los interiores)
+  if (NAV.lejos && !cam.anim && (!NAV.cam || NAV.cam.distanceToSquared(c) > 1e-6)) {
+    const e = M.dentroDe(c, 0.5); if (e) c.y = e.y1 + 1;
+    (NAV.cam ??= new THREE.Vector3()).copy(c);
+  }
+  NAV.tx = t.x; NAV.tz = t.z;
+}
+/** ¿Lejos del 106? (con histéresis) Pinta el botón y la nota cuando cambia. */
+function estarLejos() {
+  if (!NAV.mapa) return;
+  const t = controls.target, dc = Math.hypot(t.x - CENTRO[0], t.z - CENTRO[2]);
+  const lejos = NAV.lejos ? dc > CERCA : dc > LEJOS;
+  if (lejos !== NAV.lejos || (lejos && NAV.notaClave !== claveNota())) pintarLejos(lejos);
+}
+const claveNota = () => `${ciudadApagada()}|${escena.ciudadOpc?.nivel}|${!!escena.sunG}`;
+/** El botón «Volver al 106» y la nota: la ciudad lejos del 106 es aproximada y su sombra, la del mapa grueso (o ninguna). */
+function pintarLejos(lejos) {
+  NAV.lejos = lejos; NAV.notaClave = claveNota();
+  $('#lejos').hidden = !lejos;
+  if (!lejos) return;
+  const o = escena.ciudadOpc, gruesa = !ciudadApagada() && o && NIVEL_CON_SOMBRA.has(o.nivel) && !!escena.sunG;
+  $('#lejos-nota').textContent = ciudadApagada()
+    ? 'Lejos del 106 el entorno es aproximado y sus volúmenes no proyectan sombra. No sirve para medir.'
+    : gruesa ? 'Lejos del 106 la ciudad es aproximada y su sombra sale de un mapa más grueso. No sirve para medir.'
+      : 'Lejos del 106 la ciudad es aproximada y en este equipo no proyecta sombra. No sirve para medir.';
+}
+const NIVEL_CON_SOMBRA = new Set(['completo', 'medio']);
+/** Vuelve al 106 con el vuelo de los encuadres (de golpe con movimiento reducido), a la vista pedida o a la última elegida. */
+function volverAl106(clave = NAV.vista) {
+  cerrarTarjeta(false);
+  S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true;
+  const v = VISTAS[clave] ?? VISTAS.esquina, dist = escena.camera.position.distanceTo(new THREE.Vector3(...v.pos));
+  volarA({ ...v, arco: dist > 120 ? Math.min(350, dist * 0.3) : undefined }, Math.min(3.4, Math.max(1.6, 1.4 + dist / 700)), clave, false);
+}
+/** Dos toques o doble clic en (x, y) de la pantalla: el edificio que se ve ahí (tarjeta y vuelo) o el punto del suelo (vuelo). */
+function elegirEn(x, y) {
+  const M = NAV.mapa; if (!M || intro) return null;
+  const r = escena.renderer.domElement.getBoundingClientRect();
+  const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1), escena.camera);
+  const h = M.rayo(ray.ray.origin, ray.ray.direction);
+  if (!h) return null;
+  cerrarOferta(); pararGiro();
+  // un edificio se ve si es el 106 o si el entorno ya llegó (con la ciudad o sin ella, cada huella tiene algo dibujado)
+  const visible = h.tipo === 'edificio' && (h.e === M.e106 || !!escena.grupos.contexto?.root);
+  if (visible && h.e === M.e106) { if (NAV.lejos) volverAl106(); mostrarTarjeta(h.e); return h; }
+  if (visible) {
+    const e = h.e, rad = 0.5 * Math.hypot(e.caja[1] - e.caja[0], e.caja[3] - e.caja[2], e.h);
+    const tgt = new THREE.Vector3(e.cx, e.y0 + Math.min(e.h * 0.45, 8), e.cz);
+    // la cámara del lado desde donde se miraba, a unos 25° sobre el horizonte y a una distancia que deja ver el edificio entero
+    const dir = _np.subVectors(escena.camera.position, tgt).setY(0); if (dir.lengthSq() < 1e-6) dir.set(1, 0, 1);
+    dir.normalize();
+    const dist = Math.min(400, Math.max(30, rad / Math.sin(THREE.MathUtils.degToRad(fovBase() * 0.4))));
+    const pos = tgt.clone().addScaledVector(dir, dist * Math.cos(0.44)); pos.y = tgt.y + dist * Math.sin(0.44);
+    mostrarTarjeta(e);
+    volarA({ pos: pos.toArray(), tgt: tgt.toArray() }, 1.6, null, false);
+    return h;
+  }
+  // el suelo (o un edificio que todavía no se dibuja): el punto que se mira va ahí y la cámara lo sigue con el mismo encuadre
+  cerrarTarjeta(false);
+  const tgt = new THREE.Vector3(h.p.x, h.p.y + 1.5, h.p.z), off = _np.subVectors(escena.camera.position, controls.target);
+  const b = M.borde(tgt.x, tgt.z); if (b.d > 0) { tgt.x = b.x; tgt.z = b.z; tgt.y = M.suelo(b.x, b.z) + 1.5; }
+  volarA({ pos: tgt.clone().add(off).toArray(), tgt: tgt.toArray() }, 1.2, null, false);
+  NAV.hs = 1.5;
+  return h;
+}
+function mostrarTarjeta(e) {
+  const T = tarjeta(e, !ciudadApagada()), el = $('#tarjeta-edificio');
+  $('#te-t').textContent = T.titulo;
+  const txt = $('#te-txt'); txt.replaceChildren(...T.lineas.map((l) => { const p = document.createElement('p'); p.textContent = l; return p; }));
+  $('#te-acerca').hidden = !T.es106;
+  NAV.tarjeta = e; el.hidden = false; anunciar();
+  el.setAttribute('aria-live', 'polite');
+}
+function cerrarTarjeta(devolverFoco) {
+  const el = $('#tarjeta-edificio'); if (!el || el.hidden) return;
+  const dentro = el.contains(document.activeElement);
+  el.hidden = true; NAV.tarjeta = null;
+  if (devolverFoco && dentro) $('#principal')?.focus();
+}
+/** Una sola vez (localStorage «e106-navegar»): al girar por primera vez, cómo recorrer la ciudad. Con ?prueba, solo con ?guia. */
+function pistaNavegar() {
+  if (!NAV.mapa || pistaNavegar.hecha) return; pistaNavegar.hecha = true;
+  if (/[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search)) return;
+  try { if (localStorage.getItem('e106-navegar') === '1') return; localStorage.setItem('e106-navegar', '1'); } catch (e) { return; }
+  const el = $('#pista-navegar'); el.hidden = false;
+  setTimeout(() => { el.hidden = true; }, 7000);
+}
+function prepararNavegar() {
+  $('#volver-106').addEventListener('click', () => volverAl106());
+  $('#te-cerrar').addEventListener('click', () => cerrarTarjeta(true));
+  $('#te-acerca').addEventListener('click', () => { const d = $('#acerca'); d.showModal ? d.showModal() : d.setAttribute('open', ''); });
+  const lienzo = $('#lienzo');
+  // doble clic del ratón; con el dedo, dos toques cortos y cercanos (el navegador no da dblclick con touch-action: none)
+  lienzo.addEventListener('dblclick', (e) => { e.preventDefault(); elegirEn(e.clientX, e.clientY); });
+  const toque = { t: 0, x: 0, y: 0, abajo: null, n: 0 };
+  lienzo.addEventListener('pointerdown', (e) => {
+    if (NAV.tarjeta) cerrarTarjeta(false);                 // tocar la escena cierra la tarjeta
+    if (e.pointerType === 'mouse') return;
+    toque.n++; toque.abajo = toque.n === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null;
+  });
+  const fin = (e) => {
+    if (e.pointerType === 'mouse') return;
+    const a = toque.abajo; toque.n = Math.max(0, toque.n - 1); toque.abajo = null;
+    if (!a || toque.n) return;
+    const now = performance.now();
+    if (now - a.t > 300 || Math.hypot(e.clientX - a.x, e.clientY - a.y) > 12) { toque.t = 0; return; }   // no fue un toque
+    if (now - toque.t < 350 && Math.hypot(e.clientX - toque.x, e.clientY - toque.y) < 40) { toque.t = 0; elegirEn(e.clientX, e.clientY); return; }
+    toque.t = now; toque.x = e.clientX; toque.y = e.clientY;
+  };
+  lienzo.addEventListener('pointerup', fin); lienzo.addEventListener('pointercancel', (e) => { toque.n = Math.max(0, toque.n - 1); toque.abajo = null; toque.t = 0; });
+  // teclado: con el foco en la escena (no en un control); durante el recorrido, las flechas siguen pasando de paso
+  addEventListener('keydown', (e) => {
+    if (!NAV.mapa || intro || e.altKey || e.ctrlKey || e.metaKey) return;
+    // con el foco en la escena (#lienzo, que se enfoca al tocarla o con Tab) o en ningún control
+    const a = document.activeElement; if (a && a !== document.body && a.id !== 'principal' && a.id !== 'lienzo') return;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key, paso = (e.shiftKey ? 3 : 1) * 60;
+    const flecha = S.paso != null && (k === 'ArrowLeft' || k === 'ArrowRight');
+    const P = { ArrowUp: [0, 1], w: [0, 1], ArrowDown: [0, -1], s: [0, -1], ArrowLeft: [1, 0], a: [1, 0], ArrowRight: [-1, 0], d: [-1, 0] }[k];
+    if (P && !flecha) { controls.pan(P[0] * paso, P[1] * paso); marcarVista(null); NAV.arrastra = false; e.preventDefault(); }
+    else if (k === 'q' || k === 'e') { controls.rotateLeft((k === 'q' ? -1 : 1) * 0.15); marcarVista(null); e.preventDefault(); }
+    else if (k === '+' || k === '=') { controls.dollyIn(1.25); e.preventDefault(); }
+    else if (k === '-' || k === '_') { controls.dollyOut(1.25); e.preventDefault(); }
+    else if (k === 'Home') { volverAl106(); e.preventDefault(); }
+    else return;
+    cerrarOferta(); pararGiro();
+  });
+}
+
 // ---------------- Avisos para lectores de pantalla ----------------
 // #rotulo, #leyenda y #panel-fachada se reescriben con cada minuto simulado. Quedan en silencio (aria-live="off") y solo
 // hablan un momento después de algo que el usuario hizo a propósito: nunca mientras se reproduce o se arrastra la regla.
@@ -699,11 +897,9 @@ function paso(now) {
   if (!moviendo && !intro) {
     if (deslizar) { deslizar.k = Math.min(1, deslizar.k + dtReal / 0.9); controls.target.lerpVectors(deslizar.t0, new THREE.Vector3(...CENTRO), eio(deslizar.k)); if (deslizar.k >= 1) deslizar = null; }
     // la cámara no baja del nivel de los ojos: el ángulo máximo depende de la distancia
-    const d = escena.camera.position.distanceTo(controls.target);
-    controls.maxPolarAngle = Math.acos(THREE.MathUtils.clamp((1.4 - controls.target.y) / d, -1, 1));
-    // la vista aérea de un encuadre está más lejos que el tope de 800 m: desde ahí se puede acercar, no alejar más
-    controls.maxDistance = S.encuadre && d > 800 ? d : 800;
+    limitesCamara();
     controls.update(dt);
+    navegar(dtReal);
   }
 
   escena.setAlejamiento(escena.camera.position.distanceTo(controls.target));
@@ -774,6 +970,7 @@ function paso(now) {
   const dirCam = escena.camera.getWorldDirection(_vd);
   let cerca = Infinity, lejos = -Infinity;
   if (S.encuadre?.foco) { const z = _vt.subVectors(controls.target, escena.camera.position).dot(dirCam); cerca = z - S.encuadre.foco; lejos = z + S.encuadre.foco; }   // un encuadre de la ciudad: nítido alrededor de lo que mira
+  else if (NAV.lejos && !S.encuadre) { const z = _vt.subVectors(controls.target, escena.camera.position).dot(dirCam), f = Math.min(200, Math.max(40, 0.4 * z)); cerca = z - f; lejos = z + f; }   // lejos del 106: nítido alrededor de lo que se mira
   else if (ESQ106) for (const e of ESQ106) { const z = _vt.subVectors(e, escena.camera.position).dot(dirCam); cerca = Math.min(cerca, z); lejos = Math.max(lejos, z); }
   else cerca = lejos = _vt.subVectors(controls.target, escena.camera.position).dot(dirCam);
   cerca = Math.max(0.5, cerca - DOF.margen); lejos = Math.max(cerca + 1, lejos + DOF.margen);
@@ -1341,6 +1538,7 @@ function irAMomento(m) {
     ponerPestana('decadas'); S.momento = S.momento; return;
   }
   explorar(); parar(); S.fecha = { y, m: mo, d }; S.min = m.hora * 60;
+  if (NAV.lejos) volverAl106();                        // los momentos clave son del 106
   const cuando = esAnio ? `${y}` : esMes ? `${MESES[mo - 1]} de ${y}` : `${d} de ${MESES[mo - 1]} de ${y}${/^hora-lluvia/.test(m.id) ? `, de ${hhmm(m.hora * 60 - 60)} a ${hhmm(m.hora * 60)}` : /^hora/.test(m.id) ? ', ' + hhmm(m.hora * 60) : ''}`;
   S.momento = { titulo: m.titulo + ' de la serie', texto: textoMomento(m, cuando) };
   // mes y año: la escena muestra la lluvia del mes; hora y día: el dato de esa hora
@@ -1384,11 +1582,12 @@ function irAAhora(volar = true) {
   const a = ahoraPanama();
   if (volar && S.modo !== 'ahora') {                   // volver a ahora también es un viaje
     // en un encuadre, la cámara se queda en el encuadre y solo vuelve la hora
-    viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: S.fachada || S.encuadre ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null, aAhora: true });
+    // lejos del 106 la cámara se queda donde está: la hora funciona en cualquier lugar de la ciudad
+    viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: S.fachada || S.encuadre || NAV.lejos ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null, aAhora: true });
     return;
   }
   S.modo = 'ahora'; S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min;
-  if (volar && !S.fachada && !S.encuadre) volarA(VISTAS.esquina, 1.6, 'esquina');
+  if (volar && !S.fachada && !S.encuadre && !NAV.lejos) volarA(VISTAS.esquina, 1.6, 'esquina');
   lastLect = '';
 }
 function ponerPestana(t) {
@@ -1569,6 +1768,12 @@ function prepararUI() {
     cerrarOferta(); anunciar();
     const conTarjeta = !(b.dataset.lente === 'partes' && innerWidth <= 760);   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     ponerLente(b.dataset.lente, conTarjeta); if (conTarjeta) soloUnPanel('leyenda');
+    // las formas de ver que miden el 106: lejos, primero se vuelve a él (a la última vista, o a la que la forma de ver pide)
+    if (NAV.lejos && b.dataset.lente !== 'foto') {
+      const v = NAV.vista, alto = VISTAS[v].pos[1];
+      volverAl106(b.dataset.lente === 'sombras' && alto < 30 ? 'planta' : b.dataset.lente === 'partes' && alto > 60 ? 'esquina' : v);
+      return;
+    }
     if (b.dataset.lente === 'sombras' && escena.camera.position.y < 30) volarA(VISTAS.planta, 1.6, 'planta');
     if (b.dataset.lente === 'partes' && escena.camera.position.y > 60) volarA(VISTAS.esquina, 1.6, 'esquina');
   }));
@@ -1586,13 +1791,14 @@ function prepararUI() {
   });
   pintarCiudad();
   prepararEncuadres();
+  prepararNavegar();
   // exposición larga: la alternativa a la noche honesta; se rotula en la escena mientras está activa
   $('#capa-larga').addEventListener('change', (e) => {
     escena.setModoNoche(e.target.checked ? 'larga' : 'honesta');
     const a = $('#aviso-noche'); a.textContent = 'Exposición larga: la escena se aclara como una foto de 20 segundos en trípode'; a.hidden = !e.target.checked;
   });
-  $('#noche-dia').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: 9 * 60, vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
-  $('#noche-atardecer').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: Math.round(saleYPone(S.fecha.y, S.fecha.m, S.fecha.d).pone), vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
+  $('#noche-dia').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: 9 * 60, vista: S.fachada || NAV.lejos ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
+  $('#noche-atardecer').addEventListener('click', () => viajarA({ fecha: { ...S.fecha }, min: Math.round(saleYPone(S.fecha.y, S.fecha.m, S.fecha.d).pone), vista: S.fachada || NAV.lejos ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null }));
   $('#capa-ayudas').addEventListener('change', (e) => { S.ayudas = e.target.checked; });
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
   $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
@@ -1616,7 +1822,7 @@ function prepararUI() {
     if (S.paso != null && !S.viaje) recorrido(null);
     if (dentro && (dentro !== '#recorrido' || S.paso == null)) setTimeout(() => enfocar(abridor), 0);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarTarjeta(true); cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(d[0].h * 60 + d[0].min)}. Ese mediodía, un poste casi no hace sombra.`;
@@ -2001,7 +2207,7 @@ function aplicarPartes() {
 }
 const _pp = new THREE.Vector3(), _pv = new THREE.Vector3();
 // paneles de la interfaz que las etiquetas no deben tapar ni quedar debajo
-const OBSTACULOS = ['#brujula', '#mirando', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#confort', '#panel-fachada', '#qr', '#aviso.ver', '#rotulo', '.pista', '#viaje', '#aviso-noche'];
+const OBSTACULOS = ['#brujula', '#mirando', '#lejos', '#tarjeta-edificio', '#pista-navegar', '.vistas', '.lentes', '#leyenda', '#dock', '#recorrido', '#oferta-recorrido', '#sirve', '#ir-a', '#capas', '#confort', '#panel-fachada', '#qr', '#aviso.ver', '#rotulo', '.pista', '#viaje', '#aviso-noche'];
 /** Rectángulos (con 6 px de margen) de la barra de arriba y de los paneles visibles. Casi todos son position: fixed, así que
  *  offsetParent no sirve para saber si se ven: un panel oculto (display: none) da un rectángulo vacío. */
 function rectsUI(W) {
@@ -2611,6 +2817,7 @@ async function abrirConfort(abrir) {
   if (!abrir) return;
   pedirSerie();
   cerrarOferta(); abrirVoladizo(false); soloUnPanel('confort');
+  if (NAV.lejos) volverAl106();                        // Confort habla de las fachadas del 106
   if (!confortJ) {
     try { confortJ = await (await fetch(conVersion(BASE + 'datos/confort.json'))).json(); }
     catch (e) { anotar('aviso', 'confort: ' + e); $('#carta-cifras').textContent = 'No se pudieron cargar los datos de confort.'; return; }

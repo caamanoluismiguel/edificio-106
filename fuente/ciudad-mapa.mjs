@@ -48,7 +48,8 @@ for (const e of E) {
   if (e.resultado?.cumbrera) alto = e.resultado.cumbrera;
   else if (e.modelo === 'cuartel106' || e.modelo === 'el 106 (modelo propio)') alto = 15.7;
   else { const ob = !b?.niveles && OB[e.osm_id]?.cubre >= 0.6 ? OB[e.osm_id] : null; alto = ob ? ob.p90 : (b?.niveles ?? 2) * PISO + BASE; }
-  edificios.push({ n: e.numero ?? null, t: e.tipologia ?? null, c: e.clase_certeza, m: e.modelo, y0: r1(y0), h: r1(alto), p: P });
+  // k: con la ciudad apagada, en su lugar queda una copia reducida del 106 (contexto.glb)
+  edificios.push({ n: e.numero ?? null, t: e.tipologia ?? null, c: e.clase_certeza, m: e.modelo, ...(e.en_contexto ? { k: 1 } : {}), y0: r1(y0), h: r1(alto), p: P });
 }
 
 // suelo cada PASO m en la caja del límite más 400 m (el borde blando y la cámara alejada)
