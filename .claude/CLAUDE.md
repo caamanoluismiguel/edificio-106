@@ -101,6 +101,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 
 - **Entorno (`contexto.glb`):** se rehace con `node contexto.mjs` (ver README, «El entorno»). Una malla grande pierde precisión al cuantizar (17 cm en 6 km): lo cercano va en mallas propias. `dedup` funde materiales iguales aunque cambie el nombre. En WebGPU no cambiar `mesh.geometry` de algo ya dibujado. Los barcos son ilustrativos (1 cada 2 h por vía).
 - Los `.bin.gz` se sirven como `application/gzip` sin `Content-Encoding`, y la app los abre con `DecompressionStream`. Las rutas son siempre relativas (`/edificio-106/`).
+- **Navegación libre (`src/navegar.js`):** usa `datos/ciudad_mapa.json` (límite, suelo con los nudos de la rejilla de la escena y huellas con número, tipo y certeza). Se rehace con `cd fuente && node ciudad-mapa.mjs` cada vez que cambian `docs/ciudad/edificios.json`, el límite o el terreno. Decisiones en `~/projects/edificio-106-ciudad-revision/navegacion/PANEL.md`.
 - `?prueba` expone `window.__e106` y `?rapido` acorta la intro. En las capturas, fijar el momento (`#m-…`) y esperar a que aparezca la fecha.
 - La comprobación 5 («en reposo») toma el peor cuadro: no es fps. Nunca correr dos pruebas de rendimiento en paralelo.
 - El stash de git es compartido entre worktrees. Nada de `git stash` a secas: se usa un commit temporal.

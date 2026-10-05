@@ -526,6 +526,7 @@ function volarA(v, dur = 1.6, clave = null, avisar = true) {
   marcarVista(clave);
   // de un lugar de la ciudad a otro (el punto que se mira se corre más de 120 m), el mismo vuelo de los encuadres: la cámara sube y
   // pasa por encima. Entre las vistas del 106 (fachadas y corte incluidos) el punto que se mira se corre menos de 46 m: esos vuelos no cambian
+  extra.largo = NAV.lejos || t0.distanceTo(t1) > 120;
   if (extra.arco === undefined && t0.distanceTo(t1) > 120) { const dist = p0.distanceTo(p1); extra.arco = Math.min(350, dist * 0.3); dur = Math.max(dur, Math.min(3.4, 1.4 + dist / 700)); }
   if (p0.distanceTo(p1) < 0.6 && t0.distanceTo(t1) < 0.6) {           // ya estás ahí: un pequeño empujón para que se note
     if (clave && avisar) aviso(`Ya estás en la vista ${clave === 'aerea' ? 'aérea' : clave}.`, 1600);
@@ -549,9 +550,11 @@ function pasoCamara(dt) {
   controls.target.lerpVectors(a.t0, a.t1, e);
   if (a.fov0 !== a.fov1) { escena.camera.fov = a.fov0 + (a.fov1 - a.fov0) * e; escena.camera.updateProjectionMatrix(); }
   escena.camera.lookAt(controls.target);
-  // al llegar: el punto que se mira y su altura sobre el suelo se toman de nuevo (navegar no corre durante el vuelo), y los límites de
-  // la cámara son los de la pose de llegada (antes quedaban los de la salida: la Esquina, viniendo de la Planta, llegaba a 5,7 m de altura)
-  if (a.k >= 1) { cam.anim = null; NAV.tx = NAV.tz = NAV.hs = null; controls.enabled = !intro; limitesCamara(); controls.update(); a.alLlegar?.(); }
+  // al llegar: el punto que se mira y su altura sobre el suelo se toman de nuevo (navegar no corre durante el vuelo). Después de un
+  // vuelo largo o que sale de lejos del 106, los límites de la cámara son los de la pose de llegada (los de la salida dependen del
+  // suelo lejano: la Esquina llegaba a casi 5 m de altura). Entre las vistas del 106 queda como en main, que usa los de la salida
+  // (la Esquina, viniendo de la Planta, llega a 5,7 m: pendiente de decidir con LM)
+  if (a.k >= 1) { cam.anim = null; NAV.tx = NAV.tz = NAV.hs = null; controls.enabled = !intro; if (a.largo) limitesCamara(); else estarLejos(); controls.update(); a.alLlegar?.(); }
   return true;
 }
 // al empezar a girar desde la esquina, el pivote se desliza al centro del edificio

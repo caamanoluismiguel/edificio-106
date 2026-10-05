@@ -39922,7 +39922,7 @@ function gq(e, t = 1.6, n = null, r = !0) {
 		arco: e.arco,
 		alLlegar: e.alLlegar
 	};
-	if (e.encuadre && (DK.maxDistance = Math.max(800, o.distanceTo(s))), vq(n), c.arco === void 0 && a.distanceTo(s) > 120) {
+	if (e.encuadre && (DK.maxDistance = Math.max(800, o.distanceTo(s))), vq(n), c.largo = Nq.lejos || a.distanceTo(s) > 120, c.arco === void 0 && a.distanceTo(s) > 120) {
 		let e = i.distanceTo(o);
 		c.arco = Math.min(350, e * .3), t = Math.max(t, Math.min(3.4, 1.4 + e / 700));
 	}
@@ -39960,7 +39960,7 @@ function yq(e) {
 	if (!t) return !1;
 	t.k = Math.min(1, t.k + e / t.dur);
 	let n = sK(t.k);
-	return t.clave && document.querySelector(`.vistas [data-vista="${t.clave}"]`)?.style.setProperty("--p", n.toFixed(3)), $.camera.position.lerpVectors(t.p0, t.p1, n), $.camera.position.y += Math.sin(Math.PI * n) * (t.arco ?? Math.min(30, t.p0.distanceTo(t.p1) * .18)), DK.target.lerpVectors(t.t0, t.t1, n), t.fov0 !== t.fov1 && ($.camera.fov = t.fov0 + (t.fov1 - t.fov0) * n, $.camera.updateProjectionMatrix()), $.camera.lookAt(DK.target), t.k >= 1 && (NK.anim = null, Nq.tx = Nq.tz = Nq.hs = null, DK.enabled = !AK, Sq(), DK.update(), t.alLlegar?.()), !0;
+	return t.clave && document.querySelector(`.vistas [data-vista="${t.clave}"]`)?.style.setProperty("--p", n.toFixed(3)), $.camera.position.lerpVectors(t.p0, t.p1, n), $.camera.position.y += Math.sin(Math.PI * n) * (t.arco ?? Math.min(30, t.p0.distanceTo(t.p1) * .18)), DK.target.lerpVectors(t.t0, t.t1, n), t.fov0 !== t.fov1 && ($.camera.fov = t.fov0 + (t.fov1 - t.fov0) * n, $.camera.updateProjectionMatrix()), $.camera.lookAt(DK.target), t.k >= 1 && (NK.anim = null, Nq.tx = Nq.tz = Nq.hs = null, DK.enabled = !AK, t.largo ? Sq() : Iq(), DK.update(), t.alLlegar?.()), !0;
 }
 var bq = null;
 function xq() {
