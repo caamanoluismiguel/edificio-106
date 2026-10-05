@@ -696,7 +696,8 @@ export class Escena {
         o.castShadow = (nombre !== 'contexto' || vecino) && (!tejas || livianas); o.receiveShadow = true;
         if (o.castShadow) o.layers.enable(1);
         // con la sombra gruesa de la ciudad, los demás edificios del contexto (cajas grises, volúmenes hechos a mano, copias del
-        // 106) la proyectan solo en ese mapa: capa 2, que la cámara de la sombra fina no ve. El suelo, las calles y el agua, no
+        // 106) la proyectan solo en ese mapa: capa 2, que la cámara de la sombra fina no ve. El mapa grueso cubre la caja de la
+        // ciudad (cajaSombra): lo de más allá de Ciudad del Saber queda fuera y no proyecta. El suelo, las calles y el agua, no
         else if (this.sunG && nombre === 'contexto' && !SUELO_CONTEXTO.test(o.material?.name || '')) { o.castShadow = true; o.layers.enable(CAPA_GRUESA); }
         o.material = this.#material(o.material, nombre, idx, uMin, uMax, texG);
         materiales.push(o.material);
