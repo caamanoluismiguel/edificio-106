@@ -124,6 +124,8 @@ async function abrir(nav, url) {
   await pg.goto(url, { waitUntil: 'load' });
   await pg.waitForFunction(() => window.__e106?.escena?.cargado && window.__e106base && !window.__e106base.intro && document.documentElement.classList.contains('listo')
     && !document.documentElement.classList.contains('en-intro') && window.__e106.clima?.horario, null, { timeout: 180000, polling: 250 });
+  // la ciudad llega después del 106 (encendida por defecto desde feat/ciudad-motor; main no la tiene y esto no espera nada)
+  await pg.evaluate(() => Promise.race([window.__e106.escena.cargaCiudad, new Promise((ok) => setTimeout(ok, 120000))]));
   await esperar(2500);
   return { ctx, pg, errores };
 }
@@ -186,9 +188,10 @@ if (SOLO.includes('imagen')) {
       const { png: a, pose } = await capturar(A.pg, c), { png: b } = await capturar(B.pg, c, pose);
       const r = await comparar(a, b);
       const ok = !r.distintoTamano && r.px <= MAX_PX;
+      // --todos: guarda antes y después también de los casos iguales (para armar una línea base nueva)
+      if (!ok || ARGS.includes('--todos')) { fs.writeFileSync(path.join(SALIDA, `${c.id}-antes.png`), a); fs.writeFileSync(path.join(SALIDA, `${c.id}-despues.png`), b); }
       if (!ok) {
         falla = true;
-        fs.writeFileSync(path.join(SALIDA, `${c.id}-antes.png`), a); fs.writeFileSync(path.join(SALIDA, `${c.id}-despues.png`), b);
         if (r.mapa) fs.writeFileSync(path.join(SALIDA, `${c.id}-diferencias.png`), r.mapa);
       }
       const { mapa, ...dato } = r;

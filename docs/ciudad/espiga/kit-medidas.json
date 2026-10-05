@@ -1,0 +1,860 @@
+{
+ "medidas106": {
+  "planta": {
+   "largo": 45.5,
+   "ancho": 23.003,
+   "fuente": "arquitectura.glb · nodo «Warm lime-painted plaster» (caja en x y z)"
+  },
+  "muroArriba": {
+   "y": 11.599,
+   "fuente": "arquitectura.glb · nodo «Warm lime-painted plaster» (y máxima)"
+  },
+  "base": {
+   "y": 0.65,
+   "fuente": "arquitectura.glb · nodo «V014 muted interior floor» (losa del piso 1)"
+  },
+  "piso": {
+   "m": 3.649,
+   "losas": [
+    0.65,
+    4.301,
+    7.949
+   ],
+   "fuente": "arquitectura.glb · nodo «V014 muted interior floor» (losas a 0.65 · 4.301 · 7.949 m)"
+  },
+  "alero": {
+   "vuelo": 1.65,
+   "vueloCorto": 1.647,
+   "sofitoPlano": [
+    3.734,
+    7.386,
+    11.035
+   ],
+   "fuente": "cubiertas.glb · nodo «Dark stained roof timber» (sofito plano: n.y < −0,995; borde x ±24.40, z ±13.15)"
+  },
+  "techo": {
+   "pendiente": 17.804,
+   "yAlero": 11.148,
+   "yCumbrera": 15.643,
+   "sofitoAlero": 11.101,
+   "forma": "cuatro aguas",
+   "fuente": "cubiertas.glb · nodo «Dark stained roof timber», caras que miran arriba sobre 11 m (pendiente media ponderada por área; y mín = canto del alero, y máx = cumbrera)"
+  },
+  "mediagua": {
+   "pendiente": 17.9,
+   "pendientes": [
+    17.86,
+    17.939
+   ],
+   "yBorde": [
+    3.851,
+    7.499
+   ],
+   "sofitoBorde": 3.797,
+   "fuente": "cubiertas.glb · nodo «Dark stained roof timber», caras que miran arriba entre 3,5 y 5 m y entre 7 y 8,5 m",
+   "frenteTeja": {
+    "y0": 3.864,
+    "y1": 3.987,
+    "alto": 0.124,
+    "fuente": "cubiertas.glb · nodos «Clay terracotta 00…08», vértices a menos de 0,2 m del borde de la mediagua del piso 1 (SE)"
+   }
+  },
+  "vanos": {
+   "modulo": 6.69,
+   "bordesQueCoinciden": 42,
+   "errorMedio": 0.012,
+   "bordesX": [
+    -22.05,
+    -21.301,
+    -20.551,
+    -19.155,
+    -18.082,
+    -18.037,
+    -16.963,
+    -16.535,
+    -15.462,
+    -15.417,
+    -14.344,
+    -12.455,
+    -11.382,
+    -11.338,
+    -10.264,
+    -9.836,
+    -8.762,
+    -8.718,
+    -7.645,
+    -5.756,
+    -4.682,
+    -4.638,
+    -3.565,
+    -3.134,
+    -2.06,
+    -2.019,
+    -0.946,
+    0.946,
+    2.019,
+    2.06,
+    3.134,
+    3.565,
+    4.638,
+    4.682,
+    5.756,
+    7.645,
+    8.718,
+    8.762,
+    9.836,
+    10.264,
+    11.338,
+    11.382,
+    12.455,
+    14.344,
+    15.417,
+    15.462,
+    16.535,
+    16.963,
+    18.037,
+    18.082,
+    19.155,
+    20.551,
+    21.301,
+    22.05
+   ],
+   "vidrioY": [
+    1.82,
+    2.56,
+    2.6,
+    3.37,
+    5.62,
+    6.33,
+    6.38,
+    7.12,
+    9.27,
+    9.98,
+    10.03,
+    10.77
+   ],
+   "fuente": "arquitectura.glb · nodos «V014 physical clear glass 0/1/2», fachada SE (z > 11,3): bordes de los paños en x y en y"
+  },
+  "rejillaZocalo": {
+   "y0": 0.222,
+   "y1": 0.578,
+   "fuente": "detalles.glb · nodo «Weathered blue-grey louvre» (rejillas de ventilación del zócalo)"
+  },
+  "mensula": {
+   "ancho": 0.26,
+   "perfil": [
+    [
+     1.466,
+     -0.462
+    ],
+    [
+     1.449,
+     -0.592
+    ],
+    [
+     0.98,
+     -0.701
+    ],
+    [
+     0.606,
+     -0.919
+    ],
+    [
+     0.296,
+     -1.229
+    ]
+   ],
+   "niveles": "bajo cada mediagua y bajo el alero del techo (y 3,07 a 3,84 · 6,72 a 7,49 · 10,37 a 11,14)",
+   "fuente": "detalles.glb · nodo «Fresh cream trim», piezas de la fachada SE (z > 11,52) junto a x = 3,35; perfil = (distancia al muro, altura sobre la losa del piso 2)"
+  },
+  "mediaguaPiezas": {
+   "tablero": {
+    "espesor": 0.054,
+    "fuente": "cubiertas.glb · «Dark stained roof timber»: canto (cara de arriba) menos sofito (cara de abajo) en el borde"
+   },
+   "teja": {
+    "sobreTablero": 0.084,
+    "mediana": 0.043,
+    "fuente": "cubiertas.glb · «Clay terracotta 00…08», SE bajo 5 m entre 0,1 y 1,5 m del muro: altura sobre el plano del tablero (p95 y mediana)"
+   },
+   "fascia": {
+    "y0": -0.567,
+    "y1": -0.427,
+    "espesor": 0.098,
+    "vuelo": 1.647,
+    "fuente": "cubiertas.glb · «Dark stained roof timber», tabla de borde de la mediagua del piso 1 (SE, a más de 1,5 m del muro, entre 3,5 y 4,2 m)"
+   },
+   "fasciaTecho": {
+    "y0": -0.564,
+    "y1": -0.424,
+    "vuelo": 1.647,
+    "fuente": "la misma tabla en el alero del techo, relativa al remate del muro"
+   },
+   "viguetas": {
+    "n": 70,
+    "paso": 0.65,
+    "ancho": 0.074,
+    "y0": -0.483,
+    "y1": -0.374,
+    "desdeMuro": -0.088,
+    "hasta": 1.563,
+    "primera": 0.324,
+    "fuente": "detalles.glb · «Dark stained roof timber», piezas horizontales bajo la mediagua del piso 1 (SE): caja de cada una (medianas), paso = mediana entre centros"
+   },
+   "viguetasTecho": {
+    "n": 70,
+    "paso": 0.65,
+    "ancho": 0.074,
+    "y0": -0.482,
+    "y1": -0.373,
+    "desdeMuro": -0.088,
+    "hasta": 1.563,
+    "primera": 0.324,
+    "fuente": "las mismas bajo el alero del techo, relativas al remate del muro"
+   },
+   "solera": {
+    "y0": -0.035,
+    "y1": 0.235,
+    "espesor": 0.027,
+    "fuente": "detalles.glb · «Dark stained roof timber», tabla pegada al muro bajo la mediagua del piso 1 (SE)"
+   },
+   "mensulas": {
+    "x": [
+     -22.45,
+     -16.751,
+     -10.049,
+     -3.35,
+     3.352,
+     10.05,
+     16.751,
+     22.451
+    ],
+    "fachadaSE": 45.5,
+    "fuente": "detalles.glb · «Fresh cream trim», centros de las ménsulas bajo la mediagua del piso 1 (SE): una por módulo y una a 0,30 m de cada esquina"
+   }
+  },
+  "fasciaAtico": {
+   "y0": 11.784,
+   "y1": 12.035,
+   "retiro": 0.38,
+   "fuente": "cubiertas.glb · nodo «Clay-colored vertical attic fascia» (caja)"
+  },
+  "materiales": {
+   "muro": {
+    "nombre": "Warm lime-painted plaster",
+    "glb": "arquitectura.glb",
+    "color": [
+     0.733,
+     0.745,
+     0.704,
+     1
+    ],
+    "rugosidad": 0.84,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "moldura": {
+    "nombre": "Fresh cream trim",
+    "glb": "detalles.glb",
+    "color": [
+     0.772,
+     0.774,
+     0.728,
+     1
+    ],
+    "rugosidad": 0.84,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "teja": {
+    "nombre": "Clay terracotta 04",
+    "glb": "cubiertas.glb",
+    "color": [
+     0.129,
+     0.032,
+     0.016,
+     1
+    ],
+    "rugosidad": 0.75,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "mediagua": {
+    "nombre": "Clay terracotta 04",
+    "glb": "cubiertas.glb",
+    "color": [
+     0.129,
+     0.032,
+     0.016,
+     1
+    ],
+    "rugosidad": 0.75,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "vidrio": {
+    "nombre": "V014 physical clear glass 0",
+    "glb": "arquitectura.glb",
+    "color": [
+     0.989,
+     0.995,
+     0.992,
+     1
+    ],
+    "rugosidad": 0.75,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": true,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "celosia": {
+    "nombre": "Weathered blue-grey louvre",
+    "glb": "detalles.glb",
+    "color": [
+     0.26,
+     0.33,
+     0.34,
+     1
+    ],
+    "rugosidad": 0.38,
+    "metalicidad": 0.32,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "madera": {
+    "nombre": "Dark stained roof timber",
+    "glb": "cubiertas.glb",
+    "color": [
+     0.1,
+     0.063,
+     0.037,
+     1
+    ],
+    "rugosidad": 0.74,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "ventilacion": {
+    "nombre": "Dark ventilation recess",
+    "glb": "cubiertas.glb",
+    "color": [
+     0.013,
+     0.019,
+     0.014,
+     1
+    ],
+    "rugosidad": 0.95,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   },
+   "servicio": {
+    "nombre": "Brown painted service access",
+    "glb": "detalles.glb",
+    "color": [
+     0.13,
+     0.054,
+     0.03,
+     1
+    ],
+    "rugosidad": 0.74,
+    "metalicidad": 0,
+    "extras": {
+     "leaf": false,
+     "glass": false,
+     "image": null,
+     "ground_uv": null
+    }
+   }
+  }
+ },
+ "kit": {
+  "base": 0.65,
+  "piso": 3.649,
+  "vuelo": 1.65,
+  "techo": {
+   "pendiente": 17.804,
+   "canto": -0.4510000000000005,
+   "sofito": -0.49799999999999933
+  },
+  "mediagua": {
+   "pendiente": 17.9,
+   "canto": -0.4500000000000002,
+   "sofito": -0.504,
+   "faja": -0.5670000000000002
+  },
+  "ventana": {
+   "alto": 1.55,
+   "antepecho": [
+    1.17,
+    1.319,
+    1.321
+   ]
+  },
+  "modulo": 6.69,
+  "par": 2.2,
+  "machonChico": 0.5,
+  "machonGrande": 1.8,
+  "rejilla": [
+   0.222,
+   0.578
+  ],
+  "pieza": {
+   "tablero": {
+    "espesor": 0.054,
+    "fuente": "cubiertas.glb · «Dark stained roof timber»: canto (cara de arriba) menos sofito (cara de abajo) en el borde"
+   },
+   "teja": {
+    "sobreTablero": 0.084,
+    "mediana": 0.043,
+    "fuente": "cubiertas.glb · «Clay terracotta 00…08», SE bajo 5 m entre 0,1 y 1,5 m del muro: altura sobre el plano del tablero (p95 y mediana)"
+   },
+   "fascia": {
+    "y0": -0.567,
+    "y1": -0.427,
+    "espesor": 0.098,
+    "vuelo": 1.647,
+    "fuente": "cubiertas.glb · «Dark stained roof timber», tabla de borde de la mediagua del piso 1 (SE, a más de 1,5 m del muro, entre 3,5 y 4,2 m)"
+   },
+   "fasciaTecho": {
+    "y0": -0.564,
+    "y1": -0.424,
+    "vuelo": 1.647,
+    "fuente": "la misma tabla en el alero del techo, relativa al remate del muro"
+   },
+   "viguetas": {
+    "n": 70,
+    "paso": 0.65,
+    "ancho": 0.074,
+    "y0": -0.483,
+    "y1": -0.374,
+    "desdeMuro": -0.088,
+    "hasta": 1.563,
+    "primera": 0.324,
+    "fuente": "detalles.glb · «Dark stained roof timber», piezas horizontales bajo la mediagua del piso 1 (SE): caja de cada una (medianas), paso = mediana entre centros"
+   },
+   "viguetasTecho": {
+    "n": 70,
+    "paso": 0.65,
+    "ancho": 0.074,
+    "y0": -0.482,
+    "y1": -0.373,
+    "desdeMuro": -0.088,
+    "hasta": 1.563,
+    "primera": 0.324,
+    "fuente": "las mismas bajo el alero del techo, relativas al remate del muro"
+   },
+   "solera": {
+    "y0": -0.035,
+    "y1": 0.235,
+    "espesor": 0.027,
+    "fuente": "detalles.glb · «Dark stained roof timber», tabla pegada al muro bajo la mediagua del piso 1 (SE)"
+   },
+   "mensulas": {
+    "x": [
+     -22.45,
+     -16.751,
+     -10.049,
+     -3.35,
+     3.352,
+     10.05,
+     16.751,
+     22.451
+    ],
+    "fachadaSE": 45.5,
+    "fuente": "detalles.glb · «Fresh cream trim», centros de las ménsulas bajo la mediagua del piso 1 (SE): una por módulo y una a 0,30 m de cada esquina"
+   }
+  },
+  "mensula": {
+   "ancho": 0.26,
+   "arriba": -0.462,
+   "perfil": [
+    [
+     0.296,
+     -0.767
+    ],
+    [
+     0.606,
+     -0.457
+    ],
+    [
+     0.98,
+     -0.239
+    ],
+    [
+     1.449,
+     -0.13
+    ],
+    [
+     1.466,
+     0
+    ]
+   ]
+  },
+  "frenteTeja": 0.124,
+  "fascia": {
+   "y0": 0.185,
+   "y1": 0.436,
+   "retiro": 0.38
+  }
+ },
+ "partes": {
+  "muro": 0,
+  "moldura": 1,
+  "teja": 2,
+  "mediagua": 3,
+  "vidrio": 4,
+  "celosia": 5,
+  "madera": 6,
+  "fascia": 7,
+  "ventilacion": 8,
+  "servicio": 9
+ },
+ "heroe101": {
+  "id": 386353666,
+  "num": "101",
+  "pisos": 3,
+  "detalle": "alto",
+  "fuentePisos": "Street View nov 2022: planta baja elevada y dos pisos con mediagua",
+  "basamento": 1.9,
+  "ventanas": {
+   "tipo": "banda",
+   "retiro": 0.3
+  },
+  "rejilla": {
+   "parte": "servicio",
+   "bajoBandas": true,
+   "y": [
+    0.25,
+    0.8
+   ]
+  },
+  "pabellones": [
+   {
+    "lado": "NO",
+    "desdeExtremo": "NE",
+    "distancia": 8,
+    "ancho": 9,
+    "fondo": 4,
+    "pisos": 1,
+    "abierto": true,
+    "vuelo": 0.4,
+    "techo": {
+     "forma": "cuatro aguas"
+    }
+   }
+  ],
+  "techo": {
+   "pendiente": 26.565,
+   "desdeMuro": true
+  },
+  "hastial": {
+   "extremo": "SO",
+   "ancho": 4.9,
+   "pendiente": 37,
+   "sobreCumbrera": 0.3,
+   "largo": 6,
+   "remate": 0.4
+  }
+ },
+ "resumen": {
+  "heroe": {
+   "osm": 386353666,
+   "vertices": 4,
+   "techo": "esqueleto",
+   "cumbrera": 17.946,
+   "cumbreraTecho": 17.646,
+   "pendienteTecho": 26.565,
+   "muro": 12.847,
+   "triangulos": 13820,
+   "partes": {
+    "muro": 536,
+    "moldura": 5374,
+    "vidrio": 120,
+    "servicio": 40,
+    "mediagua": 32,
+    "madera": 7694,
+    "teja": 22,
+    "ventilacion": 2
+   },
+   "aoAlturas": [
+    5.634,
+    9.283,
+    12.932
+   ],
+   "pabellones": [
+    {
+     "cumbrera": 6.52
+    }
+   ],
+   "hastial": {
+    "pico": 17.946,
+    "base": 16.1
+   }
+  },
+  "prueba": [
+   {
+    "osm": 387400205,
+    "num": "115",
+    "pisos": 1,
+    "p90OpenBuildings": 5.5,
+    "techo": "esqueleto",
+    "medio": 118,
+    "lejos": 22,
+    "distancia106": 192.4
+   },
+   {
+    "osm": 353913256,
+    "num": "128",
+    "pisos": 2,
+    "p90OpenBuildings": 13.5,
+    "techo": "esqueleto",
+    "medio": 291,
+    "lejos": 29,
+    "distancia106": 447
+   },
+   {
+    "osm": 353913255,
+    "num": "129",
+    "pisos": 3,
+    "p90OpenBuildings": 14.5,
+    "techo": "esqueleto",
+    "medio": 398,
+    "lejos": 22,
+    "distancia106": 454.1
+   },
+   {
+    "osm": 380913418,
+    "num": "222",
+    "pisos": 3,
+    "p90OpenBuildings": 15,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 744.2
+   },
+   {
+    "osm": 380913419,
+    "num": "223",
+    "pisos": 3,
+    "p90OpenBuildings": 15.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 795.7
+   },
+   {
+    "osm": 380913420,
+    "num": "224",
+    "pisos": 3,
+    "p90OpenBuildings": 18,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 848.6
+   },
+   {
+    "osm": 380913421,
+    "num": "225",
+    "pisos": 3,
+    "p90OpenBuildings": 17,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 894.1
+   },
+   {
+    "osm": 387400207,
+    "num": "227",
+    "pisos": 3,
+    "p90OpenBuildings": 15.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 941.6
+   },
+   {
+    "osm": 387400208,
+    "num": "228",
+    "pisos": 3,
+    "p90OpenBuildings": 17.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 956.8
+   },
+   {
+    "osm": 620904395,
+    "num": "230",
+    "pisos": 3,
+    "p90OpenBuildings": 15.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 913.1
+   },
+   {
+    "osm": 387425207,
+    "num": "231",
+    "pisos": 2,
+    "p90OpenBuildings": 12,
+    "techo": "esqueleto",
+    "medio": 254,
+    "lejos": 22,
+    "distancia106": 854.2
+   },
+   {
+    "osm": 620904481,
+    "num": "232",
+    "pisos": 2,
+    "p90OpenBuildings": 13.5,
+    "techo": "esqueleto",
+    "medio": 254,
+    "lejos": 22,
+    "distancia106": 788.8
+   },
+   {
+    "osm": 353913896,
+    "num": "233",
+    "pisos": 2,
+    "p90OpenBuildings": 11.5,
+    "techo": "esqueleto",
+    "medio": 254,
+    "lejos": 22,
+    "distancia106": 729.2
+   },
+   {
+    "osm": 353913898,
+    "num": "234",
+    "pisos": 3,
+    "p90OpenBuildings": 15.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 670.2
+   },
+   {
+    "osm": 353913355,
+    "num": "235",
+    "pisos": 3,
+    "p90OpenBuildings": 15.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 610.4
+   },
+   {
+    "osm": 353913897,
+    "num": "237",
+    "pisos": 2,
+    "p90OpenBuildings": 13.5,
+    "techo": "esqueleto",
+    "medio": 254,
+    "lejos": 22,
+    "distancia106": 493.5
+   },
+   {
+    "osm": 294447209,
+    "num": "239",
+    "pisos": 3,
+    "p90OpenBuildings": 15.5,
+    "techo": "esqueleto",
+    "medio": 374,
+    "lejos": 22,
+    "distancia106": 496.8
+   },
+   {
+    "osm": 380913428,
+    "num": "247",
+    "pisos": 1,
+    "p90OpenBuildings": 7.5,
+    "techo": "esqueleto",
+    "medio": 126,
+    "lejos": 22,
+    "distancia106": 980.6
+   },
+   {
+    "osm": 294447900,
+    "num": "",
+    "pisos": 1,
+    "p90OpenBuildings": 7,
+    "techo": "esqueleto",
+    "medio": 126,
+    "lejos": 22,
+    "distancia106": 318.6
+   },
+   {
+    "osm": 300885894,
+    "num": "",
+    "pisos": 1,
+    "p90OpenBuildings": 6.5,
+    "techo": "esqueleto",
+    "medio": 126,
+    "lejos": 22,
+    "distancia106": 163.4
+   },
+   {
+    "osm": 753443423,
+    "num": "",
+    "pisos": 1,
+    "p90OpenBuildings": 5.5,
+    "techo": "esqueleto",
+    "medio": 118,
+    "lejos": 22,
+    "distancia106": 423.8
+   },
+   {
+    "osm": 1280703663,
+    "num": "",
+    "pisos": 2,
+    "p90OpenBuildings": 13.5,
+    "techo": "esqueleto",
+    "medio": 222,
+    "lejos": 22,
+    "distancia106": 1018
+   }
+  ],
+  "triangulos": {
+   "alto": 13820,
+   "medio": 6281,
+   "lejos": 491
+  }
+ },
+ "glbKB": 392
+}

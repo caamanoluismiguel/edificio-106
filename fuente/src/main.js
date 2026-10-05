@@ -158,6 +158,9 @@ let visto = false; try { visto = localStorage.getItem('e106-visto') === '1'; } c
 // «Saltar» pulsado antes de que empiece la intro: se recuerda y la intro arranca ya en su final
 let saltoPendiente = false, alSaltar = () => {};
 const pSalto = new Promise((ok) => { alSaltar = ok; });
+// la ciudad llega cuando terminó la intro (Escena.arrancarCiudad): no compite con el armado del 106
+let alTerminarIntro = () => {};
+const pFinIntro = new Promise((ok) => { alTerminarIntro = ok; });
 
 // ---------------- Arranque ----------------
 async function arrancar() {
@@ -186,6 +189,8 @@ async function arrancar() {
   }
   document.documentElement.dataset.backend = escena.backend;
   $('#motor').textContent = escena.backend;
+  // rama feat/ciudad: ?medir=1 muestra la lectura de rendimiento para medir en el teléfono (src/medir.js)
+  if (/[?&]medir=1(&|$)/.test(location.search)) import('./medir.js').then((m) => m.medir(escena)).catch((e) => console.warn('medir', e));
   vigilarGPU();
   const cam0 = new THREE.Vector3(...ESQUINA.pos).add(new THREE.Vector3(22, 13, 15));
   escena.camera.position.copy(cam0); escena.camera.lookAt(...ESQUINA.tgt);
@@ -207,6 +212,8 @@ async function arrancar() {
     if (T) estadoCarga(`Modelo · ${f1(L / 1e6)} MB`);
     if (l === 1 && t === 1) compilarPronto();
   });
+  escena.alCambiarCiudad = pintarCiudad;
+  pModelo.then(() => escena.arrancarCiudad(pFinIntro));
   clima.cargarAjuste(conVersion(BASE + 'datos/ajuste_albrook.json')).then(() => { lastLect = ''; if (clima.ok) pintarMomentos(); });
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
   fetch(conVersion(BASE + 'datos/consultas.json')).then((r) => r.json()).then((j) => { consultas = j; pintarConsultas(); pintarRadiacion(); lastLect = ''; }).catch((e) => anotar('aviso', 'consultas: ' + e));
@@ -322,6 +329,7 @@ function pasoIntro(dt) {
 
 function terminarIntro() {
   intro = null;
+  alTerminarIntro();
   U.build.value = 8.4; U.mat.value = 1; U.puntos.value = 0; U.junta.value = 1;
   escena.camera.filmOffset = 0; escena.camera.updateProjectionMatrix();
   escena.liberarParticulas();
@@ -753,6 +761,8 @@ function vigilarNivel(iv, previo) {
 function medirCuadro(now, dtReal) {
   const iv = dtReal * 1000, previo = S.dibujoPrevio; S.dibujoPrevio = true;
   vigilarNivel(iv, previo);
+  // vigía de la ciudad: los mismos cuadros que mira vigilarNivel (seguidos, sin intro, viaje, carga ni página oculta)
+  if (previo && !intro && !S.viaje && escena.cargado && !escena.compilando && document.visibilityState === 'visible') escena.cuadroCiudad(iv);
   if (RES.fija) { if (Math.abs(escena.renderer.getPixelRatio() - escena.dprMax()) > 0.01) { escena.fijarResolucion(escena.dprMax()); pintarResolucion(); } return; }
   if (!previo || intro || S.viaje || iv > 90 || document.visibilityState !== 'visible') return;
   RES.iv.push(iv); if (RES.iv.length < 50) return;
@@ -764,6 +774,16 @@ function medirCuadro(now, dtReal) {
     if (d + 0.1 >= RES.techo - 0.001 && now - RES.tTecho < 30000) return;    // no volver en seguida al nivel que ya pesó
     escena.fijarResolucion(Math.min(max, d + 0.1)); pintarResolucion();
   }
+}
+/** La capa «Ciudad del Saber (aproximada)»: marcada si se ve, y una nota corta si el equipo la lleva con menos. */
+function pintarCiudad() {
+  const c = $('#capa-ciudad'), nota = $('#ciudad-estado'); if (!c || !escena) return;
+  c.closest('label').hidden = /[?&]ligero/.test(location.search);       // ?ligero no trae ni el entorno
+  const o = escena.ciudadOpc, oculta = !o || o.nivel === 'oculta' || escena.ciudadEncendida === false;
+  c.checked = !oculta;
+  nota.textContent = !o || escena.ciudadEncendida === false ? '' : o.nivel === 'oculta' ? (o.caidas?.length || o.piso === 'oculta' ? 'Se apagó sola porque el equipo iba lento.' : '')
+    : !escena.ciudadLista ? 'Llega después del edificio.' : o.nivel === 'medio' ? 'En este equipo va sin el detalle de cerca.'
+      : o.nivel === 'liviano' ? 'En este equipo va sin el detalle de cerca y sin su sombra lejos del 106.' : '';
 }
 function pintarResolucion() {
   const el = $('#res-actual'); if (!el || !escena) return;
@@ -1420,6 +1440,14 @@ function prepararUI() {
   $('#copiar-enlace').addEventListener('click', copiarEnlace);
   $('#abrir-capas').addEventListener('click', () => { const c = $('#capas'), abrir = c.hidden; c.hidden = !abrir; $('#abrir-capas').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); soloUnPanel('capas'); pintarResolucion(); } });
   $('#capa-aguacero').addEventListener('change', (e) => { S.aguacero = e.target.checked; });
+  // la ciudad: apagarla se recuerda (la próxima visita no la descarga); encenderla la carga si no estaba
+  $('#capa-ciudad').addEventListener('change', (e) => {
+    const si = e.target.checked;
+    try { if (si) localStorage.removeItem('e106-ciudad'); else localStorage.setItem('e106-ciudad', '0'); } catch (x) { /* sin almacenamiento */ }
+    escena.mostrarCiudad(si).then(pintarCiudad);
+    pintarCiudad();
+  });
+  pintarCiudad();
   // exposición larga: la alternativa a la noche honesta; se rotula en la escena mientras está activa
   $('#capa-larga').addEventListener('change', (e) => {
     escena.setModoNoche(e.target.checked ? 'larga' : 'honesta');

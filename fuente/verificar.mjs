@@ -21,7 +21,10 @@ import { cargarTriangulos, Rayos } from './verificar-geometria.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.resolve(AQUI, '..');
-const SALIDA = path.join(AQUI, 'verificacion', process.argv.includes('--webgl') ? 'webgl' : '');   // con --webgl, aparte
+// --url=ciudad=espiga&sombra=csm: parámetros extra en la URL de la página (p. ej. la espiga de feat/ciudad); el informe va aparte,
+// en verificacion/url-<parámetros>/
+const EXTRA_URL = (process.argv.find((a) => a.startsWith('--url=')) ?? '').slice(6);
+const SALIDA = path.join(AQUI, 'verificacion', EXTRA_URL ? 'url-' + EXTRA_URL.replace(/[^a-z0-9]+/gi, '-') : '', process.argv.includes('--webgl') ? 'webgl' : '');   // con --webgl, aparte
 const ARGS = process.argv.slice(2);
 const FORZAR_GL = ARGS.includes('--webgl');
 const VISIBLE = ARGS.includes('--visible');
@@ -112,8 +115,10 @@ async function abrirPagina(navegador, url, etiqueta) {
   await pg.waitForFunction(() => window.__e106?.escena?.cargado && window.__e106base && !window.__e106base.intro
     && document.documentElement.classList.contains('listo') && !document.documentElement.classList.contains('en-intro') && window.__e106.clima?.horario,
   null, { timeout: 180000, polling: 250 });
+  // la ciudad (encendida por defecto) llega después del 106: se mide con ella montada
+  await pg.evaluate(() => Promise.race([window.__e106.escena.cargaCiudad, new Promise((ok) => setTimeout(ok, 120000))]));
   await esperar(1500);
-  const estado = await pg.evaluate(() => ({ backend: __e106.escena.backend, dpr: __e106.escena.renderer.getPixelRatio(), nivel: __e106.escena.calidad.nivel,
+  const estado = await pg.evaluate(() => ({ ciudad: __e106.escena.ciudadOpc ? { lista: !!__e106.escena.ciudadLista, nivel: __e106.escena.ciudadOpc.nivel, sombra: __e106.escena.ciudadOpc.sombra, gruesa: __e106.escena._gruesa ?? null, texelFinoM: 140 / __e106.escena.sun.shadow.mapSize.x } : null, backend: __e106.escena.backend, dpr: __e106.escena.renderer.getPixelRatio(), nivel: __e106.escena.calidad.nivel,
     bloom: __e106.escena.bloomOn, sombras: __e106.escena.calidad.sombras, ua: navigator.userAgent, grupos: Object.keys(__e106.escena.grupos) }));
   estado.cargaMs = Date.now() - t0;
   return { pg, ctx, estado };
@@ -806,7 +811,7 @@ async function comprobacion4(pg) {
 // =====================================================================================================================
 async function main() {
   const srv = await servidor();
-  const base = `http://127.0.0.1:${srv.address().port}/index.html?prueba&rapido${FORZAR_GL ? '&webgl' : ''}`;
+  const base = `http://127.0.0.1:${srv.address().port}/index.html?prueba&rapido${FORZAR_GL ? '&webgl' : ''}${EXTRA_URL ? '&' + EXTRA_URL : ''}`;
   let navegador = null, geoCache = null;
   try {
     if (corre(1)) { informe.comprobaciones['1'] = { nombre: 'Posición del sol contra un algoritmo independiente', ...comprobacion1() }; }

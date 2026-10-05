@@ -1,0 +1,432 @@
+{
+ "etiqueta": "v2",
+ "url": "sombra",
+ "momento": "2024-01-15 09:30",
+ "metodo": "luminancia Rec. 709 de los valores sRGB (0 a 1) del cuadro final; casi blanco = R, G y B \u2265 235",
+ "vistas": {
+  "calle": {
+   "camara": {
+    "pos": [
+     170,
+     1.7,
+     20
+    ],
+    "tgt": [
+     50,
+     6,
+     -60
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-calle.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 8058,
+     "luminanciaMedia": 0.772,
+     "mediana": 0.795,
+     "p95": 0.803,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 5255,
+     "luminanciaMedia": 0.34,
+     "mediana": 0.344,
+     "p95": 0.385,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 3397,
+     "luminanciaMedia": 0.375,
+     "mediana": 0.339,
+     "p95": 0.702,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 1664,
+     "luminanciaMedia": 0.251,
+     "mediana": 0.26,
+     "p95": 0.316,
+     "casiBlancosPct": 0
+    }
+   }
+  },
+  "aerea": {
+   "camara": {
+    "pos": [
+     250,
+     180,
+     140
+    ],
+    "tgt": [
+     50,
+     0,
+     -70
+    ],
+    "fov": 40
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-aerea.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 2447,
+     "luminanciaMedia": 0.683,
+     "mediana": 0.793,
+     "p95": 0.807,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 9429,
+     "luminanciaMedia": 0.341,
+     "mediana": 0.354,
+     "p95": 0.376,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 1644,
+     "luminanciaMedia": 0.471,
+     "mediana": 0.35,
+     "p95": 0.769,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 12084,
+     "luminanciaMedia": 0.273,
+     "mediana": 0.318,
+     "p95": 0.366,
+     "casiBlancosPct": 0
+    }
+   }
+  },
+  "se-106": {
+   "camara": {
+    "pos": [
+     8,
+     1.7,
+     40
+    ],
+    "tgt": [
+     0,
+     6,
+     0
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-se-106.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 143691,
+     "luminanciaMedia": 0.619,
+     "mediana": 0.788,
+     "p95": 0.803,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 19766,
+     "luminanciaMedia": 0.339,
+     "mediana": 0.349,
+     "p95": 0.378,
+     "casiBlancosPct": 0
+    }
+   }
+  },
+  "se-101": {
+   "camara": {
+    "pos": [
+     105.7,
+     1.7,
+     -99.19999999999999
+    ],
+    "tgt": [
+     97.7,
+     6,
+     -139.2
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-se-101.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 322084,
+     "luminanciaMedia": 0.779,
+     "mediana": 0.796,
+     "p95": 0.808,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 71066,
+     "luminanciaMedia": 0.353,
+     "mediana": 0.355,
+     "p95": 0.381,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 0
+    }
+   }
+  },
+  "no-106": {
+   "camara": {
+    "pos": [
+     -8,
+     1.7,
+     -40
+    ],
+    "tgt": [
+     0,
+     6,
+     0
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-no-106.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 342061,
+     "luminanciaMedia": 0.217,
+     "mediana": 0.248,
+     "p95": 0.29,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 34106,
+     "luminanciaMedia": 0.048,
+     "mediana": 0.025,
+     "p95": 0.221,
+     "casiBlancosPct": 0
+    }
+   }
+  },
+  "no-101": {
+   "camara": {
+    "pos": [
+     89.7,
+     1.7,
+     -179.2
+    ],
+    "tgt": [
+     97.7,
+     6,
+     -139.2
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-no-101.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 331061,
+     "luminanciaMedia": 0.21,
+     "mediana": 0.249,
+     "p95": 0.282,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 105512,
+     "luminanciaMedia": 0.461,
+     "mediana": 0.469,
+     "p95": 0.797,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 0
+    }
+   }
+  },
+  "alto-106": {
+   "camara": {
+    "pos": [
+     70,
+     60,
+     80
+    ],
+    "tgt": [
+     0,
+     3,
+     0
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-alto-106.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 11897,
+     "luminanciaMedia": 0.658,
+     "mediana": 0.792,
+     "p95": 0.807,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 63489,
+     "luminanciaMedia": 0.308,
+     "mediana": 0.332,
+     "p95": 0.367,
+     "casiBlancosPct": 0
+    }
+   }
+  },
+  "alto-101": {
+   "camara": {
+    "pos": [
+     167.7,
+     60,
+     -59.19999999999999
+    ],
+    "tgt": [
+     97.7,
+     3,
+     -139.2
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-luz-alto-101.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 15275,
+     "luminanciaMedia": 0.693,
+     "mediana": 0.799,
+     "p95": 0.807,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 63363,
+     "luminanciaMedia": 0.336,
+     "mediana": 0.348,
+     "p95": 0.372,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 0
+    }
+   }
+  },
+  "aerea101": {
+   "camara": {
+    "pos": [
+     150,
+     35,
+     -80
+    ],
+    "tgt": [
+     98,
+     5,
+     -139
+    ],
+    "fov": 45
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-aerea101.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 35434,
+     "luminanciaMedia": 0.697,
+     "mediana": 0.799,
+     "p95": 0.807,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 115147,
+     "luminanciaMedia": 0.334,
+     "mediana": 0.347,
+     "p95": 0.369,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 0
+    }
+   }
+  },
+  "calle101": {
+   "camara": {
+    "pos": [
+     128,
+     1.7,
+     -178
+    ],
+    "tgt": [
+     100,
+     7,
+     -143
+    ],
+    "fov": 55
+   },
+   "captura": "docs/ciudad/espiga/capturas/v2-calle101.png",
+   "regiones": {
+    "101 kit \u00b7 muro": {
+     "px": 150279,
+     "luminanciaMedia": 0.246,
+     "mediana": 0.253,
+     "p95": 0.663,
+     "casiBlancosPct": 0
+    },
+    "101 kit \u00b7 techo y mediaguas": {
+     "px": 38603,
+     "luminanciaMedia": 0.219,
+     "mediana": 0.221,
+     "p95": 0.352,
+     "casiBlancosPct": 0
+    },
+    "106 \u00b7 muro": {
+     "px": 0
+    },
+    "106 \u00b7 techo y mediaguas": {
+     "px": 0
+    }
+   }
+  }
+ },
+ "errores": [],
+ "backend": "WebGPU",
+ "montaje": {
+  "contexto": {
+   "ocultos": [
+    "cuartel_101_(OSM_386353666)"
+   ],
+   "triangulosQuitados": 234,
+   "triangulosMaqueta": 10556
+  },
+  "montaje": {
+   "ms": 14,
+   "cuarteles": 22,
+   "partesLote": 5,
+   "arboles": 21,
+   "triangulos": {
+    "heroe": 7388,
+    "medio": 4617,
+    "lejos": 491,
+    "arbolAlto": 4368,
+    "arbolBajo": 420
+   },
+   "llamadas": {
+    "heroe": 8,
+    "lotes": 5
+   }
+  }
+ }
+}

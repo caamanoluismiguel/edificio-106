@@ -1,0 +1,601 @@
+{
+ "etiqueta": "defecto-webgl-alto",
+ "fecha": "2026-10-05T05:57:36.375Z",
+ "sombra": "defecto",
+ "perfil": "alto",
+ "forzarWebGL": true,
+ "errores": [],
+ "vistas": {
+  "aerea": {
+   "llamadas": 376,
+   "triangulos": 5208726,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 19.2,
+   "gpuP95Ms": 19.7,
+   "gpuPeorMs": 34.2,
+   "niveles": {
+    "alto": 0,
+    "medio": 19,
+    "lejos": 205
+   },
+   "cuadros": 222,
+   "medianaMs": 16.7,
+   "p95Ms": 33.3,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 7.7,
+   "llamadasGirando": {
+    "min": 370,
+    "max": 373
+   },
+   "triangulosGirando": {
+    "min": 5167630,
+    "max": 5190662
+   }
+  },
+  "calle101": {
+   "llamadas": 361,
+   "triangulos": 4756876,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 21,
+   "gpuP95Ms": 21.4,
+   "gpuPeorMs": 21.9,
+   "niveles": {
+    "alto": 3,
+    "medio": 64,
+    "lejos": 157
+   },
+   "cuadros": 215,
+   "medianaMs": 16.7,
+   "p95Ms": 33.3,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 4.9,
+   "llamadasGirando": {
+    "min": 368,
+    "max": 389
+   },
+   "triangulosGirando": {
+    "min": 4785682,
+    "max": 4866382
+   }
+  },
+  "cuarteles": {
+   "llamadas": 113,
+   "triangulos": 4264095,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 16.5,
+   "gpuP95Ms": 17,
+   "gpuPeorMs": 17.2,
+   "niveles": {
+    "alto": 5,
+    "medio": 29,
+    "lejos": 190
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.3,
+   "llamadasGirando": {
+    "min": 118,
+    "max": 231
+   },
+   "triangulosGirando": {
+    "min": 4290117,
+    "max": 4475671
+   }
+  },
+  "cuarteles4": {
+   "llamadas": 232,
+   "triangulos": 4487411,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 17,
+   "gpuP95Ms": 17.6,
+   "gpuPeorMs": 18.3,
+   "niveles": {
+    "alto": 5,
+    "medio": 37,
+    "lejos": 182
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.7,
+   "llamadasGirando": {
+    "min": 230,
+    "max": 232
+   },
+   "triangulosGirando": {
+    "min": 4478413,
+    "max": 4497523
+   }
+  },
+  "duplex": {
+   "llamadas": 104,
+   "triangulos": 4477874,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 21.6,
+   "gpuP95Ms": 23.9,
+   "gpuPeorMs": 24.2,
+   "niveles": {
+    "alto": 25,
+    "medio": 56,
+    "lejos": 143
+   },
+   "cuadros": 182,
+   "medianaMs": 16.7,
+   "p95Ms": 33.4,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 4.2,
+   "llamadasGirando": {
+    "min": 106,
+    "max": 227
+   },
+   "triangulosGirando": {
+    "min": 4516964,
+    "max": 4777376
+   }
+  },
+  "oficiales": {
+   "llamadas": 104,
+   "triangulos": 4234589,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 22.1,
+   "gpuP95Ms": 23.6,
+   "gpuPeorMs": 23.9,
+   "niveles": {
+    "alto": 9,
+    "medio": 9,
+    "lejos": 206
+   },
+   "cuadros": 179,
+   "medianaMs": 16.7,
+   "p95Ms": 33.4,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 7.7,
+   "llamadasGirando": {
+    "min": 118,
+    "max": 253
+   },
+   "triangulosGirando": {
+    "min": 4285500,
+    "max": 5011301
+   }
+  },
+  "pabellones": {
+   "llamadas": 149,
+   "triangulos": 4305474,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 20,
+   "gpuP95Ms": 20.8,
+   "gpuPeorMs": 22.3,
+   "niveles": {
+    "alto": 6,
+    "medio": 62,
+    "lejos": 156
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.5,
+   "llamadasGirando": {
+    "min": 123,
+    "max": 139
+   },
+   "triangulosGirando": {
+    "min": 4211908,
+    "max": 4261963
+   }
+  },
+  "nco49": {
+   "llamadas": 119,
+   "triangulos": 4230517,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 21.7,
+   "gpuP95Ms": 22.2,
+   "gpuPeorMs": 23.2,
+   "niveles": {
+    "alto": 7,
+    "medio": 63,
+    "lejos": 154
+   },
+   "cuadros": 193,
+   "medianaMs": 16.7,
+   "p95Ms": 33.4,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 5.9,
+   "llamadasGirando": {
+    "min": 125,
+    "max": 368
+   },
+   "triangulosGirando": {
+    "min": 4237370,
+    "max": 5163300
+   }
+  },
+  "colonels": {
+   "llamadas": 380,
+   "triangulos": 5189828,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 19,
+   "gpuP95Ms": 20.1,
+   "gpuPeorMs": 21.7,
+   "niveles": {
+    "alto": 4,
+    "medio": 23,
+    "lejos": 197
+   },
+   "cuadros": 213,
+   "medianaMs": 16.7,
+   "p95Ms": 33.4,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 4.2,
+   "llamadasGirando": {
+    "min": 106,
+    "max": 372
+   },
+   "triangulosGirando": {
+    "min": 4165623,
+    "max": 5150671
+   }
+  },
+  "area900": {
+   "llamadas": 105,
+   "triangulos": 4111014,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 20.2,
+   "gpuP95Ms": 21.1,
+   "gpuPeorMs": 24.6,
+   "niveles": {
+    "alto": 0,
+    "medio": 18,
+    "lejos": 206
+   },
+   "cuadros": 202,
+   "medianaMs": 16.7,
+   "p95Ms": 33.4,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 7.5,
+   "llamadasGirando": {
+    "min": 172,
+    "max": 270
+   },
+   "triangulosGirando": {
+    "min": 4762843,
+    "max": 4973674
+   }
+  },
+  "crance": {
+   "llamadas": 111,
+   "triangulos": 4165656,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 21,
+   "gpuP95Ms": 21.5,
+   "gpuPeorMs": 28.2,
+   "niveles": {
+    "alto": 6,
+    "medio": 64,
+    "lejos": 154
+   },
+   "cuadros": 215,
+   "medianaMs": 16.7,
+   "p95Ms": 33.3,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 3.6,
+   "llamadasGirando": {
+    "min": 103,
+    "max": 241
+   },
+   "triangulosGirando": {
+    "min": 4118606,
+    "max": 4460931
+   }
+  },
+  "bonilla": {
+   "llamadas": 143,
+   "triangulos": 4251133,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 20.1,
+   "gpuP95Ms": 20.8,
+   "gpuPeorMs": 40.8,
+   "niveles": {
+    "alto": 3,
+    "medio": 55,
+    "lejos": 166
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.3,
+   "llamadasGirando": {
+    "min": 116,
+    "max": 144
+   },
+   "triangulosGirando": {
+    "min": 4157439,
+    "max": 4286268
+   }
+  },
+  "modernos": {
+   "llamadas": 260,
+   "triangulos": 4547712,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 17.9,
+   "gpuP95Ms": 18.4,
+   "gpuPeorMs": 18.5,
+   "niveles": {
+    "alto": 5,
+    "medio": 35,
+    "lejos": 184
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 4.1,
+   "llamadasGirando": {
+    "min": 256,
+    "max": 260
+   },
+   "triangulosGirando": {
+    "min": 4494821,
+    "max": 4560497
+   }
+  },
+  "convenciones": {
+   "llamadas": 510,
+   "triangulos": 5475761,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 19.6,
+   "gpuP95Ms": 20,
+   "gpuPeorMs": 22.2,
+   "niveles": {
+    "alto": 5,
+    "medio": 61,
+    "lejos": 158
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 7.5,
+   "llamadasGirando": {
+    "min": 387,
+    "max": 510
+   },
+   "triangulosGirando": {
+    "min": 4745642,
+    "max": 5471851
+   }
+  },
+  "naves": {
+   "llamadas": 96,
+   "triangulos": 4134471,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 19.2,
+   "gpuP95Ms": 19.7,
+   "gpuPeorMs": 26.6,
+   "niveles": {
+    "alto": 4,
+    "medio": 22,
+    "lejos": 198
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3,
+   "llamadasGirando": {
+    "min": 95,
+    "max": 99
+   },
+   "triangulosGirando": {
+    "min": 4085172,
+    "max": 4128057
+   }
+  },
+  "kioscos": {
+   "llamadas": 234,
+   "triangulos": 4516201,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 18,
+   "gpuP95Ms": 18.5,
+   "gpuPeorMs": 18.8,
+   "niveles": {
+    "alto": 5,
+    "medio": 47,
+    "lejos": 172
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.8,
+   "llamadasGirando": {
+    "min": 232,
+    "max": 235
+   },
+   "triangulosGirando": {
+    "min": 4474465,
+    "max": 4509391
+   }
+  },
+  "torres": {
+   "llamadas": 96,
+   "triangulos": 4106453,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 20.6,
+   "gpuP95Ms": 21.7,
+   "gpuPeorMs": 23,
+   "niveles": {
+    "alto": 1,
+    "medio": 77,
+    "lejos": 146
+   },
+   "cuadros": 233,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 33.4,
+   "cpuMedianaMs": 3,
+   "llamadasGirando": {
+    "min": 98,
+    "max": 100
+   },
+   "triangulosGirando": {
+    "min": 4112937,
+    "max": 4135788
+   }
+  },
+  "ciudad": {
+   "llamadas": 233,
+   "triangulos": 4860509,
+   "texelSombraM": [
+    0.067,
+    0.234
+   ],
+   "gpuMedianaMs": 19.1,
+   "gpuP95Ms": 19.8,
+   "gpuPeorMs": 21.3,
+   "niveles": {
+    "alto": 0,
+    "medio": 0,
+    "lejos": 224
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 8.1,
+   "llamadasGirando": {
+    "min": 315,
+    "max": 372
+   },
+   "triangulosGirando": {
+    "min": 5066906,
+    "max": 5164211
+   }
+  }
+ },
+ "intentos": 1,
+ "cargaS": 6.901,
+ "estado": {
+  "backend": "WebGL 2",
+  "nivel": "medio",
+  "dpr": 1,
+  "lienzo": [
+   1440,
+   900
+  ],
+  "luz": "SunLight",
+  "mapa": [
+   4096,
+   4096
+  ],
+  "csm": false,
+  "normalBias": 0.05,
+  "bias": -0.0004,
+  "ajuste": null,
+  "ciudad": {
+   "contexto": {
+    "ocultos": [
+     "cuartel_102_·_UNICEF_Regional_Office_(OSM_183921947)",
+     "cuartel_101_(OSM_386353666)",
+     "cuartel_100_(OSM_678917549)"
+    ],
+    "triangulosQuitados": 2548,
+    "triangulosMaqueta": 10556
+   },
+   "montaje": {
+    "ms": 177,
+    "edificios": 224,
+    "partes": 10,
+    "triangulos": {
+     "alto": 629752,
+     "medio": 93406,
+     "lejos": 16486
+    },
+    "conAlto": true
+   },
+   "caja": [
+    [
+     -322,
+     -14,
+     -1121
+    ],
+    [
+     1176,
+     31,
+     779
+    ]
+   ]
+  }
+ },
+ "modeloBytes": {
+  "sitio.glb": 116604,
+  "arquitectura.glb": 86672,
+  "ciudad_alto.glb": 9784680,
+  "ciudad.glb": 3292344,
+  "ventanas.glb": 126644,
+  "cubiertas.glb": 4107480,
+  "entrada.glb": 189376,
+  "cubiertas_sombra.glb": 336440,
+  "detalles.glb": 233900,
+  "vegetacion.glb": 812192,
+  "contexto.glb": 1706672,
+  "arboles.glb": 295912
+ },
+ "modeloTotalKB": 20595
+}

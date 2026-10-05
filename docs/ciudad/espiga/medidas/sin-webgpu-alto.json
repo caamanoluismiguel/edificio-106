@@ -1,0 +1,118 @@
+{
+ "etiqueta": "sin-webgpu-alto",
+ "fecha": "2026-10-04T19:02:29.060Z",
+ "sombra": "sin",
+ "perfil": "alto",
+ "forzarWebGL": false,
+ "errores": [],
+ "vistas": {
+  "aerea": {
+   "llamadas": 329,
+   "triangulos": 1294158,
+   "texelSombraM": [
+    0.034
+   ],
+   "gpuMedianaMs": 10.7,
+   "gpuP95Ms": 11.5,
+   "gpuPeorMs": 12.6,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3,
+   "llamadasGirando": {
+    "min": 203,
+    "max": 205
+   },
+   "triangulosGirando": {
+    "min": 1025615,
+    "max": 1025619
+   },
+   "captura": "docs/ciudad/espiga/capturas/sin-webgpu-alto-aerea.png"
+  },
+  "calle101": {
+   "llamadas": 193,
+   "triangulos": 535443,
+   "texelSombraM": [
+    0.034
+   ],
+   "gpuMedianaMs": 10.9,
+   "gpuP95Ms": 11.3,
+   "gpuPeorMs": 11.4,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 1.9,
+   "llamadasGirando": {
+    "min": 67,
+    "max": 131
+   },
+   "triangulosGirando": {
+    "min": 305061,
+    "max": 885066
+   },
+   "captura": "docs/ciudad/espiga/capturas/sin-webgpu-alto-calle101.png"
+  },
+  "cuarteles": {
+   "llamadas": 164,
+   "triangulos": 425199,
+   "texelSombraM": [
+    0.034
+   ],
+   "gpuMedianaMs": 11.2,
+   "gpuP95Ms": 12.4,
+   "gpuPeorMs": 12.8,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 1.4,
+   "llamadasGirando": {
+    "min": 33,
+    "max": 37
+   },
+   "triangulosGirando": {
+    "min": 146412,
+    "max": 156830
+   },
+   "captura": "docs/ciudad/espiga/capturas/sin-webgpu-alto-cuarteles.png"
+  }
+ },
+ "intentos": 1,
+ "cargaS": 5.037,
+ "estado": {
+  "backend": "WebGPU",
+  "nivel": "alto",
+  "dpr": 1,
+  "lienzo": [
+   1440,
+   900
+  ],
+  "luz": "DirectionalLight",
+  "mapa": [
+   4096,
+   4096
+  ],
+  "csm": false,
+  "normalBias": 0.05,
+  "bias": -0.0004,
+  "ajuste": null,
+  "ciudad": null
+ },
+ "modeloBytes": {
+  "sitio.glb": 116604,
+  "arquitectura.glb": 86672,
+  "ventanas.glb": 126644,
+  "cubiertas.glb": 4107480,
+  "entrada.glb": 189376,
+  "cubiertas_sombra.glb": 336440,
+  "detalles.glb": 233900,
+  "vegetacion.glb": 1133068,
+  "contexto.glb": 1706672
+ },
+ "modeloTotalKB": 7848
+}

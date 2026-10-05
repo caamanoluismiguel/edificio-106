@@ -1,0 +1,115 @@
+{
+ "etiqueta": "sin-webgl-alto",
+ "fecha": "2026-10-04T18:29:23.816Z",
+ "sombra": "sin",
+ "perfil": "alto",
+ "forzarWebGL": true,
+ "errores": [],
+ "vistas": {
+  "aerea": {
+   "llamadas": 308,
+   "triangulos": 1294137,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 11.9,
+   "gpuP95Ms": 12.4,
+   "gpuPeorMs": 13.1,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 4,
+   "llamadasGirando": {
+    "min": 182,
+    "max": 184
+   },
+   "triangulosGirando": {
+    "min": 1025594,
+    "max": 1025598
+   }
+  },
+  "calle101": {
+   "llamadas": 166,
+   "triangulos": 493359,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 12.8,
+   "gpuP95Ms": 13.5,
+   "gpuPeorMs": 13.8,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.2,
+   "llamadasGirando": {
+    "min": 33,
+    "max": 53
+   },
+   "triangulosGirando": {
+    "min": 220152,
+    "max": 312380
+   }
+  },
+  "cuarteles": {
+   "llamadas": 143,
+   "triangulos": 425178,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 12.5,
+   "gpuP95Ms": 13.2,
+   "gpuPeorMs": 13.7,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.2,
+   "llamadasGirando": {
+    "min": 12,
+    "max": 16
+   },
+   "triangulosGirando": {
+    "min": 146391,
+    "max": 156809
+   }
+  }
+ },
+ "intentos": 1,
+ "cargaS": 5.49,
+ "estado": {
+  "backend": "WebGL 2",
+  "nivel": "medio",
+  "dpr": 1,
+  "lienzo": [
+   1440,
+   900
+  ],
+  "luz": "DirectionalLight",
+  "mapa": [
+   2048,
+   2048
+  ],
+  "csm": false,
+  "normalBias": 0.05,
+  "bias": -0.0004,
+  "ajuste": null,
+  "ciudad": null
+ },
+ "modeloBytes": {
+  "sitio.glb": 116604,
+  "arquitectura.glb": 86672,
+  "ventanas.glb": 126644,
+  "cubiertas.glb": 4107480,
+  "entrada.glb": 189376,
+  "cubiertas_sombra.glb": 336440,
+  "detalles.glb": 233900,
+  "vegetacion.glb": 1133068,
+  "contexto.glb": 1706672
+ },
+ "modeloTotalKB": 7848
+}

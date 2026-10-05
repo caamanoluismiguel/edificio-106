@@ -1,0 +1,119 @@
+{
+ "etiqueta": "sin-webgl-movil",
+ "fecha": "2026-10-04T18:43:13.661Z",
+ "sombra": "sin",
+ "perfil": "movil",
+ "forzarWebGL": true,
+ "errores": [
+  "error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED",
+  "error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED",
+  "error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED",
+  "error: Failed to load resource: net::ERR_INTERNET_DISCONNECTED"
+ ],
+ "vistas": {
+  "aerea": {
+   "llamadas": 191,
+   "triangulos": 939915,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 8,
+   "gpuP95Ms": 10.3,
+   "gpuPeorMs": 11.5,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.1,
+   "llamadasGirando": {
+    "min": 46,
+    "max": 58
+   },
+   "triangulosGirando": {
+    "min": 271054,
+    "max": 354584
+   }
+  },
+  "calle101": {
+   "llamadas": 162,
+   "triangulos": 766479,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 8,
+   "gpuP95Ms": 9.7,
+   "gpuPeorMs": 10.3,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 1.5,
+   "llamadasGirando": {
+    "min": 32,
+    "max": 50
+   },
+   "triangulosGirando": {
+    "min": 220151,
+    "max": 311019
+   }
+  },
+  "cuarteles": {
+   "llamadas": 139,
+   "triangulos": 698298,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 5.3,
+   "gpuP95Ms": 6,
+   "gpuPeorMs": 6.3,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 1.7,
+   "llamadasGirando": {
+    "min": 11,
+    "max": 14
+   },
+   "triangulosGirando": {
+    "min": 146390,
+    "max": 156630
+   }
+  }
+ },
+ "intentos": 1,
+ "cargaS": 4.965,
+ "estado": {
+  "backend": "WebGL 2",
+  "nivel": "bajo",
+  "dpr": 1.5,
+  "lienzo": [
+   585,
+   1266
+  ],
+  "luz": "DirectionalLight",
+  "mapa": [
+   2048,
+   2048
+  ],
+  "csm": false,
+  "normalBias": 0.05,
+  "bias": -0.0004,
+  "ajuste": null,
+  "ciudad": null
+ },
+ "modeloBytes": {
+  "sitio.glb": 116604,
+  "arquitectura.glb": 86672,
+  "ventanas.glb": 126644,
+  "cubiertas_movil.glb": 3135840,
+  "entrada.glb": 189376,
+  "detalles.glb": 233900,
+  "vegetacion.glb": 1133068,
+  "contexto.glb": 1706672
+ },
+ "modeloTotalKB": 6571
+}

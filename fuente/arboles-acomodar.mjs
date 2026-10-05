@@ -33,14 +33,17 @@ function distTri(x, z, t) {
 
 await MeshoptDecoder.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
+// los edificios de la ciudad (rama feat/ciudad: ciudad.glb y su detalle alto, con el asfalto de los estacionamientos) también son
+// obstáculo y suelo, aunque por ahora solo se dibujen con ?ciudad=1; --ciudad=carpeta los lee de otro árbol de trabajo
+const CIUDAD = ['ciudad', 'ciudad_alto'].map((x) => path.join(process.argv.find((a) => a.startsWith('--ciudad='))?.split('=')[1] ?? path.join(AQUI, '../modelo'), `${x}.glb`)).filter((f) => fs.existsSync(f));
 const j = JSON.parse(fs.readFileSync(ARCHIVO, 'utf8')), M = j.molde;
 const comprobar = process.argv.includes('--comprobar');
 if (!comprobar) for (const a of j.arboles) { delete a.corrimiento_escena_m; delete a.fuera; }   // se parte siempre de la posición del dato
 fs.writeFileSync(ARCHIVO + '.tmp', JSON.stringify(j)); const reales = arbolesReales(ARCHIVO + '.tmp'); fs.rmSync(ARCHIVO + '.tmp');
 const lejos = Math.max(...reales.map((r) => Math.hypot(r.x, r.z))) + 30;
 const suelo = [], obst = [];                                            // [ax, az, bx, bz, cx, cz, y0, y1, pasto]
-for (const g of ['sitio', 'contexto', 'arquitectura', 'cubiertas', 'detalles', 'entrada']) {
-  const doc = await io.read(path.join(AQUI, `../modelo/${g}.glb`));
+for (const g of [...['sitio', 'contexto', 'arquitectura', 'cubiertas', 'detalles', 'entrada'].map((x) => path.join(AQUI, `../modelo/${x}.glb`)), ...CIUDAD]) {
+  const doc = await io.read(g);
   for (const n of doc.getRoot().listNodes()) {
     const m = n.getMesh(); if (!m) continue; const W = n.getWorldMatrix();
     for (const p of m.listPrimitives()) {

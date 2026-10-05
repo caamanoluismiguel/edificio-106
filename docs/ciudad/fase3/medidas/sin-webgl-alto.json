@@ -1,0 +1,164 @@
+{
+ "etiqueta": "sin-webgl-alto",
+ "fecha": "2026-10-05T00:14:02.293Z",
+ "sombra": "sin",
+ "perfil": "alto",
+ "forzarWebGL": true,
+ "errores": [],
+ "vistas": {
+  "aerea": {
+   "llamadas": 340,
+   "triangulos": 3963619,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 13.5,
+   "gpuP95Ms": 14.3,
+   "gpuPeorMs": 14.7,
+   "niveles": null,
+   "cuadros": 241,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 4.2,
+   "llamadasGirando": {
+    "min": 198,
+    "max": 200
+   },
+   "triangulosGirando": {
+    "min": 2360335,
+    "max": 2360339
+   }
+  },
+  "calle101": {
+   "llamadas": 196,
+   "triangulos": 3158507,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 13.8,
+   "gpuP95Ms": 14.7,
+   "gpuPeorMs": 15.5,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.3,
+   "llamadasGirando": {
+    "min": 54,
+    "max": 116
+   },
+   "triangulosGirando": {
+    "min": 1593384,
+    "max": 2204360
+   }
+  },
+  "cuarteles": {
+   "llamadas": 175,
+   "triangulos": 3068153,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 13.4,
+   "gpuP95Ms": 14.8,
+   "gpuPeorMs": 15.4,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.5,
+   "llamadasGirando": {
+    "min": 28,
+    "max": 32
+   },
+   "triangulosGirando": {
+    "min": 1454625,
+    "max": 1465043
+   }
+  },
+  "cuarteles4": {
+   "llamadas": 179,
+   "triangulos": 3073039,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 12.9,
+   "gpuP95Ms": 14.8,
+   "gpuPeorMs": 15.7,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.8,
+   "llamadasGirando": {
+    "min": 32,
+    "max": 34
+   },
+   "triangulosGirando": {
+    "min": 1465165,
+    "max": 1468485
+   }
+  },
+  "duplex": {
+   "llamadas": 178,
+   "triangulos": 3072739,
+   "texelSombraM": [
+    0.068
+   ],
+   "gpuMedianaMs": 12.9,
+   "gpuP95Ms": 14.4,
+   "gpuPeorMs": 15.2,
+   "niveles": null,
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.8,
+   "llamadasGirando": {
+    "min": 32,
+    "max": 32
+   },
+   "triangulosGirando": {
+    "min": 1467651,
+    "max": 1467651
+   }
+  }
+ },
+ "intentos": 1,
+ "cargaS": 6.262,
+ "estado": {
+  "backend": "WebGL 2",
+  "nivel": "medio",
+  "dpr": 1,
+  "lienzo": [
+   1440,
+   900
+  ],
+  "luz": "DirectionalLight",
+  "mapa": [
+   2048,
+   2048
+  ],
+  "csm": false,
+  "normalBias": 0.05,
+  "bias": -0.0004,
+  "ajuste": null,
+  "ciudad": null
+ },
+ "modeloBytes": {
+  "sitio.glb": 116604,
+  "arquitectura.glb": 86672,
+  "ventanas.glb": 126644,
+  "cubiertas.glb": 4107480,
+  "entrada.glb": 189376,
+  "cubiertas_sombra.glb": 336440,
+  "detalles.glb": 233900,
+  "vegetacion.glb": 812192,
+  "contexto.glb": 1706672,
+  "arboles.glb": 295912
+ },
+ "modeloTotalKB": 7824
+}

@@ -1,0 +1,501 @@
+{
+ "_leeme": "Ajustes a mano por id de OSM (fuente/ciudad-ajustes.json). Los lee ciudad-datos.mjs al final, después de inventario.json y ciudad-observado.json, así que sobreviven a cualquier regeneración. Cada clave reemplaza el parámetro entero del kit y lleva {valor, fuente}. «modelo» decide cómo se dibuja: 'kit' (fuente/ciudad.mjs), 'cuartel106' (la copia reducida del 106 de contexto.glb), 'a mano' (volumen propio de contexto.mjs) o 'maqueta' (caja gris de contexto.glb).",
+ "386353666": {
+  "numero": "101",
+  "basamento": {
+   "valor": 1.9,
+   "fuente": "lectura aproximada en foto de Street View (nov 2022), a medir en sitio: unos 1,9 m (±0,4) en una vista; otra vista da de 0,8 a 1,2 m, sin resolver. El kit deja 1,9 m"
+  },
+  "ventanas": {
+   "valor": {
+    "tipo": "banda",
+    "retiro": 0.3
+   },
+   "fuente": "Street View nov 2022: bandas corridas por módulo, vidrio retirado unos 0,3 m (±0,2; lectura aproximada en foto, a medir en sitio)"
+  },
+  "rejilla": {
+   "valor": {
+    "parte": "servicio",
+    "bajoBandas": true,
+    "y": [
+     0.25,
+     0.8
+    ]
+   },
+   "fuente": "Street View nov 2022: paneles pardos del zócalo bajo cada banda"
+  },
+  "pabellones": {
+   "valor": [
+    {
+     "lado": "NO",
+     "desdeExtremo": "NE",
+     "distancia": 8,
+     "ancho": 9,
+     "fondo": 4,
+     "pisos": 1,
+     "abierto": true,
+     "vuelo": 0.4,
+     "techo": {
+      "forma": "cuatro aguas"
+     }
+    }
+   ],
+   "fuente": "pórtico de entrada de un piso en la fachada NO, cerca del extremo NE; Street View (panorámica de usuario de 2020 y nov 2022)"
+  },
+  "techo": {
+   "valor": {
+    "forma": "cuatro aguas",
+    "pendiente": 26.565,
+    "desdeMuro": true
+   },
+   "fuente": "cuartel estándar de CERL, fig. 4.11 (61 ft de ancho, como el 101): alero perimetral del 106 y cuatro aguas a 6:12 desde el plomo del muro (p. 4-12, PDF 101)"
+  },
+  "hastial": {
+   "valor": {
+    "extremo": "SO",
+    "ancho": 4.9,
+    "pendiente": 37,
+    "sobreCumbrera": 0.3,
+    "largo": 6,
+    "remate": 0.4
+   },
+   "fuente": "hastial de ventilación con remate sobre el extremo SO, Street View nov 2022; largo SUPUESTO"
+  },
+  "modelo": {
+   "valor": "kit",
+   "fuente": "comparación con Street View: huella OSM 50,2 × 18,7 m (61 ft de CERL) contra la copia de 45,5 × 23,0; bandas de ventanas en nov 2022. Kit con lo observado en Street View (nov 2022) y la planta de CERL"
+  }
+ },
+ "300885892": {
+  "numero": "104",
+  "modelo": {
+   "valor": "a mano",
+   "fuente": "huella compuesta (cuerpo, alas y torre central de cuatro niveles; 14 vértices, rectangularidad 0,70): el kit todavía no arma plantas compuestas. Queda el volumen a mano de contexto.mjs (Fundación). Pendiente"
+  }
+ },
+ "1280703658": {
+  "numero": "220",
+  "pisos": {
+   "valor": 2,
+   "fuente": "dos pisos: Street View (panorámica de usuario, mar 2020: dos bandas de ventanas con una mediagua entre ellas, visto desde abajo del talud, con el pórtico al pie de la planta baja, así que no hay un tercer piso escondido) y Open Buildings p90 8,5 m, p99 9 m (un cuartel de 3 pisos da ~14 m). CERL da el 220 como cuartel de 200 hombres de tres pisos, terminado en diciembre de 1941 (p. 4-10 y 4-11): puede haber perdido un piso o ser otro edificio. Ver docs/ciudad/CIUDAD.md"
+  },
+  "mediaguas": {
+   "valor": [
+    1
+   ],
+   "fuente": "una mediagua corrida entre los dos pisos (Street View, mar 2020)"
+  },
+  "ventanas": {
+   "valor": {
+    "tipo": "banda",
+    "retiro": 0
+   },
+   "fuente": "bandas de ventanas en los dos pisos (Street View, mar 2020)"
+  }
+ },
+ "242667845": {
+  "numero": "103",
+  "modelo": {
+   "valor": "cuartel106",
+   "fuente": "comparación con Street View: huella OSM 47,4 × 22,8 m, a menos de 2 m de la del 106 (45,5 × 23,0); vanos sueltos en pares como el 106 (jul 2022). Queda la copia reducida del 106 verificado, con sus tejas modeladas"
+  }
+ },
+ "300885890": {
+  "numero": "105",
+  "modelo": {
+   "valor": "cuartel106",
+   "fuente": "comparación con Street View: huella OSM 46,3 × 22,5 m, como la del 106; ventanas en grupos de 3 a 4 hojas, que ni los pares del 106 ni la banda del kit reproducen; ninguno de los dos tiene el pórtico de columnas del extremo de la calle Graig. Sin ventaja del kit: queda la copia del 106 verificado"
+  }
+ },
+ "387400206": {
+  "numero": "107",
+  "modelo": {
+   "valor": "cuartel106",
+   "fuente": "comparación con Street View: huella OSM 47,6 × 22,9 m, como la del 106; vanos en pares como el 106 (nov 2022). Queda la copia del 106 verificado"
+  }
+ },
+ "183921947": {
+  "numero": "102",
+  "modelo": {
+   "valor": "kit",
+   "fuente": "comparación con Street View: bandas corridas de ventanas en los tres pisos (jul 2022); la copia del 106 tiene pares. Kit con bandas"
+  }
+ },
+ "678917549": {
+  "numero": "100",
+  "modelo": {
+   "valor": "kit",
+   "fuente": "comparación con Street View: huella OSM 62,7 × 23,6 m; la copia del 106 va estirada a 58,7 m (Open Buildings), con ventanas y ménsulas estiradas. El kit sigue la huella sin estirar. Street View solo lo ve de lejos"
+  }
+ },
+ "544411975": {
+  "numero": "307",
+  "planta": {
+   "valor": [
+    17.678,
+    8.077
+   ],
+   "fuente": "CERL p. 5-8 (PDF 122): el 307, de suboficiales de rango, mide 26,5 × 58 ft (8,08 × 17,68 m), dos familias de tres dormitorios"
+  },
+  "bahias": {
+   "valor": 4,
+   "fuente": "SUPUESTO: 58 ft entre la bahía de los de 44 ft (14,7 ft) da 3,95; en Street View (nov 2022) el lado largo tiene cuatro grupos de ventanas"
+  }
+ },
+ "544412645": {
+  "numero": "308",
+  "planta": {
+   "valor": [
+    11.582,
+    8.534
+   ],
+   "fuente": "CERL p. 5-8 (PDF 122): el 308 mide 28 × 38 ft (8,53 × 11,58 m), una familia de dos dormitorios. OSM (17,4 × 11,8 m) no cuadra con esa planta más el vuelo del tipo (15,9 × 12,9 m): queda la de CERL centrada en la caja de OSM"
+  },
+  "pisos": {
+   "valor": 1,
+   "fuente": "CERL p. 5-8: «the only single-story unit built on Fort Clayton during this time period»; Street View (nov 2022, entre árboles): planta baja abierta sobre pilares y un piso habitable"
+  },
+  "alturas": {
+   "valor": [
+    3.1
+   ],
+   "fuente": "SUPUESTO: un piso como cada uno de los del dúplex (3,1 m); no hay vista que lo mida"
+  },
+  "mediaguas": {
+   "valor": [],
+   "fuente": "Street View (nov 2022): sin mediagua; la foto [5.11] de CERL (p. 5-8) tampoco la muestra"
+  },
+  "bahias": {
+   "valor": 3,
+   "fuente": "SUPUESTO: 38 ft entre la bahía de los de 44 ft (14,7 ft) da 2,6"
+  },
+  "planta_baja": {
+   "valor": {
+    "pilar": 0.45,
+    "retiroNucleo": 0.3,
+    "piso": false,
+    "cuarto": null,
+    "escaleras": null
+   },
+   "fuente": "el 308 no sigue la planta baja de los otros dúplex (cuarto al centro, estacionamientos de concreto y escaleras en los extremos): la única vista (Street View, nov 2022, entre plantas altas) deja ver los pilares pero no el cuarto, el piso ni las escaleras. Queda el núcleo liso de la v1 sobre pasto, con los pilares de 0,45 m de los demás"
+  }
+ },
+ "387391537": {
+  "numero": "332A",
+  "unir": {
+   "valor": [
+    387391538
+   ],
+   "fuente": "OSM dibuja este dúplex en dos mitades, 332A y 332B (12,6 × 9,7 y 12,7 × 10,1 m, centros a 10 m): en Street View (nov 2022) es un solo edificio con los rótulos «332B» y «332A». La huella es la de las dos juntas"
+  }
+ },
+ "387391538": {
+  "numero": "332B",
+  "modelo": {
+   "valor": "unido",
+   "fuente": "mitad del mismo dúplex que el 332A (ver su ajuste «unir»): lo dibuja el 332A; su caja gris se quita"
+  }
+ },
+ "387391539": {
+  "numero": "333",
+  "ventanas": {
+   "combinar": true,
+   "valor": {
+    "tipo": "corrediza"
+   },
+   "fuente": "Street View (nov 2022): las ventanas de los dos pisos son corredizas de aluminio de dos hojas, sin lamas (el inventario dice persianas de vidrio)"
+  }
+ },
+ "678917526": {
+  "numero": "337",
+  "ventanas": {
+   "combinar": true,
+   "valor": {
+    "rejas": "derecha"
+   },
+   "fuente": "Street View (nov 2022): rejas oscuras en las ventanas de la bahía de la derecha de los dos pisos; las de la izquierda no tienen. El kit las pone en la bahía de la derecha de cada cara larga (en la de atrás, girada 180° como la planta: SUPUESTO, no se ve)"
+  }
+ },
+ "678917533": {
+  "numero": "328",
+  "ventanas": {
+   "combinar": true,
+   "valor": {
+    "rejas": "extremos"
+   },
+   "fuente": "imagen de LM del 4 oct 2026 (328B): rejas oscuras en las ventanas del segundo piso y en la del lado corto. El kit las pone en las bahías de los extremos de las dos caras largas y en los dos pisos: SUPUESTO donde no se ve"
+  }
+ },
+ "355565546": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa del grupo de oficiales de 1941 a 1943 que queda como volumen gris (fase 3, paso 3): huella de OSM no rectangular (8 vértices, 26,9 × 21,7 m, 75 % de su caja): en Street View (nov 2020, panorámica de usuario) la casa tiene delante una cochera con techo propio y un cuerpo con hastial al frente. El módulo no la representa"
+  }
+ },
+ "353045556": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa del grupo de oficiales de 1941 a 1943 que queda como volumen gris (fase 3, paso 3): «dos aguas en varios cuerpos» (inventario) y huella de 6 vértices de 24,2 × 15,8 m: en Street View son varios volúmenes con cochera y zócalo de ladrillo. El módulo no la representa"
+  }
+ },
+ "355570831": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa del grupo de oficiales de 1941 a 1943 que queda como volumen gris (fase 3, paso 3): el 913 no está en las listas de CERL (p. 5-9: 401 a 414, 416, 417, 419 a 424, 426 a 428 y 430 a 434) y en Street View (nov 2020) es otra casa: pilares rojo vino, portón y cuerpos con hastial al frente. El módulo no la representa"
+  }
+ },
+ "386353659": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa del grupo de oficiales de 1941 a 1943 que queda como volumen gris (fase 3, paso 3): huella de OSM no rectangular (7 vértices, 30,5 × 23,7 m, 68 % de su caja) con un cuerpo bajo de un piso al frente (inventario y Street View). El módulo no la representa"
+  }
+ },
+ "679244364": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa del grupo de oficiales de 1941 a 1943 que queda como volumen gris (fase 3, paso 3): «un cuerpo alto de 4 niveles al fondo» y un cuerpo de escalera azul (inventario; Street View): no es la casa del módulo. Huella de 29,3 × 16,1 m"
+  }
+ },
+ "753443422": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa del grupo de oficiales de 1941 a 1943 que queda como volumen gris (fase 3, paso 3): huella de OSM de 11,4 × 8,6 m, más corta que la planta más chica de CERL (28 × 44 ft, 13,41 m de largo) sin contar el alero. El módulo no cabe"
+  }
+ },
+ "387400203": {
+  "numero": "141",
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 10 vértices (82 % de su caja de 39,2 × 17,7 m): porche y cochera en otra forma que el pabellón del kit (inventario: «porche con cochera y panel de bloque calado»). Queda la caja gris hasta tener un módulo con cuerpos adosados"
+  }
+ },
+ "608482547": {
+  "numero": "155",
+  "cochera_en": {
+   "valor": "S",
+   "fuente": "Street View (nov 2022): la cochera queda a la derecha de la imagen, que es el extremo S (el lado de la imagen, orientado contra la huella de OSM)"
+  }
+ },
+ "608482545": {
+  "numero": "152",
+  "cochera_en": {
+   "valor": "N",
+   "fuente": "Street View (nov 2022): el techo plano sobre columnas y el cuerpo de servicio quedan a la izquierda, el extremo N (el lado de la imagen, orientado contra la huella de OSM)"
+  }
+ },
+ "443410748": {
+  "numero": "138",
+  "cochera_en": {
+   "valor": "S",
+   "fuente": "Street View (nov 2022): la cochera queda a la derecha, el extremo S (el lado de la imagen, orientado contra la huella de OSM)"
+  }
+ },
+ "1387876288": {
+  "numero": "140",
+  "cochera_en": {
+   "valor": "N",
+   "fuente": "Street View (nov 2022): la cochera queda adelante a la izquierda, el extremo N (el lado de la imagen, orientado contra la huella de OSM)"
+  }
+ },
+ "443410774": {
+  "numero": "147",
+  "cochera_en": {
+   "valor": "N",
+   "fuente": "Street View (nov 2022): la cochera aparte queda a la derecha, el extremo N (el lado de la imagen, orientado contra la huella de OSM)"
+  }
+ },
+ "388106860": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 10 vértices (73 % de su caja de 22,2 × 22,1 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106841": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (83 % de su caja de 30,2 × 24,7 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106850": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 11 vértices (84 % de su caja de 21,1 × 27,9 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106878": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 6 vértices (85 % de su caja de 16,7 × 19,9 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106859": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 14 vértices (71 % de su caja de 30,8 × 24,9 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106840": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (85 % de su caja de 28,8 × 19,3 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106842": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 5 vértices (74 % de su caja de 25,2 × 16,5 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106847": {
+  "cochera_l": {
+   "valor": "azul",
+   "fuente": "Street View (inventario): «cochera larga con techo de lámina azul sobre columnas»; en la vista aérea (Esri, solo mirada, corrida unos metros de OSM) se ve lámina azul en el rectángulo chico. Antes iba como caja gris («huella de 7 vértices (90 % de su caja de 25,0 × 26,2 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris»); pulido, 5 oct 2026"
+  }
+ },
+ "388106844": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (87 % de su caja de 29,2 × 20,8 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106854": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (90 % de su caja de 19,6 × 28,9 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106858": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (89 % de su caja de 30,5 × 21,6 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106853": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (84 % de su caja de 27,7 × 20,8 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106861": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa muy remodelada (inventario: cerca alta de reja, ventana en arco); no sigue el tipo. Queda la caja gris"
+  }
+ },
+ "388106851": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 8 vértices (75 % de su caja de 24,2 × 23,8 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106846": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "huella de 6 vértices (97 % de su caja de 38,3 × 24,8 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris"
+  }
+ },
+ "388106875": {
+  "cochera_l": {
+   "valor": true,
+   "fuente": "Street View (inventario): «cochera con techo de lámina roja»; la vista aérea (Esri, solo mirada) está corrida y tapada por árboles: la posición de la cochera en el rectángulo chico es SUPUESTA. Antes iba como caja gris («huella de 7 vértices (87 % de su caja de 19,9 × 22,2 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris»); pulido, 5 oct 2026"
+  }
+ },
+ "388106869": {
+  "cochera_l": {
+   "valor": true,
+   "fuente": "Street View (inventario): «cochera con techo de lámina roja»; en la vista aérea (Esri, solo mirada) hay un auto blanco estacionado en el rectángulo chico. Antes iba como caja gris («huella de 6 vértices (75 % de su caja de 23,3 × 21,9 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris»); pulido, 5 oct 2026"
+  }
+ },
+ "543575396": {
+  "cochera_l": {
+   "valor": true,
+   "fuente": "Street View (inventario): «cochera con techo de lámina roja sobre columnas cuadradas al frente»; la vista aérea (Esri, solo mirada) no la distingue: la posición en el rectángulo chico es SUPUESTA. Antes iba como caja gris («huella de 6 vértices (73 % de su caja de 25,4 × 20,3 m): casa con cochera o cuerpos adosados (inventario y vista aérea) que el kit no arma. Queda la caja gris»); pulido, 5 oct 2026"
+  }
+ },
+ "388106855": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "casa muy remodelada (inventario: pórtico con columnas y frontón, cerca de muro bajo); no sigue el tipo. Queda la caja gris"
+  }
+ },
+ "387387462": {
+  "numero": "426",
+  "cochera_en": {
+   "valor": "E",
+   "fuente": "Street View (panorámica de usuario, may 2020): el portón de la cochera bajo el balcón queda en el extremo derecho, el E (el lado de la imagen, orientado contra la huella de OSM; en una panorámica de usuario el lado izquierdo y el derecho de la casa no dependen de dónde esté la cámara)"
+  },
+  "escalera_en": {
+   "valor": "O",
+   "fuente": "Street View (may 2020): la escalera sube hacia la puerta del lado izquierdo, el extremo O, opuesto a la cochera (LM: en algunas casas van en extremos opuestos) (el lado de la imagen, orientado contra la huella de OSM; en una panorámica de usuario el lado izquierdo y el derecho de la casa no dependen de dónde esté la cámara)"
+  }
+ },
+ "387387463": {
+  "numero": "427",
+  "cochera_en": {
+   "valor": "E",
+   "fuente": "Street View (panorámica de usuario, may 2020): la escalera roja queda en el extremo izquierdo (O) y la planta baja abierta para el auto a la derecha, el E; la segunda escalera del dúplex, en el E, no se ve (el lado de la imagen, orientado contra la huella de OSM; en una panorámica de usuario el lado izquierdo y el derecho de la casa no dependen de dónde esté la cámara)"
+  }
+ },
+ "679244370": {
+  "cochera_en": {
+   "valor": "E",
+   "fuente": "Street View (nov 2022): la cochera bajo el balcón y la escalera que sube a su descanso quedan en el extremo izquierdo, el E (el lado de la imagen, orientado contra la huella de OSM)"
+  }
+ },
+ "294447899": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "nave de la calle Carlos Lara con techo en U (panorámica aérea de usuario en Street View, sept 2024): no es una nave a dos aguas sobre un rectángulo; caja gris hasta tener un módulo con alas"
+  }
+ },
+ "608482549": {
+  "numero": "183",
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "nave de doble altura con el alero largo y recto: la forma del techo no se ve en Street View (de canto); caja gris"
+  }
+ },
+ "608482551": {
+  "numero": "369D",
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "pabellón deportivo visto de canto, con pretil: el techo no se ve; huella de 10 vértices; caja gris"
+  }
+ },
+ "678917545": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "cobertizo de taller detrás del 200: huella de 8 vértices en L (rectangularidad 0,73) y atribución media; caja gris"
+  }
+ },
+ "1387881354": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "kiosco con huella de 14 vértices (rectangularidad 0,37, quizá un octógono o una forma de estrella); la forma no sale del rectángulo mínimo; caja gris"
+  }
+ },
+ "386353660": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "graderías techadas del campo de béisbol: graderías escalonadas con cuartos debajo y techo a un agua sobre cerchas; no es un kiosco; caja gris"
+  }
+ },
+ "353913253": {
+  "modelo": {
+   "valor": "maqueta",
+   "fuente": "pasillo cubierto entre el 128 y el 129: huella de 8 vértices (rectangularidad 0,80) que se dobla; caja gris"
+  }
+ },
+ "387400199": {
+  "tipologia": {
+   "valor": "nave",
+   "fuente": "The Panama International Hotel School: un piso con techo de pendiente baja sobre losa y vanos sueltos (Street View): se arma como una nave de un piso, no como contemporáneo"
+  }
+ },
+ "387424350": {
+  "tipologia": {
+   "valor": "nave",
+   "fuente": "Fundación Valórate: un piso de lámina de pendiente baja sobre losa (Street View): se arma como una nave de un piso, no como contemporáneo"
+  }
+ }
+}

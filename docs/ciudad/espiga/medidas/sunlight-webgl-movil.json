@@ -1,0 +1,159 @@
+{
+ "etiqueta": "sunlight-webgl-movil",
+ "fecha": "2026-10-04T18:44:11.540Z",
+ "sombra": "sunlight",
+ "perfil": "movil",
+ "forzarWebGL": true,
+ "errores": [],
+ "vistas": {
+  "aerea": {
+   "llamadas": 203,
+   "triangulos": 936261,
+   "texelSombraM": [
+    0.13,
+    0.452
+   ],
+   "gpuMedianaMs": 10,
+   "gpuP95Ms": 12.3,
+   "gpuPeorMs": 13.2,
+   "niveles": {
+    "medio": 0,
+    "lejos": 22
+   },
+   "cuadros": 241,
+   "medianaMs": 16.7,
+   "p95Ms": 16.8,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.9,
+   "llamadasGirando": {
+    "min": 179,
+    "max": 187
+   },
+   "triangulosGirando": {
+    "min": 823536,
+    "max": 873320
+   }
+  },
+  "calle101": {
+   "llamadas": 234,
+   "triangulos": 1207134,
+   "texelSombraM": [
+    0.13,
+    0.452
+   ],
+   "gpuMedianaMs": 10.7,
+   "gpuP95Ms": 12.8,
+   "gpuPeorMs": 13.7,
+   "niveles": {
+    "medio": 2,
+    "lejos": 20
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 3.1,
+   "llamadasGirando": {
+    "min": 265,
+    "max": 302
+   },
+   "triangulosGirando": {
+    "min": 1245360,
+    "max": 1353464
+   }
+  },
+  "cuarteles": {
+   "llamadas": 79,
+   "triangulos": 599765,
+   "texelSombraM": [
+    0.13,
+    0.452
+   ],
+   "gpuMedianaMs": 8.1,
+   "gpuP95Ms": 10.3,
+   "gpuPeorMs": 10.7,
+   "niveles": {
+    "medio": 11,
+    "lejos": 11
+   },
+   "cuadros": 240,
+   "medianaMs": 16.7,
+   "p95Ms": 16.7,
+   "peorMs": 16.8,
+   "cpuMedianaMs": 2.6,
+   "llamadasGirando": {
+    "min": 93,
+    "max": 145
+   },
+   "triangulosGirando": {
+    "min": 617993,
+    "max": 705094
+   }
+  }
+ },
+ "intentos": 1,
+ "cargaS": 5.038,
+ "estado": {
+  "backend": "WebGL 2",
+  "nivel": "bajo",
+  "dpr": 1.5,
+  "lienzo": [
+   585,
+   1266
+  ],
+  "luz": "SunLight",
+  "mapa": [
+   2048,
+   2048
+  ],
+  "csm": false,
+  "normalBias": 0.05,
+  "bias": -0.0004,
+  "ajuste": null,
+  "ciudad": {
+   "contexto": {
+    "ocultos": [
+     "cuartel_101_(OSM_386353666)"
+    ],
+    "triangulosQuitados": 234,
+    "triangulosMaqueta": 10556
+   },
+   "montaje": {
+    "ms": 11,
+    "cuarteles": 22,
+    "arboles": 24,
+    "triangulos": {
+     "heroe": 8022,
+     "medio": 4843,
+     "lejos": 491,
+     "arbolAlto": 4992,
+     "arbolBajo": 480
+    }
+   },
+   "caja": [
+    [
+     -357,
+     -10,
+     -1042
+    ],
+    [
+     150,
+     15,
+     499
+    ]
+   ]
+  }
+ },
+ "modeloBytes": {
+  "sitio.glb": 116604,
+  "arquitectura.glb": 86672,
+  "ciudad_espiga.glb": 234384,
+  "ventanas.glb": 126644,
+  "cubiertas_movil.glb": 3135840,
+  "entrada.glb": 189376,
+  "detalles.glb": 233900,
+  "vegetacion.glb": 1133068,
+  "contexto.glb": 1706672
+ },
+ "modeloTotalKB": 6800
+}

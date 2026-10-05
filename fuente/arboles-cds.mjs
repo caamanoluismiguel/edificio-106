@@ -8,7 +8,8 @@
 // calle, estacionamiento, bordillo, vía o agua, o pegado a un edificio (como arboles-acomodar.mjs); si no hay lugar, no entra.
 // No entran las de arboles_excluidos.json: NDVI de edificio en 2026 (Sentinel-2) y sin confirmar en Street View.
 //
-//   cd fuente && node arboles-cds.mjs [--geojson=ruta] [--hojas=0.12] [--hojas-masa=0.2]   escribe arboles.glb y arboles_movil.glb
+//   cd fuente && node arboles-cds.mjs [--geojson=ruta] [--hojas=0.12] [--hojas-masa=0.2] [--ciudad=carpeta] [--informe=ruta.json]
+//   escribe arboles.glb y arboles_movil.glb
 import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, EXTMeshGPUInstancing, EXTMeshoptCompression } from '@gltf-transform/extensions';
 import { prune } from '@gltf-transform/functions';
@@ -29,6 +30,9 @@ const aplicar = (M, [x, y, z]) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] 
 
 await MeshoptDecoder.ready; await MeshoptEncoder.ready; await MeshoptSimplifier.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder, 'meshopt.encoder': MeshoptEncoder });
+// los edificios de la ciudad (rama feat/ciudad: ciudad.glb y su detalle alto, con el asfalto de los estacionamientos) también son
+// obstáculo y suelo, aunque por ahora solo se dibujen con ?ciudad=1; --ciudad=carpeta los lee de otro árbol de trabajo
+const CIUDAD = ['ciudad', 'ciudad_alto'].map((x) => path.join(process.argv.find((a) => a.startsWith('--ciudad='))?.split('=')[1] ?? path.join(AQUI, '../modelo'), `${x}.glb`)).filter((f) => fs.existsSync(f));
 
 // 1) las copas, en la escena
 const { rotacionGrados: g, centroOSM106: c0 } = osmRegistrado().registro, th = g * Math.PI / 180;
@@ -41,8 +45,8 @@ const copas = JSON.parse(fs.readFileSync(GEOJSON, 'utf8')).features.map((f, id) 
 // 2) suelo y obstáculos del modelo, en una rejilla de 4 m (para buscar rápido)
 const C = 4, rej = { suelo: new Map(), obst: new Map() }, clave = (i, k) => i * 65536 + k;
 const meter = (m, t) => { for (let i = Math.floor(t.x0 / C); i <= Math.floor(t.x1 / C); i++) for (let k = Math.floor(t.z0 / C); k <= Math.floor(t.z1 / C); k++) { const q = clave(i, k); if (!m.has(q)) m.set(q, []); m.get(q).push(t); } };
-for (const gr of ['sitio', 'contexto', 'arquitectura', 'cubiertas', 'detalles', 'entrada']) {
-  const doc = await io.read(path.join(AQUI, `../modelo/${gr}.glb`));
+for (const gr of [...['sitio', 'contexto', 'arquitectura', 'cubiertas', 'detalles', 'entrada'].map((x) => path.join(AQUI, `../modelo/${x}.glb`)), ...CIUDAD]) {
+  const doc = await io.read(gr);
   for (const n of doc.getRoot().listNodes()) {
     const m = n.getMesh(); if (!m) continue; const W = n.getWorldMatrix();
     for (const p of m.listPrimitives()) {
@@ -55,7 +59,7 @@ for (const gr of ['sitio', 'contexto', 'arquitectura', 'cubiertas', 'detalles', 
         if (Math.abs((P[b] - P[a]) * (P[c + 2] - P[a + 2]) - (P[c] - P[a]) * (P[b + 2] - P[a + 2])) < 1e-6) continue;
         const tri = { v: [P[a], P[a + 1], P[a + 2], P[b], P[b + 1], P[b + 2], P[c], P[c + 1], P[c + 2]], x0: Math.min(P[a], P[b], P[c]), x1: Math.max(P[a], P[b], P[c]), z0: Math.min(P[a + 2], P[b + 2], P[c + 2]), z1: Math.max(P[a + 2], P[b + 2], P[c + 2]), y0: Math.min(P[a + 1], P[b + 1], P[c + 1]), y1: Math.max(P[a + 1], P[b + 1], P[c + 1]), duro };
         if (tri.x1 - tri.x0 > 400 || tri.z1 - tri.z0 > 400) { if (esSuelo) { tri.grande = true; } else continue; }
-        if (esSuelo) meter(rej.suelo, tri); else if (tri.y1 > 0.3) meter(rej.obst, tri);
+        if (esSuelo) meter(rej.suelo, tri); else meter(rej.obst, tri);   // la altura se mira contra el suelo de cada árbol (el terreno va de -20 a 50 m)
       }
     }
   }
@@ -70,14 +74,16 @@ const distTri = (x, z, v) => {
   const seg = (px, pz, qx, qz) => { const dx = qx - px, dz = qz - pz, u = Math.max(0, Math.min(1, ((x - px) * dx + (z - pz) * dz) / (dx * dx + dz * dz || 1))); return Math.hypot(x - px - u * dx, z - pz - u * dz); };
   return Math.min(seg(v[0], v[2], v[3], v[5]), seg(v[3], v[5], v[6], v[8]), seg(v[6], v[8], v[0], v[2]));
 };
-/** La capa de suelo más alta en (x, z): { y, duro } o null. */
+/** La capa de suelo más alta en (x, z): { y, duro } o null. Es dura si alguna capa a menos de 0,6 m de la más alta es dura: el asfalto
+ *  de un estacionamiento puede quedar unos centímetros bajo el pasto del terreno, o bajo la capa de los vecinos lejanos. */
 function suelo(x, z) {
-  let mejor = null;
+  const capas = [];
   for (const t of rej.suelo.get(clave(Math.floor(x / C), Math.floor(z / C))) ?? []) {
-    const b = bari(x, z, t.v); if (!b) continue; const y = b[0] * t.v[1] + b[1] * t.v[4] + b[2] * t.v[7];
-    if (!mejor || y > mejor.y) mejor = { y, duro: t.duro };
+    const b = bari(x, z, t.v); if (b) capas.push({ y: b[0] * t.v[1] + b[1] * t.v[4] + b[2] * t.v[7], duro: t.duro });
   }
-  return mejor;
+  if (!capas.length) return null;
+  const y = Math.max(...capas.map((c) => c.y));
+  return { y, duro: capas.some((c) => c.duro && c.y > y - 0.6) };
 }
 const molde = await io.read(path.join(AQUI, 'molde-arbol.glb'));
 const MOLDE = { alto: 18.22, diam: 18.11, alcance: 10.42, base: 7.13 };   // node molde-arbol.mjs
@@ -89,7 +95,7 @@ function motivo(c, x, z) {
   const R = Math.ceil((alcance + C) / C), vistos = new Set();
   for (let i = -R; i <= R; i++) for (let k = -R; k <= R; k++) for (const t of rej.obst.get(clave(Math.floor(x / C) + i, Math.floor(z / C) + k)) ?? []) {
     if (vistos.has(t)) continue; vistos.add(t);
-    if (t.y0 > y0 + c.altura_m || t.y1 < y0) continue;
+    if (t.y0 > y0 + c.altura_m || t.y1 < y0 + 0.3) continue;   // por encima de la copa o a ras del suelo
     const d = distTri(x, z, t.v);
     if (t.y1 > y0 + base && d < alcance) return 'la copa toca un edificio';
     if (d < R_TRONCO + HOLGURA) return 'el tronco toca un edificio';
@@ -98,14 +104,16 @@ function motivo(c, x, z) {
 }
 
 // 3) dónde va cada árbol
-const puestos = [], fuera = {};
+const puestos = [], fuera = {}, informe = {};
 for (const c of copas) {
   let hecho = motivo(c, ...c.p) ? null : [0, 0];
   for (let d = PASO; !hecho && d <= MAX + 1e-9; d += PASO) for (let gi = 0; gi < GIROS && !hecho; gi++) { const a = 2 * Math.PI * gi / GIROS, dx = d * Math.cos(a), dz = d * Math.sin(a); if (!motivo(c, c.p[0] + dx, c.p[1] + dz)) hecho = [dx, dz]; }
-  if (!hecho) { const m = motivo(c, ...c.p); fuera[m] = (fuera[m] ?? 0) + 1; continue; }
+  if (!hecho) { const m = motivo(c, ...c.p); fuera[m] = (fuera[m] ?? 0) + 1; informe[c.id] = { fuera: m }; continue; }
   const x = c.p[0] + hecho[0], z = c.p[1] + hecho[1];
   puestos.push({ c, x, z, y: suelo(x, z).y, corrido: Math.hypot(...hecho) });
+  informe[c.id] = { corrido_m: +Math.hypot(...hecho).toFixed(2) };
 }
+if (arg('informe')) fs.writeFileSync(arg('informe'), JSON.stringify(informe));   // --informe=ruta.json: qué pasó con cada copa (por id del geojson)
 
 // 3b) los árboles reales cerca del 106 (arboles_reales.json, ya acomodados por arboles-acomodar.mjs), con el pie en el suelo
 const cercanos = arbolesReales().map((r) => ({ c: { id: r.id, altura_m: r.alto, diametro_copa_m: r.diam }, x: r.x, z: r.z, y: suelo(r.x, r.z)?.y ?? 0 }));

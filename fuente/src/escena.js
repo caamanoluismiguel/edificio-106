@@ -6,7 +6,7 @@ import {
   positionWorld, normalWorld, time, hash, shapeCircle, instancedBufferAttribute, mx_noise_float,
   mx_fractal_noise_float, oneMinus, step, length, pass, texture, uv, select, mrt, normalView, velocity, sample,
   packNormalToRGB, unpackRGBToNormal, builtinAOContext, screenUV, positionLocal, abs, viewportSize, materialColor, materialRoughness, renderOutput, cameraPosition, property,
-  modelWorldMatrix, modelWorldMatrixInverse, output, normalize, attribute
+  modelWorldMatrix, modelWorldMatrixInverse, output, normalize, attribute, lightShadowMatrix
 } from 'three/tsl';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -17,7 +17,8 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
 import { vectorSol, FACHADAS, posicionSol, saleYPone } from './sol.js';
-import { binario, conVersion } from './datos.js';
+import { binario, conVersion, VER } from './datos.js';
+import { NIVEL, NIVELES, VIGIA, Vigia, bajar, capacidad, nivelEstatico, nivelSondeo } from './ciudad-nivel.js';
 import { Barcos } from './barcos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
 
@@ -127,8 +128,58 @@ function promedioInverso(img) {
   return v;
 }
 
+// LA CIUDAD (fase 3): encendida por defecto (CIUDAD-PLAN §27). La quitan ?ciudad=0, ?ligero y la capa «Ciudad del Saber
+// (aproximada)» apagada (main.js lo recuerda en localStorage «e106-ciudad» = '0'); ?ciudad=1 (o ?ciudad=espiga) la pide aunque
+// esté apagada. Sin ciudad nada de esto corre y la página es la de main. Llega después del 106 (arrancarCiudad), con el nivel que
+// el equipo aguanta (ciudad-nivel.js). La sombra por defecto es la «doble»: el mapa fino de siempre (±70 m, el mismo texel del 106)
+// y un mapa grueso aparte para la ciudad (SombraGruesa). Opciones para medir: ?sombra=actual|sunlight|csm|ajustada|doble,
+// &sombramapa=1024|2048|4096 y ?ciudadnivel=completo|medio|liviano|oculta (fija el nivel: sin sondeo ni vigía).
+// con ?prueba no hay sondeo ni vigía (las capturas deben repetirse); ?sondeo y ?vigia los vuelven a poner para probarlos
+const PRUEBA = typeof location !== 'undefined' && /[?&]prueba/.test(location.search);
+const SONDEA = !PRUEBA || /[?&]sondeo/.test(location.search), VIGILA = !PRUEBA || /[?&]vigia/.test(location.search);
+const CIUDAD = (() => {
+  if (typeof location === 'undefined') return null;
+  const q = new URLSearchParams(location.search), c = q.get('ciudad'), pedida = c === '1' || c === 'espiga';
+  let guardada = null; try { guardada = localStorage.getItem('e106-ciudad'); } catch (e) { /* sin almacenamiento */ }
+  if (c === '0' || q.has('ligero') || (!pedida && guardada === '0')) return null;
+  const sombra = q.get('sombra'), nivel = q.get('ciudadnivel');
+  return { sombra: ['actual', 'sunlight', 'csm', 'ajustada', 'doble'].includes(sombra) ? sombra : null, mapa: q.has('sombramapa') ? +q.get('sombramapa') : null,
+    nivelPedido: NIVELES.includes(nivel) ? nivel : null };
+})();
+// Sombra gruesa de la ciudad. El mapa fino del 106 no cambia en nada; en los materiales que reciben sombra, fuera de su caja (con
+// MARGEN_FINA m de transición) se usa el valor de este segundo mapa, que cubre toda la ciudad con un texel más grande. Es un
+// ShadowNode de una luz aparte que no está en la escena ni ilumina (intensidad 0): solo presta su cámara de sombra. Dentro de la
+// caja fina el resultado es exactamente el de siempre (s·1 + gruesa·0). GRUESA se arma antes de compilar ningún material.
+let GRUESA = null;
+const MARGEN_FINA = 6;
+class SombraGruesa extends THREE.ShadowNode {
+  /** Como ShadowNode.setup, sin aplicar el receivedShadowNode del material: lo aplica la sombra fina, que ya trae esta adentro. */
+  setup(builder) {
+    if (builder.renderer.shadowMap.enabled === false) return;
+    return Fn(() => {
+      const tipo = builder.renderer.shadowMap.type;
+      if (this._currentShadowType !== tipo) { this._reset(); this._node = null; }
+      let node = this._node;
+      this.setupShadowPosition(builder);
+      if (node === null) { this._node = node = this.setupShadow(builder); this._currentShadowType = tipo; }
+      return node;
+    })();
+  }
+}
+/** La sombra fina tal cual dentro de su caja; afuera, la gruesa (si la ciudad la usa ahora: GRUESA.uso). */
+function conGruesa(s) {
+  const G = GRUESA; if (!G) return s;
+  const c = G.fina.mul(vec4(positionWorld, 1)).xy, m = G.margen;
+  const w = smoothstep(0, m, c.x).mul(smoothstep(0, m, c.x.oneMinus())).mul(smoothstep(0, m, c.y)).mul(smoothstep(0, m, c.y.oneMinus()));
+  const p = max(w, float(1).sub(G.uso));
+  // s·p + gruesa·(1 − p): con p = 1 da s exacto (s·1 + gruesa·0); un select() con la sombra adentro dejaba la gruesa sin calcular
+  // en la franja de transición (salía negra)
+  return s.mul(p).add(G.nodo.mul(float(1).sub(p)));
+}
+
 export class Escena {
   constructor(canvasParent, calidad) {
+    this.ciudadOpc = CIUDAD ? { ...CIUDAD } : null;
     this.calidad = calidad;           // {nivel, dpr, sombras, particulas, bloom}
     this.parent = canvasParent;
     this.grupos = {};                 // nombre -> {root, minY, maxY, idx}
@@ -141,6 +192,7 @@ export class Escena {
   async init(forceWebGL = false) {
     await this.#crearRenderer(forceWebGL);
     this.#nivelWebGL();
+    if (this.ciudadOpc) await this.#nivelCiudadInicial();
     const r = this.renderer;
 
     const scene = new THREE.Scene();
@@ -188,7 +240,7 @@ export class Escena {
     this.pmrem = new THREE.PMREMGenerator(r);
 
     // Luces
-    const sun = new THREE.DirectionalLight(0xffffff, 3);
+    const sun = this.ciudadOpc?.sombra === 'sunlight' ? await this.#solSunLight() : new THREE.DirectionalLight(0xffffff, 3);
     sun.castShadow = true;
     const S = this.calidad.sombras;
     sun.shadow.mapSize.set(S, S);
@@ -200,6 +252,7 @@ export class Escena {
     sun.shadow.autoUpdate = false; sun.shadow.needsUpdate = true;   // se recalcula solo cuando cambia el sol o el armado
     sun.shadow.camera.layers.set(1);                                 // proyectan sombra solo los objetos en la capa 1
     scene.add(sun); scene.add(sun.target); this.sun = sun;
+    if (this.ciudadOpc) await this.#sombraCiudad();
     this.hemi = new THREE.HemisphereLight(0xbfd4e6, 0x5b5a3e, 0.6);
     scene.add(this.hemi);
 
@@ -249,6 +302,7 @@ export class Escena {
     r.toneMappingExposure = this.renderer?.toneMappingExposure ?? 1.0;
     r.shadowMap.enabled = true;
     r.shadowMap.type = THREE.PCFShadowMap;
+    if (this._sunNodo) r.library.addLight(...this._sunNodo);
     r.domElement.style.touchAction = 'none';
     r.domElement.setAttribute('aria-hidden', 'true');
     if (this.renderer) this.renderer.domElement.replaceWith(r.domElement); else this.parent.appendChild(r.domElement);
@@ -273,7 +327,8 @@ export class Escena {
     const q = this.calidad;
     if (q.nivel === 'bajo') return false;
     Object.assign(q, { nivel: 'bajo', dpr: Math.min(q.dpr, 1), px: Math.min(q.px ?? 3.7e6, 1.6e6), sombras: 1024, bloom: false });
-    this.sun.shadow.mapSize.set(1024, 1024); this.sun.shadow.needsUpdate = true;
+    if (!this.ciudadOpc?.mapa) this.sun.shadow.mapSize.set(1024, 1024);   // ciudad: un &sombramapa= pedido se respeta
+    this.sun.shadow.needsUpdate = true;
     this.bloomOn = false; this.setSalida('sinAA');
     this.fijarResolucion(this.dprMax());
     return true;
@@ -285,6 +340,7 @@ export class Escena {
     await this.#crearRenderer(true);
     this.#nivelWebGL(); this.sun.shadow.mapSize.set(this.calidad.sombras, this.calidad.sombras);
     this._compilados = null;                        // lo compilado era del renderer anterior
+    if (GRUESA && this.sunG) GRUESA.nodo = new SombraGruesa(this.sunG);   // su mapa era del renderer anterior
     try { viejo.setAnimationLoop?.(null); viejo.dispose(); } catch (e) { /* el dispositivo ya no existe */ }
     this.pmrem = new THREE.PMREMGenerator(this.renderer);
     this._envRT = null; this.scene.environment = null; this._envClave = null; this._envT = 0;
@@ -419,6 +475,7 @@ export class Escena {
     this.camera.fov = w / h < 0.8 ? 58 : 38;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+    this.csm?.updateFrustums();
     this.sucio = true;
   }
 
@@ -485,6 +542,7 @@ export class Escena {
     } else sd = this.solDir.clone().multiplyScalar(600);
     if (!this._sd || this._sd.distanceTo(sd) > 0.4) { this._sd = sd.clone(); this.sun.shadow.needsUpdate = true; this.sucio = true; }
     this.sun.position.copy(sd); this.sun.target.position.set(0, 0, 0);
+    if (this.ciudadOpc?.sombra === 'ajustada') this.#ajustarSombra();
     // castShadow queda siempre encendido: apagarlo al ponerse el sol también obligaba a recompilar los materiales
     if (this.rutaSol) { this.rutaSol.position.set(this.solDir.x * 70, this.solDir.y * 70 + 1, this.solDir.z * 70); this.rutaSol.visible = alt > -1; }
     // cielo y relleno
@@ -614,6 +672,7 @@ export class Escena {
       return loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), base + 'modelo/');
     };
     this.listos = new Set();
+    this._leerGLB = leerGLB; this._cargaTex = cargaTex;   // la ciudad llega después (arrancarCiudad) con el mismo cargador
     const uno = async (nombre) => {
       const idx = GRUPOS.indexOf(nombre === 'arboles' ? 'vegetacion' : nombre);   // las copas de CdS se revelan con la vegetación (el armado llega hasta 8,4)
       const gltf = await leerGLB(livianas && (nombre === 'cubiertas' || nombre === 'arboles') ? nombre + '_movil' : nombre);   // arboles_movil: solo las copas sueltas
@@ -664,6 +723,215 @@ export class Escena {
     return this;
   }
 
+  // ---------- LA CIUDAD (encendida por defecto): edificios del kit, su nivel y su sombra ----------
+  /** Nivel antes de cargar nada (ciudad-nivel.js): lo que el navegador dice del equipo. Si el vigía ya la bajó en este equipo con
+   *  esta versión del sitio, se empieza ahí. Decide también si se arma la sombra gruesa (solo si el nivel de partida la usa). */
+  async #nivelCiudadInicial() {
+    const o = this.ciudadOpc;
+    o.cap = await capacidad(this.renderer, this.backend).catch(() => ({ telefono: false, debil: false, software: false }));
+    let r = o.nivelPedido ? { nivel: o.nivelPedido, motivo: 'pedido en la URL' } : nivelEstatico(o.cap);
+    let antes = null; try { antes = localStorage.getItem('e106-ciudad-nivel'); } catch (e) { /* sin almacenamiento */ }
+    const [na, va] = (antes ?? '').split('|');
+    if (!o.nivelPedido && !PRUEBA && va === VER && NIVELES.indexOf(na) > NIVELES.indexOf(r.nivel)) { r = { nivel: na, motivo: r.motivo + ', ya bajó antes en este equipo' }; o.piso = na; }
+    o.nivel = r.nivel; o.motivo = r.motivo; o.estatico = r.nivel;
+    o.gpu = [o.cap.vendedor, o.cap.arquitectura, o.cap.gpu].filter(Boolean).join(' · '); o.telefono = o.cap.telefono;
+    if (!o.sombra) { o.sombra = NIVEL[o.nivel].sombra ? 'doble' : 'actual'; o.porDefecto = true; }
+  }
+  /** Carga la ciudad cuando el 106 y lo diferido ya llegaron y terminó la intro (`antes`, de main.js), en un rato libre: primero
+   *  un sondeo corto del cuadro (sin ?prueba ni ?ciudadnivel=), que ajusta el nivel, y después los GLB de ese nivel. */
+  arrancarCiudad(antes = Promise.resolve()) {
+    const o = this.ciudadOpc;
+    if (!o || this.cargaCiudad) return this.cargaCiudad;
+    const libre = () => new Promise((ok) => (window.requestIdleCallback ?? ((f) => setTimeout(f, 200)))(ok, { timeout: 2000 }));
+    this.cargaCiudad = (async () => {
+      await Promise.all([this.cargaDiferida, antes]);
+      await libre();
+      if (o.nivel === 'oculta') { this.alCambiarCiudad?.(); return; }
+      if (!o.nivelPedido && SONDEA) {
+        // en reposo: sin cuadros de la app desde hace 0,4 s (después de la intro viene el vuelo a «Ahora»), hasta 8 s
+        for (const t0 = performance.now(); performance.now() - (this._dibujo ?? 0) < 400 && performance.now() - t0 < 8000;) await new Promise((ok) => setTimeout(ok, 100));
+        o.sondeoMs = await this.medirCuadro(10).catch(() => null);
+        const r = nivelSondeo({ nivel: o.nivel, motivo: o.motivo }, o.sondeoMs, o.cap);
+        let n = r.nivel;
+        if (o.piso && NIVELES.indexOf(o.piso) > NIVELES.indexOf(n)) n = o.piso;          // lo que el vigía ya bajó no se vuelve a subir
+        if (NIVEL[n].sombra && !this.sunG) n = 'liviano';                                  // sin la sombra gruesa armada al iniciar
+        o.nivel = n; o.motivo = r.motivo + (n !== r.nivel ? ` (queda en ${n})` : '');
+      }
+      await this.#cargarCiudad();
+    })().catch((e) => console.warn('ciudad', e));
+    return this.cargaCiudad;
+  }
+  /** La capa «Ciudad del Saber (aproximada)». Encendida sin haberla cargado (?ciudad=0 o apagada al entrar): la carga ahora,
+   *  sin sombra gruesa (no se armó al iniciar) y sin vigía. Encendida a mano después de que el vigía la escondió: vuelve en el
+   *  nivel liviano y el vigía ya no la toca. */
+  async mostrarCiudad(si) {
+    this.ciudadEncendida = !!si;
+    if (si && !this.ciudadOpc) {
+      this.ciudadOpc = { sombra: 'actual', mapa: null, nivelPedido: null, nivel: 'liviano', motivo: 'encendida en Capas', manual: true, tarde: true };
+      this.ciudadOpc.cap = await capacidad(this.renderer, this.backend).catch(() => ({}));
+      this.alCambiarCiudad?.();
+      await (this.cargaCiudad = this.#cargarCiudad().catch((e) => console.warn('ciudad', e)));
+      return;
+    }
+    const o = this.ciudadOpc; if (!o) return;
+    if (si && o.nivel === 'oculta') { o.manual = true; o.motivo = 'encendida en Capas'; if (!this.ciudad) { o.nivel = 'liviano'; await (this.cargaCiudad = this.#cargarCiudad().catch((e) => console.warn('ciudad', e))); return; } this.fijarNivelCiudad('liviano'); return; }
+    if (this.ciudad) this.fijarNivelCiudad(o.nivel); else this.alCambiarCiudad?.();
+  }
+  async #cargarCiudad() {
+    const o = this.ciudadOpc, t0 = performance.now();
+    const { Ciudad } = await import('./ciudad.js');
+    // material: la misma función que pinta al 106 y a sus copias del contexto (grupo «contexto»: sin lentes ni interiores)
+    const idx = GRUPOS.indexOf('contexto'), sinTex = () => Promise.resolve(null), cargaTex = this._cargaTex;
+    this.ciudad = new Ciudad(this, { U, sombraNubes: /[?&]sinnubes/.test(location.search) ? soloSombraSol : sombraNubes, sombraSol, NOCHE,
+      conAlto: o.sombra === 'sunlight' || o.sombra === 'csm' ? true : NIVEL[o.nivel].alto,
+      // el asfalto de los estacionamientos (pulido) lleva la textura del de las calles del contexto, el mismo material: donde se pisan no se nota
+      material: (src, opc) => this.#material(src, 'contexto', idx, uniform(0), uniform(1), src.userData?.ciudadParte === 'asfalto' ? cargaTex : sinTex, opc) });
+    this.ciudad.pedir(this._leerGLB);
+    const raiz = await this.ciudad.montar();
+    try { await this.#compilar(raiz); } catch (e) { /* se compila al dibujar */ }
+    this.scene.add(raiz);
+    // el contexto (si llegó) sin las copias del 106 que el kit reemplaza ni sus cajas; al apagar la ciudad vuelven
+    if (this.grupos.contexto?.root) await this.ciudad.filtrarContexto(this.grupos.contexto.root).catch((e) => console.warn('ciudad: filtrar contexto', e));
+    this.ciudadLista = true;
+    o.cargaMs = Math.round(performance.now() - t0);
+    if (o.sombra === 'ajustada') this.#ajustarSombra();
+    this.fijarNivelCiudad(o.nivel);
+  }
+  /** Aplica un nivel sin recargar: detalle alto, sombra gruesa (y su tamaño) y si se ve. */
+  fijarNivelCiudad(n) {
+    const o = this.ciudadOpc; if (!o || !NIVEL[n]) return;
+    o.nivel = n;
+    const N = NIVEL[n], ver = !N.oculta && this.ciudadEncendida !== false;
+    this.ciudad?.usarAlto(N.alto);
+    this.ciudad?.mostrar(ver);
+    if (this.sunG) {
+      const usa = ver && N.sombra > 0 && !!this.ciudadLista;
+      this.uGruesa.value = usa ? 1 : 0;
+      if (usa) { const m = Math.min(N.sombra, this.ciudadOpc.maxTex ?? 4096); this.sunG.shadow.mapSize.set(m, m); this._gruesaSucia = true; }
+    }
+    this.sun.shadow.needsUpdate = true; this.sucio = true;
+    this.alCambiarCiudad?.();
+  }
+  /** Vigía (main.js le pasa el intervalo de cada cuadro dibujado seguido, sin intro, viaje ni carga). Si la mediana de unos 3 s
+   *  pasa de VIGIA.lento ms y un sondeo confirma que el cuadro cuesta (no es una pantalla a 30 Hz), baja un escalón y lo anota
+   *  (localStorage «e106-ciudad-nivel», para la próxima visita con esta versión). Con ?prueba o ?ciudadnivel= no actúa. */
+  cuadroCiudad(iv) {
+    const o = this.ciudadOpc;
+    if (!o || !this.ciudadLista || !VIGILA || o.nivelPedido || o.manual || this._vigiaOcupado || this.ciudadEncendida === false || o.nivel === 'oculta') return;
+    const med = (this._vigia ??= new Vigia()).cuadro(iv);
+    if (med == null || med <= VIGIA.lento) return;
+    const sig = bajar(o.nivel); if (!sig) return;
+    this._vigiaOcupado = true;
+    this.medirCuadro(6).catch(() => null).then((ms) => {
+      if (ms != null && ms < VIGIA.confirma) return;
+      (o.caidas ??= []).push({ s: Math.round(performance.now() / 100) / 10, de: o.nivel, a: sig, medianaMs: Math.round(med * 10) / 10, cuadroMs: ms == null ? null : Math.round(ms * 10) / 10 });
+      o.motivo = `bajó sola de ${o.nivel} a ${sig}`;
+      try { localStorage.setItem('e106-ciudad-nivel', sig + '|' + VER); } catch (e) { /* sin almacenamiento */ }
+      this.fijarNivelCiudad(sig);
+    }).finally(() => { this._vigiaOcupado = false; this._vigia.reiniciar(); });
+  }
+  /** Costo de un cuadro (ms): dibuja n cuadros y espera cada vez a que la GPU termine (WebGPU: una copia del lienzo obliga a
+   *  mandar los comandos y onSubmittedWorkDone espera; WebGL 2: leer un píxel obliga a terminar). Mediana sin los dos primeros.
+   *  Los cuadros son iguales a los que ya se ven: no se nota. */
+  async medirCuadro(n = 12) {
+    const r = this.renderer, be = r.backend, gl = be.gl, px = new Uint8Array(4), out = [];
+    for (let i = 0; i < n; i++) {
+      await new Promise((ok) => requestAnimationFrame(ok));
+      if (document.visibilityState !== 'visible') return null;
+      const t = performance.now(); this.render();
+      if (be.isWebGPUBackend) { const b = await createImageBitmap(r.domElement, 0, 0, 1, 1); b.close(); await be.device.queue.onSubmittedWorkDone(); }
+      else gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      if (i >= 2) out.push(performance.now() - t);
+    }
+    out.sort((a, b) => a - b);
+    return out.length ? out[out.length >> 1] : null;
+  }
+  /** La cámara de la sombra gruesa sigue al sol y se ajusta a la caja de la ciudad (y la del sitio) vista desde el sol. El sesgo
+   *  va en texeles: normalBias de 2 texeles y bias de (1 + 1 / tan(altura del sol)) texeles de profundidad. */
+  #ajustarGruesa() {
+    const G = this.sunG, sun = this.sun;
+    G.position.copy(sun.position); G.target.position.copy(sun.target.position); G.updateMatrixWorld(); G.target.updateMatrixWorld();
+    G.shadow.radius = 1;                                 // PCF de un texel: con más, el texel grueso se mezcla con el vecino
+    const caja = new THREE.Box3(new THREE.Vector3(-70, -30, -70), new THREE.Vector3(70, 20, 70));
+    if (this.ciudad?.cajaSombra && !this.ciudad.cajaSombra.isEmpty()) caja.union(this.ciudad.cajaSombra);
+    const sc = G.shadow.camera, ojo = G.position, M = new THREE.Matrix4().lookAt(ojo, G.target.position, sc.up);
+    const x = new THREE.Vector3().setFromMatrixColumn(M, 0), y = new THREE.Vector3().setFromMatrixColumn(M, 1), z = new THREE.Vector3().setFromMatrixColumn(M, 2);
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, d0 = Infinity, d1 = -Infinity; const v = new THREE.Vector3();
+    for (let i = 0; i < 8; i++) {
+      v.set(i & 1 ? caja.max.x : caja.min.x, i & 2 ? caja.max.y + 10 : caja.min.y, i & 4 ? caja.max.z : caja.min.z).sub(ojo);
+      const a = v.dot(x), b = v.dot(y), d = -v.dot(z);
+      x0 = Math.min(x0, a); x1 = Math.max(x1, a); y0 = Math.min(y0, b); y1 = Math.max(y1, b); d0 = Math.min(d0, d); d1 = Math.max(d1, d);
+    }
+    Object.assign(sc, { left: x0, right: x1, bottom: y0, top: y1, near: d0 - 20, far: d1 + 20 });
+    sc.updateProjectionMatrix();
+    // sesgo en texeles, mayor con el sol bajo (el suelo cruza más profundidad por texel): sin eso el terreno se sombreaba solo
+    const texel = Math.max(x1 - x0, y1 - y0) / G.shadow.mapSize.x, tanAlt = Math.max(0.15, Math.tan(Math.asin(Math.min(1, Math.max(0, z.y)))));
+    G.shadow.normalBias = 2 * texel; G.shadow.bias = -texel * (1 + 1 / tanAlt) / (sc.far - sc.near);
+    G.shadow.needsUpdate = true; this._gruesaSucia = false;
+    this._gruesa = { ancho: x1 - x0, alto: y1 - y0, texel, mapa: G.shadow.mapSize.x };
+  }
+  /** SunLight de r186 (addon): dos cascadas en un atlas, ajustadas cada cuadro a la cámara. Sin target: la dirección es su
+   *  posición; se le da un target vacío para que el resto de escena.js no cambie. */
+  async #solSunLight() {
+    const [{ SunLight }, { SunLightNode }] = await Promise.all([import('three/addons/lights/SunLight.js'), import('three/addons/lights/SunLightNode.js')]);
+    this._sunNodo = [SunLightNode, SunLight]; this.renderer.library.addLight(SunLightNode, SunLight);
+    const sun = new SunLight(0xffffff, 3); sun.target = new THREE.Object3D();
+    return sun;
+  }
+  /** Ajustes de cada opción de sombra (después de la configuración de siempre). */
+  async #sombraCiudad() {
+    const sun = this.sun, modo = this.ciudadOpc.sombra;
+    // tamaño pedido con &sombramapa=…, recortado al máximo del equipo (en SunLight el atlas mide 2 × mapa de ancho; un teléfono
+    // con WebGL 2 puede tener un máximo de 4.096). Queda anotado en this.ciudadOpc.mapaUsado para ?medir=1
+    const b = this.renderer.backend, maxTex = b.device?.limits?.maxTextureDimension2D ?? b.gl?.getParameter(b.gl.MAX_TEXTURE_SIZE) ?? 4096, sc0 = sun.shadow.camera;
+    const pedido = this.ciudadOpc.mapa && this.ciudadOpc.mapa >= 256 ? 2 ** Math.round(Math.log2(this.ciudadOpc.mapa)) : null;
+    const mapa = pedido ? Math.min(pedido, modo === 'sunlight' ? maxTex / 2 : maxTex) : null;
+    this.ciudadOpc.maxTex = maxTex;
+    if (modo === 'actual') { if (mapa) sun.shadow.mapSize.set(mapa, mapa); }
+    else if (modo === 'doble') {
+      // el mapa fino queda exactamente como el publicado; la luz de la sombra gruesa no está en la escena ni ilumina
+      const g = new THREE.DirectionalLight(0xffffff, 0); g.castShadow = true; g.name = 'sombra gruesa de la ciudad';
+      const m = Math.min(mapa ?? (NIVEL[this.ciudadOpc.nivel].sombra || 2048), maxTex);
+      g.shadow.mapSize.set(m, m); g.shadow.camera.layers.set(1); g.shadow.autoUpdate = false; g.shadow.needsUpdate = false;
+      this.sunG = g; this.uGruesa = uniform(0);                        // 0 hasta que la ciudad está montada
+      GRUESA = { nodo: new SombraGruesa(g), uso: this.uGruesa, fina: lightShadowMatrix(sun), margen: MARGEN_FINA / (sc0.right - sc0.left) };
+    }
+    else if (modo === 'sunlight') {
+      const m = mapa ?? Math.min(this.calidad.sombras, 2048);          // por cascada: el atlas mide 2m × m
+      sun.shadow.mapSize.set(m, m); sun.shadow.camera.near = 10; sun.shadow.camera.far = 600;   // alcance de las cascadas
+      for (let i = 0; i < 2; i++) sun.shadow.getCamera(i).layers.set(1);   // como la cámara de sombra de siempre: solo la capa 1
+      sun.shadow.autoUpdate = true;                                      // las cascadas siguen a la cámara: se rehacen cada cuadro
+    } else if (modo === 'csm') {
+      const { CSMShadowNode } = await import('three/addons/csm/CSMShadowNode.js');
+      const m = mapa ?? Math.min(this.calidad.sombras, 2048);
+      sun.shadow.mapSize.set(m, m); sun.shadow.autoUpdate = true;
+      const csm = new CSMShadowNode(sun, { cascades: 3, maxFar: 600, mode: 'practical', lightMargin: 300 });
+      csm.fade = true; sun.shadow.shadowNode = csm; this.csm = csm;
+    } else if (modo === 'ajustada') {
+      if (mapa) sun.shadow.mapSize.set(mapa, mapa);
+    }
+    this.ciudadOpc.mapaUsado = sun.shadow.mapSize.x;
+  }
+  /** Un solo mapa de sombra ajustado a la caja de la ciudad (el kit y el sitio del 106) vista desde el sol de
+   *  ahora, como el ejemplo webgpu_generator_city. El sesgo se escala para que en metros sea el mismo de siempre. */
+  #ajustarSombra() {
+    const caja = new THREE.Box3(new THREE.Vector3(-70, -2, -70), new THREE.Vector3(70, 20, 70));
+    if (this.ciudad?.caja) caja.union(this.ciudad.caja);
+    const sc = this.sun.shadow.camera, ojo = this.sun.position, M = new THREE.Matrix4().lookAt(ojo, this.sun.target.position, sc.up);
+    const x = new THREE.Vector3().setFromMatrixColumn(M, 0), y = new THREE.Vector3().setFromMatrixColumn(M, 1), z = new THREE.Vector3().setFromMatrixColumn(M, 2);
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, d0 = Infinity, d1 = -Infinity; const v = new THREE.Vector3();
+    for (let i = 0; i < 8; i++) {
+      v.set(i & 1 ? caja.max.x : caja.min.x, i & 2 ? caja.max.y : caja.min.y, i & 4 ? caja.max.z : caja.min.z).sub(ojo);
+      const a = v.dot(x), b = v.dot(y), d = -v.dot(z);
+      x0 = Math.min(x0, a); x1 = Math.max(x1, a); y0 = Math.min(y0, b); y1 = Math.max(y1, b); d0 = Math.min(d0, d); d1 = Math.max(d1, d);
+    }
+    Object.assign(sc, { left: x0, right: x1, bottom: y0, top: y1, near: Math.max(0.5, d0 - 20), far: d1 + 20 });
+    sc.updateProjectionMatrix();
+    // la app usa bias −0,0004 sobre un rango de 1.390 m (near 10, far 1.400): −0,56 m en profundidad; aquí, lo mismo en metros
+    this.sun.shadow.bias = -0.0004 * 1390 / (sc.far - sc.near);
+    this._ajuste = { ancho: x1 - x0, alto: y1 - y0, rango: sc.far - sc.near, texel: Math.max(x1 - x0, y1 - y0) / this.sun.shadow.mapSize.x };
+  }
+
   /** Una pieza por cuadro a la capa de la sombra (cada pieza trae su material: hasta 33 por grupo, ~1 s a 60 Hz). */
   async #calentarSombra(piezas) {
     const cuadro = () => new Promise((ok) => requestAnimationFrame(ok)), TANDA = 1;
@@ -689,7 +957,9 @@ export class Escena {
     } catch (e) { /* sin sustituto: las tejas no proyectan sombra */ }
   }
 
-  #material(src, grupo, idx, uMin, uMax, cargaTex) {
+  /** opc (solo la ciudad la usa): { aoAlturas } = alturas del encuentro muro-alero para el sustituto de oclusión de un edificio
+   *  que no es el 106; { aoAtributo } = esa distancia viene por vértice en el atributo _aoh (ciudad.glb, ver ciudad-kit.mjs). Sin opc, el material es exactamente el de siempre. */
+  #material(src, grupo, idx, uMin, uMax, cargaTex, opc = {}) {
     const ex = src.userData || {};
     const nm = (src.name || '').toLowerCase();
     const base = src.color ? src.color.clone() : new THREE.Color(0.7, 0.7, 0.7);
@@ -760,11 +1030,12 @@ export class Escena {
     }
     // sustituto de oclusión bajo los aleros (hasta hornear la de Blender): el alero de 1,65 m le tapa el cielo al muro en
     // el metro y pico bajo su encuentro, medido en el modelo a 4,40 · 8,05 · ~11,7 m
-    if (nmPlaster && grupo !== 'sitio' && grupo !== 'contexto') {
+    if (nmPlaster && (opc.aoAlturas || opc.aoAtributo || (grupo !== 'sitio' && grupo !== 'contexto'))) {
       const y = positionWorld.y, vertical = smoothstep(0.6, 0.3, abs(normalWorld.y));
       // fuerte en el primer metro (entre los cabios, donde las fotos muestran una franja oscura) y se desvanece hacia 1,6 m
       const bajo = (j) => step(y, j).mul(smoothstep(1.6, 0.5, float(j).sub(y)));
-      const occ = max(max(bajo(4.4), bajo(8.05)), bajo(11.7)).mul(vertical);
+      // con aoAtributo, la distancia j − y llega por vértice (cortada en cada junta: exacta en cada píxel) y la junta es la de su franja
+      const occ = (opc.aoAtributo ? smoothstep(1.6, 0.5, attribute('_aoh', 'float')) : (opc.aoAlturas ?? [4.4, 8.05, 11.7]).map(bajo).reduce((a, b) => max(a, b))).mul(vertical);
       // como oclusión ambiental: el alero le tapa el cielo al muro, no el sol. El sol bajo de la mañana que entra bajo el alero
       // (la SE en enero, «Ver el corte del alero») sigue entrando con toda su fuerza. 0,15 en el encuentro sigue el perfil de una
       // foto de un bloque gemelo, nublado (~8 a 1 en el contacto; panel de sombras, 3 de octubre de 2026). Antes multiplicaba el
@@ -1441,7 +1712,10 @@ export class Escena {
     if (this.rutaSol) this.rutaSol.visible = this.uRuta.value > 0.01 && this.alt > -1;
     if (this.diagramaGrupo) this.diagramaGrupo.visible = U.sombras.value > 0.01 && !!this._diagClave;
     if (this.vientoMesh) this.vientoMesh.visible = this.uViento.value > 0.01;
-    const t0 = performance.now();
+    // la sombra gruesa se rehace con la fina (el sol se movió, llegó o cambió algo), no por un cambio de nivel de detalle
+    if (this.sunG && this.uGruesa.value > 0 && (this.sun.shadow.needsUpdate || this._gruesaSucia)) this.#ajustarGruesa();
+    if (this.ciudad?.actualizar(this.camera)) this.sun.shadow.needsUpdate = true;
+    const t0 = performance.now(); this._dibujo = t0;
     this.pipeline.render();
     this.sucio = false;
     if (this._envPend) this.#envTalVez();
@@ -1457,7 +1731,8 @@ export class Escena {
 }
 
 // Sombras de nubes proyectadas sobre todo lo que recibe sol
-const sombraNubes = Fn(([s]) => {
+const sombraNubes = Fn(([s0]) => {
+  const s = conGruesa(s0);                     // con la ciudad: la sombra gruesa fuera de la caja fina (sin ciudad, s0 tal cual)
   sombraSol.assign(vec3(s).x);                 // la sombra geométrica, antes de sumar la de las nubes
   // el ruido de Perlin se anula en su cuadrícula (cada 222 m): con el origen en el 106 y el corte en z = 0, sobre un plano de
   // la propia cuadrícula, sus líneas cruzaban el edificio como una cruz de franjas rectas (más visible al cambiar las nubes
@@ -1469,7 +1744,7 @@ const sombraNubes = Fn(([s]) => {
   return s.mul(float(1).sub(nube.mul(U.nubeSombra).mul(0.8)));
 });
 // con ?sinnubes: solo anota la sombra geométrica para la lente «Sol»
-const soloSombraSol = Fn(([s]) => { sombraSol.assign(vec3(s).x); return s; });
+const soloSombraSol = Fn(([s0]) => { const s = conGruesa(s0); sombraSol.assign(vec3(s).x); return s; });
 
 export function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
