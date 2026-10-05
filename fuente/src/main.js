@@ -10,6 +10,7 @@ import { posicionLuna } from './luna.js';
 import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
+import { ENCUADRES } from './encuadres.js';
 
 const $ = (s) => document.querySelector(s);
 // la versión es la huella del armado (js/app.js?v=…, la escribe armar-raiz.sh); sin ella, el servidor de desarrollo
@@ -279,7 +280,7 @@ function estadoCarga(t) { const el = $('#carga-estado'); if (el) el.textContent 
 // ---------------- Intro automática ----------------
 function empezarIntro(n) {
   const h = location.hash.replace('#', '');
-  const corta = visto || !!FACHADAS[h] || /^m-/.test(h) || reduce;
+  const corta = visto || !!FACHADAS[h] || /^(m-|encuadre=)/.test(h) || reduce;
   intro = { t: 0, L: /[?&]rapido/.test(location.search) || /^#medir/.test(location.hash) ? 4 : corta ? 4.5 : 14, velocidad: 1, rotulo: -1 };
   document.documentElement.classList.add('en-intro');
   try { localStorage.setItem('e106-visto', '1'); } catch (e) { /* nada */ }
@@ -394,16 +395,20 @@ function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = t
 
 /** Enlace directo a un momento: #m-AAAAMMDD-HHMM y, opcionales, lo que se está mirando:
  *  &lente=sol|lluvia|viento|sombras|partes|foto &modo=… &vista=esquina|aerea|planta o &fachada=se|no|ne|so &parte=… y
- *  &cam=x,y,z,tx,ty,tz (posición y punto de mira de la cámara, en m). Ej.: #m-20240325-1530&lente=sol&modo=total&vista=aerea.
+ *  &cam=x,y,z,tx,ty,tz (posición y punto de mira de la cámara, en m) y &encuadre=<id> (encuadres.js; también #encuadre=<id>,
+ *  con el momento del encuadre). Ej.: #m-20240325-1530&lente=sol&modo=total&vista=aerea.
  *  Los enlaces viejos, solo con la fecha y la hora, siguen valiendo. */
 function irAMomentoHash() {
+  const re = /^#encuadre=([\w-]+)$/.exec(location.hash), solo = re && ENCUADRES.find((x) => x.id === re[1]);
+  if (solo) { irAEncuadre(solo); return true; }
   const r = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(?:&(.*))?$/.exec(location.hash); if (!r) return false;
   const [y, mo, d, hh, mi] = r.slice(1, 6).map(Number), q = new URLSearchParams(r[6] ?? '');
   const lente = LENTES[q.get('lente')] ? q.get('lente') : undefined;
   const modo = lente && MODOS[lente]?.some(([k]) => k === q.get('modo')) ? q.get('modo') : undefined;
   const fachada = FACHADAS['fachada-' + q.get('fachada')] ? q.get('fachada') : undefined;
   const vista = !fachada && VISTAS[q.get('vista')] ? q.get('vista') : undefined;
-  const cam = (q.get('cam') ?? '').split(',').map(Number);
+  const cam = (q.get('cam') ?? '').split(',').map(Number), enc = ENCUADRES.find((x) => x.id === q.get('encuadre'));
+  if (enc) { irAEncuadre(enc, { fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, cam: cam.length === 6 && cam.every(Number.isFinite) ? cam : null }); return true; }
   viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, fachada, vista });
   if (lente === 'partes' && PARTES[q.get('parte')]) elegirParte(q.get('parte'));
   if (cam.length === 6 && cam.every(Number.isFinite)) volarA({ pos: cam.slice(0, 3), tgt: cam.slice(3) }, 1.4, vista ?? null, false);
@@ -419,6 +424,7 @@ function enlaceMomento() {
   if (S.fachada) q.push('fachada=' + S.fachada.slice(8)); else if (vistaB) q.push('vista=' + vistaB.dataset.vista);
   const c = escena.camera.position, t = controls.target, r1 = (x) => Math.round(x * 10) / 10;
   q.push('cam=' + [c.x, c.y, c.z, t.x, t.y, t.z].map(r1).join(','));
+  if (S.encuadre) q.push('encuadre=' + S.encuadre.id);
   return `${SITIO}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
 }
 async function copiarEnlace() {
@@ -502,16 +508,22 @@ function llegada(d) {
 
 // ---------------- Cámara ----------------
 function volarA(v, dur = 1.6, clave = null, avisar = true) {
+  if (!v.encuadre) salirEncuadre();                      // cualquier otro movimiento de cámara deja el encuadre
   cerrarQR(false);                                       // la tarjeta del QR es solo para quien sigue frente a la fachada
   const p0 = escena.camera.position.clone(), t0 = controls.target.clone();
   const p1 = new THREE.Vector3(...v.pos), t1 = new THREE.Vector3(...v.tgt);
+  // el lente: el del encuadre o el de siempre (sin encuadre, fov0 = fov1 y no cambia nada)
+  const fov0 = escena.camera.fov, fov1 = v.fov ?? fovBase(), extra = { fov0, fov1, arco: v.arco, alLlegar: v.alLlegar };
+  if (v.encuadre) controls.maxDistance = Math.max(800, p1.distanceTo(t1));   // la vista aérea está más lejos que el tope de siempre
   marcarVista(clave);
   if (p0.distanceTo(p1) < 0.6 && t0.distanceTo(t1) < 0.6) {           // ya estás ahí: un pequeño empujón para que se note
     if (clave && avisar) aviso(`Ya estás en la vista ${clave === 'aerea' ? 'aérea' : clave}.`, 1600);
-    cam.anim = { p0: p0.clone().lerp(t0, -0.03), t0, p1, t1, k: 0, dur: reduce ? 0.01 : 0.45, clave };
-  } else cam.anim = { p0, t0, p1, t1, k: 0, dur: reduce ? 0.01 : dur, clave };
+    cam.anim = { p0: p0.clone().lerp(t0, -0.03), t0, p1, t1, k: 0, dur: reduce ? 0.01 : 0.45, clave, ...extra, arco: undefined };
+  } else cam.anim = { p0, t0, p1, t1, k: 0, dur: reduce ? 0.01 : dur, clave, ...extra };
   controls.enabled = false;
 }
+/** El lente de siempre (el mismo de Escena.resize): 58° en pantallas verticales, 38° en las apaisadas. */
+function fovBase() { return innerWidth / innerHeight < 0.8 ? 58 : 38; }
 function marcarVista(clave) {
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.vista === clave)); b.style.setProperty('--p', b.dataset.vista === clave ? 0 : 1); });
 }
@@ -521,19 +533,95 @@ function pasoCamara(dt) {
   if (a.clave) document.querySelector(`.vistas [data-vista="${a.clave}"]`)?.style.setProperty('--p', e.toFixed(3));
   escena.camera.position.lerpVectors(a.p0, a.p1, e);
   // arco suave: sube un poco a mitad de camino para no atravesar el edificio
-  escena.camera.position.y += Math.sin(Math.PI * e) * Math.min(30, a.p0.distanceTo(a.p1) * 0.18);
+  escena.camera.position.y += Math.sin(Math.PI * e) * (a.arco ?? Math.min(30, a.p0.distanceTo(a.p1) * 0.18));
   controls.target.lerpVectors(a.t0, a.t1, e);
+  if (a.fov0 !== a.fov1) { escena.camera.fov = a.fov0 + (a.fov1 - a.fov0) * e; escena.camera.updateProjectionMatrix(); }
   escena.camera.lookAt(controls.target);
-  if (a.k >= 1) { cam.anim = null; controls.enabled = !intro; controls.update(); }
+  if (a.k >= 1) { cam.anim = null; controls.enabled = !intro; controls.update(); a.alLlegar?.(); }
   return true;
 }
 // al empezar a girar desde la esquina, el pivote se desliza al centro del edificio
 let deslizar = null;
 function alTomar() {
-  cerrarOferta();
+  cerrarOferta(); pararGiro();
   document.documentElement.classList.add('girado');
   marcarVista(null);
-  if (controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
+  // en un encuadre se gira alrededor de lo que el encuadre mira, no del 106
+  if (!S.encuadre && controls.target.distanceTo(new THREE.Vector3(...CENTRO)) > 2) deslizar = { t0: controls.target.clone(), k: 0 };
+}
+
+// ---------------- Encuadres (Capas → «Encuadres», datos en encuadres.js) ----------------
+// Tocar uno lleva la cámara a ese plano (con prefers-reduced-motion, de golpe), pone su momento (fecha y hora con buena luz
+// en la serie ERA5) y muestra su texto en el aviso y en el narrador, donde está «Volver a ahora». La vista aérea, al llegar,
+// gira despacio alrededor de la ciudad hasta que se toca algo (sin giro con movimiento reducido). Mientras dura el encuadre
+// el pivote es lo que el encuadre mira y la franja nítida va alrededor de ese punto; cualquier otro movimiento de cámara
+// (una vista, una fachada, el recorrido, un enlace con &cam=) lo deja. Enlace: #encuadre=<id> o #m-…&encuadre=<id>.
+const ciudadApagada = () => { const o = escena?.ciudadOpc; return !o || o.nivel === 'oculta' || escena.ciudadEncendida === false; };
+/** La cámara del encuadre en esta pantalla: tal cual en las apaisadas; en las verticales (lente de 58°), más lejos por la misma
+ *  línea, para que a lo ancho quepa casi lo mismo (o la posición fija `movil` del encuadre). */
+function poseEncuadre(e) {
+  const asp = innerWidth / innerHeight;
+  if (asp >= 0.8) return { pos: e.pos, tgt: e.tgt, fov: e.fov ?? 38 };
+  if (e.movil) return { pos: e.movil, tgt: e.tgt, fov: 58 };
+  const rad = THREE.MathUtils.degToRad, hd = Math.tan(rad(e.fov ?? 38) / 2) * 1.6, hp = Math.tan(rad(29)) * asp;
+  const k = Math.min(1.9, Math.max(1, Math.pow(hd / hp, 0.7)));
+  const pos = e.tgt.map((t, i) => t + (e.pos[i] - t) * k); pos[1] = Math.max(pos[1], 1.5);
+  return { pos, tgt: e.tgt, fov: 58 };
+}
+function irAEncuadre(e, { fecha, min, cam: c, ...extra } = {}) {
+  if (!e) return;
+  cerrarOferta(); pararGiro();
+  const [y, mo, d] = e.fecha.split('-').map(Number), [hh, mi] = e.hora.split(':').map(Number);
+  const f = fecha ?? { y, m: mo, d }, m = min ?? hh * 60 + mi;
+  const suMomento = f.y === y && f.m === mo && f.d === d && m === hh * 60 + mi;   // el texto de la luz es de su momento
+  viajarA({ fecha: f, min: m, titulo: e.nombre, texto: suMomento ? `${e.texto} ${e.luz}` : e.texto, ...extra });
+  const v = poseEncuadre(e);
+  if (c) { v.pos = c.slice(0, 3); v.tgt = c.slice(3); }
+  const dist = escena.camera.position.distanceTo(new THREE.Vector3(...v.pos));
+  // de un lado de la ciudad a otro, la cámara sube y pasa por encima (como una grúa), en vez de cruzar edificios y árboles
+  const arco = dist > 120 ? Math.min(350, dist * 0.3) : undefined;
+  volarA({ ...v, encuadre: true, arco, alLlegar: e.aerea && !c ? girarDespacio : null }, Math.min(3.4, Math.max(1.6, 1.4 + dist / 700)), null, false);
+  S.encuadre = e;
+  pintarEncuadres();
+  aviso(`${e.nombre}. ${e.texto}${e.ciudad && ciudadApagada() ? ' La ciudad está apagada: enciéndela en Capas.' : ''}`, 6500);
+}
+function salirEncuadre() { if (!S.encuadre) return; S.encuadre = null; pararGiro(); pintarEncuadres(); }
+// el giro lento de la vista aérea: unos 4 min por vuelta (OrbitControls: 2π/60 · velocidad por segundo); se para con cualquier toque o tecla
+function girarDespacio() { if (reduce || !S.encuadre?.aerea) return; controls.autoRotate = true; controls.autoRotateSpeed = 0.25; }
+function pararGiro() { if (controls?.autoRotate) controls.autoRotate = false; }
+function prepararEncuadres() {
+  const ul = $('#encuadres'); if (!ul) return;
+  for (const e of ENCUADRES) {
+    const li = document.createElement('li'), b = document.createElement('button'), [y, m, d] = e.fecha.split('-').map(Number), [hh, mi] = e.hora.split(':').map(Number);
+    b.type = 'button'; b.dataset.encuadre = e.id; b.setAttribute('aria-pressed', 'false');
+    if (e.aerea) { li.className = 'aerea'; const i = document.createElement('i'); i.textContent = 'Vista aérea'; b.append(i); }
+    const n = document.createElement('span'); n.textContent = e.nombre;
+    const s = document.createElement('small'); s.textContent = `${d} ${MES3[m - 1]} ${y} · ${hhmm(hh * 60 + mi)}`;
+    b.append(n, s); li.append(b); ul.append(li);
+  }
+  ul.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-encuadre]'); if (!b) return;
+    const e = ENCUADRES.find((x) => x.id === b.dataset.encuadre);
+    if (b.getAttribute('aria-disabled') === 'true') { aviso('Este encuadre es de la ciudad, que está apagada. Enciéndela con el botón de arriba.', 4000); $('#encuadres-encender')?.focus(); return; }
+    irAEncuadre(e);
+    // Capas tapa parte del plano (en el teléfono, casi todo): se cierra para verlo, y el foco vuelve a «Capas»
+    $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); enfocar($('#abrir-capas'));
+  });
+  $('#encuadres-encender')?.addEventListener('click', () => { const c = $('#capa-ciudad'); if (c.checked) return; c.checked = true; c.dispatchEvent(new Event('change')); });
+  addEventListener('keydown', pararGiro); addEventListener('pointerdown', pararGiro, true); addEventListener('wheel', pararGiro, { passive: true });
+  pintarEncuadres();
+}
+/** El encuadre elegido, marcado; con la ciudad apagada, los de la ciudad no se ofrecen y la nota ofrece encenderla. */
+function pintarEncuadres() {
+  const ul = $('#encuadres'); if (!ul || !escena) return;
+  const apagada = ciudadApagada(), nota = $('#encuadres-nota');
+  if (nota) nota.hidden = !apagada;
+  const boton = $('#encuadres-encender'); if (boton) boton.hidden = /[?&]ligero/.test(location.search);
+  ul.querySelectorAll('[data-encuadre]').forEach((b) => {
+    const e = ENCUADRES.find((x) => x.id === b.dataset.encuadre);
+    b.setAttribute('aria-pressed', String(S.encuadre?.id === e.id));
+    if (e.ciudad && apagada) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
+  });
 }
 
 // ---------------- Avisos para lectores de pantalla ----------------
@@ -591,6 +679,8 @@ function paso(now) {
     // la cámara no baja del nivel de los ojos: el ángulo máximo depende de la distancia
     const d = escena.camera.position.distanceTo(controls.target);
     controls.maxPolarAngle = Math.acos(THREE.MathUtils.clamp((1.4 - controls.target.y) / d, -1, 1));
+    // la vista aérea de un encuadre está más lejos que el tope de 800 m: desde ahí se puede acercar, no alejar más
+    controls.maxDistance = S.encuadre && d > 800 ? d : 800;
     controls.update(dt);
   }
 
@@ -661,12 +751,13 @@ function paso(now) {
   // la mirada (las 8 esquinas de su caja, más un margen); lo que queda fuera se desenfoca. Antes del modelo: el punto que se mira
   const dirCam = escena.camera.getWorldDirection(_vd);
   let cerca = Infinity, lejos = -Infinity;
-  if (ESQ106) for (const e of ESQ106) { const z = _vt.subVectors(e, escena.camera.position).dot(dirCam); cerca = Math.min(cerca, z); lejos = Math.max(lejos, z); }
+  if (S.encuadre?.foco) { const z = _vt.subVectors(controls.target, escena.camera.position).dot(dirCam); cerca = z - S.encuadre.foco; lejos = z + S.encuadre.foco; }   // un encuadre de la ciudad: nítido alrededor de lo que mira
+  else if (ESQ106) for (const e of ESQ106) { const z = _vt.subVectors(e, escena.camera.position).dot(dirCam); cerca = Math.min(cerca, z); lejos = Math.max(lejos, z); }
   else cerca = lejos = _vt.subVectors(controls.target, escena.camera.position).dot(dirCam);
   cerca = Math.max(0.5, cerca - DOF.margen); lejos = Math.max(cerca + 1, lejos + DOF.margen);
   escena.uFoco.value = (cerca + lejos) / 2; escena.uBanda.value = (lejos - cerca) / 2;
   escena.uRampa.value = Math.max(20, lejos * DOF.rampa); escena.uBokeh.value = DOF.bokeh;
-  const desenfoque = DOF.on && S.lente !== 'sombras' && !S.fachada && dirCam.y > -0.8 ? 1 : 0;      // en planta, sombras o fachada: nítido
+  const desenfoque = DOF.on && S.lente !== 'sombras' && !S.fachada && !S.encuadre?.aerea && dirCam.y > -0.8 ? 1 : 0;      // en planta, sombras o fachada: nítido
   escena.uDesenfoque.value += (desenfoque - escena.uDesenfoque.value) * Math.min(1, dt * 3);
   if (S.lente === 'sombras' && !S.viaje && escena.setDiagrama(S.fecha)) escena.setSombraAhora(S.fecha, S.min);
   actualizarCalor(p, c);
@@ -784,6 +875,7 @@ function pintarCiudad() {
   nota.textContent = !o || escena.ciudadEncendida === false ? '' : o.nivel === 'oculta' ? (o.caidas?.length || o.piso === 'oculta' ? 'Se apagó sola porque el equipo iba lento.' : '')
     : !escena.ciudadLista ? 'Llega después del edificio.' : o.nivel === 'medio' ? 'En este equipo va sin el detalle de cerca.'
       : o.nivel === 'liviano' ? 'En este equipo va sin el detalle de cerca y sin su sombra lejos del 106.' : '';
+  pintarEncuadres();
 }
 function pintarResolucion() {
   const el = $('#res-actual'); if (!el || !escena) return;
@@ -1247,11 +1339,12 @@ function irAAhora(volar = true) {
   parar(); S.mesSerie = null; S.momento = null; S.aguacero = false; $('#capa-aguacero').checked = false;
   const a = ahoraPanama();
   if (volar && S.modo !== 'ahora') {                   // volver a ahora también es un viaje
-    viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: S.fachada ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null, aAhora: true });
+    // en un encuadre, la cámara se queda en el encuadre y solo vuelve la hora
+    viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: S.fachada || S.encuadre ? null : 'esquina', fachada: S.fachada ? S.fachada.slice(8) : null, aAhora: true });
     return;
   }
   S.modo = 'ahora'; S.fecha = { y: a.y, m: a.m, d: a.d }; S.min = a.min;
-  if (volar && !S.fachada) volarA(VISTAS.esquina, 1.6, 'esquina');
+  if (volar && !S.fachada && !S.encuadre) volarA(VISTAS.esquina, 1.6, 'esquina');
   lastLect = '';
 }
 function ponerPestana(t) {
@@ -1448,6 +1541,7 @@ function prepararUI() {
     pintarCiudad();
   });
   pintarCiudad();
+  prepararEncuadres();
   // exposición larga: la alternativa a la noche honesta; se rotula en la escena mientras está activa
   $('#capa-larga').addEventListener('change', (e) => {
     escena.setModoNoche(e.target.checked ? 'larga' : 'honesta');

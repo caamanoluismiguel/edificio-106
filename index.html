@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=5dc686ae02" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=0f61fedfd8" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -631,6 +631,20 @@
   .fachadas a:hover { color: var(--cal); }
   .fachadas i { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--sol) calc(var(--v, 0) * 100%), var(--linea) 0); }
   .fachadas b { font-weight: 500; color: var(--cal); text-align: right; font-variant-numeric: tabular-nums; }
+  /* encuadres (Capas): dos columnas de tarjetas; la vista aérea, primera y a lo ancho */
+  #encuadres-caja { display: grid; gap: 8px; } #encuadres-caja h2 { margin: 0; }
+  #encuadres { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #encuadres li.aerea { grid-column: 1 / -1; }
+  #encuadres button { width: 100%; height: 100%; min-height: 44px; display: grid; gap: 4px; align-content: start; text-align: left; color: var(--cal); border: 1px solid var(--linea);
+    background: rgba(239,233,222,.04); border-radius: 12px; padding: 8px 10px; cursor: pointer; transition: border-color .2s, background .2s; }
+  #encuadres button:hover { border-color: rgba(239,233,222,.42); }
+  #encuadres button[aria-pressed="true"] { border-color: var(--cal); background: rgba(239,233,222,.1); }
+  #encuadres button[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+  #encuadres button[aria-disabled="true"]:hover { border-color: var(--linea); }
+  #encuadres span { font: 600 13px/1.25 var(--texto); }
+  #encuadres small { font: 500 11px/1.2 var(--datos); color: var(--cal-2); }
+  #encuadres i { font: 500 11px/1 var(--datos); font-style: normal; color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; }
+  #encuadres-nota .boton { margin-top: 8px; min-height: 44px; padding: 10px 16px; }
 
   /* ---------- fachada (QR en sitio) ---------- */
   #panel-fachada { position: fixed; z-index: 7; top: calc(env(safe-area-inset-top, 0px) + 72px); left: var(--gutter); max-width: min(30rem, calc(100vw - 2 * var(--gutter) - 130px)); background: var(--panel-2);
@@ -1359,6 +1373,12 @@
       <label><input type="checkbox" id="capa-aguacero"><b>Simular aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>
     </div>
   </div>
+  <div id="encuadres-caja">
+    <h2 id="encuadres-t">Encuadres</h2>
+    <p class="lamina-nota">Planos para conocer Ciudad del Saber, cada uno en una fecha y hora de la serie con buena luz. Al tocar uno, la cámara va hasta ahí y puedes girar alrededor de lo que muestra. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
+    <p id="encuadres-nota" class="lamina-nota" hidden>La ciudad está apagada, así que solo quedan los encuadres del 106 y de las esclusas.<br><button class="boton" type="button" id="encuadres-encender">Encender la ciudad</button></p>
+    <ul id="encuadres" aria-labelledby="encuadres-t"></ul>
+  </div>
   <div>
     <h2>Sol directo sobre cada fachada</h2>
     <div class="fachadas">
@@ -1449,4 +1469,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=5dc686ae02"></script></body></html>
+<script type="module" src="js/app.js?v=0f61fedfd8"></script></body></html>
