@@ -11,8 +11,9 @@
  *  caja de la sombra fina del 106 (±70 m, escena.js). Más allá, la sombra de la ciudad sale del mapa grueso. Se vuelve a «cerca» a
  *  CERCA m, para que el botón no parpadee en el borde. */
 export const LEJOS = 70, CERCA = 60;
-/** Lo más que el punto que se mira puede salir del límite mientras se arrastra (m); al soltar vuelve al borde. */
-export const BORDE_BLANDO = 60;
+/** Lo más que el punto que se mira puede salir del límite mientras se arrastra (m); al soltar vuelve al borde. El agua del canal
+ *  más cercana queda a 61 m del límite (contexto, OSM 2314149): con 40 m nunca se llega a ella. */
+export const BORDE_BLANDO = 40;
 
 // los tipos del kit, con las palabras de docs/ciudad/CIUDAD.md (sin fechas: el tipo se asigna por lo observado y la huella)
 export const TIPOS = {

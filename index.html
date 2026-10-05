@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=a546647d92" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=93c874c9da" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -427,6 +427,7 @@
   /* navegación libre: «Volver al 106», la nota de lejos, la tarjeta del edificio y la pista de la primera vez */
   #lejos { display: grid; justify-items: end; gap: 6px; max-width: 280px; }
   #lejos[hidden], #tarjeta-edificio[hidden], #pista-navegar[hidden], #te-acerca[hidden] { display: none; }
+  #lejos-nota .corta { display: none; }
   #lejos-nota { margin: 0; font: 400 12px/1.35 var(--texto); color: var(--cal-2); text-align: right; background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; padding: 6px 10px; backdrop-filter: blur(10px); }
   #tarjeta-edificio { width: min(320px, calc(100vw - 32px)); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(12px); }
   #tarjeta-edificio .te-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -708,7 +709,9 @@
     #mirando, .pista { display: none; }
     #brujula { width: 52px; height: 52px; grid-column: 2; grid-row: 1; }
     #brujula text { font-size: 13px; } #brujula text.n { font-size: 15px; }
-    #lejos { grid-column: 1; grid-row: 1; justify-self: end; align-self: start; max-width: 100%; }
+    #lejos { grid-column: 1; grid-row: 1; justify-self: end; align-self: start; max-width: 100%; gap: 4px; }
+    #volver-106 { min-height: 44px; }
+    #lejos-nota { padding: 4px 10px; } #lejos-nota .larga { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } #lejos-nota .corta { display: inline; }
     #tarjeta-edificio { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; width: auto; }
     #pista-navegar { top: calc(env(safe-area-inset-top, 0px) + 124px); }
     .hud-botones { display: contents; }
@@ -1048,7 +1051,7 @@
   <!-- navegación libre: lejos del 106 (src/navegar.js, LEJOS), el botón para volver y la nota de que la ciudad es aproximada -->
   <div id="lejos" hidden>
     <button type="button" id="volver-106" class="boton">Volver al 106</button>
-    <p id="lejos-nota"></p>
+    <p id="lejos-nota"><span class="larga"></span><span class="corta" aria-hidden="true"></span></p>
   </div>
   <section id="tarjeta-edificio" hidden aria-labelledby="te-t">
     <div class="te-cab"><h2 id="te-t"></h2><button type="button" id="te-cerrar" aria-label="Cerrar la tarjeta del edificio">×</button></div>
@@ -1503,4 +1506,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=a546647d92"></script></body></html>
+<script type="module" src="js/app.js?v=93c874c9da"></script></body></html>

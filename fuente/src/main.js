@@ -737,10 +737,13 @@ function pintarLejos(lejos) {
   $('#lejos').hidden = !lejos;
   if (!lejos) return;
   const o = escena.ciudadOpc, gruesa = !ciudadApagada() && o && NIVEL_CON_SOMBRA.has(o.nivel) && !!escena.sunG;
-  $('#lejos-nota').textContent = ciudadApagada()
+  // la larga en el computador; en el teléfono, la corta (el CSS elige), con la larga para los lectores de pantalla
+  const larga = ciudadApagada()
     ? 'Lejos del 106 el entorno es aproximado y sus volúmenes no proyectan sombra. No sirve para medir.'
     : gruesa ? 'Lejos del 106 la ciudad es aproximada y su sombra sale de un mapa más grueso. No sirve para medir.'
       : 'Lejos del 106 la ciudad es aproximada y en este equipo no proyecta sombra. No sirve para medir.';
+  const n = $('#lejos-nota'); n.querySelector('.larga').textContent = larga;
+  n.querySelector('.corta').textContent = ciudadApagada() ? 'Entorno aproximado: no sirve para medir.' : 'Ciudad aproximada: no sirve para medir.';
 }
 const NIVEL_CON_SOMBRA = new Set(['completo', 'medio']);
 /** Vuelve al 106 con el vuelo de los encuadres (de golpe con movimiento reducido), a la vista pedida o a la última elegida. */

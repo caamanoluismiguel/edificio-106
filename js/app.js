@@ -40112,8 +40112,8 @@ function Fq(e) {
 	a && Nq.tx !== null && !NK.anim && !bq && !i && (Nq.hs ??= n.y - t.suelo(Nq.tx, Nq.tz), s = t.suelo(n.x, n.z) + Nq.hs - n.y);
 	let l = t.borde(n.x, n.z);
 	if (l.d > 0 && !NK.anim) {
-		if (Nq.arrastra && l.d > 60) {
-			let e = 1 - 60 / l.d;
+		if (Nq.arrastra && l.d > 40) {
+			let e = 1 - 40 / l.d;
 			o = (l.x - n.x) * e, c = (l.z - n.z) * e;
 		} else if (!Nq.arrastra) {
 			let t = l.d < .02 || QG ? 1 : Math.min(1, e * 4);
@@ -40140,8 +40140,8 @@ function Iq() {
 var Lq = () => `${Cq()}|${$.ciudadOpc?.nivel}|${!!$.sunG}`;
 function Rq(e) {
 	if (Nq.lejos = e, Nq.notaClave = Lq(), Z("#lejos").hidden = !e, !e) return;
-	let t = $.ciudadOpc, n = !Cq() && t && zq.has(t.nivel) && !!$.sunG;
-	Z("#lejos-nota").textContent = Cq() ? "Lejos del 106 el entorno es aproximado y sus volúmenes no proyectan sombra. No sirve para medir." : n ? "Lejos del 106 la ciudad es aproximada y su sombra sale de un mapa más grueso. No sirve para medir." : "Lejos del 106 la ciudad es aproximada y en este equipo no proyecta sombra. No sirve para medir.";
+	let t = $.ciudadOpc, n = !Cq() && t && zq.has(t.nivel) && !!$.sunG, r = Cq() ? "Lejos del 106 el entorno es aproximado y sus volúmenes no proyectan sombra. No sirve para medir." : n ? "Lejos del 106 la ciudad es aproximada y su sombra sale de un mapa más grueso. No sirve para medir." : "Lejos del 106 la ciudad es aproximada y en este equipo no proyecta sombra. No sirve para medir.", i = Z("#lejos-nota");
+	i.querySelector(".larga").textContent = r, i.querySelector(".corta").textContent = Cq() ? "Entorno aproximado: no sirve para medir." : "Ciudad aproximada: no sirve para medir.";
 }
 var zq = /* @__PURE__ */ new Set(["completo", "medio"]);
 function Bq(e = Nq.vista) {
