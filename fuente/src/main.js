@@ -399,7 +399,8 @@ function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = t
  *  con el momento del encuadre). Ej.: #m-20240325-1530&lente=sol&modo=total&vista=aerea.
  *  Los enlaces viejos, solo con la fecha y la hora, siguen valiendo. */
 function irAMomentoHash() {
-  const re = /^#encuadre=([\w-]+)$/.exec(location.hash), solo = re && ENCUADRES.find((x) => x.id === re[1]);
+  const ligero = /[?&]ligero/.test(location.search);   // ?ligero no trae la ciudad ni el entorno: sin encuadres
+  const re = /^#encuadre=([\w-]+)$/.exec(location.hash), solo = !ligero && re && ENCUADRES.find((x) => x.id === re[1]);
   if (solo) { irAEncuadre(solo); return true; }
   const r = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(?:&(.*))?$/.exec(location.hash); if (!r) return false;
   const [y, mo, d, hh, mi] = r.slice(1, 6).map(Number), q = new URLSearchParams(r[6] ?? '');
@@ -407,7 +408,7 @@ function irAMomentoHash() {
   const modo = lente && MODOS[lente]?.some(([k]) => k === q.get('modo')) ? q.get('modo') : undefined;
   const fachada = FACHADAS['fachada-' + q.get('fachada')] ? q.get('fachada') : undefined;
   const vista = !fachada && VISTAS[q.get('vista')] ? q.get('vista') : undefined;
-  const cam = (q.get('cam') ?? '').split(',').map(Number), enc = ENCUADRES.find((x) => x.id === q.get('encuadre'));
+  const cam = (q.get('cam') ?? '').split(',').map(Number), enc = !ligero && ENCUADRES.find((x) => x.id === q.get('encuadre'));
   if (enc) { irAEncuadre(enc, { fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, cam: cam.length === 6 && cam.every(Number.isFinite) ? cam : null }); return true; }
   viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, fachada, vista });
   if (lente === 'partes' && PARTES[q.get('parte')]) elegirParte(q.get('parte'));

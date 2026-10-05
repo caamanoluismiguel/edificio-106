@@ -39569,36 +39569,36 @@ function WK() {
 	Q.interactuo = !0, Z("#oferta-recorrido").hidden = !0, clearTimeout(zK.t);
 }
 function GK() {
-	let e = /^#encuadre=([\w-]+)$/.exec(location.hash), t = e && NG.find((t) => t.id === e[1]);
-	if (t) return hq(t), !0;
-	let n = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(?:&(.*))?$/.exec(location.hash);
-	if (!n) return !1;
-	let [r, i, a, o, s] = n.slice(1, 6).map(Number), c = new URLSearchParams(n[6] ?? ""), l = qJ[c.get("lente")] ? c.get("lente") : void 0, u = l && JJ[l]?.some(([e]) => e === c.get("modo")) ? c.get("modo") : void 0, d = JV["fachada-" + c.get("fachada")] ? c.get("fachada") : void 0, f = !d && pK[c.get("vista")] ? c.get("vista") : void 0, p = (c.get("cam") ?? "").split(",").map(Number), m = NG.find((e) => e.id === c.get("encuadre"));
-	return m ? (hq(m, {
+	let e = /[?&]ligero/.test(location.search), t = /^#encuadre=([\w-]+)$/.exec(location.hash), n = !e && t && NG.find((e) => e.id === t[1]);
+	if (n) return hq(n), !0;
+	let r = /^#m-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(?:&(.*))?$/.exec(location.hash);
+	if (!r) return !1;
+	let [i, a, o, s, c] = r.slice(1, 6).map(Number), l = new URLSearchParams(r[6] ?? ""), u = qJ[l.get("lente")] ? l.get("lente") : void 0, d = u && JJ[u]?.some(([e]) => e === l.get("modo")) ? l.get("modo") : void 0, f = JV["fachada-" + l.get("fachada")] ? l.get("fachada") : void 0, p = !f && pK[l.get("vista")] ? l.get("vista") : void 0, m = (l.get("cam") ?? "").split(",").map(Number), h = !e && NG.find((e) => e.id === l.get("encuadre"));
+	return h ? (hq(h, {
 		fecha: {
-			y: r,
-			m: i,
-			d: a
+			y: i,
+			m: a,
+			d: o
 		},
-		min: o * 60 + s,
-		lente: l,
-		modo: u,
-		cam: p.length === 6 && p.every(Number.isFinite) ? p : null
+		min: s * 60 + c,
+		lente: u,
+		modo: d,
+		cam: m.length === 6 && m.every(Number.isFinite) ? m : null
 	}), !0) : ($K({
 		fecha: {
-			y: r,
-			m: i,
-			d: a
+			y: i,
+			m: a,
+			d: o
 		},
-		min: o * 60 + s,
-		lente: l,
-		modo: u,
-		fachada: d,
-		vista: f
-	}), l === "partes" && nY[c.get("parte")] && aY(c.get("parte")), p.length === 6 && p.every(Number.isFinite) && sq({
-		pos: p.slice(0, 3),
-		tgt: p.slice(3)
-	}, 1.4, f ?? null, !1), !0);
+		min: s * 60 + c,
+		lente: u,
+		modo: d,
+		fachada: f,
+		vista: p
+	}), u === "partes" && nY[l.get("parte")] && aY(l.get("parte")), m.length === 6 && m.every(Number.isFinite) && sq({
+		pos: m.slice(0, 3),
+		tgt: m.slice(3)
+	}, 1.4, p ?? null, !1), !0);
 }
 function KK() {
 	let e = Q.fecha, t = (Math.round(Q.min) % 1440 + 1440) % 1440, n = [];
