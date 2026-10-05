@@ -631,7 +631,7 @@
   .fachadas i { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--sol) calc(var(--v, 0) * 100%), var(--linea) 0); }
   .fachadas b { font-weight: 500; color: var(--cal); text-align: right; font-variant-numeric: tabular-nums; }
   /* encuadres (Capas): dos columnas de tarjetas; la vista aérea, primera y a lo ancho */
-  #encuadres-caja { display: grid; gap: 8px; } #encuadres-caja[hidden] { display: none; } #encuadres-caja h2 { margin: 0; }
+  #encuadres-caja { display: grid; gap: 8px; margin: 4px 0 18px; } #encuadres-caja[hidden] { display: none; } #encuadres-caja h2 { margin: 0; }
   #encuadres { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   #encuadres li.aerea { grid-column: 1 / -1; }
   #encuadres button { width: 100%; height: 100%; min-height: 44px; display: grid; gap: 4px; align-content: start; text-align: left; color: var(--cal); border: 1px solid var(--linea);
@@ -643,6 +643,8 @@
   #encuadres span { font: 600 13px/1.25 var(--texto); }
   #encuadres small { font: 500 11px/1.2 var(--datos); color: var(--cal-2); }
   #encuadres i { font: 500 11px/1 var(--datos); font-style: normal; color: var(--cal-2); letter-spacing: .1em; text-transform: uppercase; }
+  #encuadre-texto { color: var(--cal); padding: 10px 12px; border: 1px solid var(--linea); border-radius: 12px; }
+  @media (max-width: 760px) { #encuadre-texto { display: none; } }
   #encuadres-nota .boton { margin-top: 8px; min-height: 44px; padding: 10px 16px; }
 
   /* ---------- fachada (QR en sitio) ---------- */
@@ -1363,6 +1365,13 @@
 <div id="capas" hidden>
   <div>
     <div class="ir-cab"><h2>Capas</h2><button class="boton" type="button" id="cerrar-capas">Cerrar</button></div>
+    <div id="encuadres-caja">
+      <h2 id="encuadres-t">Encuadres</h2>
+      <p class="lamina-nota">Cada encuadre te lleva a un lugar de Ciudad del Saber en un día y una hora reales, sin lluvia y con sol directo. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
+      <p id="encuadres-nota" class="lamina-nota" hidden>La ciudad está apagada, así que solo queda el encuadre del 106.<br><button class="boton" type="button" id="encuadres-encender">Encender la ciudad</button></p>
+      <ul id="encuadres" aria-labelledby="encuadres-t"></ul>
+      <p id="encuadre-texto" class="lamina-nota" role="status" hidden></p>
+    </div>
     <div class="interruptores">
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
       <label><input type="checkbox" id="capa-ciudad" checked><b>Ciudad del Saber (aproximada)</b><small>228 edificios armados con un kit de piezas sobre las huellas de OpenStreetMap; los demás son copias del 106 o volúmenes simples. La forma, los pisos y los techos son aproximados: solo el 106 está medido. Si la desmarcas, en lugar del kit quedan copias del 106 y volúmenes simples, y la página descarga menos la próxima vez que la abras. <span id="ciudad-estado"></span></small></label>
@@ -1370,12 +1379,6 @@
       <label class="solo-noche"><input type="checkbox" id="capa-larga"><b>Exposición larga</b><small>Aclara la noche como una foto de 20 segundos en trípode. No agrega luz: todo sube lo mismo, así que lo claro y lo oscuro siguen en su lugar.</small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Simular aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>
     </div>
-  </div>
-  <div id="encuadres-caja">
-    <h2 id="encuadres-t">Encuadres</h2>
-    <p class="lamina-nota">Planos para conocer Ciudad del Saber, cada uno en una fecha y hora de la serie ERA5 sin lluvia y con sol directo de más de 650 W/m². Al tocar uno, la cámara va hasta ahí y puedes girar alrededor de lo que muestra. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
-    <p id="encuadres-nota" class="lamina-nota" hidden>La ciudad está apagada, así que solo quedan los encuadres del 106 y de las esclusas.<br><button class="boton" type="button" id="encuadres-encender">Encender la ciudad</button></p>
-    <ul id="encuadres" aria-labelledby="encuadres-t"></ul>
   </div>
   <div>
     <h2>Sol directo sobre cada fachada</h2>
