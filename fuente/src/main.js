@@ -525,7 +525,7 @@ function volarA(v, dur = 1.6, clave = null, avisar = true) {
   if (v.encuadre) controls.maxDistance = Math.max(800, p1.distanceTo(t1));   // la vista aérea está más lejos que el tope de siempre
   marcarVista(clave);
   // de un lugar de la ciudad a otro (el punto que se mira se corre más de 120 m), el mismo vuelo de los encuadres: la cámara sube y
-  // pasa por encima. Entre las vistas del 106 el punto que se mira se corre menos de 30 m: esos vuelos no cambian
+  // pasa por encima. Entre las vistas del 106 (fachadas y corte incluidos) el punto que se mira se corre menos de 46 m: esos vuelos no cambian
   if (extra.arco === undefined && t0.distanceTo(t1) > 120) { const dist = p0.distanceTo(p1); extra.arco = Math.min(350, dist * 0.3); dur = Math.max(dur, Math.min(3.4, 1.4 + dist / 700)); }
   if (p0.distanceTo(p1) < 0.6 && t0.distanceTo(t1) < 0.6) {           // ya estás ahí: un pequeño empujón para que se note
     if (clave && avisar) aviso(`Ya estás en la vista ${clave === 'aerea' ? 'aérea' : clave}.`, 1600);
@@ -580,7 +580,7 @@ function limitesCamara() {
   const ojo = NAV.lejos && NAV.mapa ? NAV.mapa.suelo(escena.camera.position.x, escena.camera.position.z) + 1.4 : 1.4;
   controls.maxPolarAngle = Math.acos(THREE.MathUtils.clamp((ojo - controls.target.y) / d, -1, 1));
   // la vista aérea de un encuadre está más lejos que el tope de 800 m: desde ahí se puede acercar, no alejar más. Lejos del 106 el
-  // tope es 1.500 m (la ciudad entera desde cualquier punto); al volver cerca no se corta de golpe: se puede acercar, no alejar más
+  // tope es 1.500 m (casi toda la ciudad en una pantalla apaisada); al volver cerca no se corta de golpe: se puede acercar, no alejar más
   controls.maxDistance = S.encuadre && d > 800 ? d : NAV.lejos ? 1500 : Math.max(800, Math.min(d, 1500));
 }
 
@@ -716,7 +716,7 @@ function navegar(dt) {
     const gc = M.suelo(c.x, c.z) + 1; if (c.y < gc) c.y = gc;
   }
   // lejos del 106, la cámara no entra en un edificio de la ciudad (su caja aproximada): sube por encima del techo. Junto al 106 todo
-  // queda como siempre (las vistas de las fachadas están a menos de 2 m de los vecinos, y al 106 se entra a mirar los interiores)
+  // queda como siempre (las vistas de las fachadas SO y SE están a menos de 2 m de los vecinos, y al 106 se entra a mirar los interiores)
   if (NAV.lejos && !cam.anim && (!NAV.cam || NAV.cam.distanceToSquared(c) > 1e-6)) {
     const e = M.dentroDe(c, 0.5); if (e) c.y = e.y1 + 1;
     (NAV.cam ??= new THREE.Vector3()).copy(c);
@@ -730,20 +730,22 @@ function estarLejos() {
   const lejos = NAV.lejos ? dc > CERCA : dc > LEJOS;
   if (lejos !== NAV.lejos || (lejos && NAV.notaClave !== claveNota())) pintarLejos(lejos);
 }
-const claveNota = () => `${ciudadApagada()}|${escena.ciudadOpc?.nivel}|${!!escena.sunG}`;
+/** La ciudad del kit se ve: encendida y ya llegada (mientras llega, en su lugar está el contexto de siempre). */
+const ciudadVisible = () => !ciudadApagada() && !!escena.ciudadLista;
+const claveNota = () => `${ciudadVisible()}|${escena.ciudadOpc?.nivel}|${!!escena.sunG}`;
 /** El botón «Volver al 106» y la nota: la ciudad lejos del 106 es aproximada y su sombra, la del mapa grueso (o ninguna). */
 function pintarLejos(lejos) {
   NAV.lejos = lejos; NAV.notaClave = claveNota();
   $('#lejos').hidden = !lejos;
   if (!lejos) return;
-  const o = escena.ciudadOpc, gruesa = !ciudadApagada() && o && NIVEL_CON_SOMBRA.has(o.nivel) && !!escena.sunG;
+  const o = escena.ciudadOpc, gruesa = ciudadVisible() && o && NIVEL_CON_SOMBRA.has(o.nivel) && !!escena.sunG;
   // la larga en el computador; en el teléfono, la corta (el CSS elige), con la larga para los lectores de pantalla
-  const larga = ciudadApagada()
+  const larga = !ciudadVisible()
     ? 'Lejos del 106 el entorno es aproximado y sus volúmenes no proyectan sombra. No sirve para medir.'
     : gruesa ? 'Lejos del 106 la ciudad es aproximada y su sombra sale de un mapa más grueso. No sirve para medir.'
-      : 'Lejos del 106 la ciudad es aproximada y en este equipo no proyecta sombra. No sirve para medir.';
+      : 'Lejos del 106 la ciudad es aproximada y ahora no proyecta sombra. No sirve para medir.';
   const n = $('#lejos-nota'); n.querySelector('.larga').textContent = larga;
-  n.querySelector('.corta').textContent = ciudadApagada() ? 'Entorno aproximado: no sirve para medir.' : 'Ciudad aproximada: no sirve para medir.';
+  n.querySelector('.corta').textContent = !ciudadVisible() ? 'Entorno aproximado: no sirve para medir.' : 'Ciudad aproximada: no sirve para medir.';
 }
 const NIVEL_CON_SOMBRA = new Set(['completo', 'medio']);
 /** Vuelve al 106 con el vuelo de los encuadres (de golpe con movimiento reducido), a la vista pedida o a la última elegida. */
@@ -785,7 +787,7 @@ function elegirEn(x, y) {
   return h;
 }
 function mostrarTarjeta(e) {
-  const T = tarjeta(e, !ciudadApagada()), el = $('#tarjeta-edificio');
+  const T = tarjeta(e, ciudadVisible()), el = $('#tarjeta-edificio');
   $('#te-t').textContent = T.titulo;
   const txt = $('#te-txt'); txt.replaceChildren(...T.lineas.map((l) => { const p = document.createElement('p'); p.textContent = l; return p; }));
   $('#te-acerca').hidden = !T.es106;
@@ -839,8 +841,8 @@ function prepararNavegar() {
     const P = { ArrowUp: [0, 1], w: [0, 1], ArrowDown: [0, -1], s: [0, -1], ArrowLeft: [1, 0], a: [1, 0], ArrowRight: [-1, 0], d: [-1, 0] }[k];
     if (P && !flecha) { controls.pan(P[0] * paso, P[1] * paso); marcarVista(null); NAV.arrastra = false; e.preventDefault(); }
     else if (k === 'q' || k === 'e') { controls.rotateLeft((k === 'q' ? -1 : 1) * 0.15); marcarVista(null); e.preventDefault(); }
-    else if (k === '+' || k === '=') { controls.dollyIn(1.25); e.preventDefault(); }
-    else if (k === '-' || k === '_') { controls.dollyOut(1.25); e.preventDefault(); }
+    else if (k === '+' || k === '=') { controls.dollyOut(1.25); e.preventDefault(); }   // en OrbitControls, dollyOut acerca y dollyIn aleja
+    else if (k === '-' || k === '_') { controls.dollyIn(1.25); e.preventDefault(); }
     else if (k === 'Home') { volverAl106(); e.preventDefault(); }
     else return;
     cerrarOferta(); pararGiro();

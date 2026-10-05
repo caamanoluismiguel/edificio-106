@@ -1,8 +1,9 @@
 // Mapa liviano de Ciudad del Saber para la navegación libre (main.js, src/navegar.js): datos/ciudad_mapa.json.
 // No inventa nada: junta lo que ya usan el contexto y la ciudad.
 //   · limite: el límite propuesto (docs/ciudad/limite-propuesto.geojson, no oficial) en metros de la escena (aReg de ciudad-datos.mjs);
-//   · suelo: el terreno de la escena (suelo() de ciudad-datos.mjs: el sitio del 106 y la rejilla de 40 m de contexto.mjs sobre
-//     Copernicus GLO-30), muestreado cada PASO m (el paso de la rejilla): con él el punto que se mira nunca queda bajo el suelo;
+//   · suelo: el terreno de la escena (suelo() de ciudad-datos.mjs: el sitio del 106, plano, y la rejilla de 40 m de contexto.mjs sobre
+//     Copernicus GLO-30), con los mismos nudos de la rejilla de la escena (alineados con su caja), sus alturas y el mismo corte en
+//     triángulos (src/navegar.js, Mapa.suelo): el suelo del mapa es el de la escena, salvo el redondeo a 1 cm;
 //   · edificios: por cada edificio del inventario, su número, tipología del kit, clase de certeza, cómo se dibuja, la huella
 //     simplificada en la escena, el suelo bajo ella y una altura de techo aproximada (la del kit, la de la caja de contexto.mjs:
 //     niveles de OSM × 3,65 + 0,65 o Open Buildings p90, o la del 106). Sirve para elegir un edificio con dos toques y para que la
@@ -54,11 +55,16 @@ for (const e of E) {
 
 // suelo cada PASO m en la caja del límite más 400 m (el borde blando y la cámara alejada)
 const xs = limite.map((p) => p[0]), zs = limite.map((p) => p[1]);
-const x0 = Math.floor((Math.min(...xs) - 400) / PASO) * PASO, z0 = Math.floor((Math.min(...zs) - 400) / PASO) * PASO;
+// los nudos son los de la rejilla de la escena: alineados con la caja del entorno (ent.caja)
+const [cx0, , cz0] = ent.caja;
+const x0 = cx0 + Math.floor((Math.min(...xs) - 400 - cx0) / PASO) * PASO, z0 = cz0 + Math.floor((Math.min(...zs) - 400 - cz0) / PASO) * PASO;
 const nx = Math.ceil((Math.max(...xs) + 400 - x0) / PASO) + 1, nz = Math.ceil((Math.max(...zs) + 400 - z0) / PASO) + 1;
-const y = []; for (let k = 0; k < nz; k++) for (let i = 0; i < nx; i++) y.push(r1(suelo([x0 + i * PASO, z0 + k * PASO])));
+// en un nudo, suelo() da la altura de la rejilla; dentro del sitio del 106 da el pasto del sitio (−0,015), que no es la de la rejilla:
+// ahí la rejilla está en la meseta (−0,6 m; ciudad-datos.mjs, MESETA), y el sitio va aparte (sitio)
+const SITIO = { x: 180, z: 160, y: -0.015 }, r2 = (x) => Math.round(x * 100) / 100;
+const y = []; for (let k = 0; k < nz; k++) for (let i = 0; i < nx; i++) { const X = x0 + i * PASO, Z = z0 + k * PASO; y.push(Math.abs(X) <= SITIO.x && Math.abs(Z) <= SITIO.z ? -0.6 : r2(suelo([X, Z]))); }
 
 const out = { generado_por: 'fuente/ciudad-mapa.mjs', fuentes: 'docs/ciudad/edificios.json, docs/ciudad/limite-propuesto.geojson (no oficial), terreno de contexto.mjs; alturas aproximadas, solo para elegir y para la cámara',
-  limite, suelo: { x0, z0, paso: PASO, nx, nz, y }, edificios };
+  limite, suelo: { x0, z0, paso: PASO, nx, nz, y, sitio: SITIO }, edificios };
 fs.writeFileSync(path.join(RAIZ, 'datos/ciudad_mapa.json'), JSON.stringify(out));
 console.log(`datos/ciudad_mapa.json: ${edificios.length} edificios, límite de ${limite.length} puntos, suelo ${nx} × ${nz}, ${(fs.statSync(path.join(RAIZ, 'datos/ciudad_mapa.json')).size / 1024).toFixed(0)} KB`);

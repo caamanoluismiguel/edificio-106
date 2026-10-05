@@ -8,8 +8,9 @@
 // main.js decide cuándo se usa cada cosa. Nada de esto corre hasta que la persona mueve la escena.
 
 /** Distancia (m, en planta) entre el punto que se mira y el centro del 106 desde la que se está «lejos»: la mitad del lado de la
- *  caja de la sombra fina del 106 (±70 m, escena.js). Más allá, la sombra de la ciudad sale del mapa grueso. Se vuelve a «cerca» a
- *  CERCA m, para que el botón no parpadee en el borde. */
+ *  caja de la sombra fina (±70 m en el marco del sol, centrada en el origen, escena.js). Sobre el suelo esa caja llega a 70 m de
+ *  lado y a 70 m / sen(altura del sol) en la dirección del sol: más allá de 70 m la sombra puede venir del mapa grueso. Se vuelve a
+ *  «cerca» a CERCA m, para que el botón no parpadee en el borde. */
 export const LEJOS = 70, CERCA = 60;
 /** Lo más que el punto que se mira puede salir del límite mientras se arrastra (m); al soltar vuelve al borde. El agua del canal
  *  más cercana queda a 61 m del límite (contexto, OSM 2314149): con 40 m nunca se llega a ella. */
@@ -42,11 +43,14 @@ export class Mapa {
     this.e106 = this.edificios.find((e) => e.n === '106') ?? null;
   }
 
-  /** El suelo de la escena bajo (x, z), bilineal en la rejilla de 40 m (fuera de la rejilla, el borde más cercano). */
+  /** El suelo de la escena bajo (x, z): el sitio del 106 (plano) o la rejilla de 40 m con el mismo corte en triángulos que
+   *  suelo() de ciudad-datos.mjs (fuera de la rejilla, su borde). */
   suelo(x, z) {
-    const S = this.S, u = Math.min(S.nx - 1.001, Math.max(0, (x - S.x0) / S.paso)), w = Math.min(S.nz - 1.001, Math.max(0, (z - S.z0) / S.paso));
-    const i = Math.floor(u), k = Math.floor(w), fu = u - i, fw = w - k, Y = (a, b) => S.y[(k + b) * S.nx + i + a];
-    return (Y(0, 0) * (1 - fu) + Y(1, 0) * fu) * (1 - fw) + (Y(0, 1) * (1 - fu) + Y(1, 1) * fu) * fw;
+    const S = this.S, s = S.sitio; if (s && Math.abs(x) <= s.x && Math.abs(z) <= s.z) return s.y;
+    const U = Math.min(S.nx - 1.000001, Math.max(0, (x - S.x0) / S.paso)), W = Math.min(S.nz - 1.000001, Math.max(0, (z - S.z0) / S.paso));
+    const i = Math.floor(U), k = Math.floor(W), u = U - i, w = W - k, Y = (a, b) => S.y[(k + b) * S.nx + i + a];
+    const Ya = Y(0, 0), Yb = Y(0, 1), Yc = Y(1, 1), Yd = Y(1, 0);
+    return w >= u ? Ya + u * (Yc - Yb) + w * (Yb - Ya) : Ya + u * (Yd - Ya) + w * (Yc - Yd);
   }
 
   dentro(x, z) { return dentroPoli(this.limite, x, z); }
@@ -136,7 +140,7 @@ export function tarjeta(e, ciudad) {
   else if (e.m === 'cuartel106') como = 'Repite el volumen del 106.';
   else if (e.m === 'a mano') como = 'Es un volumen hecho a mano.';
   else como = 'Es un volumen simple, con la altura estimada.';
-  const linea1 = (tipo ? `Tipo: ${tipo}. ` : 'Sin tipo del kit. ') + como;
+  const linea1 = (tipo ? `Tipo: ${tipo}. ` : 'Su tipo no está en el kit. ') + como;
   const [nom, txt] = CLASES[e.c] ?? CLASES.III;
   return { titulo, lineas: [linea1, `Certeza ${e.c}, ${nom}: ${txt}.`, 'Es una maqueta aproximada: solo el 106 está medido.'], es106: false };
 }
