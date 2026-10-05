@@ -597,6 +597,12 @@ function irAEncuadre(e, { fecha, min, cam: c, ...extra } = {}) {
   // con Capas abierta (computador) el texto va en la misma sección; si no, en el aviso de arriba y en el narrador
   if ($('#capas').hidden || innerWidth <= 760) aviso(`${e.nombre}. ${e.texto}${e.ciudad && ciudadApagada() ? ' La ciudad está apagada: enciéndela en Capas.' : ''}`, 6500);
 }
+/** El texto del encuadre: con la luz solo si la escena está en su momento (si cambia la hora, la luz ya no es la de ese texto). */
+function textoEncuadre(e) {
+  const [y, m, d] = e.fecha.split('-').map(Number), [hh, mi] = e.hora.split(':').map(Number);
+  const suyo = !S.viaje && S.fecha.y === y && S.fecha.m === m && S.fecha.d === d && Math.round(S.min) === hh * 60 + mi;
+  return suyo ? `${e.texto} ${e.luz}` : e.texto;
+}
 function salirEncuadre() { if (!S.encuadre) return; S.encuadre = null; pararGiro(); pintarEncuadres(); }
 // el giro lento de la vista aérea: unos 4 min por vuelta (OrbitControls: 2π/60 · velocidad por segundo); se para con cualquier toque o tecla
 function girarDespacio() { if (reduce || !S.encuadre?.aerea) return; controls.autoRotate = true; controls.autoRotateSpeed = 0.25; }
@@ -630,7 +636,7 @@ function prepararEncuadres() {
 function pintarEncuadres() {
   const ul = $('#encuadres'); if (!ul || !escena) return;
   const apagada = ciudadApagada(), nota = $('#encuadres-nota'), txt = $('#encuadre-texto');
-  if (txt) { txt.hidden = !S.encuadre; txt.textContent = S.encuadre ? S.encuadreTexto ?? S.encuadre.texto : ''; }
+  if (txt) { txt.hidden = !S.encuadre; txt.textContent = S.encuadre ? textoEncuadre(S.encuadre) : ''; }
   if (nota) nota.hidden = !apagada;
   ul.querySelectorAll('[data-encuadre]').forEach((b) => {
     const e = ENCUADRES.find((x) => x.id === b.dataset.encuadre);
@@ -799,6 +805,8 @@ function paso(now) {
   lecturas(p, c);
   if (!intro) plegarRotulo(now);
   encuadreMovil(dtReal);
+  // el texto del encuadre en Capas sigue a la hora de la escena
+  if (S.encuadre) { const k = `${S.encuadre.id}|${S.fecha.y}-${S.fecha.m}-${S.fecha.d}|${Math.round(S.min)}|${!!S.viaje}`; if (k !== S.claveEnc) { S.claveEnc = k; pintarEncuadres(); } }
   // en un encuadre, el lente sigue a Capas (abierta o cerrada) y vuelve al del encuadre después de un cambio de tamaño
   if (S.encuadre && !cam.anim && !intro) {
     const f = fovEncuadre(poseEncuadre(S.encuadre).fov), cm = escena.camera;
