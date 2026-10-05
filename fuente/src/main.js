@@ -843,7 +843,8 @@ function encuadreMovil(dt) {
   if (W <= 760 && !intro) {
     const arriba = $('#hud')?.getBoundingClientRect().bottom ?? 0;
     let abajo = H;
-    for (const q of PANELES_ABAJO) { const r = $(q)?.getBoundingClientRect(); if (r && r.height > 0 && r.top > H * 0.3) abajo = Math.min(abajo, r.top); }
+    const narr = altoNarrador();
+    for (const q of PANELES_ABAJO) { const r = $(q)?.getBoundingClientRect(); if (r && r.height > 0 && r.top > H * 0.3) abajo = Math.min(abajo, r.top + (q === '#dock' || q === '#rotulo' ? narr : 0)); }
     if (abajo - arriba > 60) obj = (arriba + abajo) / 2 - H / 2;
   }
   // con el panel lateral de escritorio, lo que se mira va al centro del espacio que queda a su derecha
@@ -858,6 +859,18 @@ function encuadreMovil(dt) {
   ENC.aplicado = ENC.dy; ENC.aplicadoX = ENC.dx; ENC.W = W; ENC.H = H;
   const cam = escena.camera;
   if (Math.abs(ENC.dy) < 0.5 && Math.abs(ENC.dx) < 0.5) cam.clearViewOffset(); else cam.setViewOffset(W, H, -ENC.dx, -ENC.dy, W, H);
+}
+// El narrador plegado cambia de alto con la hora: una o dos líneas y, de noche, la fila de «Hoy a las 9:00 · Atardecer».
+// El dock crece hacia arriba y el encuadre lo seguía, así que al pasar la regla del día la vista daba brincos de hasta 30 px.
+// Se mide como si el narrador tuviera siempre sus dos líneas y nunca la fila de la noche (el alto que tiene de día, el mismo
+// encuadre de antes). Si el dock está en su alto máximo y desplaza su contenido, su borde de arriba no se mueve: no se corrige.
+function altoNarrador() {
+  const dock = $('#dock'), corto = $('#rotulo-corto'), noche = $('#rotulo-noche');
+  if (!dock || !corto || dock.scrollHeight > dock.clientHeight + 1) return 0;
+  let d = noche?.getBoundingClientRect().height ?? 0;
+  const hc = corto.getBoundingClientRect().height;
+  if (hc > 0) { const cs = getComputedStyle(corto); d += hc - (parseFloat(cs.lineHeight) || 20) * (parseInt(cs.webkitLineClamp, 10) || 2); }
+  return d;
 }
 
 // ---------------- Resolución adaptable ----------------
