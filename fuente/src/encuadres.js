@@ -49,8 +49,8 @@ export const ENCUADRES = [
   },
   {
     id: 'oficiales', nombre: 'Casas de oficiales', ciudad: true, foco: 60,
-    pos: [1168, 25, -205.1], tgt: [1105, 19, -240], fov: 34, movil: [1168, 25, -205.1], fecha: '2010-12-21', hora: '09:00',
-    texto: 'Casas de oficiales de 1941 a 1943: dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El 426 y el 427 tienen el número de la lista de CERL; las demás se asignan por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.',
+    pos: [1057.8, 26, -308], tgt: [1150, 20, -285], fov: 34, movil: [1057.8, 26, -308], fecha: '2010-12-21', hora: '09:00',
+    texto: 'Casas de oficiales de 1941 a 1943: dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.',
     luz: '21 de diciembre de 2010, 9:00, solsticio de diciembre: el sol sale más al sur que en todo el año y a esta hora está a 32° de altura hacia el sureste (125°).',
   },
   {
@@ -65,10 +65,5 @@ export const ENCUADRES = [
     texto: 'Dieciséis bloques de dos pisos con techo de lámina a dos aguas a lo largo de la calle Gonzalo Crance.',
     luz: '14 de febrero de 2012, 16:30: el sol de la tarde está a 27° de altura hacia el oeste (250°) e incide casi de frente en los extremos que miran al suroeste; las fachadas largas que miran al sureste quedan a la sombra.',
   },
-  {
-    id: 'esclusas', nombre: 'Las esclusas de Miraflores', foco: 260,
-    pos: [-450.5, 132, -67.7], tgt: [-980, -8, -250], fov: 30, fecha: '2022-02-21', hora: '09:00',
-    texto: 'Al suroeste de la ciudad, el canal y las dos vías de las esclusas de Miraflores. Los barcos son ilustrativos: uno cada dos horas por vía, no la posición real de ningún barco.',
-    luz: '21 de febrero de 2022, 9:00: el sol de la mañana está hacia el este (109°), a espaldas de la cámara, y alumbra de frente las cámaras de las esclusas.',
-  },
+
 ];
