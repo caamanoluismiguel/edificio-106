@@ -1,13 +1,15 @@
-# Estado del modelo (2026-10-04, git 00b0ff8)
+# Estado del modelo (2026-10-05, git 1326f96)
 
 Foto de referencia de cada GLB, pieza por pieza. Antes de publicar un cambio del modelo: `cd fuente && node estado.mjs --comprobar`.
 Solo pueden aparecer en la lista de diferencias las piezas que el cambio dice tocar. Después de aprobar el cambio, `node estado.mjs` rehace la foto.
 
 | Archivo | Piezas | Triángulos | md5 |
 |---|---|---|---|
-| modelo/arboles.glb | 3946 | 4653 | `1305b4a7e5cf` |
-| modelo/arboles_movil.glb | 3327 | 3968 | `6ed9be5fa31c` |
+| modelo/arboles.glb | 3946 | 4653 | `9ea33915a405` |
+| modelo/arboles_movil.glb | 3327 | 3968 | `4a0b51ff9b56` |
 | modelo/arquitectura.glb | 575 | 8116 | `c3de5cea492e` |
+| modelo/ciudad.glb | 12948 | 113488 | `90cfc097bb82` |
+| modelo/ciudad_alto.glb | 71002 | 632228 | `8050251befd2` |
 | modelo/contexto.glb | 54930 | 415898 | `30cb6638c055` |
 | modelo/cubiertas.glb | 45033 | 454780 | `03391bb3c569` |
 | modelo/cubiertas_movil.glb | 44805 | 306648 | `b56316dab420` |
