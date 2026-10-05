@@ -569,14 +569,24 @@ function poseEncuadre(e) {
   const pos = e.tgt.map((t, i) => t + (e.pos[i] - t) * k); pos[1] = Math.max(pos[1], 1.5);
   return { pos, tgt: e.tgt, fov: 58 };
 }
+/** El lente del encuadre con Capas abierta en el computador: la vista se corre al espacio libre a su derecha (encuadreMovil) y
+ *  el lente se abre para que ese espacio muestre a lo ancho lo mismo que con Capas cerrada (hasta 60°). */
+function fovEncuadre(fov) {
+  if (innerWidth <= 760 || innerWidth / innerHeight < 0.8 || $('#capas').hidden) return fov;
+  const dock = document.documentElement.classList.contains('panel-lateral') ? $('#dock').getBoundingClientRect().right : 0;
+  const libre = innerWidth - $('#capas').getBoundingClientRect().right; if (libre < 200) return fov;
+  const r = THREE.MathUtils.degToRad(fov) / 2;
+  return Math.min(60, 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(r) * (innerWidth - dock) / libre)));
+}
 function irAEncuadre(e, { fecha, min, cam: c, ...extra } = {}) {
   if (!e) return;
   cerrarOferta(); pararGiro();
   const [y, mo, d] = e.fecha.split('-').map(Number), [hh, mi] = e.hora.split(':').map(Number);
   const f = fecha ?? { y, m: mo, d }, m = min ?? hh * 60 + mi;
   const suMomento = f.y === y && f.m === mo && f.d === d && m === hh * 60 + mi;   // el texto de la luz es de su momento
-  viajarA({ fecha: f, min: m, titulo: e.nombre, texto: suMomento ? `${e.texto} ${e.luz}` : e.texto, ...extra });
-  const v = poseEncuadre(e);
+  S.encuadreTexto = suMomento ? `${e.texto} ${e.luz}` : e.texto;
+  viajarA({ fecha: f, min: m, titulo: e.nombre, texto: S.encuadreTexto, ...extra });
+  const v = poseEncuadre(e); v.fov = fovEncuadre(v.fov);
   if (c) { v.pos = c.slice(0, 3); v.tgt = c.slice(3); }
   const dist = escena.camera.position.distanceTo(new THREE.Vector3(...v.pos));
   // de un lado de la ciudad a otro, la cámara sube y pasa por encima (como una grúa), en vez de cruzar edificios y árboles
@@ -584,7 +594,8 @@ function irAEncuadre(e, { fecha, min, cam: c, ...extra } = {}) {
   volarA({ ...v, encuadre: true, arco, alLlegar: e.aerea && !c ? girarDespacio : null }, Math.min(3.4, Math.max(1.6, 1.4 + dist / 700)), null, false);
   S.encuadre = e;
   pintarEncuadres();
-  aviso(`${e.nombre}. ${e.texto}${e.ciudad && ciudadApagada() ? ' La ciudad está apagada: enciéndela en Capas.' : ''}`, 6500);
+  // con Capas abierta (computador) el texto va en la misma sección; si no, en el aviso de arriba y en el narrador
+  if ($('#capas').hidden || innerWidth <= 760) aviso(`${e.nombre}. ${e.texto}${e.ciudad && ciudadApagada() ? ' La ciudad está apagada: enciéndela en Capas.' : ''}`, 6500);
 }
 function salirEncuadre() { if (!S.encuadre) return; S.encuadre = null; pararGiro(); pintarEncuadres(); }
 // el giro lento de la vista aérea: unos 4 min por vuelta (OrbitControls: 2π/60 · velocidad por segundo); se para con cualquier toque o tecla
@@ -605,9 +616,11 @@ function prepararEncuadres() {
     const b = ev.target.closest('[data-encuadre]'); if (!b) return;
     const e = ENCUADRES.find((x) => x.id === b.dataset.encuadre);
     if (b.getAttribute('aria-disabled') === 'true') { aviso('Este encuadre es de la ciudad, que está apagada. Enciéndela con el botón de arriba.', 4000); $('#encuadres-encender')?.focus(); return; }
+    // en el teléfono Capas tapa casi todo el plano: se cierra y el foco vuelve a «Capas». En el computador queda abierta para
+    // pasar de un encuadre a otro, y la vista se corre al espacio libre a su derecha (encuadreMovil)
+    if (innerWidth <= 760) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
     irAEncuadre(e);
-    // Capas tapa parte del plano (en el teléfono, casi todo): se cierra para verlo, y el foco vuelve a «Capas»
-    $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); enfocar($('#abrir-capas'));
+    if (innerWidth <= 760) enfocar($('#abrir-capas'));
   });
   $('#encuadres-encender')?.addEventListener('click', () => { const c = $('#capa-ciudad'); if (c.checked) return; c.checked = true; c.dispatchEvent(new Event('change')); });
   addEventListener('keydown', pararGiro); addEventListener('pointerdown', pararGiro, true); addEventListener('wheel', pararGiro, { passive: true });
@@ -616,11 +629,13 @@ function prepararEncuadres() {
 /** El encuadre elegido, marcado; con la ciudad apagada, los de la ciudad no se ofrecen y la nota ofrece encenderla. */
 function pintarEncuadres() {
   const ul = $('#encuadres'); if (!ul || !escena) return;
-  const apagada = ciudadApagada(), nota = $('#encuadres-nota');
+  const apagada = ciudadApagada(), nota = $('#encuadres-nota'), txt = $('#encuadre-texto');
+  if (txt) { txt.hidden = !S.encuadre; txt.textContent = S.encuadre ? S.encuadreTexto ?? S.encuadre.texto : ''; }
   if (nota) nota.hidden = !apagada;
   ul.querySelectorAll('[data-encuadre]').forEach((b) => {
     const e = ENCUADRES.find((x) => x.id === b.dataset.encuadre);
     b.setAttribute('aria-pressed', String(S.encuadre?.id === e.id));
+    if (S.encuadre?.id === e.id) b.setAttribute('aria-describedby', 'encuadre-texto'); else b.removeAttribute('aria-describedby');
     if (e.ciudad && apagada) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
   });
 }
@@ -784,6 +799,11 @@ function paso(now) {
   lecturas(p, c);
   if (!intro) plegarRotulo(now);
   encuadreMovil(dtReal);
+  // en un encuadre, el lente sigue a Capas (abierta o cerrada) y vuelve al del encuadre después de un cambio de tamaño
+  if (S.encuadre && !cam.anim && !intro) {
+    const f = fovEncuadre(poseEncuadre(S.encuadre).fov), cm = escena.camera;
+    if (Math.abs(cm.fov - f) > 0.05) { cm.fov += (f - cm.fov) * (reduce ? 1 : Math.min(1, dtReal * 5)); cm.updateProjectionMatrix(); }
+  }
   esquivarHoras();
   // dibujar solo cuando algo cambia
   const cp = escena.camera.position, ct = controls.target;
@@ -819,7 +839,9 @@ function encuadreMovil(dt) {
     if (abajo - arriba > 60) obj = (arriba + abajo) / 2 - H / 2;
   }
   // con el panel lateral de escritorio, lo que se mira va al centro del espacio que queda a su derecha
-  const objX = !intro && document.documentElement.classList.contains('panel-lateral') ? $('#dock').getBoundingClientRect().right / 2 : 0;
+  let objX = !intro && document.documentElement.classList.contains('panel-lateral') ? $('#dock').getBoundingClientRect().right / 2 : 0;
+  // en un encuadre con Capas abierta (computador), lo que se mira va al centro del espacio libre a la derecha de Capas
+  if (!intro && S.encuadre && W > 760 && !$('#capas').hidden) objX = Math.max(objX, $('#capas').getBoundingClientRect().right / 2);
   const k = reduce ? 1 : Math.min(1, dt * 5);
   ENC.dy += (obj - ENC.dy) * k; ENC.dx += (objX - ENC.dx) * k;
   if (Math.abs(obj - ENC.dy) < 0.5) ENC.dy = obj;
