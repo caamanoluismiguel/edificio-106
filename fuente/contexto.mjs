@@ -30,7 +30,8 @@
 //    0,65 m de base). Si OSM no la trae, la altura p90 de Google Open Buildings 2.5D (alturas_ob.json, de alturas_ob.py: estimada
 //    desde satélite, ~1,5 m de error) cuando cubre al menos el 60 % de la huella; si no, 2 niveles. Todas son ESTIMADAS.
 // Sombras: los nodos a menos de ~60 m del 106 llevan extras.sombra = true y escena.js los pone en la capa 1 (proyectan sombra
-// en el mapa de sombras); los lejanos no.
+// en el mapa de sombras); los lejanos no. Con la ciudad y su sombra gruesa, los demás edificios la proyectan solo en ese mapa
+// (escena.js, capa 2).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

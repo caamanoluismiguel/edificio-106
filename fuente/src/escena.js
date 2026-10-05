@@ -152,6 +152,11 @@ const CIUDAD = (() => {
 // caja fina el resultado es exactamente el de siempre (s·1 + gruesa·0). GRUESA se arma antes de compilar ningún material.
 let GRUESA = null;
 const MARGEN_FINA = 6;
+// capa de lo que proyecta sombra solo en el mapa grueso (el contexto lejano del 106); la cámara de la sombra fina ve solo la 1
+const CAPA_GRUESA = 2;
+// del contexto, lo que no es edificio (no proyecta sombra en ningún mapa): terreno, calles, aceras, ferrocarril, agua, esclusas
+// y estacionamientos
+const SUELO_CONTEXTO = /asphalt|concrete walk|rail ballast|canal water|lock wall|grass turf/i;
 class SombraGruesa extends THREE.ShadowNode {
   /** Como ShadowNode.setup, sin aplicar el receivedShadowNode del material: lo aplica la sombra fina, que ya trae esta adentro. */
   setup(builder) {
@@ -685,11 +690,14 @@ export class Escena {
       root.traverse((o) => {
         if (!o.isMesh) return;
         // proyectan sombra: todo menos las tejas (usan un sustituto liviano; las del teléfono, ya livianas, la proyectan ellas) y, del contexto, solo los vecinos a menos de ~60 m
-        // del 106 (contexto.mjs los marca con extras.sombra; los lejanos no llegan al edificio)
+        // del 106 (contexto.mjs los marca con extras.sombra; los lejanos no llegan al edificio), en la capa 1 (los dos mapas)
         const tejas = nombre === 'cubiertas' && /terracotta/i.test(o.material?.name || '');
         let vecino = false; for (let p = o; p && !vecino; p = p.parent) vecino = !!p.userData?.sombra;
         o.castShadow = (nombre !== 'contexto' || vecino) && (!tejas || livianas); o.receiveShadow = true;
         if (o.castShadow) o.layers.enable(1);
+        // con la sombra gruesa de la ciudad, los demás edificios del contexto (cajas grises, volúmenes hechos a mano, copias del
+        // 106) la proyectan solo en ese mapa: capa 2, que la cámara de la sombra fina no ve. El suelo, las calles y el agua, no
+        else if (this.sunG && nombre === 'contexto' && !SUELO_CONTEXTO.test(o.material?.name || '')) { o.castShadow = true; o.layers.enable(CAPA_GRUESA); }
         o.material = this.#material(o.material, nombre, idx, uMin, uMax, texG);
         materiales.push(o.material);
       });
@@ -892,7 +900,7 @@ export class Escena {
       // el mapa fino queda exactamente como el publicado; la luz de la sombra gruesa no está en la escena ni ilumina
       const g = new THREE.DirectionalLight(0xffffff, 0); g.castShadow = true; g.name = 'sombra gruesa de la ciudad';
       const m = Math.min(mapa ?? (NIVEL[this.ciudadOpc.nivel].sombra || 2048), maxTex);
-      g.shadow.mapSize.set(m, m); g.shadow.camera.layers.set(1); g.shadow.autoUpdate = false; g.shadow.needsUpdate = false;
+      g.shadow.mapSize.set(m, m); g.shadow.camera.layers.set(1); g.shadow.camera.layers.enable(CAPA_GRUESA); g.shadow.autoUpdate = false; g.shadow.needsUpdate = false;
       this.sunG = g; this.uGruesa = uniform(0);                        // 0 hasta que la ciudad está montada
       GRUESA = { nodo: new SombraGruesa(g), uso: this.uGruesa, fina: lightShadowMatrix(sun), margen: MARGEN_FINA / (sc0.right - sc0.left) };
     }
