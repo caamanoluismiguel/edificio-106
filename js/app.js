@@ -34813,14 +34813,14 @@ var wW = class {
 			f.roughnessNode = f.lenteNode ? K(K(o, qR(o, s), a), G(1), f.lenteNode) : K(o, qR(o, s), a);
 		}
 		if (!u) {
-			let e = Y(...cW.toArray()).sub(mz), n = TR(e, e), r = e.div(n.sqrt()), i = Y(X.posteCol).mul(X.poste).mul(KR(TR(iz, r), 0)).mul(hz(KR(r.y, 0), 1.5)).div(n.add(1)).mul(Az(.3, 1.2, n)).mul(oz(q(uR(mz.z.sub(cW.z)), .45).mul(q(45.2, mz.x)).mul(q(.4, mz.y)))), a = yR(mz.xz, Hz(-uW[0], -uW[1]), Hz(uW[0], uW[1])), s = RR(mz.xz.sub(a)), l = mz.y, u = Az(.5, .9, iz.y), d = Az(-.5, -.9, iz.y), p = KR(DR(K(l.add(.3), l.sub(.2), d).div(3.65)), 0), m = qH(JH(a, p)).mul(q(p, 2.5)), h = u.mul(hz(G(.5), s.div(.9))).mul(.3).add(d.mul(Az(2.4, .8, s)).mul(.18)), _ = Y(...sW.lamparas.led).mul(m).mul(h).mul(X.ventanasN).mul(.175), v = /terracotta/.test(c) ? G(1) : t === "sitio" ? q(l, 1.2).mul(q(1.9, s)) : t === "contexto" && /turf/.test(c) ? G(1) : G(0), y = Y(X.cieloArriba).mul(KR(iz.y, 0)).mul(v), b = i.add(_).add(y), x = this.luzPostes;
-			if (x && !o.sinPostes && (t === "contexto" || t === "sitio" && !g)) {
+			let e = Y(...cW.toArray()).sub(mz), n = TR(e, e), r = e.div(n.sqrt()), i = Y(X.posteCol).mul(X.poste).mul(KR(TR(iz, r), 0)).mul(hz(KR(r.y, 0), 1.5)).div(n.add(1)).mul(Az(.3, 1.2, n)).mul(oz(q(uR(mz.z.sub(cW.z)), .45).mul(q(45.2, mz.x)).mul(q(.4, mz.y)))), a = yR(mz.xz, Hz(-uW[0], -uW[1]), Hz(uW[0], uW[1])), s = RR(mz.xz.sub(a)), l = mz.y, u = Az(.5, .9, iz.y), p = Az(-.5, -.9, iz.y), m = KR(DR(K(l.add(.3), l.sub(.2), p).div(3.65)), 0), h = qH(JH(a, m)).mul(q(m, 2.5)), g = u.mul(hz(G(.5), s.div(.9))).mul(.3).add(p.mul(Az(2.4, .8, s)).mul(.18)), _ = Y(...sW.lamparas.led).mul(h).mul(g).mul(X.ventanasN).mul(.175), v = /terracotta/.test(c) ? G(1) : t === "sitio" ? q(l, 1.2).mul(q(1.9, s)) : t === "contexto" && /turf/.test(c) ? G(1) : G(0), y = Y(X.cieloArriba).mul(KR(iz.y, 0)).mul(v), b = i.add(_).add(y), x = this.luzPostes;
+			if (x && !o.sinPostes && t !== "vegetacion" && t !== "arboles" && !d) {
 				let e = x.tn.sample(mz.xz.sub(x.o).div(x.t)), t = e.r.mul(KR(iz.y, 0)).add(KR(TR(iz.xz, e.gb), 0)).mul(Az(x.alto, x.alto.sub(2), mz.y.sub(e.a)));
 				b = b.add(Y(X.posteCol).mul(X.poste.mul(X.postesVer).mul(x.k)).mul(t));
 			}
 			let S = f.colorNode.mul(b);
 			if (f.emissiveNode = f.emissiveNode ? f.emissiveNode.add(S) : S, t === "sitio" && c.includes("soffit")) {
-				let e = q(cW.y + .05, mz.y).mul(q(47.9, mz.x)).mul(d.max(.3));
+				let e = q(cW.y + .05, mz.y).mul(q(47.9, mz.x)).mul(p.max(.3));
 				f.emissiveNode = f.emissiveNode.add(Y(X.posteCol).mul(X.poste).mul(e).mul(.08));
 			}
 		}
