@@ -33125,7 +33125,7 @@ function eU() {
 		c.textContent = (t ? t + " · " : "") + i, c.style.cssText = "font-weight:600;color:var(--cal)", s.append(c, document.createTextNode(": " + a)), e.append(o, s), n.append(e);
 	}
 	let i = document.createElement("p");
-	i.style.cssText = "margin:8px 0 0;font:400 12px/1.4 var(--texto);color:var(--cal-2)", i.textContent = "La clase cuenta qué tan bien se vio cada edificio en las fotos. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos. El único modelo medido es el 106. Los postes de luz se ponen por regla: todos son clase III.", n.append(i), document.body.append(n);
+	i.style.cssText = "margin:8px 0 0;font:400 12px/1.4 var(--texto);color:var(--cal-2)", i.textContent = "La clase cuenta qué tan bien se vio cada edificio en las fotos. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos. El único modelo medido es el 106. Los postes de las calles se ponen por regla y todos son clase III. El de la esquina del 106 es real.", n.append(i), document.body.append(n);
 }
 var tU, nU, rU, iU, aU, oU, sU, cU, lU, uU, dU = o((() => {
 	jL(), Jz(), tU = {
@@ -40986,14 +40986,14 @@ function KJ(e) {
 }
 function qJ(e) {
 	if (Q.aguacero) return "Es de noche y la escena dibuja un aguacero forzado en Capas: no es el dato.";
-	let t = $.luna, n = e?.nubes ?? 30, r = lJ(e), i = X.postesVer.value > 0 ? "el poste de la esquina y los postes de las calles de la ciudad" : "el poste de la esquina", a = t ? t.frac > .95 ? "la luna llena" : t.frac < .25 ? `una luna ${t.fase < 180 ? "creciente" : "menguante"} delgada` : `la luna ${t.fase < 180 ? "creciente" : "menguante"}` : "";
-	if (!t || t.alt <= 0) return `Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y ${i}.`;
-	if (t.frac < .05) return `Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y ${i}.`;
+	let t = $.luna, n = e?.nubes ?? 30, r = lJ(e), i = X.postesVer.value > 0, a = i ? "el cielo de la ciudad, el poste de la esquina y los postes de las calles" : "el cielo de la ciudad y el poste de la esquina", o = i ? "el resplandor de la ciudad en las nubes, el poste de la esquina y los postes de las calles" : "el resplandor de la ciudad en las nubes y el poste de la esquina", s = t ? t.frac > .95 ? "la luna llena" : t.frac < .25 ? `una luna ${t.fase < 180 ? "creciente" : "menguante"} delgada` : `la luna ${t.fase < 180 ? "creciente" : "menguante"}` : "";
+	if (!t || t.alt <= 0) return `Es de noche y la luna no está en el cielo. Alumbran solo ${a}.`;
+	if (t.frac < .05) return `Es de noche y es casi luna nueva. Alumbran solo ${a}.`;
 	if (r || n >= 70) {
-		let t = Math.round(n), o = `Alumbran el resplandor de la ciudad en las nubes y ${i}.`;
-		return r && e?.albrook && !e.albrook.auto ? `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${t} % del cielo cubierto y la escena tapa ${a}. ${o}` : `Es de noche${r ? " y el modelo da lluvia" : ""}, con ${t} % del cielo cubierto según el dato: la escena tapa ${a}. ${o}`;
+		let t = Math.round(n), i = `Alumbran ${o}.`;
+		return r && e?.albrook && !e.albrook.auto ? `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${t} % del cielo cubierto y la escena tapa ${s}. ${i}` : `Es de noche${r ? " y el modelo da lluvia" : ""}, con ${t} % del cielo cubierto según el dato: la escena tapa ${s}. ${i}`;
 	}
-	return `Es de noche y alumbra ${a}, hacia el ${QV(t.az)}. Suman algo el cielo de la ciudad y ${i}.`;
+	return `Es de noche y alumbra ${s}, hacia el ${QV(t.az)}. Suman algo ${a}.`;
 }
 var JJ = () => matchMedia("(max-width: 760px)").matches || document.documentElement.classList.contains("panel-lateral") ? "" : "Ahora en Ciudad del Saber", YJ = (e) => e?.geo != null && e.geo >= -.833, XJ = matchMedia("(max-width: 760px)");
 function ZJ(e) {
