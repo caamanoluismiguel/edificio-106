@@ -18,7 +18,7 @@ El primer commit, «modelo 3D con sol y clima horario», ya traía el sitio comp
 
 El mismo día entraron las consultas calculadas, las capas de visualización y el respaldo en WebGL 2 para los equipos sin WebGPU (`b644d5b`), y el primer recorrido guiado con una explicación para cada dato (`99d0629`).
 
-### 26 y 27 de septiembre: la escena aprende a enseñar
+### 26 y 27 de septiembre: viento, lluvia, comprobaciones y herramientas para la clase
 
 Estos dos días se dedicaron a que la escena dijera algo útil. Entraron la capa de viento y la sombra real de los aleros (`160a9ce`), el modo «Año típico» con la radiación anual (`ed440d6`) y el modo «Partes», con el nombre y la función de cada parte del edificio sobre el modelo (`7e6ae93`). Los colores de tejas, muros y aleros se midieron contra fotos del edificio (`225645c`). El suelo empezó a mojarse según la lluvia de las horas anteriores y la vegetación a mecerse con el viento (`142acea`).
 
@@ -58,7 +58,7 @@ Al final del día se quitaron dos vigas sueltas en X que estaban frente al 106 d
 
 ### 2 de octubre: jurado, verificador, Albrook y veracidad
 
-Un jurado de tres revisores (un arquitecto bioclimático y dos jueces de diseño web) auditó el sitio, y sus hallazgos se arreglaron en siete ramas en paralelo que se integraron en `a9fd725`: metadatos, accesibilidad, rigor de fuentes, carga, densidad de la interfaz, teléfono y la página de la AR. La medición de Lighthouse pasó de 28 a 62 en escritorio y de 25 a 38 en el teléfono. Después vino un pulido gráfico de la interfaz (`2ca9778`).
+Un jurado simulado de tres revisores (agentes de IA con el papel de un arquitecto bioclimático y de dos jueces de diseño web, no personas reales) auditó el sitio, y sus hallazgos se arreglaron en siete ramas en paralelo que se integraron en `a9fd725`: metadatos, accesibilidad, rigor de fuentes, carga, densidad de la interfaz, teléfono y la página de la AR. Después vino un pulido gráfico de la interfaz (`2ca9778`).
 
 Ese día se formalizó el agente verificador (`1915879`), del que se habla más abajo.
 
@@ -101,13 +101,13 @@ OpenStreetMap no tiene ningún poste de luz en Ciudad del Saber (consulta del 6 
 
 ## Cómo se trabajó
 
-**Panel de expertos y verificador.** Desde el 30 de septiembre, toda información nueva (cifras, recomendaciones, capas) pasa antes por un panel: expertos del tema con contexto de Panamá, uno de visualización y un crítico que cruza los informes. Se prefieren fuentes panameñas como el IMHPA, ETESA, la Guía de Construcción Sostenible de 2016 y la UTP. Desde el 2 de octubre (`1915879`) hay además un agente verificador permanente (`.claude/agents/verificador.md`), que recalcula cada número, abre cada fuente en el original y revisa que las cifras cuadren en todo el visor. Lo que marca como falso, incoherente o como un modelo presentado como medición bloquea la publicación.
+**Panel de expertos y verificador.** Toda información nueva (cifras, recomendaciones, capas) pasa antes por un panel simulado, hecho de agentes de IA con un papel cada uno, no de personas reales: expertos del tema con contexto de Panamá, uno de visualización y un crítico que cruza los informes. Se prefieren fuentes panameñas como el IMHPA, ETESA, la Guía de Construcción Sostenible de 2016 y la UTP. Desde el 2 de octubre (`1915879`) hay además un agente verificador permanente (`.claude/agents/verificador.md`), que recalcula cada número, abre cada fuente en el original y revisa que las cifras cuadren en todo el visor. Lo que marca como falso, incoherente o como un modelo presentado como medición bloquea la publicación.
 
 **Guardia píxel a píxel.** Antes de cada publicación, `fuente/guardia.mjs` compara la rama contra `origin/main`: en git (avance rápido y ningún archivo borrado), en el modelo (cada GLB byte a byte y nodo a nodo), en 18 cuadros de la escena píxel a píxel y en la carga, como teléfono y como computador. Para que los cuadros sean comparables, el guardia fija el tiempo de los sombreadores, regenera el cielo y las sombras en ese instante y usa números al azar con semilla. `fuente/verificar.mjs` corre siete comprobaciones de sol y sombra, y dos de ellas tienen un control con un error a propósito que debe hacerlas fallar, para demostrar que la prueba sirve.
 
 **Foto del modelo pieza por pieza.** `fuente/estado.mjs` guarda en `fuente/estado/` cada pieza de cada GLB del sitio y de la AR, con su material, sus triángulos y su caja a 1 cm, más la medida del pórtico. Con `--comprobar` lista exactamente qué piezas aparecen o desaparecen, y solo pueden aparecer las que el cambio dice tocar. Nació porque la forma del edificio ya había sufrido regresiones varias veces.
 
-**Varias sesiones en paralelo.** Codex y varias sesiones de Claude Code trabajaron a la vez, cada una en su rama y su worktree, y LM también empujaba a `main`. Por eso cada publicación empieza con `git fetch` y la comprobación de las dos direcciones contra `origin/main`, y la app compilada nunca se fusiona como texto: se recompila. Un hook `pre-push` bloquea el push a `main` si no contiene el `main` remoto o si borra archivos.
+**Varias sesiones en paralelo.** Según el `.claude/CLAUDE.md`, Codex y otras sesiones de Claude Code empujan a `main` en paralelo, cada una en su rama y su worktree. Por eso cada publicación empieza con `git fetch` y la comprobación de las dos direcciones contra `origin/main`, y la app compilada nunca se fusiona como texto: se recompila. Un hook `pre-push` bloquea el push a `main` si no contiene el `main` remoto o si borra archivos.
 
 **Publicar solo con «publica».** Nada sube a `main` sin que LM diga «publica» en ese turno. Después del push se comprueba que lo que sirve GitHub Pages sea igual, por md5, a lo local.
 
