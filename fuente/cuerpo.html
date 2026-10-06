@@ -490,6 +490,8 @@
   .dock-centro { grid-area: centro; display: grid; gap: 10px; }
   .pestanas { display: flex; gap: 4px; }
   .pestanas button { border: 1px solid transparent; background: none; cursor: pointer; font: 600 13px/1 var(--texto); color: var(--cal-2); padding: 7px 11px; border-radius: 999px; transition: color .2s, border-color .2s, background .2s; }
+  #ahora .ahora-temp { white-space: pre; }
+  @media (max-width: 480px) { #ahora .ahora-temp { display: none; } }   /* en el teléfono angosto no cabe: la temperatura sigue en el resumen */
   .pestanas button:hover { color: var(--cal); }
   .pestanas button[aria-selected="true"] { color: var(--noche); background: var(--cal); }
   .regla { position: relative; }

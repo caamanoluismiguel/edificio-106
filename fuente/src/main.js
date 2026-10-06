@@ -1371,7 +1371,11 @@ function lecturas(p, c) {
   document.documentElement.classList.toggle('vivo', vivo);
   // «En vivo» solo cuando ya llegó el dato de este momento (pronóstico o parte de Albrook); antes, «Ahora»
   // con la hora del dato: el parte de Albrook (a 4 km) o el pronóstico, para que no parezca una lectura en el sitio
-  $('#ahora').textContent = vivo ? (c?.fuente === 'vivo' ? `En vivo · ${c.albrook ? `Albrook ${c.albrook.hora}` : `pronóstico ${c.hora ?? ''}`.trim()}` : 'Ahora') : 'Volver a ahora';
+  // con la temperatura de esa misma fuente (la de #l-temp), en su propio span: el teléfono angosto la oculta y queda en el resumen
+  const ahoraT = vivo ? (c?.fuente === 'vivo' ? `En vivo · ${c.albrook ? `Albrook ${c.albrook.hora}` : `pronóstico ${c.hora ?? ''}`.trim()}` : 'Ahora') : 'Volver a ahora';
+  const ahoraTemp = vivo && c?.fuente === 'vivo' && c.temp != null ? ` · ${Math.round(c.temp)} °C` : '';
+  const ahoraS = elDe('span', null, ahoraT); if (ahoraTemp) ahoraS.append(elDe('span', 'ahora-temp', ahoraTemp));   // un solo hijo: el gap del punto no se repite
+  $('#ahora').replaceChildren(ahoraS);
   $('#ahora').setAttribute('aria-pressed', String(vivo));
   // sol y sombra (en el viaje, «—», como el clima: el sol va de paso, no es el de un momento)
   const sp = sombraPoste(p.alt, p.az);
