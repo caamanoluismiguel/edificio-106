@@ -39292,7 +39292,7 @@ function iK(e, t, n) {
 	} else c.push(["Tipo", "No tiene un tipo del kit."]);
 	let l = r.p;
 	l && c.push(["Pisos", l.v ? `«${l.v}» en ${l.f}, con confianza ${l.k}.` : /Street View/.test(l.f) ? `No se ven en las fotos (${l.f}).` : `No se ven: ${l.f}.`]);
-	let u = r.ob, d = "Google Open Buildings 2.5D (2023, CC BY 4.0)";
+	let u = r.ob, d = "Google Open Buildings 2.5D (2023, usada con ODbL)";
 	c.push(["Altura", u ? u[1] >= .6 ? `Unos ${eK(u[0])} m según ${d}, estimada desde satélite.` : u[1] > 0 ? `${d} ve edificio solo en el ${Math.round(u[1] * 100)} % de la huella: aquí su altura no sirve.` : `${d} no ve edificio en esta huella.` : `${d} no la tiene.`]);
 	let [f, p] = XG[r.c ?? e.c] ?? XG.III;
 	c.push(["Certeza", `${r.c ?? e.c}, ${f}: ${p}${(r.c ?? e.c) === "III" && r.t ? ", y el tipo es supuesto" : ""}. ` + (r.s ? `${r.s[0]} de sus ${r.s[1]} parámetros del kit tienen alguna parte supuesta.` : "No se arma con el kit, así que no tiene parámetros que contar.")]);
