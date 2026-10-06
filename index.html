@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=6f6f525e22" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=8b676a0f0f" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -438,6 +438,7 @@
   #tarjeta-edificio .te-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
   #tarjeta-edificio .eyebrow { margin-bottom: 6px; }
   #te-t { margin: 0; font: 700 22px/1.15 var(--display); color: var(--cal); }
+  #te-t:focus { outline: none; } #te-t:focus-visible { outline: 2px solid var(--sol); outline-offset: 2px; border-radius: 8px; }
   #te-cerrar { flex: none; width: 44px; height: 44px; margin: -10px -10px 0 0; border: 0; background: none; color: var(--cal-2); font: 400 22px/1 var(--texto); cursor: pointer; border-radius: 999px; }
   #te-cerrar:hover { color: var(--cal); background: rgba(239,233,222,.08); }
   #te-txt { flex: 0 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; display: grid; gap: 10px; align-content: start; }
@@ -1136,7 +1137,7 @@
      o con ?edificio=N. En el teléfono es una hoja abajo (la cámara centra el edificio en el hueco de arriba); desde 761 px, un panel a la
      izquierda (a la derecha del panel lateral desde 900 px). Se cierra con × o con Escape -->
 <section id="tarjeta-edificio" hidden aria-labelledby="te-t">
-  <div class="te-cab"><div><p class="eyebrow">Ficha del edificio</p><h2 id="te-t"></h2></div><button type="button" id="te-cerrar" aria-label="Cerrar la ficha del edificio">×</button></div>
+  <div class="te-cab"><div><p class="eyebrow">Ficha del edificio</p><h2 id="te-t" tabindex="-1"></h2></div><button type="button" id="te-cerrar" aria-label="Cerrar la ficha del edificio">×</button></div>
   <div id="te-txt"></div>
   <div class="te-botones"><button type="button" id="te-partes" class="boton" hidden>Partes y medidas</button><button type="button" id="te-acerca" class="boton" hidden>Acerca del modelo</button><button type="button" id="te-enlace" class="boton">Copiar enlace</button></div>
   <p id="te-estado" role="status"></p>
@@ -1532,4 +1533,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Código con licencia MIT; datos derivados, CC BY 4.0.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=6f6f525e22"></script></body></html>
+<script type="module" src="js/app.js?v=8b676a0f0f"></script></body></html>

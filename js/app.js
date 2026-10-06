@@ -38972,7 +38972,7 @@ var bG = /* @__PURE__ */ s(((e, t) => {
 		fov: 34,
 		fecha: "2016-04-12",
 		hora: "12:19",
-		texto: "Las filas de dúplex de 1941 a 1943, que según el informe CERL se conocían como «tropical duplexes»: dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.",
+		texto: "Las filas de dúplex que, según el informe CERL, se conocían como «tropical duplexes», un tipo construido de 1939 a 1943 en la Zona del Canal (p. 5-7): dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.",
 		luz: "12 de abril de 2016, 12:19: el sol está a 90° de altura, casi exactamente en el cenit, y cada casa queda sobre su propia sombra. A esta latitud pasa dos veces al año, en abril y en agosto."
 	},
 	{
@@ -39040,7 +39040,7 @@ var bG = /* @__PURE__ */ s(((e, t) => {
 		],
 		fecha: "2010-12-21",
 		hora: "09:00",
-		texto: "Casas de oficiales de 1941 a 1943: dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.",
+		texto: "Casas de oficiales de un tipo construido de 1939 a 1943 en la Zona del Canal según CERL (p. 5-7): dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.",
 		luz: "21 de diciembre de 2010, 9:00, solsticio de diciembre: el sol sale más al sur que en todo el año y a esta hora está a 32° de altura hacia el sureste (125°)."
 	},
 	{
@@ -40409,13 +40409,17 @@ async function uJ(e) {
 		let a = lJ("details");
 		a.append(lJ("summary", null, "Cómo leer esta ficha"), lJ("p", null, "Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve y el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos."), lJ("p", null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${n.supuestosCiudad}.`), lJ("p", null, "Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio."), lJ("p", null, "Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.")), r.push(t, a);
 	}
-	Z("#te-txt").replaceChildren(...r), Z("#te-txt").scrollTop = 0, Z("#te-acerca").hidden = Z("#te-partes").hidden = !n.es106, Z("#te-estado").textContent = "", Yq.tarjeta = e, t.hidden = !1, hJ(), t.setAttribute("aria-live", "polite"), (Q.hoja === 1 || Q.hoja === 2) && sY(0);
+	if (Z("#te-txt").replaceChildren(...r), Z("#te-txt").scrollTop = 0, Z("#te-acerca").hidden = Z("#te-partes").hidden = !n.es106, Z("#te-estado").textContent = "", t.hidden) {
+		let e = document.activeElement;
+		Yq.focoAntes = e && e !== document.body ? e : null;
+	}
+	Yq.tarjeta = e, t.hidden = !1, hJ(), t.setAttribute("aria-live", "polite"), Z("#te-t").focus({ preventScroll: !0 }), (Q.hoja === 1 || Q.hoja === 2) && sY(0);
 }
 function dJ(e) {
 	let t = Z("#tarjeta-edificio");
 	if (!t || t.hidden) return;
-	let n = t.contains(document.activeElement);
-	t.hidden = !0, Yq.tarjeta = null, e && n && Z("#principal")?.focus();
+	let n = t.contains(document.activeElement), r = Yq.focoAntes;
+	t.hidden = !0, Yq.tarjeta = null, Yq.focoAntes = null, (n || e && document.activeElement === document.body) && (r?.isConnected && !r.closest("[hidden], [inert]") ? r : Z("#principal"))?.focus({ preventScroll: !0 });
 }
 function fJ() {
 	if (!Yq.mapa || fJ.hecha || (fJ.hecha = !0, /[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search))) return;
