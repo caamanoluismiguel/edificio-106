@@ -922,14 +922,14 @@
     #dock .lentes button:not(.info) { display: grid; align-content: center; justify-items: start; gap: 3px; min-height: 56px; padding: 8px 10px; text-align: left; font-size: 14px; }
     #dock .lentes .apoyo { display: block; font: 400 12px/1.25 var(--texto); color: inherit; opacity: .78; }
     /* alturas: lo que no corresponde a la altura no se dibuja */
-    html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley, #dia-ley-caja) { display: none !important; }
+    html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina) { display: none !important; }
+    /* la regla se ve en la cerrada: su fuente y «Cómo leerla» también (una línea); se van con ella cuando Capas la pliega */
     html.hoja-1 #dock :is(.dock-lect, .vistas, .lamina) { display: none !important; }
     /* con Capas o Confort abiertos, la cerrada guarda «En vivo», la hora con la fecha al lado y el sello del resumen; el modo y
        el play vuelven con el asa. Así el panel y la hoja dejan ver el edificio. Con Confort la regla queda: al moverla cambian
        «A esta hora conviene», el punto de la carta y el UTCI (confortHora); con Capas también se pliega */
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(#modo-activo, #reproducir) { display: none !important; }
-    html.hoja-0:has(#capas:not([hidden])) #dock .regla { display: none !important; }
-    html.hoja-0:has(#confort:not([hidden])) #dock #regla-dia:not([hidden]) + #dia-ley-caja { display: block !important; }   /* la regla de Confort lleva su fuente */
+    html.hoja-0:has(#capas:not([hidden])) #dock :is(.regla, #dia-ley-caja) { display: none !important; }
     /* con la regla a la vista la hoja crece: Confort se acorta para dejar unos 320 px arriba (barra y edificio) */
     html.hoja-0 #confort { max-height: min(38dvh, calc(100dvh - env(safe-area-inset-top, 0px) - var(--dock-h) - 320px)); }
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock #elegir { grid-area: modo; justify-self: end; }
