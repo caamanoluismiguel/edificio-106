@@ -830,7 +830,10 @@ async function mostrarTarjeta(e) {
   $('#te-t').textContent = T.titulo;
   const hijos = [];
   if (T.es106) {
-    hijos.push(...T.lineas.map((l) => elDe('p', null, l)));
+    const lineas = T.lineas.map((l) => elDe('p', null, l));
+    // en el teléfono la frase de la copa va plegada (tapaba medio edificio); el crédito sigue a la vista, debajo
+    if (C && ANCHO_HOJA.matches) { const d = elDe('details'); d.append(elDe('summary', null, 'Cuánta copa de árbol hay alrededor'), lineas.pop()); lineas.push(d); }
+    hijos.push(...lineas);
     if (C) {   // la frase de la copa deriva del CHM de Meta y WRI y de las huellas de OSM
       const cred = elDe('p', 'te-credito', 'Copa: Meta y WRI, CC BY 4.0; Source imagery for CHM © 2016 Maxar. Huellas y límite: © ');
       const a = elDe('a', null, 'colaboradores de OpenStreetMap'); a.href = 'https://www.openstreetmap.org/copyright'; a.target = '_blank'; a.rel = 'noopener';

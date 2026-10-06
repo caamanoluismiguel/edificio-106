@@ -63,6 +63,17 @@ for (const P of PANTALLAS) {
     });
     const archivo = path.join(SALIDA, `${P.nombre}-${rotulo}-${n}.png`);
     await pg.screenshot({ path: archivo });
+    // en el teléfono la frase de la copa va plegada: se abre con un toque en su rótulo, como lo haría la persona
+    if (n === '106' && r.copa && !r.copaVisible) {
+      const s = await pg.evaluate(() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')), d = p?.closest('details');
+        if (!d || d.open) return null; d.querySelector('summary').scrollIntoView({ block: 'nearest' }); return d.querySelector('summary').textContent; });
+      if (s) {
+        if (P.disp.hasTouch) await pg.tap('#te-txt details:has(p) > summary'); else await pg.click('#te-txt details:has(p) > summary');
+        await pg.waitForTimeout(200);
+        r.copaVisible = await pg.evaluate(() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')); return !!p && p.getClientRects().length > 0; });
+        console.log(`  ✓ copa plegada bajo «${s}»; ${r.copaVisible ? 'se abre con un toque' : 'NO se abre'}`);
+      }
+    }
     console.log(`${P.nombre} · ${n}: «${r.titulo}», centro del edificio en (${r.x}, ${r.y}) de ${r.W} × ${r.H}, ficha ${r.ficha.join(', ')} → ${path.basename(archivo)}`);
     // la ficha del 106 lleva la frase de la copa (datos/copa.json); las demás no
     if (n === '106') {

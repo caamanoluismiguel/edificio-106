@@ -255,6 +255,11 @@
   #ley-que { margin: 0; font-size: 13px; line-height: 1.42; color: var(--cal); text-wrap: pretty; }
   #ley-leer { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
   #ley-mas { border-top: 1px solid var(--linea); padding-top: 7px; }
+  /* pliegue: texto de método o de lectura que arranca cerrado y se abre con un toque (el mismo patrón que #ley-mas) */
+  .pliegue > summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); padding: 4px 0; }
+  .pliegue > :not(summary) { margin-top: 6px; }
+  #dia-ley-caja { margin: 2px 0 0; text-align: right; position: relative; z-index: 1; }   /* sobre el range de la regla, que cubre todo su bloque */ #dia-ley-caja .dia-ley { margin-top: 2px; }
+  #ir-a .pliegue > .nota, #capas .pliegue > .lamina-nota, #reloj-lluvia .pliegue > p { margin-top: 6px; }
   #ley-mas summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); }
   #ley-mas p { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
   #ley-mas p b { color: var(--cal); font-weight: 600; }
@@ -831,7 +836,7 @@
     .parte span { font-size: 12px; padding: 6px 9px; } .cota { font-size: 12px; padding: 4px 7px; }
   }
   /* teléfonos bajos: la leyenda de la regla del día se explica al tocar «Día» */
-  @media (max-width: 760px) and (max-height: 800px) { #dia-ley { display: none; } }
+  @media (max-width: 760px) and (max-height: 800px) { #dia-ley-caja { display: none; } }
   @media (max-width: 400px) { .marca svg { display: none; } .marca { padding: 7px 12px; } .acciones { gap: 5px; } }
   @media (max-width: 480px) { .acciones { gap: 6px; } .marca b { font-size: 18px; } }
   @media (max-height: 640px) and (min-width: 761px) { .pista { display: none; } #l-hora { font-size: 36px; } }
@@ -856,7 +861,7 @@
     #l-hora { grid-area: hora; font-size: 28px; } #elegir { grid-area: fecha; justify-self: start; }
     #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
     .pestanas { grid-area: centro; align-self: start; } .regla { grid-area: centro; align-self: end; margin-top: 60px; } #momentos-caja { display: none !important; }
-    .dia-ley, #dec-leyenda, #l-fuente { display: none; }
+    .dia-ley, #dia-ley-caja, #dec-leyenda, #l-fuente { display: none; }
     .dock-botones { grid-area: botones; justify-self: end; } #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
     #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 10px; border: 1px solid var(--linea-2); border-radius: 12px;
       background: rgba(239,233,222,.04); cursor: pointer; font: 500 12px/1.3 var(--datos); color: var(--cal); text-align: left; align-self: stretch; }
@@ -909,7 +914,7 @@
     #dock .lentes button:not(.info) { display: grid; align-content: center; justify-items: start; gap: 3px; min-height: 56px; padding: 8px 10px; text-align: left; font-size: 14px; }
     #dock .lentes .apoyo { display: block; font: 400 12px/1.25 var(--texto); color: inherit; opacity: .78; }
     /* alturas: lo que no corresponde a la altura no se dibuja */
-    html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley) { display: none !important; }
+    html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley, #dia-ley-caja) { display: none !important; }
     html.hoja-1 #dock :is(.dock-lect, .vistas, .lamina) { display: none !important; }
     html.hoja-1 #dock { max-height: 62dvh; }
     /* con la tarjeta de un modo abierta en la cerrada, el narrador deja su lugar (quedan «Volver a ahora» y el sello del resumen) */
@@ -1253,7 +1258,7 @@
       </svg>
       <div class="etiquetas" id="dia-etiquetas"></div>
       <input id="hora" type="range" min="0" max="1439" step="1" aria-label="Hora del día">
-      <p class="dia-ley" id="dia-ley"></p>
+      <details class="pliegue" id="dia-ley-caja"><summary>Cómo leerla</summary><p class="dia-ley" id="dia-ley"></p></details>
     </div>
     <div class="regla" id="regla-anio" role="tabpanel" aria-labelledby="tab-anio" hidden>
       <svg id="anio" viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
@@ -1295,8 +1300,10 @@
       </div></figure>
     </div>
   </div>
+        <details class="pliegue"><summary>Cómo se midió</summary>
   <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>
   <div class="dock-lect" id="dock-lect">
+        </details>
     <div data-explica="sol" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
     <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de un poste de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
     <div data-explica="clima" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
@@ -1495,11 +1502,13 @@
 </aside>
 
 <div id="capas" hidden>
+  <details class="pliegue"><summary>Cómo leerlo</summary>
   <div>
+  </details>
     <div class="ir-cab"><h2>Capas</h2><button class="boton" type="button" id="cerrar-capas">Cerrar</button></div>
     <div id="encuadres-caja">
       <h2 id="encuadres-t">Encuadres</h2>
-      <p class="lamina-nota">Cada encuadre te lleva a un lugar de Ciudad del Saber en un día y una hora reales en que el dato del clima del visor da sol directo y no da lluvia. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
+      <details class="pliegue"><summary>Cómo leerlo</summary><p class="lamina-nota">Cada encuadre te lleva a un lugar de Ciudad del Saber en un día y una hora reales en que el dato del clima del visor da sol directo y no da lluvia. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p></details>
       <p id="encuadres-nota" class="lamina-nota" hidden>La ciudad está apagada, así que solo queda el encuadre del 106.<br><button class="boton" type="button" id="encuadres-encender">Encender la ciudad</button></p>
       <ul id="encuadres" aria-labelledby="encuadres-t"></ul>
       <p id="encuadre-texto" class="lamina-nota" role="status" hidden></p>
