@@ -17,7 +17,7 @@ Algunos resultados que salen del propio visor, con su momento para verlo en la e
 - **El alero de 1,65 m deja el vidrio en sombra con el sol alto.** Desde unos 45° de perfil, el vidrio queda en sombra mientras la pared sigue al sol.
 - **El calor de la tarde llega por la fachada lateral suroeste.** En las horas de 30 °C o más (unas 1.300 al año con ERA5 ajustado al aeropuerto de Albrook; unas 440 sin ajustar), el sol está del lado de la SO en el 71 % de ellas.
 - **El viento llega sobre todo del norte y el noroeste.** La fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.880 horas al año, más de cuatro veces que cualquier otra: es la entrada natural para ventilar de forma cruzada.
-- **Llueve unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En 2001–2010 ERA5 da entre 8 y 9 % más que Albrook y Balboa; con Tocumen coincide (0,4 %) si se deja fuera 2009, que el INEC da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
+- **ERA5 da unos 2.000 mm al año, casi todo de mayo a noviembre y por la tarde.** En 2001–2010 ERA5 da entre 8 y 9 % más que Albrook y Balboa; con Tocumen coincide (0,4 %) si se deja fuera 2009, que el INEC da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad de cada aguacero ni en su hora.
 
 ## Qué se puede hacer
 
