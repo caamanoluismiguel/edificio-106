@@ -38972,7 +38972,7 @@ var bG = /* @__PURE__ */ s(((e, t) => {
 		fov: 34,
 		fecha: "2016-04-12",
 		hora: "12:19",
-		texto: "Las filas de dúplex que, según el informe CERL, se conocían como «tropical duplexes», un tipo construido de 1939 a 1943 en la Zona del Canal (p. 5-7): dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.",
+		texto: "Las filas de dúplex que, según el informe CERL, se conocían como «tropical duplexes», un tipo construido de 1939 a 1943 en el istmo (p. 5-7): dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.",
 		luz: "12 de abril de 2016, 12:19: el sol está a 90° de altura, casi exactamente en el cenit, y cada casa queda sobre su propia sombra. A esta latitud pasa dos veces al año, en abril y en agosto."
 	},
 	{
@@ -39040,7 +39040,7 @@ var bG = /* @__PURE__ */ s(((e, t) => {
 		],
 		fecha: "2010-12-21",
 		hora: "09:00",
-		texto: "Casas de oficiales de un tipo construido de 1939 a 1943 en la Zona del Canal según CERL (p. 5-7): dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.",
+		texto: "Casas de oficiales de un tipo construido de 1939 a 1943 en el istmo según CERL (p. 5-7): dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.",
 		luz: "21 de diciembre de 2010, 9:00, solsticio de diciembre: el sol sale más al sur que en todo el año y a esta hora está a 32° de altura hacia el sureste (125°)."
 	},
 	{
@@ -39108,7 +39108,7 @@ var bG = /* @__PURE__ */ s(((e, t) => {
 }, XG = {
 	I: ["confirmado", "pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media"],
 	II: ["probable", "se ve el tipo, pero falta alguno de los datos de la clase I (pisos, techo, muros o mediaguas) o la vista deja dudas"],
-	III: ["supuesto", "casi nada se ve; el tipo es supuesto"]
+	III: ["supuesto", "casi nada se ve en las fotos o es conjetura"]
 }, ZG = (e, t, n) => {
 	let r = !1;
 	for (let i = 0, a = e.length - 1; i < e.length; a = i++) {
@@ -39281,7 +39281,7 @@ function iK(e, t, n) {
 		titulo: "Edificio 106",
 		es106: !0,
 		filas: [],
-		lineas: ["Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.", "No se arma con el kit de la ciudad ni tiene clase de certeza: su modelo es propio. Cómo se hizo y qué no hace está en «Acerca del modelo»."]
+		lineas: ["Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.", "En el inventario de la ciudad es de clase I de certeza, pero a diferencia de los demás no se arma con el kit: está medido y tiene modelo propio. Cómo se hizo y qué no hace está en «Acerca del modelo»."]
 	};
 	let r = t?.edificios?.[e.o] ?? {}, i = r.t ? t?.tipos?.[r.t] : null, a = i && r.g != null ? i.grupos[r.g] : null, o = e.n ? `Edificio ${e.n}${r.une ? " y " + r.une : ""}` : r.nom ?? "Edificio sin número", s = e.n ? r.nom ?? null : r.nom ? "Sin número en OpenStreetMap" : null, c = [];
 	if (r.t) {
@@ -39292,24 +39292,24 @@ function iK(e, t, n) {
 	} else c.push(["Tipo", "No tiene un tipo del kit."]);
 	let l = r.p;
 	l && c.push(["Pisos", l.v ? `«${l.v}» en ${l.f}, con confianza ${l.k}.` : /Street View/.test(l.f) ? `No se ven en las fotos (${l.f}).` : `No se ven: ${l.f}.`]);
-	let u = r.ob;
-	c.push(["Altura", u ? u[1] >= .6 ? `Unos ${eK(u[0])} m según Open Buildings 2.5D (2023), estimada desde satélite.` : `Open Buildings 2.5D (2023) ve edificio solo en el ${Math.round(u[1] * 100)} % de la huella: aquí su altura no sirve.` : "Open Buildings 2.5D no la tiene."]);
-	let [d, f] = XG[r.c ?? e.c] ?? XG.III;
-	c.push(["Certeza", `${r.c ?? e.c}, ${d}: ${f}. ` + (r.s ? `${r.s[0]} de sus ${r.s[1]} parámetros del kit tienen alguna parte supuesta.` : "No se arma con el kit, así que no tiene parámetros que contar.")]);
-	let p;
-	p = e.m === "kit" ? n ? "Con el kit de piezas, sobre la huella de OpenStreetMap." : e.k ? "Con el kit de piezas; con la ciudad apagada, en su lugar se ve una copia del 106." : "Con el kit de piezas; con la ciudad apagada, en su lugar se ve un volumen simple." : e.m === "cuartel106" ? "Repite el volumen del 106." : e.m === "a mano" ? "Es un volumen hecho a mano." : `Es una caja gris con la altura estimada: ${r.t ? "el kit todavía no arma su forma" : "su tipo no está en el kit"}.`, r.une && (p += ` OpenStreetMap lo parte en dos huellas, ${e.n} y ${r.une}: es un solo dúplex y se dibuja una vez, como uno de los 38 del kit.`), c.push(["Cómo se dibuja", p]);
-	let m = [];
-	r.nota && m.push(r.nota), r.rep && m.push(`Hay ${r.rep} edificios con el número ${e.n} en OpenStreetMap: el enlace de este usa su id de OSM.`);
-	let h = (t?.osm_base ?? "").split("-").map(Number), g = h.length === 3 ? `${h[2]} ${$G[h[1] - 1]} ${h[0]}` : "", _ = t?.supuestos_ciudad;
+	let u = r.ob, d = "Google Open Buildings 2.5D (2023, CC BY 4.0)";
+	c.push(["Altura", u ? u[1] >= .6 ? `Unos ${eK(u[0])} m según ${d}, estimada desde satélite.` : u[1] > 0 ? `${d} ve edificio solo en el ${Math.round(u[1] * 100)} % de la huella: aquí su altura no sirve.` : `${d} no ve edificio en esta huella.` : `${d} no la tiene.`]);
+	let [f, p] = XG[r.c ?? e.c] ?? XG.III;
+	c.push(["Certeza", `${r.c ?? e.c}, ${f}: ${p}${(r.c ?? e.c) === "III" && r.t ? ", y el tipo es supuesto" : ""}. ` + (r.s ? `${r.s[0]} de sus ${r.s[1]} parámetros del kit tienen alguna parte supuesta.` : "No se arma con el kit, así que no tiene parámetros que contar.")]);
+	let m;
+	m = e.m === "kit" ? n ? "Con el kit de piezas, sobre la huella de OpenStreetMap." : e.k ? "Con el kit de piezas; con la ciudad apagada, en su lugar se ve una copia del 106." : "Con el kit de piezas; con la ciudad apagada, en su lugar se ve un volumen simple." : e.m === "cuartel106" ? "Repite el volumen del 106." : e.m === "a mano" ? "Es un volumen hecho a mano." : `Es una caja gris con la altura estimada: ${r.t ? "el kit todavía no arma su forma" : "su tipo no está en el kit"}.`, r.une && (m += ` OpenStreetMap lo parte en dos huellas, ${e.n} y ${r.une}: es un solo dúplex y se dibuja una vez, como uno de los 38 del kit.`), c.push(["Cómo se dibuja", m]);
+	let h = [];
+	r.nota && h.push(r.nota), r.rep && h.push(`Hay ${r.rep} edificios con el número ${e.n} en OpenStreetMap: el enlace de este usa su id de OSM.`);
+	let g = (t?.osm_base ?? "").split("-").map(Number), _ = g.length === 3 ? `${g[2]} ${$G[g[1] - 1]} ${g[0]}` : "", v = t?.supuestos_ciudad;
 	return {
 		titulo: o,
 		sub: s,
 		filas: c,
-		notas: m,
+		notas: h,
 		es106: !1,
-		base: g,
-		cerl: /CERL/.test(c[0][1]),
-		supuestosCiudad: _ ? `${eK(_[0])} de ${eK(_[1])} (${Math.round(100 * _[0] / _[1])} %)` : ""
+		base: _,
+		cerl: !!i?.cerl,
+		supuestosCiudad: v ? `${eK(v[0])} de ${eK(v[1])} (${Math.round(100 * v[0] / v[1])} %)` : ""
 	};
 }
 //#endregion
@@ -40407,7 +40407,7 @@ async function dJ(e) {
 		let t = uJ("p", "te-credito", "Número, nombre y huella: © "), i = uJ("a", null, "colaboradores de OpenStreetMap");
 		i.href = "https://www.openstreetmap.org/copyright", i.target = "_blank", i.rel = "noopener", t.append(i, `, ODbL; base del ${n.base}.` + (n.cerl ? " Tipos y años: Enscore et al. (2000), informe de ERDC/CERL sobre Fort Clayton." : ""));
 		let a = uJ("details");
-		a.append(uJ("summary", null, "Cómo leer esta ficha"), uJ("p", null, "Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve y el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos."), uJ("p", null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${n.supuestosCiudad}.`), uJ("p", null, "Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio."), uJ("p", null, "Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.")), r.push(t, a);
+		a.append(uJ("summary", null, "Cómo leer esta ficha"), uJ("p", null, "Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve o es conjetura; si tiene un tipo del kit, el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos."), uJ("p", null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${n.supuestosCiudad}.`), uJ("p", null, "Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio."), uJ("p", null, "Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.")), r.push(t, a);
 	}
 	if (Z("#te-txt").replaceChildren(...r), Z("#te-txt").scrollTop = 0, Z("#te-acerca").hidden = Z("#te-partes").hidden = !n.es106, Z("#te-estado").textContent = "", t.hidden) {
 		let e = document.activeElement;
