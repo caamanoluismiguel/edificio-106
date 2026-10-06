@@ -151,13 +151,26 @@ export function buscarEdificio(mapa, F, q) {
 /** Cómo se nombra el edificio en un enlace: su número si es único; si no tiene o se repite, «osm» y su id. */
 export const idEnlace = (e, F) => (e.n && !F?.edificios?.[e.o]?.rep ? e.n : 'osm' + e.o);
 
+/** La frase de la copa en la ficha del 106, con las cifras de datos/copa.json (fuente/copa.py): copa de 3 m o más en el suelo
+ *  sin edificios, dentro del límite propuesto y a 100 m del 106, con su procedencia. */
+export function fraseCopa(C) {
+  const pc = (x) => Math.round(100 * x), [a, m] = C.chm.imagenes_fecha.split('-').map(Number);
+  return `Estimación de la copa de árbol de ${nf(C.umbral_m)}\u00a0m o más sobre el suelo sin edificios: ${pc(C.distrito.copa_suelo_libre)}\u00a0% dentro del límite del distrito `
+    + `y ${pc(C.edificio_106.copa_suelo_libre_por_radio_m['100'])}\u00a0% a 100\u00a0m del 106. Sale del mapa de altura de copa de Meta y WRI, hecho con imágenes `
+    + `${C.chm.imagenes} de ${MES_LARGO[m - 1]} de ${a}, cuyo error absoluto medio en la altura es de ${nf(C.chm.error_absoluto_medio_altura_m)}\u00a0m en la validación `
+    + `de Tolan et al. (2024). El límite del distrito es una propuesta del visor y no el oficial de la Fundación Ciudad del Saber.`;
+}
+const MES_LARGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
 /** La ficha de un edificio (al tocarlo o con ?edificio=N), de datos/ciudad_fichas.json (fuente/ciudad-fichas.mjs). `ciudad`: si la
  *  capa de la ciudad está marcada (si no, en su lugar está el contexto de siempre). Devuelve el título, una línea bajo él, las filas
- *  [título, texto] y las notas; los textos de CERL y la tabla de años vienen hechos del generador. */
-export function ficha(e, F, ciudad) {
+ *  [título, texto] y las notas; los textos de CERL y la tabla de años vienen hechos del generador. `C`: datos/copa.json (la frase
+ *  de la copa del 106; sin él, la ficha del 106 sale sin esa frase). */
+export function ficha(e, F, ciudad, C) {
   if (e.n === '106') return { titulo: 'Edificio 106', es106: true, filas: [],
     lineas: ['Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.',
-      'En el inventario de la ciudad es de clase I de certeza, pero a diferencia de los demás no se arma con el kit: está medido y tiene modelo propio. Cómo se hizo y qué no hace está en «Acerca del modelo».'] };
+      'En el inventario de la ciudad es de clase I de certeza, pero a diferencia de los demás no se arma con el kit: está medido y tiene modelo propio. Cómo se hizo y qué no hace está en «Acerca del modelo».',
+      ...(C ? [fraseCopa(C)] : [])] };
   const f = F?.edificios?.[e.o] ?? {}, T = f.t ? F?.tipos?.[f.t] : null, G = T && f.g != null ? T.grupos[f.g] : null;
   const titulo = e.n ? `Edificio ${e.n}${f.une ? ' y ' + f.une : ''}` : f.nom ?? 'Edificio sin número';
   const sub = e.n ? f.nom ?? null : f.nom ? 'Sin número en OpenStreetMap' : null;

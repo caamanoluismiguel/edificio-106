@@ -804,6 +804,11 @@ function cargarFichas() {
   return (cargarFichas.p ??= fetch(conVersion(BASE + 'datos/ciudad_fichas.json')).then((r) => r.json()).then((j) => { NAV.fichas = j; return j; })
     .catch((e) => { cargarFichas.p = null; anotar('aviso', 'fichas: ' + e); return null; }));
 }
+/** La copa del distrito frente a la del 106 (datos/copa.json, de fuente/copa.py): se pide la primera vez que se abre la ficha del 106. */
+function cargarCopa() {
+  return (cargarCopa.p ??= fetch(conVersion(BASE + 'datos/copa.json')).then((r) => r.json())
+    .catch((e) => { cargarCopa.p = null; anotar('aviso', 'copa: ' + e); return null; }));
+}
 /** ?edificio=N: la ficha de ese edificio y, si `volar`, la cámara que lo encuadra (el 106, en la vista de la esquina). */
 async function abrirEdificio(q, volar = true) {
   const F = await cargarFichas(), e = buscarEdificio(NAV.mapa, F, q);
@@ -817,10 +822,19 @@ const elDe = (tag, cls, txt) => { const el = document.createElement(tag); if (cl
 async function mostrarTarjeta(e) {
   const el = $('#tarjeta-edificio'), F = NAV.fichas ?? await cargarFichas();
   // la capa marcada y un equipo que dibuja la ciudad (aunque todavía esté llegando)
-  const T = ficha(e, F, !!$('#capa-ciudad')?.checked && escena?.ciudadOpc?.nivel !== 'oculta');
+  const C = e === NAV.mapa?.e106 ? await cargarCopa() : null;
+  const T = ficha(e, F, !!$('#capa-ciudad')?.checked && escena?.ciudadOpc?.nivel !== 'oculta', C);
   $('#te-t').textContent = T.titulo;
   const hijos = [];
-  if (T.es106) hijos.push(...T.lineas.map((l) => elDe('p', null, l)));
+  if (T.es106) {
+    hijos.push(...T.lineas.map((l) => elDe('p', null, l)));
+    if (C) {   // la frase de la copa deriva del CHM de Meta y WRI y de las huellas de OSM
+      const cred = elDe('p', 'te-credito', 'Copa: Meta y WRI, CC BY 4.0; Source imagery for CHM © 2016 Maxar. Huellas y límite: © ');
+      const a = elDe('a', null, 'colaboradores de OpenStreetMap'); a.href = 'https://www.openstreetmap.org/copyright'; a.target = '_blank'; a.rel = 'noopener';
+      cred.append(a, ', ODbL.');
+      hijos.push(cred);
+    }
+  }
   else {
     if (T.sub) hijos.push(elDe('p', 'te-sub', T.sub));
     hijos.push(elDe('p', null, 'Es una maqueta aproximada: solo el 106 está medido.'));

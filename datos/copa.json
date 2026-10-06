@@ -1,0 +1,44 @@
+{
+ "que_es": "Fracción del suelo con copa de árbol de 3 m o más según el CHM de Meta y WRI. Estimación.",
+ "generado_por": "fuente/copa.py",
+ "metodo": "Píxeles del CHM (EPSG:3857, ~1,2 m) con altura >= umbral_m. «Suelo libre» excluye las huellas de OpenStreetMap de los edificios de docs/ciudad/inventario.json. Los radios se miden en el suelo desde el centroide del 106 (radio en EPSG:3857 = radio / cos(latitud)).",
+ "umbral_m": 3,
+ "distrito": {
+  "limite": "docs/ciudad/limite-propuesto.geojson",
+  "limite_nota": "Límite propuesto por el visor, no el oficial de la Fundación Ciudad del Saber.",
+  "fraccion_del_limite_cubierta_por_el_raster": 0.9972,
+  "copa_todo": 0.281,
+  "copa_suelo_libre": 0.3016
+ },
+ "edificio_106": {
+  "centro": {
+   "lat": 8.999313,
+   "lon": -79.582864,
+   "fuente": "centroide de la huella de OSM 300885891 en docs/ciudad/inventario.json"
+  },
+  "copa_suelo_libre_por_radio_m": {
+   "50": 0.0791,
+   "100": 0.0696,
+   "200": 0.1227
+  }
+ },
+ "huellas_excluidas": {
+  "cuantas": 322,
+  "de": "docs/ciudad/inventario.json, geometría de fuente/osm-amplio.json",
+  "osm_base": "2026-10-01T17:04:21Z"
+ },
+ "chm": {
+  "archivo": "chm_cds.tif (fuera del repo; recorte de la tesela 032221132 en ~/projects/edificio-106-arboles/recortar.py)",
+  "sha256": "307ed637afbda4741fcb351a014e5abd6258ff6332574f59bdc9e765b55fae9c",
+  "imagenes_fecha": "2018-10-04",
+  "imagenes": "Maxar",
+  "error_absoluto_medio_altura_m": 2.8,
+  "error_nota": "MAE de la validación de Tolan et al. (2024) con lidar aparte, en otros sitios; no se midió en Panamá."
+ },
+ "fuentes": [
+  "Meta and World Resources Institute (WRI), 2024. High Resolution Canopy Height Maps by WRI and Meta, CC BY 4.0 (https://registry.opendata.aws/dataforgood-fb-forests/). Source imagery for CHM © 2016 Maxar; la tesela 032221132 es de imágenes del 4 de octubre de 2018.",
+  "Tolan, J. et al. (2024). Very high resolution canopy height maps from RGB imagery using self-supervised vision transformer and convolutional decoder trained on aerial lidar. Remote Sensing of Environment 300, 113888. doi:10.1016/j.rse.2023.113888. Error absoluto medio de altura: 2,8 m.",
+  "© colaboradores de OpenStreetMap, ODbL (huellas y, de ellas, el límite propuesto)."
+ ],
+ "licencia": "ODbL 1.0 (deriva de las huellas de OpenStreetMap), conservando el crédito del CHM de Meta y WRI (CC BY 4.0)."
+}

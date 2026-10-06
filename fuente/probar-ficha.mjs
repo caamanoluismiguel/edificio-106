@@ -1,6 +1,6 @@
 // Prueba de la ficha del edificio (?edificio=N): abre el sitio armado de esta carpeta con un dúplex, un cuartel, una caja gris y el
 // 106, como teléfono (390 × 844), en el diseño intermedio (820 px) y con el panel lateral (1440 px), y guarda una captura de cada uno.
-// Comprueba además que la ficha se abre, que el centro del edificio queda a la vista (fuera de la ficha y de los paneles de abajo),
+// Comprueba además que la ficha se abre, que la del 106 lleva la frase de la copa (datos/copa.json), que el centro del edificio queda a la vista (fuera de la ficha y de los paneles de abajo),
 // que Escape la cierra, y cómo se eligen el 332B, un número repetido y un id de OSM.
 //   cd fuente && node probar-ficha.mjs [--salida=<carpeta>]      código de salida 0 si todo pasa
 import { chromium } from 'playwright';
@@ -57,11 +57,25 @@ for (const P of PANTALLAS) {
       const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
       const tapado = ['#tarjeta-edificio', '#dock', '#hud'].some((q) => { const b = document.querySelector(q)?.getBoundingClientRect(); return b && b.width && x >= b.left && x <= b.right && y >= b.top && y <= b.bottom; });
       return { titulo: document.querySelector('#te-t').textContent, x: Math.round(x), y: Math.round(y), W, H, ficha: [Math.round(ficha.left), Math.round(ficha.top), Math.round(ficha.right), Math.round(ficha.bottom)], tapado,
-        texto: document.querySelector('#te-txt').innerText.replace(/\s+/g, ' ').slice(0, 160) };
+        texto: document.querySelector('#te-txt').innerText.replace(/\s+/g, ' ').slice(0, 160),
+        copa: [...document.querySelectorAll('#te-txt p')].map((p) => p.textContent).find((t) => t.startsWith('Estimación de la copa')) ?? null,
+        copaVisible: (() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')); return !!p && p.getClientRects().length > 0; })() };
     });
     const archivo = path.join(SALIDA, `${P.nombre}-${rotulo}-${n}.png`);
     await pg.screenshot({ path: archivo });
     console.log(`${P.nombre} · ${n}: «${r.titulo}», centro del edificio en (${r.x}, ${r.y}) de ${r.W} × ${r.H}, ficha ${r.ficha.join(', ')} → ${path.basename(archivo)}`);
+    // la ficha del 106 lleva la frase de la copa (datos/copa.json); las demás no
+    if (n === '106') {
+      if (!r.copa || !r.copaVisible) mal('la ficha del 106 no muestra la frase de la copa');
+      else {
+        console.log('  ✓ copa: ' + r.copa);
+        // la ficha se desplaza hasta la frase (en el teléfono queda bajo el pliegue) y se captura otra vez
+        await pg.evaluate(() => [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')).scrollIntoView({ block: 'nearest' }));
+        await pg.waitForTimeout(300);
+        await pg.screenshot({ path: path.join(SALIDA, `${P.nombre}-${rotulo}-${n}-copa.png`) });
+      }
+    }
+    else if (r.copa) mal('la frase de la copa sale en una ficha que no es la del 106');
     if (r.tapado || r.x < 0 || r.x > r.W || r.y < 0 || r.y > r.H) mal(`el centro del edificio queda tapado o fuera de la pantalla`);
     if (errores.length) mal('errores: ' + errores.join(' | '));
     // el foco pasa al título de la ficha; Escape la cierra y el foco sale de ella
