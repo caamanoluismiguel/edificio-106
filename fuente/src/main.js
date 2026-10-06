@@ -1378,15 +1378,17 @@ function marcaSol(p) {
 function textoNoche(c) {
   if (S.aguacero) return 'Es de noche y la escena dibuja un aguacero forzado en Capas: no es el dato.';
   const L = escena.luna, nub = c?.nubes ?? 30, llueveYa = llueve(c);
+  // con la ciudad a la vista también alumbran los postes de sus calles (puestos por regla, src/postes.js)
+  const postes = U.postesVer.value > 0 ? 'el poste de la esquina y los postes de las calles de la ciudad' : 'el poste de la esquina';
   const fase = !L ? '' : L.frac > 0.95 ? 'la luna llena' : L.frac < 0.25 ? `una luna ${L.fase < 180 ? 'creciente' : 'menguante'} delgada` : `la luna ${L.fase < 180 ? 'creciente' : 'menguante'}`;
-  if (!L || L.alt <= 0) return 'Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y el poste de la esquina.';
-  if (L.frac < 0.05) return 'Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y el poste de la esquina.';
+  if (!L || L.alt <= 0) return `Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y ${postes}.`;
+  if (L.frac < 0.05) return `Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y ${postes}.`;
   if (llueveYa || nub >= 70) {
-    const N = Math.round(nub), cola = 'Alumbran el resplandor de la ciudad en las nubes y el poste de la esquina.';
+    const N = Math.round(nub), cola = `Alumbran el resplandor de la ciudad en las nubes y ${postes}.`;
     if (llueveYa && c?.albrook && !c.albrook.auto) return `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${N} % del cielo cubierto y la escena tapa ${fase}. ${cola}`;
     return `Es de noche${llueveYa ? ' y el modelo da lluvia' : ''}, con ${N} % del cielo cubierto según el dato: la escena tapa ${fase}. ${cola}`;
   }
-  return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo el cielo de la ciudad y el poste de la esquina.`;
+  return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo el cielo de la ciudad y ${postes}.`;
 }
 
 /** La primera frase de un texto (las cifras usan coma decimal, así que el punto cierra la frase). */
@@ -1983,7 +1985,7 @@ const LENTES = {
     que: 'El sol está calculado para este minuto exacto. El cielo, las nubes y la lluvia salen del dato del tiempo de esa hora. El suelo y los muros siguen mojados mientras no se seca lo que llovió en las horas anteriores, y la vegetación se mece con el viento de esa hora.',
     prueba: 'Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, la sombra del alero de 1,65 m cubre las ventanas y casi todo el muro de cada piso.',
     porque: 'Sirve para comparar con una foto real del mismo día y hora el sol y las sombras, que están calculados al minuto, y para ver el edificio con la luz de cualquier momento desde 1940. La lluvia y la fuerza del sol de esa hora son de ERA5 y casi nunca coinciden con lo que se ve en una hora concreta.',
-    ojo: 'La fuerza del sol de cada hora es el promedio de ERA5 en su celda: mientras la escena dibuja lluvia no dibuja sol directo, pero en una hora sin lluvia en el dato puede dibujar sombras aunque en el sitio llueva (pasó en seis de cada diez horas de 9 a 14 en que el observador de Albrook informó lluvia, 2017–2025). La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
+    ojo: 'La fuerza del sol de cada hora es el promedio de ERA5 en su celda: mientras la escena dibuja lluvia no dibuja sol directo, pero en una hora sin lluvia en el dato puede dibujar sombras aunque en el sitio llueva (pasó en seis de cada diez horas de 9 a 14 en que el observador de Albrook informó lluvia, 2017–2025). La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Hay cosas supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, el único poste real del modelo, se supone LED de 4000 K. Con la ciudad encendida también alumbran los postes de sus calles, que se ponen por regla y llevan esa misma lámpara. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.',
     tec: 'Posición del sol: algoritmo de NOAA (hasta 0,03° en altura y 0,11° en azimut frente a NREL SPA). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras: contra el trazado de rayos sobre la geometría, bajo el alero salen unos 5 cm más cortas.' },
   sol: { t: 'Sol en fachadas: la irradiancia solar que incide en cada punto del edificio', u: 'W/m²', rampa: rampaCSS(RAMPA_SOL), esc: ['nada', '400 W/m²', '800 o más'],
     que: 'Cada punto del edificio, vidrio incluido, se pinta según la radiación solar que incide sobre él en este momento: azul oscuro es nada, morado es poco, rojo es bastante y naranja y amarillo son mucho. Cuenta la sombra real de los aleros y del propio edificio, la de los árboles aproximados y la de los vecinos más cercanos (el 105, el salón de un piso de enfrente y Balboa Academy): bajo el alero, el color baja.',

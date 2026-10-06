@@ -90,8 +90,8 @@ const sombraSol = property('float', 'sombraSol');
 
 // Noche honesta: de noche la escena solo recibe la luz que de verdad hay. La luna sale de luna.js (posición y fase de esa
 // noche) y pasa por las nubes del dato; el cielo nublado devuelve el resplandor anaranjado de la ciudad (más claro que un muro
-// sin luz) y el despejado es más oscuro y neutro; la única fuente de la escena es el poste de la esquina, más las ventanas
-// encendidas, que son una suposición. El frío de la noche no está en la luz sino en la visión (Purkinje, en el postproceso).
+// sin luz) y el despejado es más oscuro y neutro; las fuentes de la escena son el poste de la esquina (el único real), los postes
+// de la ciudad puestos por regla (src/postes.js, solo con la ciudad) y las ventanas encendidas, que son una suposición. El frío de la noche no está en la luz sino en la visión (Purkinje, en el postproceso).
 const NOCHE = {
   lunaMax: 0.42,                         // luna llena en el cenit con cielo despejado (el sol de mediodía llega a 5)
   lunaColor: [1.0, 0.96, 0.9],           // es luz del sol reflejada, apenas más cálida
