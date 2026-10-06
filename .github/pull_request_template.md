@@ -17,4 +17,4 @@
 
 ## Aporte
 
-- [ ] Acepto que este aporte quede dentro de la obra bajo su `LICENSE` (punto 4), como dice `CONTRIBUTING.md`.
+- [ ] Acepto el punto 4 del `LICENSE`: el aporte es mío o tengo derecho a aportarlo, conservo mis derechos y concedo al autor una licencia no exclusiva para usarlo en la obra.

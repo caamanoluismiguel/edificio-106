@@ -27,6 +27,10 @@ Lo que se lista aquí no es del autor y no queda bajo el `LICENSE` del repositor
 
 Las herramientas que solo se usan para armar y probar (Vite, glTF Transform, meshoptimizer, sharp, Playwright) no van en el sitio publicado y tienen sus licencias en `fuente/node_modules` tras `npm install`.
 
+## Fotos de referencia del modelo
+
+El modelo del 106 lo hizo el autor con ayuda de IA (Claude), a partir de fotos propias y de fotos de Alejandro González, usadas con su permiso. El modelo es del autor y queda bajo el `LICENSE`; las fotos de Alejandro González son suyas y no están en este repositorio.
+
 ## Letras y texturas
 
 - Atkinson Hyperlegible Next (Braille Institute), Bricolage Grotesque e IBM Plex Mono: SIL Open Font License, servidas por Google Fonts.

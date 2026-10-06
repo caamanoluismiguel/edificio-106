@@ -4,7 +4,7 @@ Este documento cuenta cómo se armó el visor de sol y clima del Edificio 106 y 
 
 ## De dónde salió
 
-El punto de partida fue un modelo de Blender del 106, `Isthmus_v016.blend`, hecho antes de este repositorio. El script `fuente/export_web.py` lo parte en grupos de armado (sitio, arquitectura, ventanas, cubiertas, entrada, detalles, vegetación y contexto) y los exporta como GLB para la web. La escala del modelo tiene un margen de ±12 % y las ventanas de los pisos 2 y 3 son inferidas, así que se trata como una maqueta digital.
+El punto de partida fue un modelo de Blender del 106, `Isthmus_v016.blend`, hecho antes de este repositorio por LM con ayuda de IA (Claude), a partir de fotos propias y de fotos de Alejandro González, usadas con su permiso. El script `fuente/export_web.py` lo parte en grupos de armado (sitio, arquitectura, ventanas, cubiertas, entrada, detalles, vegetación y contexto) y los exporta como GLB para la web. La escala del modelo tiene un margen de ±12 % y las ventanas de los pisos 2 y 3 son inferidas, así que se trata como una maqueta digital.
 
 La pregunta era concreta: cómo trabajan la orientación, los aleros, la lluvia y el viento en un edificio real del trópico, con datos que un docente o un estudiante de arquitectura puedan revisar y discutir en clase. De ahí salen las dos piezas que el visor tuvo desde el primer día: el sol calculado para cada minuto y el clima de cada hora entre 2001 y 2025.
 

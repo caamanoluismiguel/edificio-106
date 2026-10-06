@@ -9,40 +9,60 @@ esa licencia le dio sobre esas versiones.
 1. Qué cubre
 
 El código, los modelos 3D, los textos, las imágenes, la tarjeta de realidad
-aumentada y los datos elaborados en este repositorio (en adelante, «la obra»),
-salvo las partes de terceros que se listan en TERCEROS.md, que conservan su
-propia licencia.
+aumentada, y la selección y disposición de los datos que el autor reunió en
+este repositorio (en adelante, «la obra»). No cubre los hechos ni los datos en
+sí, que la ley no protege. Tampoco cubre las partes de terceros que se listan
+en TERCEROS.md, que conservan su propia licencia; en particular, toda base de
+datos derivada de OpenStreetMap queda completa bajo la Open Database License
+(ODbL), como manda esa licencia.
 
 2. Lo que se permite sin pedir permiso
 
-a) Ver el código y los archivos en GitHub.
-b) Usar el visor publicado en
+a) Ver el código y los archivos, y hacer una bifurcación (fork) dentro de
+   GitHub, en los términos que dan las Condiciones de Servicio de GitHub.
+b) Hacer copias locales con el único fin de preparar un aporte a este
+   repositorio según CONTRIBUTING.md.
+c) Usar el visor publicado en
    https://caamanoluismiguel.github.io/edificio-106/ y la realidad aumentada
    con su tarjeta, en clase, en investigación y para uso personal.
-c) Citar la obra y mostrar capturas o imágenes exportadas del visor en clases,
+d) Citar la obra y mostrar capturas o imágenes exportadas del visor en clases,
    trabajos académicos, presentaciones y publicaciones, con la cita indicada en
    CITATION.cff.
-d) Hacer una bifurcación (fork) en GitHub y copias locales con el único fin de
-   preparar un aporte a este repositorio según CONTRIBUTING.md.
 
-3. Lo que no se permite sin permiso escrito del autor
+3. Lo que requiere permiso escrito del autor
 
 Fuera de lo que permite el punto 2:
 
-a) Publicar, alojar, distribuir o poner en línea una copia o una versión
-   modificada de la obra, completa o en parte.
-b) Usar la obra o partes de ella dentro de otro producto, sitio o servicio.
-c) Cualquier uso comercial.
-d) Presentar la obra o una versión de ella como propia o como oficial de
+a) Publicar, alojar, desplegar, distribuir o poner en línea una copia o una
+   versión modificada de la obra, completa o en parte, fuera de GitHub o en
+   GitHub de otro modo que como bifurcación, y activar GitHub Pages u otro
+   servicio de publicación en una bifurcación.
+b) Usar copias locales o sin conexión de la obra para dar clase, en una
+   institución o fuera de ella.
+c) Usar la obra o partes de ella dentro de otro producto, sitio o servicio.
+d) Cualquier uso comercial. El autor puede conceder licencias comerciales caso
+   por caso.
+e) Presentar la obra o una versión de ella como propia o como oficial de
    Isthmus o de Ciudad del Saber.
+
+Los permisos se piden abriendo un issue en
+https://github.com/caamanoluismiguel/edificio-106/issues y solo valen por
+escrito.
 
 4. Aportes
 
 Quien envía un aporte (issue, pull request, comentario, dato, foto o fuente)
-acepta lo que dice CONTRIBUTING.md: declara que tiene derecho a aportarlo y cede al
-autor una licencia perpetua, mundial, gratuita e irrevocable para usarlo,
-modificarlo, sublicenciarlo y publicarlo dentro de la obra bajo esta licencia
-o la que la sustituya. El aporte se reconoce en el historial de git.
+y marca la casilla de aceptación de la plantilla:
+
+a) declara que el aporte es suyo o que tiene derecho a aportarlo;
+b) conserva todos sus derechos sobre el aporte;
+c) concede al autor una licencia no exclusiva, gratuita, perpetua, mundial e
+   irrevocable para reproducir, modificar, adaptar, publicar, distribuir,
+   comunicar al público y sublicenciar el aporte dentro de la obra, bajo esta
+   licencia o la que el autor adopte después.
+
+El aporte se reconoce en el historial de git. Aportar es voluntario: si la
+obra se usa en un curso, aportar no puede ser condición para aprobarlo.
 
 5. Sin garantía
 
@@ -50,6 +70,3 @@ La obra se entrega «tal cual», sin garantía de ningún tipo. Es un proyecto
 académico experimental: sus cifras y sus recomendaciones no sustituyen el
 trabajo de un profesional ni una medición en sitio. El autor no responde por
 daños que surjan de su uso.
-
-Para pedir un permiso: abrir un issue en
-https://github.com/caamanoluismiguel/edificio-106/issues

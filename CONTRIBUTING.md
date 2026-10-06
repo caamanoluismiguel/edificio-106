@@ -2,7 +2,7 @@
 
 Gracias por querer mejorar el visor del Edificio 106. Está hecho para que docentes y estudiantes de arquitectura puedan revisar cada número y cada regla en su fuente. Por eso también sirve, sin tocar el código, reportar un dato que no cuadra o proponer una fuente mejor.
 
-Antes de aportar, lee el [`LICENSE`](LICENSE): el repositorio no es de código abierto. Se puede ver y se puede aportar, pero no publicar otra versión.
+Antes de aportar, lee el [`LICENSE`](LICENSE): el repositorio no es de código abierto. Se puede ver, hacer fork en GitHub y aportar, pero publicar otra versión, usar copias locales para dar clase o cualquier uso comercial piden permiso escrito del autor, que se solicita en un issue.
 
 ## Formas de aportar
 
@@ -74,7 +74,9 @@ La publicación en el sitio la decide el autor.
 
 ## Lo que aceptas al aportar
 
-Al enviar un aporte (issue, pull request, comentario, dato, foto o fuente) declaras que tienes derecho a aportarlo y aceptas que quede dentro de la obra bajo su `LICENSE`, como dice su punto 4. Tu aporte queda reconocido en el historial de git y, si es un dato o una fuente, en el texto que lo use cuando corresponda.
+Al enviar un aporte (issue, pull request, comentario, dato, foto o fuente) y marcar la casilla de aceptación de la plantilla, declaras que el aporte es tuyo o que tienes derecho a aportarlo. Conservas todos tus derechos sobre él y le concedes al autor una licencia no exclusiva para usarlo dentro de la obra, como dice el punto 4 del `LICENSE`. Tu aporte queda reconocido en el historial de git y, si es un dato o una fuente, en el texto que lo use cuando corresponda.
+
+Aportar es voluntario. Si el visor se usa en un curso, aportar no puede ser condición para aprobarlo.
 
 ## Dónde preguntar
 
