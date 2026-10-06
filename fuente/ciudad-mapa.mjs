@@ -4,7 +4,7 @@
 //   · suelo: el terreno de la escena (suelo() de ciudad-datos.mjs: el sitio del 106, plano, y la rejilla de 40 m de contexto.mjs sobre
 //     Copernicus GLO-30), con los mismos nudos de la rejilla de la escena (alineados con su caja), sus alturas y el mismo corte en
 //     triángulos (src/navegar.js, Mapa.suelo): el suelo del mapa es el de la escena, salvo el redondeo a 1 cm;
-//   · edificios: por cada edificio del inventario, su número, tipología del kit, clase de certeza, cómo se dibuja, la huella
+//   · edificios: por cada edificio del inventario, su id de OSM, su número, tipología del kit, clase de certeza, cómo se dibuja, la huella
 //     simplificada en la escena, el suelo bajo ella y una altura de techo aproximada (la del kit, la de la caja de contexto.mjs:
 //     niveles de OSM × 3,65 + 0,65 o Open Buildings p90, o la del 106). Sirve para elegir un edificio con dos toques y para que la
 //     cámara no entre en uno. Las alturas no se muestran: son aproximadas.
@@ -50,7 +50,8 @@ for (const e of E) {
   else if (e.modelo === 'cuartel106' || e.modelo === 'el 106 (modelo propio)') alto = 15.7;
   else { const ob = !b?.niveles && OB[e.osm_id]?.cubre >= 0.6 ? OB[e.osm_id] : null; alto = ob ? ob.p90 : (b?.niveles ?? 2) * PISO + BASE; }
   // k: con la ciudad apagada, en su lugar queda una copia reducida del 106 (contexto.glb)
-  edificios.push({ n: e.numero ?? null, t: e.tipologia ?? null, c: e.clase_certeza, m: e.modelo, ...(e.en_contexto ? { k: 1 } : {}), y0: r1(y0), h: r1(alto), p: P });
+  // o: el id de OSM, para la ficha (datos/ciudad_fichas.json, de ciudad-fichas.mjs)
+  edificios.push({ o: e.osm_id, n: e.numero ?? null, t: e.tipologia ?? null, c: e.clase_certeza, m: e.modelo, ...(e.en_contexto ? { k: 1 } : {}), y0: r1(y0), h: r1(alto), p: P });
 }
 
 // suelo cada PASO m en la caja del límite más 400 m (el borde blando y la cámara alejada)
