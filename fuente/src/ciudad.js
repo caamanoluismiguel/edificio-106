@@ -86,7 +86,7 @@ function leyendaCerteza() {
   }
   const pie = document.createElement('p');
   pie.style.cssText = 'margin:8px 0 0;font:400 12px/1.4 var(--texto);color:var(--cal-2)';
-  pie.textContent = 'La clase cuenta qué tan bien se vio cada edificio en las fotos. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos. El único modelo medido es el 106. Los postes de luz se ponen por regla: todos son clase III.';
+  pie.textContent = 'La clase cuenta qué tan bien se vio cada edificio en las fotos. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos. El único modelo medido es el 106. Los postes de las calles se ponen por regla y todos son clase III. El de la esquina del 106 es real.';
   caja.append(pie);
   document.body.append(caja);
 }

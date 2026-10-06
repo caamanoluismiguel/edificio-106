@@ -37,8 +37,9 @@ const leer = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 
 // el poste de la esquina del 106 (sitio.glb, medido en su malla): fuste de 0,14 m en (45,6; 16,4), recto hasta 8,8 m, un tramo
 // inclinado hasta 11,2 m a 1,6 m del fuste y el brazo hasta la luminaria, a 3,0 m del fuste; la lámpara (POSTE de escena.js) a
-// 11,3 m. El fuste queda a 1,9 m del bordillo de la calle Carlos Lara (bordillo en x 47,5). Los postes de la regla lo copian.
-const REAL = { fuste: [45.6, 16.4], brazo: [1, 0], lampara: 11.3, alcance: 3.0, retiro: 1.9 };
+// 11,3 m. El fuste queda a 1,9 m del bordillo pintado de Carlos Lara (x 47,5) y a 2,65 m del borde de la calzada de 8 m (x 48,25);
+// la esquina de la regla usa REGLA.retiro (2,9 m más allá del medio ancho de cada calle). Los postes de la regla copian su forma.
+const REAL = { fuste: [45.6, 16.4], brazo: [1, 0], lampara: 11.3, alcance: 3.0 };
 const REGLA = {
   esquina: { valor: 'uno por cruce', fuente: 'regla propia: un poste en cada cruce de calles con luz, en una de sus esquinas, como el poste real junto al 106 (en la esquina de Carlos Lara y Jorge Gil). No observado' },
   retiro: { valor: 2.9, fuente: 'medido en el poste real: su fuste queda a 2,65 m del borde de Carlos Lara y a 3,1 m del de Jorge Gil (ejes de las calles del sitio en x 52,25 y z 23,5, 8 m de ancho); se toma 2,9 m más allá del medio ancho de cada calle' },

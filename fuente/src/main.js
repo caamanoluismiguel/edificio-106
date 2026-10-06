@@ -1379,16 +1379,18 @@ function textoNoche(c) {
   if (S.aguacero) return 'Es de noche y la escena dibuja un aguacero forzado en Capas: no es el dato.';
   const L = escena.luna, nub = c?.nubes ?? 30, llueveYa = llueve(c);
   // con la ciudad a la vista también alumbran los postes de sus calles (puestos por regla, src/postes.js)
-  const postes = U.postesVer.value > 0 ? 'el poste de la esquina y los postes de las calles de la ciudad' : 'el poste de la esquina';
+  const conPostes = U.postesVer.value > 0;
+  const fuentes = conPostes ? 'el cielo de la ciudad, el poste de la esquina y los postes de las calles' : 'el cielo de la ciudad y el poste de la esquina';
+  const fuentesNubes = conPostes ? 'el resplandor de la ciudad en las nubes, el poste de la esquina y los postes de las calles' : 'el resplandor de la ciudad en las nubes y el poste de la esquina';
   const fase = !L ? '' : L.frac > 0.95 ? 'la luna llena' : L.frac < 0.25 ? `una luna ${L.fase < 180 ? 'creciente' : 'menguante'} delgada` : `la luna ${L.fase < 180 ? 'creciente' : 'menguante'}`;
-  if (!L || L.alt <= 0) return `Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y ${postes}.`;
-  if (L.frac < 0.05) return `Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y ${postes}.`;
+  if (!L || L.alt <= 0) return `Es de noche y la luna no está en el cielo. Alumbran solo ${fuentes}.`;
+  if (L.frac < 0.05) return `Es de noche y es casi luna nueva. Alumbran solo ${fuentes}.`;
   if (llueveYa || nub >= 70) {
-    const N = Math.round(nub), cola = `Alumbran el resplandor de la ciudad en las nubes y ${postes}.`;
+    const N = Math.round(nub), cola = `Alumbran ${fuentesNubes}.`;
     if (llueveYa && c?.albrook && !c.albrook.auto) return `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${N} % del cielo cubierto y la escena tapa ${fase}. ${cola}`;
     return `Es de noche${llueveYa ? ' y el modelo da lluvia' : ''}, con ${N} % del cielo cubierto según el dato: la escena tapa ${fase}. ${cola}`;
   }
-  return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo el cielo de la ciudad y ${postes}.`;
+  return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo ${fuentes}.`;
 }
 
 /** La primera frase de un texto (las cifras usan coma decimal, así que el punto cierra la frase). */
