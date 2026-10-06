@@ -41388,39 +41388,41 @@ function TY(e, t) {
 	let a = Q.modo === "ahora", o = Q.viaje;
 	Z("#l-hora").textContent = o?.fase === "fecha" ? "··:··" : WK(Q.min);
 	let s = Q.mesSerie === null ? QK(Q.fecha) : `${LK[Q.fecha.m - 1]} de ${Q.fecha.y}`, c = Q.mesSerie === null ? tq(Q.fecha) : `${RK[Q.fecha.m - 1]} ${Q.fecha.y}`, l = Z("#l-fecha");
-	l.firstChild || (l.innerHTML = "<span class=\"larga\"></span><span class=\"corta\"></span>"), l.children[0].textContent = s, l.children[1].textContent = c, document.documentElement.classList.toggle("vivo", a), Z("#ahora").textContent = a ? t?.fuente === "vivo" ? `En vivo · ${t.albrook ? `Albrook ${t.albrook.hora}` : `pronóstico ${t.hora ?? ""}`.trim()}` : "Ahora" : "Volver a ahora", Z("#ahora").setAttribute("aria-pressed", String(a));
-	let u = ZV(e.alt, e.az);
-	o ? (Z("#l-alt").textContent = "—", Z("#l-az").textContent = "", Z("#l-sombra").textContent = "—", Z("#l-sombra-r").textContent = "") : (Z("#l-alt").textContent = e.alt > -.5 ? BK(e.alt) + "°" : "bajo el horizonte", Z("#l-az").textContent = e.alt > -.5 ? `hacia el ${QV(e.az)} · ${Math.round(e.az)}°` : `${BK(-e.alt)}° bajo el horizonte`, Z("#l-sombra").textContent = u ? u.largo > 99 ? "> 99 m" : BK(u.largo, 2) + " m" : "sin sol", Z("#l-sombra-r").textContent = u ? `se proyecta hacia el ${QV(u.rumbo)}` : "no hay sombra solar");
-	let d = "—", f = "", p = "";
-	if (t?.fuente === "viaje") f = "viajando…";
+	l.firstChild || (l.innerHTML = "<span class=\"larga\"></span><span class=\"corta\"></span>"), l.children[0].textContent = s, l.children[1].textContent = c, document.documentElement.classList.toggle("vivo", a);
+	let u = a ? t?.fuente === "vivo" ? `En vivo · ${t.albrook ? `Albrook ${t.albrook.hora}` : `pronóstico ${t.hora ?? ""}`.trim()}` : "Ahora" : "Volver a ahora", d = a && t?.fuente === "vivo" && t.temp != null ? ` · ${Math.round(t.temp)} °C` : "", f = NJ("span", null, u);
+	d && f.append(NJ("span", "ahora-temp", d)), Z("#ahora").replaceChildren(f), Z("#ahora").setAttribute("aria-pressed", String(a));
+	let p = ZV(e.alt, e.az);
+	o ? (Z("#l-alt").textContent = "—", Z("#l-az").textContent = "", Z("#l-sombra").textContent = "—", Z("#l-sombra-r").textContent = "") : (Z("#l-alt").textContent = e.alt > -.5 ? BK(e.alt) + "°" : "bajo el horizonte", Z("#l-az").textContent = e.alt > -.5 ? `hacia el ${QV(e.az)} · ${Math.round(e.az)}°` : `${BK(-e.alt)}° bajo el horizonte`, Z("#l-sombra").textContent = p ? p.largo > 99 ? "> 99 m" : BK(p.largo, 2) + " m" : "sin sol", Z("#l-sombra-r").textContent = p ? `se proyecta hacia el ${QV(p.rumbo)}` : "no hay sombra solar");
+	let m = "—", h = "", g = "";
+	if (t?.fuente === "viaje") h = "viajando…";
 	else if (t) {
-		t.temp != null && (d = Math.round(t.temp) + " °C");
+		t.temp != null && (m = Math.round(t.temp) + " °C");
 		let n = [];
 		if (t.nubes != null && n.push(`${Math.round(t.nubes)} % nubes`), t.dni != null && e.alt > 2) {
 			let r = VK(Math.round(t.dni / 10) * 10);
 			n.push(dX(t, e) && !GJ(t) ? `sol a ratos · ${r} W/m² de media` : GJ(t) ? `sol ${r} W/m² de media` : `sol ${r} W/m²`);
 		}
 		let r = "";
-		if (t.fuente === "mes" ? (d = `${Math.round(t.lluviaMes)} mm`, r = "de lluvia en el mes") : r = t.fuente === "tipico" ? `ERA5 da 1 mm o más en ${Math.round(t.probLluvia)} % de estas horas` : t.albrook && !t.albrook.auto ? yG(t.albrook).replace(/^Albrook /, "Albrook: ").replace(/ a las \d\d:\d\d$/, "") : UJ(t) ? `lluvia ${BK(t.lluvia)} mm/h` : (t.lluvia ?? 0) >= .1 ? `lluvia débil en la celda (${BK(t.lluvia)} mm)` : t.llovizna ? "lluvia débil en la zona" : "sin lluvia", t.fuente === "vivo" && !t.albrook) {
+		if (t.fuente === "mes" ? (m = `${Math.round(t.lluviaMes)} mm`, r = "de lluvia en el mes") : r = t.fuente === "tipico" ? `ERA5 da 1 mm o más en ${Math.round(t.probLluvia)} % de estas horas` : t.albrook && !t.albrook.auto ? yG(t.albrook).replace(/^Albrook /, "Albrook: ").replace(/ a las \d\d:\d\d$/, "") : UJ(t) ? `lluvia ${BK(t.lluvia)} mm/h` : (t.lluvia ?? 0) >= .1 ? `lluvia débil en la celda (${BK(t.lluvia)} mm)` : t.llovizna ? "lluvia débil en la zona" : "sin lluvia", t.fuente === "vivo" && !t.albrook) {
 			let e = pq.ok ? pq.r.temp.p50[Q.fecha.m - 1][Math.max(0, Math.min(23, Math.floor(Q.min / 60)))] : null;
 			if (e != null) {
 				let n = t.temp - e;
 				Math.abs(n) >= 1 && (r += ` · ${n >= 0 ? "+" : "−"}${Math.round(Math.abs(n))} °C frente a la mediana de 2001–2025 de ERA5 sin ajustar (los dos son modelos)`);
 			}
 		}
-		f = n.join(" · ") + "\n" + r, p = t.fuente === "vivo" ? t.albrook ? t.albrook.auto ? `Temperatura, humedad y viento: parte automático del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. De noche ese parte no dice si llueve: la lluvia, las nubes y la luz son del pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Temperatura, humedad, viento y lluvia: parte del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. Nubes y luz: pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Pronóstico de modelo (Open-Meteo), ${t.hora}. El sol es calculado.` : t.fuente === "serie" ? `Dato de esa hora: ${pq.r?.era5 ? "reanálisis ERA5" : "archivo histórico"} (Open-Meteo), celda de ~28 km${t.ajustado ? "; temperatura y humedad ajustadas al aeropuerto de Albrook, a 4 km (2017–2025)" : ""}.` : t.fuente === "dia" ? t.modelo === "era5" ? "Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km." : "Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea." : t.fuente === "mes" ? "Total del mes de ERA5 (Open-Meteo), celda de ~28 km, serie 2001–2025. La lluvia que cae en la escena es proporcional al total del mes, no la de una hora." : a ? globalThis.MODELO_B64 ? "Típico para esta fecha y hora (2001–2025). En esta vista previa no hay conexión al tiempo real." : "Típico para esta fecha y hora (2001–2025): no se pudo leer el tiempo real." : t.cargandoSerie ? "Cargando la serie horaria 2001–2025…" : t.buscando ? "Buscando el dato de ese día en Open-Meteo…" : globalThis.MODELO_B64 ? "Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión." : "Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.", t.fuente === "tipico" && t.ajustado && !t.cargandoSerie && !t.buscando && (p = p.replace(/\.$/, ", con la temperatura y la humedad ajustadas a Albrook."));
+		h = n.join(" · ") + "\n" + r, g = t.fuente === "vivo" ? t.albrook ? t.albrook.auto ? `Temperatura, humedad y viento: parte automático del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. De noche ese parte no dice si llueve: la lluvia, las nubes y la luz son del pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Temperatura, humedad, viento y lluvia: parte del aeropuerto de Albrook, a 4 km, de las ${t.albrook.hora}. Nubes y luz: pronóstico de modelo (Open-Meteo). El sol es calculado.` : `Pronóstico de modelo (Open-Meteo), ${t.hora}. El sol es calculado.` : t.fuente === "serie" ? `Dato de esa hora: ${pq.r?.era5 ? "reanálisis ERA5" : "archivo histórico"} (Open-Meteo), celda de ~28 km${t.ajustado ? "; temperatura y humedad ajustadas al aeropuerto de Albrook, a 4 km (2017–2025)" : ""}.` : t.fuente === "dia" ? t.modelo === "era5" ? "Dato de esa hora: reanálisis ERA5 (Open-Meteo), consultado en línea. Celda de ~28 km." : "Dato de esa hora: modelo de pronóstico de Open-Meteo (días recientes o próximos), consultado en línea." : t.fuente === "mes" ? "Total del mes de ERA5 (Open-Meteo), celda de ~28 km, serie 2001–2025. La lluvia que cae en la escena es proporcional al total del mes, no la de una hora." : a ? globalThis.MODELO_B64 ? "Típico para esta fecha y hora (2001–2025). En esta vista previa no hay conexión al tiempo real." : "Típico para esta fecha y hora (2001–2025): no se pudo leer el tiempo real." : t.cargandoSerie ? "Cargando la serie horaria 2001–2025…" : t.buscando ? "Buscando el dato de ese día en Open-Meteo…" : globalThis.MODELO_B64 ? "Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión." : "Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.", t.fuente === "tipico" && t.ajustado && !t.cargandoSerie && !t.buscando && (g = g.replace(/\.$/, ", con la temperatura y la humedad ajustadas a Albrook."));
 	}
-	Z("#l-temp").textContent = d, Z("#l-clima").textContent = f, Z("#l-fuente").textContent = p;
-	let m = !t || o ? "" : t.fuente === "vivo" ? t.albrook ? "Albrook" : "pronóstico" : t.fuente === "serie" ? t.ajustado ? "ERA5 ajustado" : "ERA5" : t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "pronóstico" : t.fuente === "mes" ? "ERA5, mes" : t.ajustado ? "típico ajustado" : "típico", h = Q.aguacero && m ? "aguacero forzado · " + m : m;
-	Q.sello = h, Z("#lect-resumen-t").textContent = o ? "Viajando…" : (h ? `${h} · ` : "") + (t?.fuente === "mes" ? d : u ? `Sol ${Z("#l-alt").textContent} · sombra ${Z("#l-sombra").textContent} · ${d}` : `Sol ${kY(e) ? "en el" : "bajo el"} horizonte · ${d}`), Z("#hora").value = Math.round(Q.min) % 1440, Z("#dia-anio").value = YK(Q.fecha), Z("#hora").setAttribute("aria-valuetext", WK(Q.min)), Z("#dia-anio").setAttribute("aria-valuetext", QK(Q.fecha));
-	let g = Q.min % 1440 / 1440 * 1e3;
-	Z("#dia-aguja").setAttribute("x1", g), Z("#dia-aguja").setAttribute("x2", g);
-	let _ = YK(Q.fecha) / 364 * 1e3;
-	Z("#anio-aguja").setAttribute("x1", _), Z("#anio-aguja").setAttribute("x2", _);
-	let v = (Q.fecha.y - 2001) * 12 + Q.fecha.m - 1, y = v >= 0 && v < 300;
-	Z("#mes-serie").value = Math.max(0, Math.min(299, v)), Z("#mes-serie").setAttribute("aria-valuetext", y ? `${LK[Q.fecha.m - 1]} de ${Q.fecha.y}` : `${LK[Q.fecha.m - 1]} de ${Q.fecha.y}, fuera de 2001–2025`);
-	let b = (Math.max(0, Math.min(299, v)) + .5) / 300 * 1e3;
-	Z("#dec-aguja").setAttribute("x1", b), Z("#dec-aguja").setAttribute("x2", b), Z("#dec-aguja").style.opacity = y ? 1 : .25, NY(e, t, u), SX(t), EY(e), Q.fachada && (o ? Z("#fachada-texto").textContent = `Viajando al ${QK(o.f1)}, a las ${WK(o.m1)}.` : fX(e, t)), Object.keys($V).forEach((e, t) => {
+	Z("#l-temp").textContent = m, Z("#l-clima").textContent = h, Z("#l-fuente").textContent = g;
+	let _ = !t || o ? "" : t.fuente === "vivo" ? t.albrook ? "Albrook" : "pronóstico" : t.fuente === "serie" ? t.ajustado ? "ERA5 ajustado" : "ERA5" : t.fuente === "dia" && t.modelo === "era5" ? "ERA5" : t.fuente === "dia" ? "pronóstico" : t.fuente === "mes" ? "ERA5, mes" : t.ajustado ? "típico ajustado" : "típico", v = Q.aguacero && _ ? "aguacero forzado · " + _ : _;
+	Q.sello = v, Z("#lect-resumen-t").textContent = o ? "Viajando…" : (v ? `${v} · ` : "") + (t?.fuente === "mes" ? m : p ? `Sol ${Z("#l-alt").textContent} · sombra ${Z("#l-sombra").textContent} · ${m}` : `Sol ${kY(e) ? "en el" : "bajo el"} horizonte · ${m}`), Z("#hora").value = Math.round(Q.min) % 1440, Z("#dia-anio").value = YK(Q.fecha), Z("#hora").setAttribute("aria-valuetext", WK(Q.min)), Z("#dia-anio").setAttribute("aria-valuetext", QK(Q.fecha));
+	let y = Q.min % 1440 / 1440 * 1e3;
+	Z("#dia-aguja").setAttribute("x1", y), Z("#dia-aguja").setAttribute("x2", y);
+	let b = YK(Q.fecha) / 364 * 1e3;
+	Z("#anio-aguja").setAttribute("x1", b), Z("#anio-aguja").setAttribute("x2", b);
+	let x = (Q.fecha.y - 2001) * 12 + Q.fecha.m - 1, S = x >= 0 && x < 300;
+	Z("#mes-serie").value = Math.max(0, Math.min(299, x)), Z("#mes-serie").setAttribute("aria-valuetext", S ? `${LK[Q.fecha.m - 1]} de ${Q.fecha.y}` : `${LK[Q.fecha.m - 1]} de ${Q.fecha.y}, fuera de 2001–2025`);
+	let C = (Math.max(0, Math.min(299, x)) + .5) / 300 * 1e3;
+	Z("#dec-aguja").setAttribute("x1", C), Z("#dec-aguja").setAttribute("x2", C), Z("#dec-aguja").style.opacity = S ? 1 : .25, NY(e, t, p), SX(t), EY(e), Q.fachada && (o ? Z("#fachada-texto").textContent = `Viajando al ${QK(o.f1)}, a las ${WK(o.m1)}.` : fX(e, t)), Object.keys($V).forEach((e, t) => {
 		let n = document.querySelector(`[data-fachada="${e}"]`);
 		if (!n) return;
 		let r = Q.irr?.[t] ?? 0;
@@ -43463,23 +43465,23 @@ function sZ() {
 function cZ() {
 	let e = Q.fecha, t = Z("#dia-clima");
 	if (!t) return;
-	let n = "", r = "", i = (t) => pq.registro(e, t) ?? pq.registroDia(e, t), a = i(0), o = !!a, s = oG(e.m);
+	let n = "", r = "", i = (t) => pq.registro(e, t) ?? pq.registroDia(e, t), a = i(0), o = !!a, s = oG(e.m), c = o ? a.fuente === "serie" ? "ERA5" : a.modelo === "era5" ? "ERA5, consultado en línea" : "pronóstico de modelo (Open-Meteo)" : "", l = c.replace(" (Open-Meteo)", " de Open-Meteo"), u = o ? a.fuente === "serie" ? "ERA5" : a.modelo === "era5" ? "ERA5 en línea" : "Pronóstico Open-Meteo" : pq.ok ? "ERA5, típico 2001–2025" : "";
 	for (let t = 0; t < 24; t++) {
 		let r = t / 24 * 1e3 + 2, a = 1e3 / 24 - 4;
 		if (o) {
-			let o = i(t * 60), c = i(t * 60 + 30), l = KV({
+			let o = i(t * 60), c = i(t * 60 + 30), u = KV({
 				...e,
 				h: t,
 				min: 30
-			}).alt, u = o?.lluvia ?? 0;
-			if (l > 2 && c?.dni != null) {
-				let e = u >= s ? 0 : qK(c.dni / Math.max(40, nH(l)));
+			}).alt, d = o?.lluvia ?? 0;
+			if (u > 2 && c?.dni != null) {
+				let e = d >= s ? 0 : qK(c.dni / Math.max(40, nH(u)));
 				e < .85 && (n += `<rect class="nube" x="${r - 2}" y="6" width="41.666666666666664" height="16" opacity="${(.62 * (1 - e)).toFixed(2)}"></rect>`);
 			}
-			if (u >= s) {
-				let e = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(u) / Math.log1p(15)));
-				n += `<rect class="gota" x="${r}" y="${22 - e}" width="${a}" height="${e}" rx="1.5"><title>${WK(t * 60)}–${WK(t * 60 + 60)}: ${BK(u)} mm</title></rect>`;
-			} else u >= .1 && (n += `<rect class="gota debil" x="${r}" y="20" width="${a}" height="2" rx="1"><title>${WK(t * 60)}–${WK(t * 60 + 60)}: ${BK(u)} mm, lluvia débil en la celda (la escena no la dibuja)</title></rect>`);
+			if (d >= s) {
+				let e = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(d) / Math.log1p(15)));
+				n += `<rect class="gota" x="${r}" y="${22 - e}" width="${a}" height="${e}" rx="1.5"><title>${WK(t * 60)}–${WK(t * 60 + 60)}: ${BK(d)} mm (${l})</title></rect>`;
+			} else d >= .1 && (n += `<rect class="gota debil" x="${r}" y="20" width="${a}" height="2" rx="1"><title>${WK(t * 60)}–${WK(t * 60 + 60)}: ${BK(d)} mm, lluvia débil en la celda (la escena no la dibuja; ${l})</title></rect>`);
 		} else if (pq.ok) {
 			let i = pq.tipico(e.m, t * 60)?.probLluvia ?? 0;
 			if (i >= 5) {
@@ -43489,10 +43491,10 @@ function cZ() {
 		}
 	}
 	if (o) {
-		let e = a.fuente === "serie" ? "ERA5" : a.modelo === "era5" ? "ERA5, consultado en línea" : "pronóstico de modelo (Open-Meteo)", t = Q.modo === "ahora" && pq.vivo?.albrook && !pq.vivo.albrook.auto ? "; el ahora sigue el parte de Albrook" : "";
-		r = `▮ lluvia desde ${BK(s, s % 1 ? 1 : 0)} mm en la hora · ▁ lluvia débil en la celda · gris: sol directo que falta · ${e}${t}`;
+		let e = Q.modo === "ahora" && pq.vivo?.albrook && !pq.vivo.albrook.auto ? "; el ahora sigue el parte de Albrook" : "";
+		r = `▮ lluvia desde ${BK(s, s % 1 ? 1 : 0)} mm en la hora · ▁ lluvia débil en la celda · gris: sol directo que falta · ${c}${e}`;
 	} else pq.ok && (r = `▮ probabilidad típica de 1 mm o más en la hora (${LK[e.m - 1]})`);
-	t.innerHTML = n, Z("#dia-ley").textContent = r;
+	t.innerHTML = n, Z("#dia-ley").textContent = r, Z("#dia-ley-fuente").textContent = u, Z("#dia-ley-fuente").hidden = !u;
 }
 function lZ() {
 	let e = dq, t = Q.fecha.y, n = YV(t), r = (e) => UK(JV(e.y, e.m, e.d)), i = [], a = (e) => (t) => i.push({
