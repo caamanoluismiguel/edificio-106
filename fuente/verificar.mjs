@@ -418,6 +418,9 @@ async function comprobacion7(pg, geo) {
       const puntos = [...ys.map((y) => pto(M, col.s, y, muro + 0.001)), col.suelo];
       const prep = (E, a) => {
         if (E.grupos.vegetacion && E.grupos.vegetacion.root.visible) { E.grupos.vegetacion.root.visible = false; E.sun.shadow.needsUpdate = true; }
+        // los postes de la ciudad puestos por regla (src/postes.js) tampoco están en la geometría del trazado (geo.vista): uno delante
+        // de la franja la tapa sin que visible() lo sepa. Se esconden como la vegetación; no proyectan sombra
+        if (E.postes?.raiz.visible) E.postes.raiz.visible = false;
         E.camera.position.set(...a.cam); E.camera.lookAt(...a.objetivo); E.camera.updateMatrixWorld(true);
         if (a.apagar) { E._intGuardada = E.sun.intensity; E.sun.intensity = 0; } else if (E._intGuardada != null) { E.sun.intensity = E._intGuardada; E._intGuardada = null; }
       };
@@ -440,7 +443,7 @@ async function comprobacion7(pg, geo) {
     }
     if (!hecho) notas.push(`${clave}: no hubo momento despejado con sol alto y franja limpia`);
   }
-  await pg.evaluate(() => { const E = __e106.escena; if (E.grupos.vegetacion) E.grupos.vegetacion.root.visible = true; E.sun.shadow.needsUpdate = true; __e106.S.pausa = false; });
+  await pg.evaluate(() => { const E = __e106.escena; if (E.grupos.vegetacion) E.grupos.vegetacion.root.visible = true; if (E.postes && E.ciudad) E.postes.raiz.visible = E.ciudad.visible !== false; E.sun.shadow.needsUpdate = true; __e106.S.pausa = false; });
   const medidos = casos.filter((c) => c.estado !== 'NO MEDIBLE');
   return { estado: !medidos.length ? 'NO MEDIBLE' : medidos.some((c) => c.estado === 'FALLA') ? 'FALLA' : 'PASA', sombraApp: sesgoApp, casos, notas,
     criterio: 'con el sol a más de 60°, en la franja de 60 cm bajo el canto del alero (en sombra según el trazado de rayos) el cociente de luminancia con sol / sin sol no pasa de 1 + 8 % del de un suelo al sol',
