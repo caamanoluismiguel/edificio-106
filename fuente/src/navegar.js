@@ -174,7 +174,7 @@ export function ficha(e, F, ciudad) {
   const p = f.p;
   if (p) filas.push(['Pisos', p.v ? `«${p.v}» en ${p.f}, con confianza ${p.k}.` : /Street View/.test(p.f) ? `No se ven en las fotos (${p.f}).` : `No se ven: ${p.f}.`]);
   const ob = f.ob;
-  const OB = 'Google Open Buildings 2.5D (2023, CC BY 4.0)';
+  const OB = 'Google Open Buildings 2.5D (2023, usada con ODbL)';
   filas.push(['Altura', !ob ? `${OB} no la tiene.` : ob[1] >= 0.6 ? `Unos ${nf(ob[0])} m según ${OB}, estimada desde satélite.`
     : ob[1] > 0 ? `${OB} ve edificio solo en el ${Math.round(ob[1] * 100)} % de la huella: aquí su altura no sirve.` : `${OB} no ve edificio en esta huella.`]);
   // certeza y lo supuesto
