@@ -41282,42 +41282,33 @@ function vY() {
 	}));
 }
 function yY(e) {
-	let t = e.era5.pct, n = e.albrook.pct, r = (e) => 8 + 52 * Math.sqrt(e / 30), i = (e, t) => {
+	let t = e.era5.pct, n = e.albrook.pct, r = Math.max(...t), i = Math.max(...n.filter((e) => e !== null)), a = (e, t) => 12 + 46 * e / t, o = (e, t) => {
 		let n = e / 24 * 2 * Math.PI;
 		return `${(80 + t * Math.sin(n)).toFixed(2)},${(80 - t * Math.cos(n)).toFixed(2)}`;
-	}, a = (e, t, n, r) => `M${i(e, n)}L${i(e, r)}A${r},${r} 0 0 1 ${i(t, r)}L${i(t, n)}A${n},${n} 0 0 0 ${i(e, n)}Z`, o = (e) => String(e).padStart(2, "0"), s = "";
-	for (let e of [
-		10,
-		20,
-		30
-	]) s += `<circle class="anillo" cx="80" cy="80" r="${r(e).toFixed(2)}"></circle>`;
+	}, s = (e, t, n) => `M${o(e, n)}A${n},${n} 0 ${+(t - e > 12)} 1 ${o(t, n)}`, c = (e, t, n, r) => `M${o(e, n)}L${o(e, r)}A${r},${r} 0 0 1 ${o(t, r)}L${o(t, n)}A${n},${n} 0 0 0 ${o(e, n)}Z`, l = (e) => String(e).padStart(2, "0"), u = "";
 	t.forEach((t, n) => {
 		let i = n || 24;
-		s += `<path class="era5" d="${a(i - 1, i, 8, r(t))}"><title>ERA5, de ${o(i - 1)} a ${o(i % 24)} h: ${vK(t)} % de las horas con ${vK(e.era5.umbral_mm)} mm o más</title></path>`;
-	}), n.forEach((e, t) => {
-		if (e === null) return;
-		let n = a(t - .35, t + .35, 8, r(e));
-		s += `<path class="alb-halo" d="${n}"></path><path class="alb" d="${n}"><title>Albrook, parte de las ${o(t)}:00: ${vK(e)} % con lluvia</title></path>`;
+		u += `<path class="era5" d="${c(i - 1, i, 12, a(t, r))}"><title>ERA5, de ${l(i - 1)} a ${l(i % 24)} h: ${vK(t)} % de las horas con ${vK(e.era5.umbral_mm)} mm o más</title></path>`;
 	});
-	let c = e.albrook.sin_observador, l = Math.max(...c.filter((e) => e > 12)) - 24 - .5, u = Math.max(...c.filter((e) => e < 12)) + .5;
-	s += `<path class="auto" d="M${i(l, 65)}A65,65 0 0 1 ${i(u, 65)}"></path>`;
+	let d = n.map((e, t) => e === null ? null : t).filter((e) => e !== null), f = d[0], p = d[d.length - 1], m = d.map((e, t) => `${t ? "L" : "M"}${o(e, a(n[e], i))}`).join("") + `L${o(p, 12)}L${o(f, 12)}Z`;
+	u += `<path class="alb" d="${m}"><title>Albrook, % de partes del observador con lluvia: ${d.map((e) => `${e}:00 ${vK(n[e])}`).join(" · ")}. ${e.albrook.nota_tarde}</title></path>`;
+	let h = e.era5.pico, g = e.albrook.cima, _ = [Math.min(...g), Math.max(...g)];
+	u += `<path class="marca-era5" d="M${o(h - .5, 61)}L${o(h - .5, 68)}"></path>`, u += `<path class="alb" d="${s(_[0], _[1], 65)}"></path>`;
+	let v = e.albrook.sin_observador, y = Math.min(...v.filter((e) => e > 12)), b = Math.max(...v.filter((e) => e < 12));
+	u += `<path class="auto" d="${s(y - 24 - .5, b + .5, 66)}"></path>`;
 	for (let e of [
 		0,
 		6,
 		12,
 		18
 	]) {
-		let [t, n] = i(e, 74).split(",");
-		s += `<text x="${t}" y="${n}" class="hora">${e}</text>`;
+		let [t, n] = o(e, 74).split(",");
+		u += `<text x="${t}" y="${n}">${e}</text>`;
 	}
-	for (let e of [10, 30]) {
-		let [t, n] = i(21.5, r(e) + 5).split(",");
-		s += `<text x="${t}" y="${n}" class="pct">${e} %</text>`;
-	}
-	let d = Z("#reloj-svg");
-	d.innerHTML = s;
-	let f = e.era5.pico, p = e.albrook.pico, m = Math.min(...c.filter((e) => e > 12)), h = Math.max(...c.filter((e) => e < 12));
-	Z("#reloj-era5").textContent = `ERA5 da ${vK(e.era5.umbral_mm)} mm o más con más frecuencia de ${f - 1} a ${f} h (${vK(t[f])} % de esas horas) y pone de 12 a 18 h el ${vK(e.cantidad.tarde)} % de la lluvia de mayo a noviembre (${e.cantidad.periodo.join("–")}).`, Z("#reloj-alb").textContent = `Albrook, un aeropuerto a 4 km, observó lluvia en más partes a las ${p}:00 (${vK(n[p])} %).`, Z("#reloj-auto").textContent = `De ${m} a ${h} h el parte de Albrook es automático y no informa si llueve (arco punteado). Por eso el pico de madrugada que da ERA5 no se puede contrastar.`, d.setAttribute("aria-label", `Reloj de 24 horas. ${Z("#reloj-era5").textContent} ${Z("#reloj-alb").textContent}`), Z("#reloj-lluvia").hidden = !1;
+	let x = Z("#reloj-svg");
+	x.innerHTML = u;
+	let S = e.era5.madrugada, C = e.comparacion, w = Math.floor(Math.min(C.desfase_h, C.desfase_picos_h)), T = Math.ceil(Math.max(C.desfase_h, C.desfase_picos_h));
+	Z("#reloj-era5").textContent = `ERA5 da su máximo de ${h - 1} a ${h} h.`, Z("#reloj-alb").textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${_[0]} a ${_[1]} h.`, Z("#reloj-auto").textContent = `De ${y} a ${b} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...S) - 1} a ${Math.max(...S)} h no se puede contrastar.`, Z("#reloj-desfase").textContent = w === T ? `${w} h` : `de ${w} a ${T} h`, x.setAttribute("aria-label", `Reloj de 24 horas, cada curva a escala de su máximo. ${Z("#reloj-era5").textContent} ${Z("#reloj-alb").textContent}`), Z("#reloj-lluvia").hidden = !1;
 }
 function bY(e, t) {
 	let n = `${vK(e.valor, +(e.valor < 100))} ${e.unidad}`;

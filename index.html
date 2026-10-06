@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=3dff8ade62" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=bd61faae74" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -509,7 +509,7 @@
   #momentos button { display: grid; gap: 3px; text-align: left; border: 1px solid var(--linea); background: rgba(239,233,222,.04); border-radius: 12px; padding: 7px 10px; cursor: pointer; white-space: nowrap; transition: border-color .2s; }
   #momentos button:hover { border-color: var(--lluvia); }
   #momentos span { font: 600 12px/1 var(--texto); } #momentos b { font: 500 11px/1 var(--datos); color: var(--lluvia); }
-  /* reloj de la lluvia («25 años»): una sola tinta; ERA5 relleno, Albrook en contorno, el arco punteado es lo que no se compara */
+  /* reloj de la lluvia («25 años»): una sola tinta; ERA5 relleno, Albrook en línea, cada uno a escala de su máximo; el arco punteado es lo que no se compara */
   #reloj-lluvia { margin: 6px 0 0; container-type: inline-size; }
   #reloj-lluvia[hidden] { display: none; }
   #reloj-lluvia .reloj-caja { display: grid; grid-template-columns: 160px minmax(0, 1fr); grid-template-areas: "reloj ley" "textos textos"; gap: 8px 12px; align-items: start; }
@@ -519,15 +519,14 @@
   #reloj-lluvia .reloj-ley { grid-area: ley; display: grid; gap: 6px; align-self: center; }
   #reloj-lluvia p { margin: 0; }
   #reloj-t { font: 500 12px/1.3 var(--datos); color: var(--cal-2); }
-  #reloj-svg .anillo { fill: none; stroke: var(--linea); stroke-width: 1; }
-  #reloj-lluvia .era5 { fill: var(--lluvia); fill-opacity: .5; stroke: none; }
-  #reloj-lluvia .alb { fill: none; stroke: var(--lluvia); stroke-width: 1.5; stroke-linejoin: round; }
-  #reloj-svg .alb-halo { fill: none; stroke: var(--solido); stroke-width: 3.5; stroke-linejoin: round; }
+  #reloj-lluvia .era5 { fill: var(--lluvia); fill-opacity: .4; stroke: none; }
+  #reloj-lluvia .alb { fill: none; stroke: var(--lluvia); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  #reloj-svg .marca-era5 { stroke: var(--lluvia); stroke-width: 4; opacity: .5; }
   #reloj-lluvia .auto { fill: none; stroke: var(--cal-3); stroke-width: 1.5; stroke-dasharray: 1.5 3; stroke-linecap: round; }
   #reloj-svg text { font: 500 11px/1 var(--datos); fill: var(--cal-2); text-anchor: middle; dominant-baseline: central; }
-  #reloj-svg text.pct { fill: var(--cal-3); }
   #reloj-lluvia .reloj-fila { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 6px; font: 400 12px/1.3 var(--texto); color: var(--cal-2); }
   #reloj-lluvia .reloj-dato { font: 400 13px/1.35 var(--texto); color: var(--cal); }
+  #reloj-lluvia .reloj-escala { color: var(--cal-3); }
   #reloj-lluvia .muestra { width: 12px; height: 12px; margin-top: 2px; }
   #reloj-lluvia .reloj-nota { font: 400 12px/1.35 var(--texto); color: var(--cal-2); }
   .dock-lect { grid-area: lect; display: grid; grid-template-columns: repeat(3, minmax(0, auto)); gap: 4px 22px; align-content: center; }
@@ -1273,16 +1272,18 @@
       <figure id="reloj-lluvia" hidden><div class="reloj-caja">
         <svg id="reloj-svg" viewBox="0 0 160 160" width="160" height="160" role="img"></svg>
         <div class="reloj-ley">
-          <p id="reloj-t">La hora de la lluvia, mayo a noviembre de 2017 a 2025</p>
-          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><rect class="era5" x="1" y="1" width="10" height="10" rx="1"></rect></svg><span>ERA5: % de horas con 1,5 mm o más</span></p>
-          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><rect class="alb" x="2" y="2" width="8" height="8" rx="1"></rect></svg><span>Albrook: % de partes del observador con lluvia (RA, SHRA o TSRA)</span></p>
+          <p id="reloj-t">La hora de la lluvia, mayo a noviembre (2017 a 2025)</p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><rect class="era5" x="1" y="1" width="10" height="10" rx="1"></rect></svg><span>ERA5, horas con 1,5 mm o más</span></p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><path class="alb" d="M1 9L4 4L7 6L11 2"></path></svg><span>Albrook, partes con lluvia</span></p>
           <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><path class="auto" d="M1 6H11"></path></svg><span>Sin observador en Albrook</span></p>
+          <p class="reloj-fila reloj-escala"><span></span><span>% del máximo de cada fuente</span></p>
         </div>
         <div class="reloj-textos">
         <p class="reloj-dato" id="reloj-era5"></p>
         <p class="reloj-dato" id="reloj-alb"></p>
+        <p class="reloj-nota">Las dos curvas miden cosas distintas: ERA5, horas con 1,5 mm o más en una celda de unos 28 km; Albrook, partes de un instante con cualquier lluvia en un punto. Por eso cada una va a escala de su máximo y solo se compara la hora.</p>
         <p class="reloj-nota" id="reloj-auto"></p>
-        <p class="reloj-nota" id="reloj-sesgo">En un estudio global de junio a agosto, ERA5 adelanta en promedio unas 2 h la hora del máximo de lluvia sobre tierra frente al satélite IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
+        <p class="reloj-nota" id="reloj-sesgo">Aquí el máximo de ERA5 llega <span id="reloj-desfase">de 1 a 2 h</span> antes que el de Albrook, en línea con un estudio global de junio a agosto: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo de lluvia frente al producto satelital IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
         </div>
       </div></figure>
     </div>
@@ -1348,7 +1349,7 @@
       </article>
       <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
         <h4>Casi toda la lluvia cae de mayo a noviembre, y sobre todo en la tarde</h4>
-        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En esos meses, el observador del aeropuerto de Albrook, a 4 km, informó lluvia en la mitad de las tardes (2017–2025); ERA5, que reparte la lluvia en una celda de 28 km, da 1 mm o más en 87 de cada 100. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
+        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En esos meses, el observador del aeropuerto de Albrook, a 4 km, informó lluvia en alguno de sus partes de 12:00 a 18:59 en la mitad de las tardes (2017–2025). ERA5 da 1 mm o más entre las 12 y las 18 h en 87 de cada 100 tardes (2001–2025), pero no mide lo mismo: suma seis horas en una celda de 28 km, y cada parte mira un instante en un punto. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
         <button class="ver" type="button"><span>Verlo</span><small>1 de julio de 2023, 14:30 · esquina</small></button>
       </article>
     </div>
@@ -1572,4 +1573,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=3dff8ade62"></script></body></html>
+<script type="module" src="js/app.js?v=bd61faae74"></script></body></html>
