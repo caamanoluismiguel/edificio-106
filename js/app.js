@@ -41282,15 +41282,15 @@ function vY() {
 	}));
 }
 function yY(e) {
-	let t = e.era5.pct, n = e.albrook.pct, r = Math.max(...t), i = Math.max(...n.filter((e) => e !== null)), a = (e, t) => 12 + 46 * e / t, o = (e, t) => {
+	let t = e.era5.pct, n = e.albrook.pct, r = Math.max(...t), i = Math.max(...n.filter((e) => e !== null)), a = (e, t) => 0 + 58 * e / t, o = (e, t) => {
 		let n = e / 24 * 2 * Math.PI;
 		return `${(80 + t * Math.sin(n)).toFixed(2)},${(80 - t * Math.cos(n)).toFixed(2)}`;
 	}, s = (e, t, n) => `M${o(e, n)}A${n},${n} 0 ${+(t - e > 12)} 1 ${o(t, n)}`, c = (e, t, n, r) => `M${o(e, n)}L${o(e, r)}A${r},${r} 0 0 1 ${o(t, r)}L${o(t, n)}A${n},${n} 0 0 0 ${o(e, n)}Z`, l = (e) => String(e).padStart(2, "0"), u = "";
 	t.forEach((t, n) => {
 		let i = n || 24;
-		u += `<path class="era5" d="${c(i - 1, i, 12, a(t, r))}"><title>ERA5, de ${l(i - 1)} a ${l(i % 24)} h: ${vK(t)} % de las horas con ${vK(e.era5.umbral_mm)} mm o más</title></path>`;
+		u += `<path class="era5" d="${c(i - 1, i, 0, a(t, r))}"><title>ERA5, de ${l(i - 1)} a ${l(i % 24)} h: ${vK(t)} % de las horas con ${vK(e.era5.umbral_mm)} mm o más</title></path>`;
 	});
-	let d = n.map((e, t) => e === null ? null : t).filter((e) => e !== null), f = d[0], p = d[d.length - 1], m = d.map((e, t) => `${t ? "L" : "M"}${o(e, a(n[e], i))}`).join("") + `L${o(p, 12)}L${o(f, 12)}Z`;
+	let d = n.map((e, t) => e === null ? null : t).filter((e) => e !== null), f = d[0], p = d[d.length - 1], m = d.map((e, t) => `${t ? "L" : "M"}${o(e, a(n[e], i))}`).join("") + `L${o(p, 0)}L${o(f, 0)}Z`;
 	u += `<path class="alb" d="${m}"><title>Albrook, % de partes del observador con lluvia: ${d.map((e) => `${e}:00 ${vK(n[e])}`).join(" · ")}. ${e.albrook.nota_tarde}</title></path>`;
 	let h = e.era5.pico, g = e.albrook.cima, _ = [Math.min(...g), Math.max(...g)];
 	u += `<path class="marca-era5" d="M${o(h - .5, 61)}L${o(h - .5, 68)}"></path>`, u += `<path class="alb" d="${s(_[0], _[1], 65)}"></path>`;
@@ -41307,8 +41307,8 @@ function yY(e) {
 	}
 	let x = Z("#reloj-svg");
 	x.innerHTML = u;
-	let S = e.era5.madrugada, C = e.comparacion, w = Math.floor(Math.min(C.desfase_h, C.desfase_picos_h)), T = Math.ceil(Math.max(C.desfase_h, C.desfase_picos_h));
-	Z("#reloj-era5").textContent = `ERA5 da su máximo de ${h - 1} a ${h} h.`, Z("#reloj-alb").textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${_[0]} a ${_[1]} h.`, Z("#reloj-auto").textContent = `De ${y} a ${b} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...S) - 1} a ${Math.max(...S)} h no se puede contrastar.`, Z("#reloj-desfase").textContent = w === T ? `${w} h` : `de ${w} a ${T} h`, x.setAttribute("aria-label", `Reloj de 24 horas, cada curva a escala de su máximo. ${Z("#reloj-era5").textContent} ${Z("#reloj-alb").textContent}`), Z("#reloj-lluvia").hidden = !1;
+	let S = e.era5.madrugada;
+	Z("#reloj-era5").textContent = `ERA5 da su máximo de ${h - 1} a ${h} h.`, Z("#reloj-alb").textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${_[0]} a ${_[1]} h.`, Z("#reloj-auto").textContent = `De ${y} a ${b} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...S) - 1} a ${Math.max(...S)} h no se puede contrastar.`, x.setAttribute("aria-label", `Reloj de 24 horas, cada curva a escala de su máximo. ${Z("#reloj-era5").textContent} ${Z("#reloj-alb").textContent}`), Z("#reloj-lluvia").hidden = !1;
 }
 function bY(e, t) {
 	let n = `${vK(e.valor, +(e.valor < 100))} ${e.unidad}`;
