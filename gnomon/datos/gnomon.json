@@ -1,0 +1,110 @@
+{
+ "lugar": {
+  "lat": 8.9993,
+  "lon": -79.5827,
+  "tz": -5,
+  "nota": "Coordenadas del 106 en fuente/src/sol.js, las mismas del visor"
+ },
+ "anios": [
+  2026,
+  2027
+ ],
+ "horas": [
+  420,
+  450,
+  480,
+  510,
+  540,
+  570,
+  600,
+  630,
+  660,
+  690,
+  720,
+  750,
+  780,
+  810,
+  840,
+  870,
+  900,
+  930,
+  960,
+  990,
+  1020
+ ],
+ "altMin": 10,
+ "largoMax_cm": 567,
+ "diametroSol": 0.533,
+ "penumbraMin_cm": 31,
+ "palo": {
+  "inclinacion": 2,
+  "cambio_cm": 3.5,
+  "nota": "palo inclinado 2° hacia la sombra o hacia el sol: la punta se corre sen(2°) = 3,5 cm; el coseno cambia menos de 0,1 %"
+ },
+ "sitio": "https://caamanoluismiguel.github.io/edificio-106/",
+ "ceroSombra": [
+  {
+   "y": 2026,
+   "m": 4,
+   "d": 12,
+   "hm": 739,
+   "alt": 89.9,
+   "largo_cm": 0.2
+  },
+  {
+   "y": 2026,
+   "m": 8,
+   "d": 29,
+   "hm": 739,
+   "alt": 89.8,
+   "largo_cm": 0.3
+  },
+  {
+   "y": 2027,
+   "m": 4,
+   "d": 13,
+   "hm": 739,
+   "alt": 89.8,
+   "largo_cm": 0.3
+  },
+  {
+   "y": 2027,
+   "m": 8,
+   "d": 30,
+   "hm": 739,
+   "alt": 89.9,
+   "largo_cm": 0.2
+  }
+ ],
+ "declinacion": {
+  "modelo": "WMM-2025",
+  "fuente": "NOAA NCEI, calculadora de declinación magnética",
+  "consultada": "2026-10-06",
+  "url": "https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml",
+  "puntos": [
+   [
+    2026,
+    -5.5822
+   ],
+   [
+    2027.9973,
+    -5.89553
+   ]
+  ],
+  "control": [
+   2026.7616,
+   -5.70145
+  ],
+  "incertidumbre": 0.32826,
+  "cambioAnual": -0.15676
+ },
+ "spa": {
+  "referencia": "NREL SPA (Reda y Andreas 2004) con pvlib, fuente/spa_referencia.csv",
+  "momentos": 1324,
+  "altMin": 10,
+  "maxAltura": 0.0168,
+  "maxAcimut": 0.112,
+  "maxLargo_cm": 0.89,
+  "maxRumbo": 0.112
+ }
+}
