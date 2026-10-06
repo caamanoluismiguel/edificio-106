@@ -181,7 +181,7 @@ function parametrosCuartel(tip, sv, polyOSM) {
   return p;
 }
 
-// ---------------- dúplex tropical (1941 a 1943) ----------------
+// ---------------- dúplex tropical (tipo de 1939 a 1943 en la Zona del Canal, CERL p. 5-7; en Clayton desde inicios de 1942, p. 5-6) ----------------
 // CERL (Enscore et al. 2000), p. 5-8 (PDF 122): 301 a 306, 309 a 316, 318 a 323 y 325 a 340 son dúplex «de tres vanos» de
 // 24 × 44 ft; el 307 mide 26,5 × 58 ft y el 308, 28 × 38 ft (el único de un piso). Las plantas del 307 y el 308 van como ajuste.
 // OSM parte el 332 en dos mitades (332A y 332B, ajuste «unir»): no son del tamaño del tipo y no entran en la muestra del vuelo.
@@ -332,7 +332,7 @@ function parametrosDuplex(sv, polyOSM) {
   return p;
 }
 
-// ---------------- casas de oficiales de 1941 a 1943 ----------------
+// ---------------- casas de oficiales (el mismo período que el dúplex: CERL p. 5-6, 5-7 y 5-9) ----------------
 // CERL (Enscore et al. 2000), p. 5-9 (PDF 123): 24 casas de oficiales de compañía (401 a 414, 416, 417, 419 a 424, 427, 428), «two-story
 // … 26.5 x 58 ft … basically the same as the NCO quarters of the same size (Building 307)» con medio baño más en la planta baja, y seis
 // de oficiales de campo (426, 430 a 434), unifamiliares de dos pisos de 28 × 44 ft. Foto [5.12]: «Company officers' duplex quarters

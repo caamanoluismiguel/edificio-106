@@ -143,8 +143,9 @@ Contrato W-61-QM-76 con Winston Brothers Company (Minneapolis), adjudicado el 25
 | 64, capilla temporal | Enero de 1944; estructura temporal estándar de madera; 118 × 27 ft (35,97 × 8,23 m), 3.202 sq ft (297,5 m²), 500 personas; paredes de madera y malla, lámina corrugada. Ampliada a 118 × 36 ft (35,97 × 10,97 m) en 1953. Reemplazada en 1964 o 1965 (el texto da 1964 en p. 5-14 y 1965 en p. 6-27) por una capilla permanente de concreto con aire central, diseño de Herschel E. Shepard Jr. y Evans & Hammond (Jacksonville), dedicada el 9 de mayo de 1965 | p. 5-14, PDF 128; p. 6-27 y 6-28, PDF 171 y 172 |
 | 400, residencia de oficiales solteros | 1948, planos del Cuerpo de Ingenieros de 1947. Tres pisos, 240 × 36,5 ft (73,15 × 11,13 m). **Estilo Internacional**: repello blanco liso, **techo plano con alero ancho**, voladizos, soportes redondos, todo de concreto; **mediaguas planas de concreto**; planta baja en parte abierta; balcones volados. (El cuadro de p. 7-9 le asigna 1936 y dibujo 4644; el texto dice 1948) | p. 6-15 y 6-16, PDF 159 y 160 |
 
-### 1.10 Viviendas de la guerra (1941 a 1943): «tropical duplexes»
+### 1.10 Viviendas de la guerra: «tropical duplexes» (1939 a 1943 en la Zona del Canal)
 
+* Fechas: estas viviendas estándar del Departamento del Canal de Panamá «were built in great numbers at Army installations across the isthmus from 1939-1943» (p. 5-7, PDF 121). En Clayton, la vivienda de la ampliación «was not finished when the United States entered the war in December 1941; the first group was completed in early 1942» (p. 5-6, PDF 120). El informe no da años para cada edificio.
 * Diseño nuevo: **sin porches**, cuartos más grandes y mucha más ventana (p. 5-6, PDF 120).
 * Todas sobre **pilotes de concreto elevados**, con estacionamiento y cuarto de servicio en planta baja; marco de concreto y bloque repellado; **techos de alero ancho de teja española roja; mediaguas continuas** en los pisos inferiores. Dúplex lado a lado, dos pisos de vivienda cada uno. Conocidos como «tropical duplexes» (p. 5-6 y 5-7, PDF 120 y 121).
 * Ventanas corredizas o de proyección de aluminio a inicios de los 70 (p. 5-7, PDF 121).

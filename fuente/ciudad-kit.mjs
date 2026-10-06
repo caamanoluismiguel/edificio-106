@@ -849,7 +849,7 @@ export function cuartel(e) {
 }
 
 /**
- * Un dúplex tropical (1941 a 1943) del kit sobre el rectángulo de sus muros. Entrada (datos por edificio, ciudad-datos.mjs):
+ * Un dúplex tropical (tipo de 1939 a 1943 en la Zona del Canal, CERL p. 5-7) del kit sobre el rectángulo de sus muros. Entrada (datos por edificio, ciudad-datos.mjs):
  *   poly (muros, rectángulo), y0 (suelo bajo la huella, el más bajo), yPie, terreno ((x, z) → y del suelo que dibuja la escena),
  *   basamento (cara de arriba de la losa del primer piso habitable sobre y0), losa: { espesor } (lo que asoma la losa bajo ese
  *   piso), alturas (piso a piso de cada piso habitable; el último llega al remate del muro), mediaguas (pisos habitables con

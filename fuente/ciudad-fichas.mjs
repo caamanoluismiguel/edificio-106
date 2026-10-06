@@ -38,16 +38,16 @@ const OBS = new Map(leer(path.join(AQUI, 'ciudad-observado.json')).edificios.map
 const R = (...x) => x.map((r) => (Array.isArray(r) ? r : [r, r]));
 // Por tipo del kit: `anios` es la línea del año del tipo (o la que dice por qué no lo hay); `grupos`, las listas de números de CERL de ese tipo, con lo que dice el informe de esa lista ({n} es el número del edificio) y, si
 // cambia, el año de esa lista.
-const ZONA_1941 = 'Tipo construido de 1939 a 1943 en la Zona del Canal según CERL (p. 5-7); en Clayton, el primer grupo se terminó a inicios de 1942 (p. 5-6).';
+const ZONA_1939_1943 = 'Tipo construido de 1939 a 1943 en la Zona del Canal según CERL (p. 5-7); en Clayton, el primer grupo se terminó a inicios de 1942 (p. 5-6).';
 const TIPOS_CERL = {
   // p. 5-6 (PDF 120), 5-7 (PDF 121) y 5-8 (PDF 122)
-  duplex: { anios: ZONA_1941, grupos: [
+  duplex: { anios: ZONA_1939_1943, grupos: [
     { r: R([301, 306], [309, 316], [318, 323], [325, 340]), txt: 'el {n} está en la lista de dúplex de suboficiales de CERL (p. 5-8)' },
     { r: R(307), txt: 'CERL da el 307 como el dúplex de suboficiales de rango, de 26,5 × 58 ft (p. 5-8)' },
     { r: R(308), txt: 'CERL da el 308 como la casa de suboficiales de rango de un piso, la única de un piso de ese período (p. 5-8)' },
   ] },
   // p. 5-9 (PDF 123): «This round of construction also provided…»
-  oficiales41: { anios: ZONA_1941, grupos: [
+  oficiales41: { anios: ZONA_1939_1943, grupos: [
     { r: R([401, 414], [416, 417], [419, 424], [427, 428]), txt: 'el {n} está en la lista de casas de oficiales de compañía de CERL (p. 5-9)' },
     { r: R(426, [430, 434]), txt: 'el {n} está en la lista de casas de oficiales de campo de CERL (p. 5-9)' },
   ] },

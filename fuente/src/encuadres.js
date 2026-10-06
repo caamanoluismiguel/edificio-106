@@ -32,7 +32,7 @@ export const ENCUADRES = [
   {
     id: 'cenit', nombre: 'Dúplex en el día sin sombra', ciudad: true, foco: 120,
     pos: [162.5, 98, -275.1], tgt: [300, 3, -375], fov: 34, fecha: '2016-04-12', hora: '12:19',
-    texto: 'Las filas de dúplex de 1941 a 1943, que según el informe CERL se conocían como «tropical duplexes»: dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.',
+    texto: 'Las filas de dúplex que, según el informe CERL, se conocían como «tropical duplexes», un tipo construido de 1939 a 1943 en la Zona del Canal (p. 5-7): dos pisos de vivienda sobre pilotes de concreto, con el estacionamiento abajo, mediagua y techo de teja a cuatro aguas.',
     luz: '12 de abril de 2016, 12:19: el sol está a 90° de altura, casi exactamente en el cenit, y cada casa queda sobre su propia sombra. A esta latitud pasa dos veces al año, en abril y en agosto.',
   },
   {
@@ -50,7 +50,7 @@ export const ENCUADRES = [
   {
     id: 'oficiales', nombre: 'Casas de oficiales', ciudad: true, foco: 60,
     pos: [1057.8, 26, -308], tgt: [1150, 20, -285], fov: 34, movil: [1057.8, 26, -308], fecha: '2010-12-21', hora: '09:00',
-    texto: 'Casas de oficiales de 1941 a 1943: dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.',
+    texto: 'Casas de oficiales de un tipo construido de 1939 a 1943 en la Zona del Canal según CERL (p. 5-7): dos pisos de vivienda sobre una planta baja con cochera y techo de teja a dos aguas. El tipo de estas casas se asigna por la forma y el tamaño de la huella, porque la numeración de CERL no es la de Ciudad del Saber.',
     luz: '21 de diciembre de 2010, 9:00, solsticio de diciembre: el sol sale más al sur que en todo el año y a esta hora está a 32° de altura hacia el sureste (125°).',
   },
   {
