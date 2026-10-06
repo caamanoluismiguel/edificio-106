@@ -185,7 +185,7 @@
       <span>Día</span><b data-c="fechaLarga">—</b>
       <span>Hora</span><span><b data-c="hora">—</b> hora de Panamá (UTC−5, sin horario de verano)</span>
       <span>Lugar</span><span>junto al Edificio 106, <span class="num">8,9993° N, 79,5827° O</span></span>
-      <span>Materiales</span><span>palo recto marcado a 1 m, plomada o nivel, cinta métrica, tiza, brújula y reloj en hora</span>
+      <span>Materiales</span><span>palo recto de madera o plástico (no de acero), con la punta plana a 1 m del suelo; plomada o nivel, cinta métrica, tiza, brújula y reloj en hora</span>
     </div>
 
     <section class="paso">
@@ -198,7 +198,7 @@
           <p class="campo-hoja">¿De dónde sale tu predicción? <span class="linea"></span></p>
           <span class="linea larga"></span>
           <div class="pista" data-pista="no">Pista: piensa si a esa hora el sol está al este o al oeste, y si va alto o bajo. La sombra se proyecta al lado contrario del sol.</div>
-          <div class="pista" data-pista="si" hidden>Dato del sol a esa hora: altura <b class="num" data-c="alt">—</b>, acimut <b class="num" data-c="az">—</b> (desde el norte, en el sentido del reloj). Calculado con el algoritmo de NOAA, el mismo del visor.<br>
+          <div class="pista" data-pista="si" hidden>Dato del sol a esa hora: altura <b class="num" data-c="alt">—</b>, <span data-c="azPista">—</span> Calculado con el algoritmo de NOAA, el mismo del visor.<br>
             largo = 1 ÷ tan(altura) &nbsp;·&nbsp; rumbo = acimut + 180° (si pasa de 360°, réstale 360°)</div>
         </div>
       </div>
@@ -221,10 +221,10 @@
     <section class="paso">
       <div class="paso-cab"><span class="n">3</span><h3>Mide</h3><span class="cuando">junto al 106, a la hora de la hoja</span></div>
       <ol class="pasos">
-        <li>Busca suelo plano y al sol. Pon el palo vertical y compruébalo con la plomada o el nivel desde dos lados.</li>
+        <li>Busca suelo plano y al sol. Pon el palo vertical, con la punta a 1 m del suelo (si lo hundes en la tierra, mide desde el suelo), y compruébalo con la plomada o el nivel desde dos lados.</li>
         <li>A la hora exacta, marca con tiza la punta de la sombra, en el medio de la franja borrosa. Hora de tu reloj: <span class="linea"></span></li>
         <li>Mide desde el borde del palo del lado de la sombra hasta la marca: <span class="linea"></span> m</li>
-        <li>Con la brújula en el pie del palo, lejos de metales, lee el rumbo hacia la marca: <span class="linea"></span> °. Pásalo al norte geográfico: lectura − <span class="num" data-c="decAbs">5,7</span>° = <span class="linea"></span> °</li>
+        <li>Con la brújula en el pie del palo, lejos de hierro, acero e imanes, lee el rumbo hacia la marca: <span class="linea"></span> °. Pásalo al norte geográfico: lectura − <span class="num" data-c="decAbs">5,7</span>° = <span class="linea"></span> °</li>
       </ol>
       <table class="tabla medir">
         <thead><tr><th></th><th>1 · Predicción</th><th>2 · Visor</th><th>3 · Medición</th><th>Medición − visor</th></tr></thead>
@@ -245,7 +245,7 @@
         <p>El palo mide 1 m. Si el sol está a una altura <i>h</i> sobre el horizonte, la sombra en suelo plano mide <b>1 ÷ tan(<i>h</i>)</b> metros. Con el sol a 45° mide 1 m; con el sol más alto, menos, y con el sol más bajo, más.</p>
         <p>La sombra se proyecta al lado contrario del sol: su rumbo es <b>el acimut del sol + 180°</b>. En esta hoja los rumbos se miden desde el norte geográfico (el de los mapas), en el sentido del reloj: norte 0°, este 90°, sur 180° y oeste 270°.</p>
         <p>La brújula apunta al norte magnético, que aquí está <b class="num"><span data-c="decAbs">5,7</span>°</b> al oeste del geográfico (declinación magnética de <span data-c="mesAnio">—</span>, modelo WMM-2025 de NOAA, ± <span class="num">0,3</span>°). Por eso a la lectura de la brújula le restas <span class="num" data-c="decAbs">5,7</span>°.</p>
-        <p class="chica">Con el sol a menos de <span class="num">10</span>° la hoja no da el largo: la sombra pasa de <span class="num">5,67</span> m y su punta se borra.</p>
+        <p class="chica">Con el sol a menos de <span class="num">10</span>° la hoja no da el largo: la sombra pasa de <span class="num">5,67</span> m y su punta es una franja borrosa de más de <span class="num">31</span> cm.</p>
       </div>
     </div>
 
@@ -254,17 +254,17 @@
       <thead><tr><th style="width:30mm">Fuente</th><th>Qué hace y cuánto pesa a esta hora</th></tr></thead>
       <tbody>
         <tr><td>Terreno inclinado</td><td>La hoja supone suelo horizontal. <span data-c="pendiente">—</span></td></tr>
-        <tr><td>Palo no vertical</td><td>Inclinado 2° hacia la sombra o hacia el sol, la punta se corre <span class="num">3,5</span> cm. Inclinado 2° de lado, la punta se corre <span class="num">3,5</span> cm hacia un costado y cambia el rumbo.</td></tr>
+        <tr><td>Palo no vertical</td><td><span data-c="palo">—</span> Inclinado 2° de lado, la punta se corre <span class="num">3,5</span> cm hacia un costado y cambia el rumbo.</td></tr>
         <tr><td>Ancho del palo</td><td>Con un palo de punta plana, la punta de la sombra la hace el borde de arriba. Mide desde el borde del palo del lado de la sombra: si mides desde el centro, sumas medio ancho (<span class="num">2</span> cm con un palo de <span class="num">4</span> cm).</td></tr>
         <tr><td>Penumbra</td><td>El sol no es un punto: su disco mide unos <span class="num">0,53</span>°. Por eso la punta de la sombra es una franja borrosa <span data-c="penumbra">—</span>. Marca el medio.</td></tr>
         <tr><td>Hora del reloj</td><td><span data-c="cinco">—</span> Anota la hora exacta en que marcas la punta.</td></tr>
-        <tr><td>Brújula</td><td>Sin restar la declinación, el rumbo queda <span class="num" data-c="decAbs">5,7</span>° corrido. Los metales cercanos (rejas, autos, un palo de metal, el celular) desvían la aguja.</td></tr>
+        <tr><td>Brújula</td><td>Sin restar la declinación, el rumbo queda <span class="num" data-c="decAbs">5,7</span>° corrido. El hierro, el acero y los imanes cercanos desvían la aguja (rejas, autos, el celular); el aluminio no. Con la brújula al pie del palo, el palo no puede ser de acero.</td></tr>
       </tbody>
     </table>
 
     <div class="caja">
       <h4>Qué está verificado y qué no</h4>
-      <p><b>Verificado:</b> la posición del sol que usan esta hoja y el visor (algoritmo de NOAA, basado en Meeus) se comparó con NREL SPA (Reda y Andreas, 2004) en <span class="num" data-c="spaN">1.324</span> momentos de 2001 a 2025 con el sol desde 10°. La altura difiere a lo sumo <span class="num" data-c="spaAlt">0,017</span>° y el acimut <span class="num" data-c="spaAz">0,11</span>°. En la sombra de 1 m eso es a lo sumo <span class="num" data-c="spaLargo">0,9</span> cm de largo y <span class="num" data-c="spaRumbo">0,11</span>° de rumbo. Para 2026 y 2027 se usa el mismo algoritmo, pero la comparación con SPA cubre de 2001 a 2025.</p>
+      <p><b>Verificado:</b> la posición del sol que usan esta hoja y el visor (algoritmo de NOAA, basado en Meeus) se comparó con NREL SPA (Reda y Andreas, 2004) en <span class="num" data-c="spaN">1.322</span> momentos de 2001 a 2025 con el sol desde 10° y la sombra de 5 cm o más. La altura difiere a lo sumo <span class="num" data-c="spaAlt">0,017</span>° y el acimut <span class="num" data-c="spaAz">0,11</span>°. En la sombra de 1 m eso es a lo sumo <span class="num" data-c="spaLargo">0,9</span> cm de largo y <span class="num" data-c="spaRumbo">0,11</span>° de rumbo. Para 2026 y 2027 se usa el mismo algoritmo, pero la comparación con SPA cubre de 2001 a 2025.</p>
       <p><b>No verificado:</b> el terreno junto al 106 (la hoja supone suelo plano), tu palo, tu reloj y tu brújula. El visor no dibuja un palo de 1 m: su cifra de la sombra sale del mismo cálculo que esta hoja. Comparar con el visor no comprueba el cálculo; lo que lo pone a prueba es tu medición.</p>
     </div>
 
@@ -302,7 +302,7 @@
         <tr><td>Penumbra en la punta</td><td data-c="penumbraClave">—</td></tr>
         <tr><td>Cambio en 5 minutos</td><td data-c="cincoClave">—</td></tr>
         <tr><td>Suelo inclinado 2° hacia la punta</td><td data-c="pendienteClave">—</td></tr>
-        <tr><td>Palo inclinado 2°</td><td>la punta se corre <span class="num">3,5</span> cm</td></tr>
+        <tr><td>Palo inclinado 2°</td><td data-c="paloClave">—</td></tr>
         <tr><td>Mediodía solar de ese día</td><td data-c="mediodia">—</td></tr>
       </tbody>
     </table>
@@ -315,11 +315,11 @@
     <div class="caja">
       <h4>Días sin sombra en 2026 y 2027</h4>
       <p data-c="ceroLista">—</p>
-      <p class="chica">Es el día en que el sol pasa más cerca del cenit al mediodía solar: su declinación iguala la latitud del 106. Calculado con el mismo algoritmo, no supuesto. En los días vecinos la sombra del mediodía también mide pocos centímetros.</p>
+      <p class="chica">Es el día en que el sol pasa más cerca del cenit al mediodía solar: su declinación iguala la latitud del 106. Calculado con el mismo algoritmo, no supuesto. <span data-c="vecinos"></span></p>
     </div>
     <div class="caja">
       <h4>Para leer las respuestas</h4>
-      <p>El cálculo del sol difiere de NREL SPA a lo sumo <span class="num" data-c="spaLargo">0,9</span> cm en el largo y <span class="num" data-c="spaRumbo">0,11</span>° en el rumbo (<span class="num" data-c="spaN">1.324</span> momentos de 2001 a 2025, sol desde 10°). Una diferencia mayor entre la medición y la clave sale de la medición y de lo que la hoja supone (suelo plano, palo vertical), no del cálculo del sol.</p>
+      <p>Con la sombra de 5 cm o más, el cálculo del sol difiere de NREL SPA a lo sumo <span class="num" data-c="spaLargo">0,9</span> cm en el largo y <span class="num" data-c="spaRumbo">0,11</span>° en el rumbo (<span class="num" data-c="spaN">1.322</span> momentos de 2001 a 2025, sol desde 10°). Con la sombra más corta, el sol está casi en el cenit y su acimut no se puede fijar: la hoja no da acimut ni rumbo. Esta clave va redondeada al centímetro y al grado. Una diferencia mayor entre la medición y la clave sale de la medición y de lo que la hoja supone (suelo plano, palo vertical), no del cálculo del sol.</p>
       <p>La declinación magnética del WMM-2025 en el 106 va de <span class="num">5,6</span>° al oeste (enero de 2026) a <span class="num">5,9</span>° al oeste (fin de 2027), unos <span class="num">0,16</span>° más al oeste cada año; incertidumbre del modelo, <span class="num">0,33</span>°. La hoja usa el valor del día 15 de cada mes, interpolado en línea recta entre los dos extremos que da NOAA.</p>
     </div>
   </article>
@@ -417,7 +417,7 @@ async function armar() {
   const dia = M.dias[d - 1], esMed = selHora.value === 'mediodia';
   const min = esMed ? dia[0] : +selHora.value;
   const v = esMed ? dia[1] : dia[2 + META.horas.indexOf(min)];
-  const [alt10, rumbo, largo, pen, d5l, d5r, sube, baja] = v;
+  const [alt10, rumbo, largo, pen, d5l, d5r, sube, baja, paloS, paloL] = v;
   const alt = alt10 / 10, az = (rumbo + 180) % 360, dec = Math.abs(M.dec);
   selHora.options[0].textContent = `Mediodía solar (${hhmm(dia[0])})`;
   const fechaLarga = `${DIAS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${d} de ${MESES[m - 1]} de ${y}`;
@@ -427,13 +427,17 @@ async function armar() {
   poner('mesAnio', `${MESES[m - 1]} de ${y}`);
   poner('decAbs', num(dec, 1));
   poner('alt', `${num(alt, 1)}°`);
-  poner('az', `${num(az)}°`);
+  const chica = largo !== undefined && largo < 5;   // sombra de menos de 5 cm: el sol casi en el cenit, sin acimut ni rumbo
+  const SIN_RUMBO = 'la sombra cae al pie del palo y no tiene rumbo que medir';
+  document.querySelectorAll('[data-c="az"], [data-c="rumbo"]').forEach((el) => el.classList.toggle('num', !chica));   // la frase va en letra de texto
+  poner('az', chica ? 'no se da: el sol está casi en el cenit y su acimut no se puede fijar' : `${num(az)}°`);
+  poner('azPista', chica ? `casi en el cenit: ${SIN_RUMBO}.` : `acimut ${num(az)}° (desde el norte, en el sentido del reloj).`);
   const enlace = `${META.sitio}#m-${y}${dos(m)}${dos(d)}-${dos(Math.floor(min / 60))}${dos(min % 60)}&vista=aerea`;
   poner('enlace', enlace);
   dibujarQR(enlace);
   const bajo = largo === undefined;
   const avisoTxt = alt <= 0 ? 'A esa hora el sol está bajo el horizonte: no hay sombra que medir. Elige otra hora.'
-    : bajo ? `A esa hora el sol está a ${num(alt, 1)}°, menos de ${META.altMin}°: la sombra pasa de ${num(META.largoMax_cm / 100, 2)} m y su punta se borra. La hoja no da el largo. Elige otra hora.` : '';
+    : bajo ? `A esa hora el sol está a ${num(alt, 1)}°, menos de ${META.altMin}°: la sombra pasa de ${num(META.largoMax_cm / 100, 2)} m y su punta es una franja borrosa de más de ${cm(META.penumbraMin_cm)}. La hoja no da el largo. Elige otra hora.` : '';
   aviso.hidden = !avisoTxt; aviso.textContent = avisoTxt;
   const ah = document.querySelector('[data-c="avisoHoja"]'); ah.hidden = !avisoTxt; ah.textContent = avisoTxt;
   if (bajo) {
@@ -442,27 +446,35 @@ async function armar() {
     poner('brujula', `${num((rumbo + dec + 360) % 360)}°`);
     poner('pendiente', `Con el sol a menos de ${META.altMin}° la hoja no da cuánto pesa.`);
     poner('penumbra', `de más de ${cm(META.penumbraMin_cm)}`); poner('cinco', `Con el sol a menos de ${META.altMin}° la hoja no da cuánto cambia.`);
+    const [pa, pb] = META.palo.conSolEnAltMin_cm;
+    poner('palo', `Inclinado 2° hacia la sombra o hacia el sol, la punta se corre unos 3,5 cm; con el sol a ${META.altMin}°, ${num(pa, 1)} cm hacia la sombra y ${num(pb, 1)} cm hacia el sol, y la diferencia crece con el sol más bajo.`);
+    poner('paloClave', `unos 3,5 cm (con el sol a ${META.altMin}°: ${num(pa, 1)} y ${num(pb, 1)} cm)`);
   } else {
-    const L = largo / 100, chica = largo < 5;
+    const L = largo / 100;
     poner('largo', `${num(L, 2)} m`);
     poner('largoVisor', '(el visor da lo mismo, con dos decimales)');
-    poner('rumbo', chica ? `${num(rumbo)}°, poco útil` : `${num(rumbo)}°`);
-    poner('rumboTexto', chica ? '(la sombra cae casi al pie del palo: su rumbo no se puede medir)' : `(el visor dice «hacia el ${rumboTexto(rumbo)}»)`);
+    poner('rumbo', chica ? SIN_RUMBO : `${num(rumbo)}°`);
+    poner('rumboTexto', chica ? '' : `(el visor dice «hacia el ${rumboTexto(rumbo)}»)`);
     poner('brujula', chica ? '—' : `${num((rumbo + dec + 360) % 360)}°`);
     const penTxt = pen < 1 ? 'de menos de 1 cm' : pen === 1 ? 'de alrededor de 1 cm' : `de unos ${cm(pen)}`;
     poner('penumbra', penTxt); poner('penumbraClave', penTxt.replace(/^de /, ''));
     const largoCambio = d5l === 0 ? 'casi no cambia de largo' : `se ${d5l < 0 ? 'acorta' : 'alarga'} ${cm(Math.abs(d5l))}`;
-    const giro = chica ? 'su rumbo cambia mucho porque la sombra es casi un punto' : Math.abs(d5r) < 5 ? 'gira menos de 0,5°' : `gira ${num(Math.abs(d5r) / 10, 1)}°`;
+    const giro = chica ? `su rumbo gira unos ${num(Math.round(Math.abs(d5r) / 100) * 10)}°, porque la sombra es casi un punto` : Math.abs(d5r) < 5 ? 'gira menos de 0,5°' : `gira ${num(Math.abs(d5r) / 10, 1)}°`;
     poner('cinco', `En 5 minutos, a esta hora, la sombra ${largoCambio} y ${giro}.`);
     poner('cincoClave', `${largoCambio}, ${giro}`);
     const pendTxt = !sube && !baja ? 'Con el sol tan alto, 2° de pendiente cambian el largo menos de 1 cm.'
       : `Si el suelo sube 2° hacia la punta, la sombra ${dif(sube)}; si baja 2°, ${dif(baja)}.`;
     poner('pendiente', pendTxt);
     poner('pendienteClave', !sube && !baja ? 'menos de 1 cm' : `sube: ${dif(sube)}; baja: ${dif(baja)}`);
+    const a = paloS / 10, b = -paloL / 10;
+    poner('palo', `Inclinado 2° hacia la sombra, la punta se aleja ${num(a, 1)} cm; hacia el sol, se acerca ${num(b, 1)} cm.`);
+    poner('paloClave', `hacia la sombra, la punta se aleja ${num(a, 1)} cm; hacia el sol, se acerca ${num(b, 1)} cm; de lado, se corre 3,5 cm`);
   }
   const med = dia[1];
-  poner('mediodia', `${hhmm(dia[0])}: sol a ${num(med[0] / 10, 1)}°, sombra de ${num(med[2] / 100, 2)} m${med[2] < 5 ? ', casi al pie del palo' : ` hacia ${num(med[1])}° (${rumboTexto(med[1])})`}`);
+  poner('mediodia', `${hhmm(dia[0])}: sol a ${num(med[0] / 10, 1)}°, sombra de ${num(med[2] / 100, 2)} m${med[2] < 5 ? `: ${SIN_RUMBO}` : ` hacia ${num(med[1])}° (${rumboTexto(med[1])})`}`);
   poner('ceroLista', META.ceroSombra.map((z) => `${z.d} de ${MESES[z.m - 1]} de ${z.y} a las ${hhmm(z.hm)} (sol a ${num(z.alt, 1)}°, sombra de ${num(z.largo_cm, 1)} cm)`).join('; ') + '.');
+  const rango = (ks) => { const v = META.ceroSombra.flatMap((z) => ks.map((k) => z.vecinos_cm[k])); const a = Math.min(...v), b = Math.max(...v); return a === b ? cm(a) : `de ${num(a)} a ${cm(b)}`; };
+  poner('vecinos', `La sombra del mediodía solar mide ${rango(['-1', '1'])} a un día y ${rango(['-7', '7'])} a una semana.`);
   poner('spaN', num(META.spa.momentos));
   poner('spaAlt', num(META.spa.maxAltura, 3));
   poner('spaAz', num(META.spa.maxAcimut, 2));

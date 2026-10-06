@@ -36,10 +36,15 @@
  "largoMax_cm": 567,
  "diametroSol": 0.533,
  "penumbraMin_cm": 31,
+ "pendiente": 2,
  "palo": {
   "inclinacion": 2,
-  "cambio_cm": 3.5,
-  "nota": "palo inclinado 2° hacia la sombra o hacia el sol: la punta se corre sen(2°) = 3,5 cm; el coseno cambia menos de 0,1 %"
+  "lateral_cm": 3.5,
+  "conSolEnAltMin_cm": [
+   3.1,
+   3.8
+  ],
+  "nota": "de lado, la punta se corre sen(2°); hacia la sombra o hacia el sol, sen(2°) ± (1 − cos 2°)·cot h"
  },
  "sitio": "https://caamanoluismiguel.github.io/edificio-106/",
  "ceroSombra": [
@@ -49,7 +54,13 @@
    "d": 12,
    "hm": 739,
    "alt": 89.9,
-   "largo_cm": 0.2
+   "largo_cm": 0.2,
+   "vecinos_cm": {
+    "1": 0,
+    "7": 4,
+    "-7": 5,
+    "-1": 1
+   }
   },
   {
    "y": 2026,
@@ -57,7 +68,13 @@
    "d": 29,
    "hm": 739,
    "alt": 89.8,
-   "largo_cm": 0.3
+   "largo_cm": 0.3,
+   "vecinos_cm": {
+    "1": 0,
+    "7": 4,
+    "-7": 5,
+    "-1": 1
+   }
   },
   {
    "y": 2027,
@@ -65,7 +82,13 @@
    "d": 13,
    "hm": 739,
    "alt": 89.8,
-   "largo_cm": 0.3
+   "largo_cm": 0.3,
+   "vecinos_cm": {
+    "1": 1,
+    "7": 5,
+    "-7": 4,
+    "-1": 0
+   }
   },
   {
    "y": 2027,
@@ -73,7 +96,13 @@
    "d": 30,
    "hm": 739,
    "alt": 89.9,
-   "largo_cm": 0.2
+   "largo_cm": 0.2,
+   "vecinos_cm": {
+    "1": 1,
+    "7": 5,
+    "-7": 4,
+    "-1": 0
+   }
   }
  ],
  "declinacion": {
@@ -100,11 +129,12 @@
  },
  "spa": {
   "referencia": "NREL SPA (Reda y Andreas 2004) con pvlib, fuente/spa_referencia.csv",
-  "momentos": 1324,
+  "momentos": 1322,
   "altMin": 10,
+  "sombraMin_cm": 5,
   "maxAltura": 0.0168,
-  "maxAcimut": 0.112,
+  "maxAcimut": 0.1098,
   "maxLargo_cm": 0.89,
-  "maxRumbo": 0.112
+  "maxRumbo": 0.1098
  }
 }

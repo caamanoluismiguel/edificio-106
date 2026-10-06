@@ -8,23 +8,27 @@
 // Cada día: [mediodía solar (minuto del día), momento del mediodía, momentos de 7:00 a 17:00].
 // Cada momento: [altura del sol ×10 (°), rumbo de la sombra (°, entero, desde el norte geográfico, en el sentido del reloj),
 //   largo (cm), penumbra en la punta (cm), cambio del largo en 5 min (cm), cambio del rumbo en 5 min (×10, °),
-//   cambio del largo si el suelo sube PENDIENTE grados hacia la punta (cm), y si baja (cm)];
+//   cambio del largo si el suelo sube PENDIENTE grados hacia la punta (cm), y si baja (cm),
+//   corrimiento de la punta con el palo inclinado INCLINACION grados hacia la sombra y hacia el sol (×10, cm)];
 //   con el sol bajo ALT_MIN solo van los dos primeros: la hoja no da el largo.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { posicionSol, mediodiaSolar, diasCeroSombra, LAT, LON, TZ } from './src/sol.js';
 
+const SOMBRA_MIN = 0.05;     // m: con la sombra más corta (sol casi en el cenit) la hoja no da acimut ni rumbo
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const SALIDA = path.join(AQUI, '..', 'gnomon', 'datos');
 const ANIOS = [2026, 2027];
 const HORAS = Array.from({ length: 21 }, (_, i) => 420 + 30 * i);   // 7:00 a 17:00, en minutos del día (hora de Panamá)
 const ALT_MIN = 10;          // con el sol más bajo, la sombra pasa de 5,67 m y la punta se borra: la hoja no da el largo
 const PENDIENTE = 2;         // grados: ejemplo de suelo inclinado en la dirección de la sombra (2° = 3,5 %)
+const INCLINACION = 2;       // grados: ejemplo de palo no vertical
 const DIAMETRO_SOL = 0.533;  // diámetro aparente medio del disco del sol, en grados (va de 0,524° a 0,542° en el año)
 // Declinación magnética en el 106 (8,9993° N, 79,5827° O, al nivel del mar): NOAA NCEI, calculadora de declinación con el
 // modelo WMM-2025, consultada el 6 de octubre de 2026. Negativa = al oeste. Entre los dos extremos se interpola en línea recta
-// (el WMM varía en línea recta dentro de su época); el valor del 6 de octubre de 2026 sirve de control.
+// (los coeficientes del WMM varían en línea recta dentro de su época y la declinación aquí se aparta de la recta 0,0003°);
+// el valor del 6 de octubre de 2026 sirve de control.
 const DECLINACION = {
   modelo: 'WMM-2025', fuente: 'NOAA NCEI, calculadora de declinación magnética', consultada: '2026-10-06',
   url: 'https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml',
@@ -42,6 +46,9 @@ const rumbo = (az) => (az + 180) % 360;
 // suelo que sube (b > 0) o baja (b < 0) b grados hacia la punta: el rayo que pasa por la punta del palo corta el suelo a
 // cos(h) / sen(h + b) metros del pie, medidos sobre el suelo
 const largoEnPendiente = (alt, b) => Math.cos(alt * rad) / Math.sin((alt + b) * rad);
+// palo inclinado d grados hacia la sombra (d > 0) o hacia el sol (d < 0): la punta queda en (sen d, cos d) y su sombra a
+// sen d + cos d · cot h del pie; el corrimiento frente al palo vertical es sen d + (cos d − 1) · cot h
+const corrimientoPalo = (alt, d) => Math.sin(d * rad) + (Math.cos(d * rad) - 1) * largo(alt);
 
 function momento(y, m, d, min) {
   const p = posicionSol({ y, m, d, h: 0, min });
@@ -55,6 +62,8 @@ function momento(y, m, d, min) {
     Math.round(10 * difAng(rumbo(q.az), rumbo(p.az))),
     Math.round(100 * (largoEnPendiente(p.alt, PENDIENTE) - largo(p.alt))),
     Math.round(100 * (largoEnPendiente(p.alt, -PENDIENTE) - largo(p.alt))),
+    Math.round(1000 * corrimientoPalo(p.alt, INCLINACION)),
+    Math.round(1000 * corrimientoPalo(p.alt, -INCLINACION)),
   ]);
 }
 
@@ -78,13 +87,20 @@ export function generar() {
   }
   const ceroSombra = ANIOS.flatMap((y) => diasCeroSombra(y).map((z) => {
     const hm = minutoDe(z), p = posicionSol({ y, m: z.m, d: z.d, h: 0, min: hm });
-    return { y, m: z.m, d: z.d, hm, alt: red(p.alt, 10), largo_cm: red(100 * largo(p.alt), 10) };
+    // la sombra del mediodía solar de los días vecinos, en cm: a 1 y a 7 días antes y después
+    const vecino = (k) => { const t = new Date(Date.UTC(y, z.m - 1, z.d + k)), f = { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() };
+      const s = mediodiaSolar(f.y, f.m, f.d); return Math.round(100 * largo(posicionSol({ ...f, h: 0, min: minutoDe(s) }).alt)); };
+    return { y, m: z.m, d: z.d, hm, alt: red(p.alt, 10), largo_cm: red(100 * largo(p.alt), 10), vecinos_cm: { '-7': vecino(-7), '-1': vecino(-1), '1': vecino(1), '7': vecino(7) } };
   }));
   archivos['gnomon.json'] = JSON.stringify({
     lugar: { lat: LAT, lon: LON, tz: TZ, nota: 'Coordenadas del 106 en fuente/src/sol.js, las mismas del visor' },
     anios: ANIOS, horas: HORAS, altMin: ALT_MIN, largoMax_cm: Math.round(100 * largo(ALT_MIN)), diametroSol: DIAMETRO_SOL,
-    penumbraMin_cm: Math.round(100 * (largo(ALT_MIN - DIAMETRO_SOL / 2) - largo(ALT_MIN + DIAMETRO_SOL / 2))),   // penumbra con el sol a ALT_MIN: más bajo, más larga pendiente: PENDIENTE,
-    palo: { inclinacion: 2, cambio_cm: red(100 * Math.sin(2 * rad), 10), nota: 'palo inclinado 2° hacia la sombra o hacia el sol: la punta se corre sen(2°) = 3,5 cm; el coseno cambia menos de 0,1 %' },
+    // penumbra con el sol a ALT_MIN (más bajo, más larga)
+    penumbraMin_cm: Math.round(100 * (largo(ALT_MIN - DIAMETRO_SOL / 2) - largo(ALT_MIN + DIAMETRO_SOL / 2))),
+    pendiente: PENDIENTE,
+    palo: { inclinacion: INCLINACION, lateral_cm: red(100 * Math.sin(INCLINACION * rad), 10),
+      conSolEnAltMin_cm: [red(100 * corrimientoPalo(ALT_MIN, INCLINACION), 10), red(-100 * corrimientoPalo(ALT_MIN, -INCLINACION), 10)],
+      nota: 'de lado, la punta se corre sen(2°); hacia la sombra o hacia el sol, sen(2°) ± (1 − cos 2°)·cot h' },
     sitio: 'https://caamanoluismiguel.github.io/edificio-106/',
     ceroSombra,
     declinacion: DECLINACION,
@@ -99,7 +115,7 @@ export function compararSPA() {
   let n = 0, dAlt = 0, dAz = 0, dLargo = 0, dRumbo = 0;
   for (const linea of csv.split('\n')) {
     const [tipo, a, b, c] = linea.split(',');
-    if (tipo !== 'pos' || +b < ALT_MIN) continue;
+    if (tipo !== 'pos' || +b < ALT_MIN || largo(+b) < SOMBRA_MIN) continue;   // con la sombra más corta, el acimut no se puede fijar
     const t = new Date(+a + TZ * 3600e3);                 // hora de Panamá como campos UTC (UTC−5 todo el año)
     const p = posicionSol({ y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate(), h: t.getUTCHours(), min: t.getUTCMinutes(), s: t.getUTCSeconds() });
     n++;
@@ -108,7 +124,7 @@ export function compararSPA() {
     dLargo = Math.max(dLargo, Math.abs(largo(p.alt) - largo(+b)));
     dRumbo = Math.max(dRumbo, Math.abs(difAng(rumbo(p.az), rumbo(+c))));
   }
-  return { referencia: 'NREL SPA (Reda y Andreas 2004) con pvlib, fuente/spa_referencia.csv', momentos: n, altMin: ALT_MIN,
+  return { referencia: 'NREL SPA (Reda y Andreas 2004) con pvlib, fuente/spa_referencia.csv', momentos: n, altMin: ALT_MIN, sombraMin_cm: 100 * SOMBRA_MIN,
     maxAltura: red(dAlt, 1e4), maxAcimut: red(dAz, 1e4), maxLargo_cm: red(100 * dLargo, 100), maxRumbo: red(dRumbo, 1e4) };
 }
 
