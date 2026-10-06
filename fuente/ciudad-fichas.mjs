@@ -42,16 +42,17 @@ const ZONA_1939_1943 = 'Tipo construido de 1939 a 1943 en el istmo según CERL (
 const TIPOS_CERL = {
   // p. 5-6 (PDF 120), 5-7 (PDF 121) y 5-8 (PDF 122)
   duplex: { anios: ZONA_1939_1943, grupos: [
-    // los años de cada lista, del cuadro «Summary of Housing Types Constructed on Fort Clayton», p. 7-9 (PDF 187): NCO Type 3,
-    // «194243» en el OCR (1942-43), 301-306, 309-316, 318-323, 325-340; NCO (2F3), 1942, 307; NCO Type 4, 1942, 308
-    { r: R([301, 306], [309, 316], [318, 323], [325, 340]), txt: 'el {n} está en la lista de dúplex de suboficiales de CERL (p. 5-8), que el cuadro de la p. 7-9 fecha en 1942 y 1943' },
+    // los años de cada lista, del cuadro «Summary of Housing Types Constructed on Fort Clayton», p. 7-9 (PDF 187), leídos en la imagen
+    // de la página (archive.org, DTIC_ADA388262, page/n186; el OCR dice «194243»): NCO Type 3, 1942-43, 301-306, 309-316, 318-323,
+    // 325-340; NCO (2F3), 1942, 307; NCO Type 4, 1942, 308
+    { r: R([301, 306], [309, 316], [318, 323], [325, 340]), txt: 'el {n} está en la lista de dúplex de suboficiales de CERL (p. 5-8), que el cuadro de la p. 7-9 fecha de 1942 a 1943' },
     { r: R(307), txt: 'CERL da el 307 como el dúplex de suboficiales de rango, de 26,5 × 58 ft (p. 5-8), y el cuadro de la p. 7-9 lo fecha en 1942' },
     { r: R(308), txt: 'CERL da el 308 como la casa de suboficiales de rango de un piso, la única de un piso de ese período en Clayton (p. 5-8), y el cuadro de la p. 7-9 la fecha en 1942' },
   ] },
   // p. 5-9 (PDF 123): «This round of construction also provided…»
   oficiales41: { anios: ZONA_1939_1943, grupos: [
-    // cuadro de la p. 7-9: CO Type 6, «194243» (1942-43), 401-414, 416-417, 419-424, 427-428; FO Type 4, 1942, 426, 430-434
-    { r: R([401, 414], [416, 417], [419, 424], [427, 428]), txt: 'el {n} está en la lista de casas de oficiales de compañía de CERL (p. 5-9), que el cuadro de la p. 7-9 fecha en 1942 y 1943' },
+    // cuadro de la p. 7-9, en la imagen (page/n186): CO Type 6, 1942-43, 401-414, 416-417, 419-424, 427-428; FO Type 4, 1942, 426, 430-434
+    { r: R([401, 414], [416, 417], [419, 424], [427, 428]), txt: 'el {n} está en la lista de casas de oficiales de compañía de CERL (p. 5-9), que el cuadro de la p. 7-9 fecha de 1942 a 1943' },
     { r: R(426, [430, 434]), txt: 'el {n} está en la lista de casas de oficiales de campo de CERL (p. 5-9), que el cuadro de la p. 7-9 fecha en 1942' },
   ] },
   // p. 4-6 (PDF 95): obra de julio de 1936 a junio de 1937; p. 4-10 (PDF 99): «by the end of 1941»; 61 ft de ancho, p. 4-6 a 4-11

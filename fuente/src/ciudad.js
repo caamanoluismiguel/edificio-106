@@ -59,7 +59,7 @@ function leyendaCerteza() {
   const filas = [
     ['I', CERTEZA.I, 'confirmado', 'pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media'],
     ['II', CERTEZA.II, 'probable', 'se ve el tipo, pero falta alguno de esos cinco datos o la vista deja dudas'],
-    ['III', CERTEZA.III, 'supuesto', 'casi nada se ve; el tipo es supuesto'],
+    ['III', CERTEZA.III, 'supuesto', 'casi nada se ve en las fotos o es conjetura'],
     ['', CERTEZA.copia, 'copia del 106', 'mismo cuartel que el 106 en Street View y huella de OpenStreetMap a 1,6 m o menos de la suya: se repite su modelo'],
     ['', CERTEZA.caja, 'fuera del kit', 'caja sin modelar, con la altura de OpenStreetMap o de Open Buildings'],
   ];

@@ -67,7 +67,7 @@ const miles = (v) => num(v, 0);
 // cifras anuales con 2–3 cifras significativas: redondeo a decenas (lo que sostiene un reanálisis de celda de ~28 km)
 const dec = (v) => miles(Math.round(v / 10) * 10);
 // el minuto del mediodía solar (mediodiaSolar, en pasos de 10 s), redondeado al más cercano como la salida y la puesta (hhmm) y como
-// la hoja del gnomon: truncarlo daba 12:18 el 13/4/2027, cuando SPA da 12:18:52
+// la hoja del gnomon: truncarlo daba 12:18 el 13/4/2027 (la malla de 10 s da 12:18:50)
 const minMediodia = (m) => Math.round(m.h * 60 + m.min + (m.s ?? 0) / 60);
 const hhmm = (min) => { const m = ((Math.round(min) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -832,7 +832,7 @@ async function mostrarTarjeta(e) {
     const ay = elDe('details'); ay.append(elDe('summary', null, 'Cómo leer esta ficha'),
       elDe('p', null, 'Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve o es conjetura; si tiene un tipo del kit, el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos.'),
       elDe('p', null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${T.supuestosCiudad}.`),
-      elDe('p', null, 'Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio.'),
+      elDe('p', null, 'Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio. Por número, la ficha da también el año que el cuadro de CERL de la p. 7-9 da a esa lista del Ejército; eso no prueba que sea el mismo edificio.'),
       elDe('p', null, 'Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.'));
     hijos.push(cred, ay);
   }
