@@ -101,7 +101,9 @@ OpenStreetMap no tiene ningún poste de luz en Ciudad del Saber (consulta del 6 
 
 Ese mismo día se midió la carga del sitio publicado con Lighthouse 13.5.0, cinco corridas por perfil: la nota de rendimiento dio una mediana de 66 sobre 100 en computador y de 30 en el teléfono simulado (gama media con 4G lenta), y 100 en accesibilidad, buenas prácticas y SEO en todas. En el teléfono simulado el contenido principal tarda unos 8,4 s en verse y la página queda bloqueada unos 3,8 s mientras arma la escena. Lighthouse no tiene tarjeta gráfica, así que mide la carga y no la fluidez del 3D. Los datos y los informes completos están en `docs/rendimiento/lighthouse-2026-10-06.md`.
 
-La ficha del 106 ganó una frase con la copa de árbol de 3 m o más sobre el suelo sin edificios, como estimación: 30 % dentro del límite propuesto y 7 % a 100 m del 106, del mapa de altura de copa de Meta y WRI. Las cifras salen de `fuente/copa.py`, que escribe `datos/copa.json` (>>> hash).
+La ficha del 106 ganó una frase con la copa de árbol de 3 m o más sobre el suelo sin edificios, como estimación: 30 % dentro del límite propuesto y 7 % a 100 m del 106, del mapa de altura de copa de Meta y WRI. Las cifras salen de `fuente/copa.py`, que escribe `datos/copa.json` (`228f42d`).
+
+La pestaña «25 años» ganó un reloj de 24 horas de la lluvia: de mayo a noviembre de 2017 a 2025, el % de horas en que ERA5 da 1,5 mm o más en la celda frente al % de partes de rutina de Albrook en que el observador informa lluvia. Son frecuencias y no milímetros, y cada curva se dibuja a escala de su propio máximo. De 23 a 5 h los partes son automáticos y esas horas no se comparan. Las cifras salen de `fuente/reloj_lluvia.py`, que escribe `datos/reloj_lluvia.json` (`75443b0`).
 
 ## Cómo se trabajó
 
