@@ -38,18 +38,21 @@ const OBS = new Map(leer(path.join(AQUI, 'ciudad-observado.json')).edificios.map
 const R = (...x) => x.map((r) => (Array.isArray(r) ? r : [r, r]));
 // Por tipo del kit: `anios` es la línea del año del tipo (o la que dice por qué no lo hay); `grupos`, las listas de números de CERL de ese tipo, con lo que dice el informe de esa lista ({n} es el número del edificio) y, si
 // cambia, el año de esa lista.
-const ZONA_1939_1943 = 'Tipo construido de 1939 a 1943 en la Zona del Canal según CERL (p. 5-7); en Clayton, el primer grupo se terminó a inicios de 1942 (p. 5-6).';
+const ZONA_1939_1943 = 'Tipo construido de 1939 a 1943 en el istmo según CERL (p. 5-7); en Clayton, el primer grupo se terminó a inicios de 1942 (p. 5-6).';
 const TIPOS_CERL = {
   // p. 5-6 (PDF 120), 5-7 (PDF 121) y 5-8 (PDF 122)
   duplex: { anios: ZONA_1939_1943, grupos: [
-    { r: R([301, 306], [309, 316], [318, 323], [325, 340]), txt: 'el {n} está en la lista de dúplex de suboficiales de CERL (p. 5-8)' },
-    { r: R(307), txt: 'CERL da el 307 como el dúplex de suboficiales de rango, de 26,5 × 58 ft (p. 5-8)' },
-    { r: R(308), txt: 'CERL da el 308 como la casa de suboficiales de rango de un piso, la única de un piso de ese período (p. 5-8)' },
+    // los años de cada lista, del cuadro «Summary of Housing Types Constructed on Fort Clayton», p. 7-9 (PDF 187): NCO Type 3,
+    // «194243» en el OCR (1942-43), 301-306, 309-316, 318-323, 325-340; NCO (2F3), 1942, 307; NCO Type 4, 1942, 308
+    { r: R([301, 306], [309, 316], [318, 323], [325, 340]), txt: 'el {n} está en la lista de dúplex de suboficiales de CERL (p. 5-8), que el cuadro de la p. 7-9 fecha en 1942 y 1943' },
+    { r: R(307), txt: 'CERL da el 307 como el dúplex de suboficiales de rango, de 26,5 × 58 ft (p. 5-8), y el cuadro de la p. 7-9 lo fecha en 1942' },
+    { r: R(308), txt: 'CERL da el 308 como la casa de suboficiales de rango de un piso, la única de un piso de ese período en Clayton (p. 5-8), y el cuadro de la p. 7-9 la fecha en 1942' },
   ] },
   // p. 5-9 (PDF 123): «This round of construction also provided…»
   oficiales41: { anios: ZONA_1939_1943, grupos: [
-    { r: R([401, 414], [416, 417], [419, 424], [427, 428]), txt: 'el {n} está en la lista de casas de oficiales de compañía de CERL (p. 5-9)' },
-    { r: R(426, [430, 434]), txt: 'el {n} está en la lista de casas de oficiales de campo de CERL (p. 5-9)' },
+    // cuadro de la p. 7-9: CO Type 6, «194243» (1942-43), 401-414, 416-417, 419-424, 427-428; FO Type 4, 1942, 426, 430-434
+    { r: R([401, 414], [416, 417], [419, 424], [427, 428]), txt: 'el {n} está en la lista de casas de oficiales de compañía de CERL (p. 5-9), que el cuadro de la p. 7-9 fecha en 1942 y 1943' },
+    { r: R(426, [430, 434]), txt: 'el {n} está en la lista de casas de oficiales de campo de CERL (p. 5-9), que el cuadro de la p. 7-9 fecha en 1942' },
   ] },
   // p. 4-6 (PDF 95): obra de julio de 1936 a junio de 1937; p. 4-10 (PDF 99): «by the end of 1941»; 61 ft de ancho, p. 4-6 a 4-11
   cuartel4: { anios: 'Tipo construido de 1936 a 1941 según CERL (p. 4-6 a 4-11): el cuartel estándar de 61 ft de ancho.', grupos: [] },
@@ -71,17 +74,18 @@ const TIPOS_CERL = {
   colonels: { anios: 'Tipo construido de 1932 a 1933 según CERL (p. 3-12).', grupos: [
     { r: R([72, 85]), txt: 'el {n} está en la lista de casas de oficiales de 1932 a 1933 de CERL (p. 3-12)' },
   ] },
-  // p. 7-8 (PDF 186): «Plans were drawn up in 1977 and construction was completed in 1979»
-  area900: { anios: 'Tipo con planos de 1977 y obra terminada en 1979 según CERL (p. 7-8).', grupos: [
-    { r: R([900, 939], [1100, 1180]), txt: 'el {n} está en las áreas 900 y 1100 de CERL (p. 7-8)' },
-  ] },
+  // p. 7-8 (PDF 186): «Plans were drawn up in 1977 and construction was completed in 1979». Sin lista de números: la p. 7-8 no da
+  // números y la lista del cuadro de la p. 7-9 tiene huecos que el OCR mezcla (ninguna casa del área 900 tiene número en OSM)
+  area900: { anios: 'Tipo con planos de 1977 y obra terminada en 1979 según CERL (p. 7-8).', grupos: [] },
 };
 // tipos del kit que no salen de CERL (ciudad-datos.mjs: «No está en CERL», «Nada de esto está en CERL»)
-for (const t of ['pabellon1', 'crance', 'bloque2_bonilla', 'nave', 'abierto', 'moderno', 'torre']) TIPOS_CERL[t] = { anios: 'Este tipo no sale del informe de CERL, así que no tiene año.', grupos: [] };
+for (const t of ['pabellon1', 'crance', 'bloque2_bonilla', 'nave', 'abierto', 'moderno', 'torre']) TIPOS_CERL[t] = { anios: 'Este tipo no sale del informe de CERL, así que no tiene año.', grupos: [], noCerl: true };
 
-// un edificio que contradice a CERL, con lo que dice docs/ciudad/CIUDAD.md («Decisiones que siguen abiertas»)
+// un edificio que contradice a CERL (docs/ciudad/CIUDAD.md, «Decisiones que siguen abiertas»): CERL da el 220 como cuartel de 200
+// hombres de tres pisos y 201 × 61 ft (p. 4-11, PDF 100); la huella de OSM sale de edificios.json
+const nf2 = (x) => String(Math.round(x * 100) / 100).replace('.', ',');
 const NOTAS = {
-  220: 'CERL da un cuartel de tres pisos con este número; las fotos y Open Buildings dan dos. Puede haber perdido un piso o ser otro edificio.',
+  220: (e) => `CERL da con este número un cuartel de tres pisos de 61,26 × 18,59 m (201 × 61 ft, p. 4-11). La huella de OpenStreetMap del 220 mide ${e.parametros.huella.osm.map(nf2).join(' × ')} m, y las fotos y Open Buildings le dan dos pisos: con esas medidas no se puede decir que sea el mismo edificio.`,
 };
 
 const numeroBase = (n) => { const m = /^(\d+)/.exec(n ?? ''); return m ? Number(m[1]) : null; };
@@ -131,7 +135,7 @@ for (const e of E) {
   if (s) f.s = s;
   if (unidos.has(e.osm_id)) f.une = unidos.get(e.osm_id);
   if ((repetidos.get(e.numero) ?? 0) > 1) f.rep = repetidos.get(e.numero);
-  if (NOTAS[e.numero]) f.nota = NOTAS[e.numero];
+  if (NOTAS[e.numero]) f.nota = NOTAS[e.numero](e);
   edificios[e.osm_id] = f;
 }
 
@@ -141,7 +145,8 @@ const out = {
   osm_base: INV.osm_base.slice(0, 10),
   criterio_supuestos: 'parámetros del kit (claves de «parametros» en edificios.json) con «SUPUESTO» o «SUPUESTA» en su fuente o en la de alguna de sus partes',
   supuestos_ciudad: [sup, tot],
-  tipos: Object.fromEntries(Object.entries(TIPOS_CERL).map(([k, T]) => [k, { anios: T.anios, grupos: T.grupos.map((G) => ({ txt: G.txt, ...(G.anios ? { anios: G.anios } : {}) })) }])),
+  // cerl: el tipo sale del informe de CERL (la ficha lleva entonces su crédito)
+  tipos: Object.fromEntries(Object.entries(TIPOS_CERL).map(([k, T]) => [k, { anios: T.anios, cerl: !T.noCerl, grupos: T.grupos.map((G) => ({ txt: G.txt, ...(G.anios ? { anios: G.anios } : {}) })) }])),
   edificios,
 };
 fs.writeFileSync(path.join(RAIZ, 'datos/ciudad_fichas.json'), JSON.stringify(out));

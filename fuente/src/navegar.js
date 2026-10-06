@@ -29,7 +29,7 @@ export const TIPOS = {
 export const CLASES = {
   I: ['confirmado', 'pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media'],
   II: ['probable', 'se ve el tipo, pero falta alguno de los datos de la clase I (pisos, techo, muros o mediaguas) o la vista deja dudas'],
-  III: ['supuesto', 'casi nada se ve; el tipo es supuesto'],
+  III: ['supuesto', 'casi nada se ve en las fotos o es conjetura'],   // la ficha agrega «y el tipo es supuesto» solo si tiene tipo
 };
 
 const dentroPoli = (P, x, z) => { let c = false; for (let i = 0, k = P.length - 1; i < P.length; k = i++) { const [xi, zi] = P[i], [xk, zk] = P[k]; if ((zi > z) !== (zk > z) && x < (xk - xi) * (z - zi) / (zk - zi) + xi) c = !c; } return c; };
@@ -157,7 +157,7 @@ export const idEnlace = (e, F) => (e.n && !F?.edificios?.[e.o]?.rep ? e.n : 'osm
 export function ficha(e, F, ciudad) {
   if (e.n === '106') return { titulo: 'Edificio 106', es106: true, filas: [],
     lineas: ['Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.',
-      'No se arma con el kit de la ciudad ni tiene clase de certeza: su modelo es propio. Cómo se hizo y qué no hace está en «Acerca del modelo».'] };
+      'En el inventario de la ciudad es de clase I de certeza, pero a diferencia de los demás no se arma con el kit: está medido y tiene modelo propio. Cómo se hizo y qué no hace está en «Acerca del modelo».'] };
   const f = F?.edificios?.[e.o] ?? {}, T = f.t ? F?.tipos?.[f.t] : null, G = T && f.g != null ? T.grupos[f.g] : null;
   const titulo = e.n ? `Edificio ${e.n}${f.une ? ' y ' + f.une : ''}` : f.nom ?? 'Edificio sin número';
   const sub = e.n ? f.nom ?? null : f.nom ? 'Sin número en OpenStreetMap' : null;
@@ -174,11 +174,12 @@ export function ficha(e, F, ciudad) {
   const p = f.p;
   if (p) filas.push(['Pisos', p.v ? `«${p.v}» en ${p.f}, con confianza ${p.k}.` : /Street View/.test(p.f) ? `No se ven en las fotos (${p.f}).` : `No se ven: ${p.f}.`]);
   const ob = f.ob;
-  filas.push(['Altura', !ob ? 'Open Buildings 2.5D no la tiene.' : ob[1] >= 0.6 ? `Unos ${nf(ob[0])} m según Open Buildings 2.5D (2023), estimada desde satélite.`
-    : `Open Buildings 2.5D (2023) ve edificio solo en el ${Math.round(ob[1] * 100)} % de la huella: aquí su altura no sirve.`]);
+  const OB = 'Google Open Buildings 2.5D (2023, CC BY 4.0)';
+  filas.push(['Altura', !ob ? `${OB} no la tiene.` : ob[1] >= 0.6 ? `Unos ${nf(ob[0])} m según ${OB}, estimada desde satélite.`
+    : ob[1] > 0 ? `${OB} ve edificio solo en el ${Math.round(ob[1] * 100)} % de la huella: aquí su altura no sirve.` : `${OB} no ve edificio en esta huella.`]);
   // certeza y lo supuesto
   const [nom, txt] = CLASES[f.c ?? e.c] ?? CLASES.III;
-  filas.push(['Certeza', `${f.c ?? e.c}, ${nom}: ${txt}. ` + (f.s ? `${f.s[0]} de sus ${f.s[1]} parámetros del kit tienen alguna parte supuesta.` : 'No se arma con el kit, así que no tiene parámetros que contar.')]);
+  filas.push(['Certeza', `${f.c ?? e.c}, ${nom}: ${txt}${(f.c ?? e.c) === 'III' && f.t ? ', y el tipo es supuesto' : ''}. ` + (f.s ? `${f.s[0]} de sus ${f.s[1]} parámetros del kit tienen alguna parte supuesta.` : 'No se arma con el kit, así que no tiene parámetros que contar.')]);
   // cómo se dibuja
   let como;
   if (e.m === 'kit') como = ciudad ? 'Con el kit de piezas, sobre la huella de OpenStreetMap.' : e.k ? 'Con el kit de piezas; con la ciudad apagada, en su lugar se ve una copia del 106.' : 'Con el kit de piezas; con la ciudad apagada, en su lugar se ve un volumen simple.';
@@ -193,6 +194,6 @@ export function ficha(e, F, ciudad) {
   const b = (F?.osm_base ?? '').split('-').map(Number);
   const base = b.length === 3 ? `${b[2]} ${MES[b[1] - 1]} ${b[0]}` : '';
   const sc = F?.supuestos_ciudad;
-  return { titulo, sub, filas, notas, es106: false, base, cerl: /CERL/.test(filas[0][1]),
+  return { titulo, sub, filas, notas, es106: false, base, cerl: !!T?.cerl,
     supuestosCiudad: sc ? `${nf(sc[0])} de ${nf(sc[1])} (${Math.round(100 * sc[0] / sc[1])} %)` : '' };
 }
