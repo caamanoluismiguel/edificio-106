@@ -101,6 +101,8 @@ OpenStreetMap no tiene ningún poste de luz en Ciudad del Saber (consulta del 6 
 
 Ese mismo día se midió la carga del sitio publicado con Lighthouse 13.5.0, cinco corridas por perfil: la nota de rendimiento dio una mediana de 66 sobre 100 en computador y de 30 en el teléfono simulado (gama media con 4G lenta), y 100 en accesibilidad, buenas prácticas y SEO en todas. En el teléfono simulado el contenido principal tarda unos 8,4 s en verse y la página queda bloqueada unos 3,8 s mientras arma la escena. Lighthouse no tiene tarjeta gráfica, así que mide la carga y no la fluidez del 3D. Los datos y los informes completos están en `docs/rendimiento/lighthouse-2026-10-06.md`.
 
+La ficha del 106 ganó una frase con la copa de árbol de 3 m o más sobre el suelo sin edificios, como estimación: 30 % dentro del límite propuesto y 7 % a 100 m del 106, del mapa de altura de copa de Meta y WRI. Las cifras salen de `fuente/copa.py`, que escribe `datos/copa.json` (>>> hash).
+
 ## Cómo se trabajó
 
 **Panel de expertos y verificador.** Toda información nueva (cifras, recomendaciones, capas) pasa antes por un panel simulado, hecho de agentes de IA con un papel cada uno, no de personas reales: expertos del tema con contexto de Panamá, uno de visualización y un crítico que cruza los informes. Se prefieren fuentes panameñas como el IMHPA, ETESA, la Guía de Construcción Sostenible de 2016 y la UTP. Desde el 2 de octubre (`1915879`) hay además un agente verificador permanente (`.claude/agents/verificador.md`), que recalcula cada número, abre cada fuente en el original y revisa que las cifras cuadren en todo el visor. Lo que marca como falso, incoherente o como un modelo presentado como medición bloquea la publicación.
