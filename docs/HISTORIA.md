@@ -4,7 +4,7 @@ Este documento cuenta cómo se armó el visor de sol y clima del Edificio 106 y 
 
 ## De dónde salió
 
-El punto de partida fue un modelo de Blender del 106, `Isthmus_v016.blend`, hecho antes de este repositorio por LM con ayuda de IA (Claude), a partir de fotos propias y de fotos de Alejandro González, usadas con su permiso. El script `fuente/export_web.py` lo parte en grupos de armado (sitio, arquitectura, ventanas, cubiertas, entrada, detalles, vegetación y contexto) y los exporta como GLB para la web. La escala del modelo tiene un margen de ±12 % y las ventanas de los pisos 2 y 3 son inferidas, así que se trata como una maqueta digital.
+El punto de partida fue un modelo de Blender del 106, `Isthmus_v016.blend`, hecho antes de este repositorio por LM con ayuda de IA (Claude), a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026). El script `fuente/export_web.py` lo parte en grupos de armado (sitio, arquitectura, ventanas, cubiertas, entrada, detalles, vegetación y contexto) y los exporta como GLB para la web. La escala del modelo tiene un margen de ±12 % y las ventanas de los pisos 2 y 3 son inferidas, así que se trata como una maqueta digital.
 
 La pregunta era concreta: cómo trabajan la orientación, los aleros, la lluvia y el viento en un edificio real del trópico, con datos que un docente o un estudiante de arquitectura puedan revisar y discutir en clase. De ahí salen las dos piezas que el visor tuvo desde el primer día: el sol calculado para cada minuto y el clima de cada hora entre 2001 y 2025.
 
@@ -50,7 +50,7 @@ Cerraron la jornada los archivos con versión en la URL para que el navegador no
 
 La realidad aumentada empezó como una prueba aparte, sin enlazar desde el sitio (`ac7ea67`): una tarjeta impresa con el plano del sitio que MindAR reconoce, y encima el 106 en 3D con la sombra del sol calculado con el mismo `sol.js` del visor. El modelo de la AR son copias byte a byte de los GLB del sitio, con el techo en su versión liviana, y el plano de la tarjeta también se dibuja con las tejas livianas, porque con las completas MindAR no lo reconocía. LM la probó en su Android con Chrome y pidió un filtro más estable, que quedó por defecto (`c960981`). Ese mismo día la tarjeta pasó al sitio, en carta y A4 a escala 1:320 (`bf3c1fe`), y llegaron la versión de clase con fechas clave, persona de 1,70 m, norte y escalas 1:200 y 1:100 (`ab4f71f`), el archivo USDZ para Quick Look en iPhone y iPad (`eab178f`) y el material del piloto (`fa972e5`). En iPhone sigue sin probarse.
 
-Los edificios 100, 101 y 107 pasaron a ser cuarteles como el 106, después de verlos en Street View, y los vecinos sin niveles en OpenStreetMap recibieron la altura de Google Open Buildings 2.5D (`df0f306`). En el propio 106, Open Buildings da alrededor de un metro menos que la cumbrera real.
+Los edificios 100, 101 y 107 pasaron a modelarse con la misma tipología que el 106, después de verlos en Street View, y los vecinos sin niveles en OpenStreetMap recibieron la altura de Google Open Buildings 2.5D (`df0f306`). En el propio 106, Open Buildings da alrededor de un metro menos que la cumbrera real.
 
 Luego el entorno creció hasta Ciudad del Saber entera, con la Avenida Omar Torrijos Herrera, el ferrocarril, el canal y las esclusas de Miraflores (`f33bf3c`), sobre el relieve del Copernicus DEM GLO-30 fuera de una meseta plana alrededor del sitio (`24dbc9d`). Por el canal pasan barcos ilustrativos, uno cada dos horas por cada vía de las esclusas, 24 al día, cerca del promedio de unos 25 tránsitos Panamax diarios que registró la ACP (`7e3ab6b`). El panel de expertos atrapó aquí un error real antes de publicar: la primera versión daba 48 barcos al día. Todo se publicó en `f8aa5f7`. La cámara se aleja hasta 800 m y desde la calle frente al 106 se ven al fondo los contenedores.
 
@@ -142,12 +142,12 @@ Quedan pendientes, entre otros: la prueba de la AR en iPhone, la prueba de la in
 | Confort | Givoni (1992); ASHRAE 55-2017; de Dear y Brager (2002); UTCI portado de pythermalcomfort (Tartarini y Schiavon, 2020) | https://doi.org/10.1016/j.softx.2020.100578 |
 | Historia y tipologías de Clayton | Enscore et al. (2000), *Guarding the Gates: The Story of Fort Clayton*, CERL, DTIC ADA388262 | https://archive.org/details/DTIC_ADA388262 |
 | Huellas, calles, ferrocarril y agua | OpenStreetMap (ODbL), base del 1 de octubre de 2026 | https://www.openstreetmap.org/copyright |
-| Alturas estimadas | Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0) | https://sites.research.google/gr/open-buildings/temporal/ |
+| Alturas estimadas | Google Open Buildings 2.5D Temporal v1, 2023 (Sirko et al., 2023, arXiv:2310.11622). Se ofrece con CC BY 4.0 u ODbL a elección; aquí se usa con ODbL, porque las alturas se combinan con las huellas de OpenStreetMap | https://sites.research.google/gr/open-buildings/temporal/ |
 | Relieve | Copernicus DEM GLO-30 | https://registry.opendata.aws/copernicus-dem |
-| Árboles | Meta y WRI, High Resolution Canopy Height Maps v1 (Tolan et al., 2024; CC BY 4.0), imágenes © Maxar del 4 de octubre de 2018 | https://registry.opendata.aws/dataforgood-fb-forests/ |
+| Árboles | Meta y WRI, High Resolution Canopy Height Maps v1 (Tolan et al., 2024; CC BY 4.0). Source imagery for CHM © 2016 Maxar; la tesela usada es de imágenes del 4 de octubre de 2018 | https://registry.opendata.aws/dataforgood-fb-forests/ |
 | Revisión de los árboles | Sentinel-2 L2A, Copernicus (contains modified Copernicus Sentinel data 2019, 2026) | https://sentinels.copernicus.eu/documents/247904/690755/Sentinel_Data_Legal_Notice |
 | Medidas de los barcos | ACP, OP Notice to Shipping N-1-2024 | https://pancanal.com/wp-content/uploads/2021/08/N01-2024-Vessel-Requirements-AC.pdf |
-| Pisos, techos y colores de la ciudad | Street View de Google, solo como referencia visual, sin imágenes en el repositorio | (sin enlace) |
+| Pisos, techos y colores de la ciudad | Street View de Google, solo como referencia visual. En el árbol actual del repositorio no hay imágenes de Street View; una hoja de verificación con dos recortes (`fuente/verificacion/portico/comparativa-portico.png`) estuvo en `main` hasta el commit que la borró (>>> fecha del push) y sigue en la historia de git | (sin enlace) |
 | Reconocimiento de la tarjeta de AR | MindAR 1.2.5 (MIT) | https://github.com/hiukim/mind-ar-js |
 | Texturas de asfalto, concreto y pasto | Poly Haven (CC0) | https://polyhaven.com/ |
 

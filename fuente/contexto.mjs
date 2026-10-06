@@ -18,7 +18,7 @@
 //    cubierta plana (~11 m ESTIMADOS), paño de celosía de ladrillo y entrada con visera en la cara noroeste (la de la calle),
 //    pilastras con franjas de ladrillo en las caras largas, torre de celosía (~13 m ESTIMADOS) en el flanco suroeste y el ala
 //    baja al suroeste (~4 m ESTIMADOS). Identificación: verificacion/contexto2/identificacion.md.
-//  · El Teatro Ateneo (OSM 182), detrás del estacionamiento: sala alta de muros blancos (~10 m ESTIMADOS) con teja.
+//  · El Teatro Ateneo (OSM 182), detrás del estacionamiento: sala alta de muros blancos (~10 m ESTIMADOS en Street View) con teja.
 //  · Los dos estacionamientos de asfalto: el de enfrente del 105 (polígono medido en la vista satelital) y el que queda entre
 //    Innova y el Ateneo; y el cerramiento de bloque calado (~2,2 m) entre La Casa y la entrada del estacionamiento.
 //  · La estructura pequeña del cuadrángulo (no está en OSM; medida en el mapa de Google del usuario): un piso, 3,5 m ESTIMADOS,
