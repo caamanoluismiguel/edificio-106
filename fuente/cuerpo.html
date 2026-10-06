@@ -508,6 +508,27 @@
   #momentos button { display: grid; gap: 3px; text-align: left; border: 1px solid var(--linea); background: rgba(239,233,222,.04); border-radius: 12px; padding: 7px 10px; cursor: pointer; white-space: nowrap; transition: border-color .2s; }
   #momentos button:hover { border-color: var(--lluvia); }
   #momentos span { font: 600 12px/1 var(--texto); } #momentos b { font: 500 11px/1 var(--datos); color: var(--lluvia); }
+  /* reloj de la lluvia («25 años»): una sola tinta; ERA5 relleno, Albrook en contorno, el arco punteado es lo que no se compara */
+  #reloj-lluvia { margin: 6px 0 0; container-type: inline-size; }
+  #reloj-lluvia[hidden] { display: none; }
+  #reloj-lluvia .reloj-caja { display: grid; grid-template-columns: 160px minmax(0, 1fr); grid-template-areas: "reloj ley" "textos textos"; gap: 8px 12px; align-items: start; }
+  #reloj-lluvia .reloj-textos { grid-area: textos; display: grid; gap: 8px; }
+  @container (min-width: 600px) { #reloj-lluvia .reloj-caja { grid-template-columns: 160px minmax(0, 4fr) minmax(0, 6fr); grid-template-areas: "reloj ley textos"; column-gap: 18px; } }
+  #reloj-svg { grid-area: reloj; display: block; }
+  #reloj-lluvia .reloj-ley { grid-area: ley; display: grid; gap: 6px; align-self: center; }
+  #reloj-lluvia p { margin: 0; }
+  #reloj-t { font: 500 12px/1.3 var(--datos); color: var(--cal-2); }
+  #reloj-svg .anillo { fill: none; stroke: var(--linea); stroke-width: 1; }
+  #reloj-lluvia .era5 { fill: var(--lluvia); fill-opacity: .5; stroke: none; }
+  #reloj-lluvia .alb { fill: none; stroke: var(--lluvia); stroke-width: 1.5; stroke-linejoin: round; }
+  #reloj-svg .alb-halo { fill: none; stroke: var(--solido); stroke-width: 3.5; stroke-linejoin: round; }
+  #reloj-lluvia .auto { fill: none; stroke: var(--cal-3); stroke-width: 1.5; stroke-dasharray: 1.5 3; stroke-linecap: round; }
+  #reloj-svg text { font: 500 11px/1 var(--datos); fill: var(--cal-2); text-anchor: middle; dominant-baseline: central; }
+  #reloj-svg text.pct { fill: var(--cal-3); }
+  #reloj-lluvia .reloj-fila { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 6px; font: 400 12px/1.3 var(--texto); color: var(--cal-2); }
+  #reloj-lluvia .reloj-dato { font: 400 13px/1.35 var(--texto); color: var(--cal); }
+  #reloj-lluvia .muestra { width: 12px; height: 12px; margin-top: 2px; }
+  #reloj-lluvia .reloj-nota { font: 400 12px/1.35 var(--texto); color: var(--cal-2); }
   .dock-lect { grid-area: lect; display: grid; grid-template-columns: repeat(3, minmax(0, auto)); gap: 4px 22px; align-content: center; }
   .dock-lect div { display: grid; gap: 4px; min-width: 0; }
   .dock-lect .k { font: 500 12px/1.1 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .09em; white-space: nowrap; }
@@ -1247,6 +1268,21 @@
     <div id="momentos-caja" hidden>
       <p id="dec-leyenda">Lluvia de cada mes, 2001–2025</p>
       <ul id="momentos" aria-label="Extremos de la serie"></ul>
+      <figure id="reloj-lluvia" hidden><div class="reloj-caja">
+        <svg id="reloj-svg" viewBox="0 0 160 160" width="160" height="160" role="img"></svg>
+        <div class="reloj-ley">
+          <p id="reloj-t">La hora de la lluvia, mayo a noviembre de 2017 a 2025</p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><rect class="era5" x="1" y="1" width="10" height="10" rx="1"></rect></svg><span>ERA5: % de horas con 1,5 mm o más</span></p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><rect class="alb" x="2" y="2" width="8" height="8" rx="1"></rect></svg><span>Albrook: % de partes del observador con lluvia (RA, SHRA o TSRA)</span></p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><path class="auto" d="M1 6H11"></path></svg><span>Sin observador en Albrook</span></p>
+        </div>
+        <div class="reloj-textos">
+        <p class="reloj-dato" id="reloj-era5"></p>
+        <p class="reloj-dato" id="reloj-alb"></p>
+        <p class="reloj-nota" id="reloj-auto"></p>
+        <p class="reloj-nota" id="reloj-sesgo">En un estudio global de junio a agosto, ERA5 adelanta en promedio unas 2 h la hora del máximo de lluvia sobre tierra frente al satélite IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
+        </div>
+      </div></figure>
     </div>
   </div>
   <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>

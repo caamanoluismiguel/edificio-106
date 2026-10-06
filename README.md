@@ -102,8 +102,9 @@ Se puede reportar un dato o una fuente incorrecta, proponer una fuente mejor (so
 - Hersbach, H. et al. (2023). *ERA5 hourly data on single levels from 1940 to present*. Copernicus Climate Change Service (C3S) Climate Data Store. doi:10.24381/cds.adbb2d47. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2026). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.
 - Zippenfenig, P. (2024). *Open-Meteo.com Weather API*. Zenodo. doi:10.5281/zenodo.7970649. [Weather data by Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0).
 - Lavers, D. A. et al. (2022). An evaluation of ERA5 precipitation for climate monitoring. *Quarterly Journal of the Royal Meteorological Society*, 148(748), 3152–3165. doi:10.1002/qj.4351
+- Watters, D., Battaglia, A. y Allan, R. P. (2021). The Diurnal Cycle of Precipitation according to Multiple Decades of Global Satellite Observations, Three CMIP6 Models, and the ECMWF Reanalysis. *Journal of Climate*, 34(12), 5063–5080. doi:10.1175/JCLI-D-20-0966.1 (el reloj de la lluvia: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo diario frente a IMERG, de junio a agosto).
 - IMHPA. [Caracterización del clima en el distrito de Panamá](https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf) (Tocumen, 1977–2010).
-- Partes METAR de Albrook (MPMG) del [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/), Iowa State University: el «ahora» del visor y el ajuste de la serie a Albrook (calibración 2017–2025).
+- Partes METAR de Albrook (MPMG) del [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/), Iowa State University: el «ahora» del visor, el ajuste de la serie a Albrook (calibración 2017–2025) y el reloj de la lluvia de «25 años» (`fuente/reloj_lluvia.py`, mayo a noviembre de 2017–2025).
 - INEC. [Cuadro 121-01](https://www.inec.gob.pa/archivos/P3771121-01.pdf): Balboa (ACP), Albrook (Autoridad de Aeronáutica Civil) y Tocumen, 2001–2010.
 
 **Sol y radiación**
