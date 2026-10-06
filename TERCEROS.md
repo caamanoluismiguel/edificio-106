@@ -29,7 +29,7 @@ Las herramientas que solo se usan para armar y probar (Vite, glTF Transform, mes
 
 ## Fotos de referencia del modelo
 
-El modelo del 106 lo hizo el autor con ayuda de IA (Claude), a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026). El modelo es del autor y queda bajo el `LICENSE`; las fotos de Raúl Alejandro González son suyas. De ese conjunto, en el repositorio solo está la foto WA0014, dentro de la hoja `fuente/verificacion/entrada/comparativa-entrada.png`.
+El modelo del 106 lo hizo el autor con ayuda de IA (Claude), a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026). El modelo es del autor y queda bajo el `LICENSE`; las fotos de Raúl Alejandro González son suyas. De ese conjunto, en el árbol actual del repositorio solo está la foto WA0014, dentro de la hoja `fuente/verificacion/entrada/comparativa-entrada.png`.
 
 ## Fuentes consultadas que no se redistribuyen
 
