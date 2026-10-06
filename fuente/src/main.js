@@ -3246,4 +3246,8 @@ function depurar() {
 }
 
 globalThis.__e106 = { S, DIAG, U, get escena() { return escena; }, get controls() { return controls; }, get intro() { return intro; }, clima, rescatar };
-arrancar();
+// el 3D arranca después de la primera pintura: así el título y el texto de la intro se ven sin esperar a la escena
+requestAnimationFrame(() => setTimeout(arrancar, 0));
+// service worker (sw.js): guarda los archivos con versión (?v=) para que una segunda visita no los vuelva a bajar.
+// No con ?prueba, para que las pruebas midan siempre la carga desde la red.
+if ('serviceWorker' in navigator && !/[?&]prueba/.test(location.search)) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

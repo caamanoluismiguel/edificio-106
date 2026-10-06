@@ -125,6 +125,8 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 - **Navegación libre (`src/navegar.js`):** usa `datos/ciudad_mapa.json` (límite, suelo con los nudos de la rejilla de la escena y huellas con número, tipo y certeza). Se rehace con `cd fuente && node ciudad-mapa.mjs` cada vez que cambian `docs/ciudad/edificios.json`, el límite o el terreno. Decisiones en `~/projects/edificio-106-ciudad-revision/navegacion/PANEL.md`.
 - `?prueba` expone `window.__e106` y `?rapido` acorta la intro. En las capturas, fijar el momento (`#m-…`) y esperar a que aparezca la fecha.
 - La comprobación 5 («en reposo») toma el peor cuadro: no es fps. Nunca correr dos pruebas de rendimiento en paralelo.
+- **`sw.js` (raíz, a mano, no lo genera el armado):** service worker que guarda los archivos con `?v=` y sirve la página primero desde la red. No se registra con `?prueba`, así que el guardia y las pruebas miden siempre desde la red. Si se cambia su lógica, cambiar también el nombre de `CACHE`.
+- **Carga:** las letras de Google van como hoja `media="print"` que pasa a `all` al llegar (no bloquean la primera pintura) y `arrancar()` espera un cuadro y un `setTimeout`. El armado minifica de verdad (`minify: true` en `rollupOptions.output` de `vite.config.js`; el modo librería no quitaba espacios).
 - El stash de git es compartido entre worktrees. Nada de `git stash` a secas: se usa un commit temporal.
 
 ## Referencias fuera del repo (en la máquina de LM)

@@ -4,6 +4,6 @@ export default defineConfig({
   build: {
     outDir: 'dist/js', emptyOutDir: true, target: 'es2022', sourcemap: false, minify: true,
     lib: { entry: 'src/main.js', formats: ['es'], fileName: () => 'app.js' },
-    rollupOptions: { output: { inlineDynamicImports: true } },
+    rollupOptions: { output: { inlineDynamicImports: true, minify: true } },
   },
 });
