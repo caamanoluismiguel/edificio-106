@@ -1,0 +1,5 @@
+A2: sol a 46.4°, DNI 636, DHI 136 | puntos al sol 176, en sombra 100 | Radiance: 584 / 74 W/m² → razón 7.92 | fórmula del visor 8.04
+B2: sol a 50.6°, DNI 806, DHI 126 | puntos al sol 189, en sombra 87 | Radiance: 737 / 73 W/m² → razón 10.15 | fórmula del visor 14.41
+B3: sol a 50.6°, DNI 852, DHI 128 | puntos al sol 189, en sombra 87 | Radiance: 772 / 72 W/m² → razón 10.79 | fórmula del visor 16.21
+B: sol a 50.6°, DNI 852, DHI 128 | puntos al sol 189, en sombra 87 | Radiance: 775 / 74 W/m² → razón 10.48 | fórmula del visor 16.21
+B7: sol a 50.6°, DNI 852, DHI 128 | puntos al sol 189, en sombra 87 | Radiance: 777 / 75 W/m² → razón 10.41 | fórmula del visor 16.21

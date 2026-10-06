@@ -1,0 +1,5 @@
+# reflectancias supuestas (no medidas): muro claro 0,5, techo 0,2, vidrio como superficie oscura 0,1, suelo 0,2 (el del visor)
+void plastic muro 0 0 5 .5 .5 .5 0 0
+void plastic techo 0 0 5 .2 .2 .2 0 0
+void plastic vidrio 0 0 5 .1 .1 .1 0 0
+void plastic suelo 0 0 5 .2 .2 .2 0 0

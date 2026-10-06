@@ -1,0 +1,8 @@
+Reproducir (Radiance 6.1a como en ../radiance/LEEME.txt):
+  cd fuente && for g in arquitectura cubiertas_sombra ventanas entrada sitio; do  # material: muro, techo, vidrio, muro, suelo
+    node ../docs/validacion/luz/glb2rad.mjs <material> ../modelo/$g.glb > <carpeta>/$g.rad; done
+  (glb2rad.mjs necesita los node_modules de fuente/: @gltf-transform y meshoptimizer)
+  bash medir.sh M D H DNI DHI etiqueta     # en la carpeta con los .rad y materiales.rad
+  python3 resumen.py etiqueta M D H DNI DHI
+  node ../docs/validacion/luz/medir-escena.mjs 20240215-1000 46.4   # la escena del visor, desde fuente/
+materiales.rad: reflectancias supuestas (muro 0,5; la prueba de sensibilidad cambió el muro a 0,3 y 0,7). resultado.txt: B3 y B7 son esas dos pruebas.
