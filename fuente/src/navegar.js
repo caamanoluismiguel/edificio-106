@@ -169,7 +169,7 @@ const MES_LARGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio
 export function ficha(e, F, ciudad, C) {
   if (e.n === '106') return { titulo: 'Edificio 106', es106: true, filas: [],
     lineas: ['Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.',
-      'En el inventario de la ciudad es de clase I de certeza, pero a diferencia de los demás no se arma con el kit: está medido y tiene modelo propio. Cómo se hizo y qué no hace está en «Acerca del modelo».',
+      'En el inventario de la ciudad es de clase I de certeza, pero a diferencia de los demás no se arma con el kit: está medido y tiene modelo propio. Cómo se hizo y qué no hace está en «Fuentes y método».',
       ...(C ? [fraseCopa(C)] : [])] };
   const f = F?.edificios?.[e.o] ?? {}, T = f.t ? F?.tipos?.[f.t] : null, G = T && f.g != null ? T.grupos[f.g] : null;
   const titulo = e.n ? `Edificio ${e.n}${f.une ? ' y ' + f.une : ''}` : f.nom ?? 'Edificio sin número';
