@@ -1607,7 +1607,7 @@ function pedirReloj() {
     .catch((e) => { relojPedido = false; anotar('aviso', 'reloj de la lluvia: ' + e); });
 }
 function pintarReloj(R) {
-  const E = R.era5.pct, A = R.albrook.pct, C = 80, R0 = 12, R1 = 58, RA = 66;    // centro, radios del dibujo, arco AUTO
+  const E = R.era5.pct, A = R.albrook.pct, C = 80, R0 = 0, R1 = 58, RA = 66;     // centro, radios (desde el centro: el radio es el % del máximo), arco AUTO
   const maxE = Math.max(...E), maxA = Math.max(...A.filter((v) => v !== null));
   const rad = (v, max) => R0 + (R1 - R0) * v / max;
   const pt = (h, r) => { const a = h / 24 * 2 * Math.PI; return `${(C + r * Math.sin(a)).toFixed(2)},${(C - r * Math.cos(a)).toFixed(2)}`; };
@@ -1616,9 +1616,9 @@ function pintarReloj(R) {
   const hh = (h) => String(h).padStart(2, '0');
   let s = '';
   E.forEach((v, h) => { const fin = h || 24; s += `<path class="era5" d="${sector(fin - 1, fin, R0, rad(v, maxE))}"><title>ERA5, de ${hh(fin - 1)} a ${hh(fin % 24)} h: ${f1(v)} % de las horas con ${f1(R.era5.umbral_mm)} mm o más</title></path>`; });
-  // Albrook: una línea cerrada por los partes con observador (de 6 a 22 h); de 22 a 6 h cierra recta por dentro, sin dato
+  // Albrook: una línea cerrada por los partes con observador (de 6 a 22 h); de 22 a 6 h cierra por el centro, sin dato
   const hs = A.map((v, h) => (v === null ? null : h)).filter((h) => h !== null), h0 = hs[0], h1 = hs[hs.length - 1];
-  const linea = hs.map((h, k) => `${k ? 'L' : 'M'}${pt(h, rad(A[h], maxA))}`).join('') + `L${pt(h1, R0)}L${pt(h0, R0)}Z`;   // cierra por la madrugada, sin dato
+  const linea = hs.map((h, k) => `${k ? 'L' : 'M'}${pt(h, rad(A[h], maxA))}`).join('') + `L${pt(h1, R0)}L${pt(h0, R0)}Z`;
   s += `<path class="alb" d="${linea}"><title>Albrook, % de partes del observador con lluvia: ${hs.map((h) => `${h}:00 ${f1(A[h])}`).join(' · ')}. ${R.albrook.nota_tarde}</title></path>`;
   // las horas del máximo, afuera: una raya en el centro de la hora de ERA5 y un arco por la cima de Albrook
   const pe = R.era5.pico, cima = R.albrook.cima, ca = [Math.min(...cima), Math.max(...cima)];
@@ -1628,12 +1628,10 @@ function pintarReloj(R) {
   s += `<path class="auto" d="${arco(desde - 24 - 0.5, hasta + 0.5, RA)}"></path>`;
   for (const h of [0, 6, 12, 18]) { const [x, y] = pt(h, 74).split(','); s += `<text x="${x}" y="${y}">${h}</text>`; }
   const sv = $('#reloj-svg'); sv.innerHTML = s;
-  const mad = R.era5.madrugada, D = R.comparacion;
-  const d0 = Math.floor(Math.min(D.desfase_h, D.desfase_picos_h)), d1 = Math.ceil(Math.max(D.desfase_h, D.desfase_picos_h));
+  const mad = R.era5.madrugada;
   $('#reloj-era5').textContent = `ERA5 da su máximo de ${pe - 1} a ${pe} h.`;
   $('#reloj-alb').textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${ca[0]} a ${ca[1]} h.`;
   $('#reloj-auto').textContent = `De ${desde} a ${hasta} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...mad) - 1} a ${Math.max(...mad)} h no se puede contrastar.`;
-  $('#reloj-desfase').textContent = d0 === d1 ? `${d0} h` : `de ${d0} a ${d1} h`;
   sv.setAttribute('aria-label', `Reloj de 24 horas, cada curva a escala de su máximo. ${$('#reloj-era5').textContent} ${$('#reloj-alb').textContent}`);
   $('#reloj-lluvia').hidden = false;
 }
