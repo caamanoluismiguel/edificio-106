@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=cab17f3ca0" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=d472c27163" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -78,7 +78,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
   /* Un solo mundo visual: la noche y el cielo del trópico detrás del gemelo. */
   :root {
@@ -137,12 +137,6 @@
   .marca b { font: 760 18px/1 var(--display); letter-spacing: -0.01em; white-space: nowrap; }
   .marca small { font: 500 11px/1 var(--datos); color: var(--cal-2); letter-spacing: 0.1em; text-transform: uppercase; margin-left: 6px; }
   .acciones { display: flex; gap: 8px; align-items: center; }
-  #estado { display: flex; gap: 9px; align-items: center; font: 500 12px/1 var(--datos); color: var(--cal-2); background: var(--panel); border: 1px solid var(--linea);
-    border-radius: 999px; padding: 9px 13px 9px 11px; backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; white-space: nowrap; transition: opacity .8s var(--ease); }
-  #estado .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--cal-3); flex: none; }
-  /* en vivo: un punto fijo que cada 10 s parpadea una vez (solo opacidad y escala: no repinta) */
-  html.vivo #estado .punto { background: #5fd38a; animation: latido 10s infinite; }
-  @keyframes latido { 0%, 90%, 100% { opacity: 1; transform: none } 95% { opacity: .35; transform: scale(.7) } }
   .boton { font: 600 14px/1 var(--texto); color: var(--cal); background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
     padding: 10px 15px; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, background .2s, transform .2s var(--ease); display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
   .boton:hover { border-color: rgba(239,233,222,.42); }
@@ -155,8 +149,6 @@
   .boton[aria-pressed="true"] .onda i { animation: onda 1s var(--ease) infinite alternate; }
   .boton[aria-pressed="true"] .onda i:nth-child(2) { animation-delay: .2s } .boton[aria-pressed="true"] .onda i:nth-child(3) { animation-delay: .4s }
   @keyframes onda { from { height: 3px } to { height: 12px } }
-  /* la píldora de estado solo cuando la escena sigue el reloj: explorando, la fecha ya está en el dock */
-  html:not(.vivo) #estado { display: none; }
 
   /* ---------- intro ---------- */
   #intro { position: fixed; z-index: 5; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto auto; padding: calc(env(safe-area-inset-top, 0px) + 84px) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 26px); }
@@ -193,7 +185,6 @@
   .tras-intro { transition: opacity 1s var(--ease), transform 1.1s var(--ease); }
   html:not(.listo) .tras-intro { opacity: 0; transform: translateY(16px); pointer-events: none; }
   html.listo #hud.tras-intro { transition-delay: .12s; }   /* por id: era :nth-of-type(2), que caía en #hud y se movería al cambiar los hermanos */
-  html:not(.listo) #estado { opacity: .0; }
 
   /* narrador: la primera fila del dock. Plegado da una frase y «Leer más»; abierto, el texto entero y «Ver menos».
      «En vivo» / «Volver a ahora» va en su cabecera; de noche, los dos atajos quedan siempre a la vista */
@@ -201,7 +192,7 @@
     gap: 6px 12px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--linea); }
   #rotulo-cab { grid-area: cab; display: flex; align-items: center; gap: 10px; min-width: 0; }
   #rotulo .eyebrow:empty { visibility: hidden; }
-  #rotulo .eyebrow { color: var(--cal-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #rotulo .eyebrow { color: var(--cal-2); min-width: 0; text-wrap: balance; }   /* en dos líneas si no cabe junto a «En vivo»: cortado decía «Qué significa · La re…» */
   #rotulo-cab #ahora { margin-left: auto; flex: none; }
   #rotulo-texto, #rotulo-corto { grid-area: txt; margin: 0; font-size: 15px; line-height: 1.4; text-wrap: pretty; }
   #rotulo-texto { max-height: 30vh; overflow: auto; overscroll-behavior: contain; }
@@ -265,6 +256,11 @@
   #ley-que { margin: 0; font-size: 13px; line-height: 1.42; color: var(--cal); text-wrap: pretty; }
   #ley-leer { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
   #ley-mas { border-top: 1px solid var(--linea); padding-top: 7px; }
+  /* pliegue: texto de método o de lectura que arranca cerrado y se abre con un toque (el mismo patrón que #ley-mas) */
+  .pliegue > summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); padding: 4px 0; }
+  .pliegue > :not(summary) { margin-top: 6px; }
+  #dia-ley-caja { margin: 2px 0 0; text-align: right; position: relative; z-index: 1; }   /* sobre el range de la regla, que cubre todo su bloque */ #dia-ley-caja .dia-ley { margin-top: 2px; }
+  #ir-a .pliegue > .nota, #capas .pliegue > .lamina-nota, #reloj-lluvia .pliegue > p { margin-top: 6px; }
   #ley-mas summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); }
   #ley-mas p { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
   #ley-mas p b { color: var(--cal); font-weight: 600; }
@@ -754,9 +750,7 @@
   /* ---------- teléfono ---------- */
   @media (max-width: 760px) {
     :root { --dock-h: 206px; }
-    .marca small, #estado .largo { display: none; }
-    #estado { padding: 8px 10px; font-size: 11px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
-    #estado-txt { overflow: hidden; text-overflow: ellipsis; }
+    .marca small { display: none; }
     #sonido .t { display: none; }
     .boton { padding: 10px 12px; }
     #rotulo-texto { max-height: 26vh; }
@@ -812,7 +806,9 @@
     .dock-lect small { font-size: 12px; }
     #l-fuente { display: none; }
     #capas, #ir-a, #confort { left: 8px; right: 8px; width: auto; }
-    #capas { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px); }
+    /* Capas y Confort se apoyan sobre la hoja y no pasan de la mitad de la pantalla: el edificio queda a la vista arriba
+       (encuadreMovil lo centra en el hueco que dejan; ver PANELES_ABAJO). El panel se desplaza por dentro */
+    #capas, #confort { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: min(var(--panel-tel, 38dvh), calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px)); }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
     .lentes button { font-size: 13px; }
@@ -843,16 +839,16 @@
     .parte span { font-size: 12px; padding: 6px 9px; } .cota { font-size: 12px; padding: 4px 7px; }
   }
   /* teléfonos bajos: la leyenda de la regla del día se explica al tocar «Día» */
-  @media (max-width: 760px) and (max-height: 800px) { #dia-ley { display: none; } }
+  @media (max-width: 760px) and (max-height: 800px) { #dia-ley-caja { display: none; } }
   @media (max-width: 400px) { .marca svg { display: none; } .marca { padding: 7px 12px; } .acciones { gap: 5px; } }
-  @media (max-width: 480px) { #estado { display: none; } .acciones { gap: 6px; } .marca b { font-size: 18px; } }
+  @media (max-width: 480px) { .acciones { gap: 6px; } .marca b { font-size: 18px; } }
   @media (max-height: 640px) and (min-width: 761px) { .pista { display: none; } #l-hora { font-size: 36px; } }
   /* la fuente larga solo se oculta donde el resumen de las lecturas ya lleva el sello (hasta 1600 px) */
   @media (max-height: 640px) and (min-width: 761px) and (max-width: 1600px) { #l-fuente { display: none; } }
   /* ---------- teléfono en horizontal (y ventanas muy bajas) ---------- */
   @media (max-height: 500px) and (min-width: 761px) {
     .barra { padding-top: calc(env(safe-area-inset-top, 0px) + 8px); padding-bottom: 6px; }
-    .barra .boton { padding: 8px 12px; } .marca small, #estado { display: none; }
+    .barra .boton { padding: 8px 12px; } .marca small { display: none; }
     #hud { left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 52px); grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; pointer-events: none; }
     #hud > * { pointer-events: auto; }
     #mirando, .pista { display: none; }
@@ -868,7 +864,7 @@
     #l-hora { grid-area: hora; font-size: 28px; } #elegir { grid-area: fecha; justify-self: start; }
     #l-fecha .larga { display: none; } #l-fecha .corta { display: inline; }
     .pestanas { grid-area: centro; align-self: start; } .regla { grid-area: centro; align-self: end; margin-top: 60px; } #momentos-caja { display: none !important; }
-    .dia-ley, #dec-leyenda, #l-fuente { display: none; }
+    .dia-ley, #dia-ley-caja, #dec-leyenda, #l-fuente { display: none; }
     .dock-botones { grid-area: botones; justify-self: end; } #reproducir { width: 44px; height: 44px; } #abrir-capas { height: 44px; }
     #lect-resumen { grid-area: resumen; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 10px; border: 1px solid var(--linea-2); border-radius: 12px;
       background: rgba(239,233,222,.04); cursor: pointer; font: 500 12px/1.3 var(--datos); color: var(--cal); text-align: left; align-self: stretch; }
@@ -921,8 +917,12 @@
     #dock .lentes button:not(.info) { display: grid; align-content: center; justify-items: start; gap: 3px; min-height: 56px; padding: 8px 10px; text-align: left; font-size: 14px; }
     #dock .lentes .apoyo { display: block; font: 400 12px/1.25 var(--texto); color: inherit; opacity: .78; }
     /* alturas: lo que no corresponde a la altura no se dibuja */
-    html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley) { display: none !important; }
+    html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley, #dia-ley-caja) { display: none !important; }
     html.hoja-1 #dock :is(.dock-lect, .vistas, .lamina) { display: none !important; }
+    /* con Capas o Confort abiertos, la cerrada guarda «En vivo», la hora con la fecha al lado y el sello del resumen; la regla,
+       el modo y el play vuelven con el asa. Así el panel y la hoja dejan ver el edificio */
+    html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(.regla, #modo-activo, #reproducir) { display: none !important; }
+    html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock #elegir { grid-area: modo; justify-self: end; }
     html.hoja-1 #dock { max-height: 62dvh; }
     /* con la tarjeta de un modo abierta en la cerrada, el narrador deja su lugar (quedan «Volver a ahora» y el sello del resumen) */
     html.hoja-0 #dock:has(#leyenda:not([hidden])) #rotulo > :not(#rotulo-cab) { display: none; }
@@ -1028,7 +1028,6 @@
     <button class="boton" id="info" type="button" aria-haspopup="dialog">Fuentes y método</button>
   </div>
   </div>
-  <div id="estado"><span class="punto" aria-hidden="true"></span><span id="estado-txt">Cargando…</span></div>
   <div class="acciones">
     <button class="boton" id="sonido" type="button" aria-pressed="false" aria-label="Sonido"><svg class="parlante" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z"></path></svg><span class="onda" aria-hidden="true"><i></i><i></i><i></i></span><span class="t">Sonido</span></button>
   </div>
@@ -1177,7 +1176,7 @@
 <section id="tarjeta-edificio" hidden aria-labelledby="te-t">
   <div class="te-cab"><div><p class="eyebrow">Ficha del edificio</p><h2 id="te-t" tabindex="-1"></h2></div><button type="button" id="te-cerrar" aria-label="Cerrar la ficha del edificio">×</button></div>
   <div id="te-txt"></div>
-  <div class="te-botones"><button type="button" id="te-partes" class="boton" hidden>Partes y medidas</button><button type="button" id="te-acerca" class="boton" hidden>Acerca del modelo</button><button type="button" id="te-enlace" class="boton">Copiar enlace</button></div>
+  <div class="te-botones"><button type="button" id="te-partes" class="boton" hidden>Partes y medidas</button><button type="button" id="te-acerca" class="boton" hidden>Fuentes y método</button><button type="button" id="te-enlace" class="boton">Copiar enlace</button></div>
   <p id="te-estado" role="status"></p>
 </section>
 <div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
@@ -1267,7 +1266,7 @@
       </svg>
       <div class="etiquetas" id="dia-etiquetas"></div>
       <input id="hora" type="range" min="0" max="1439" step="1" aria-label="Hora del día">
-      <p class="dia-ley" id="dia-ley"></p>
+      <details class="pliegue" id="dia-ley-caja"><summary>Cómo leerla</summary><p class="dia-ley" id="dia-ley"></p></details>
     </div>
     <div class="regla" id="regla-anio" role="tabpanel" aria-labelledby="tab-anio" hidden>
       <svg id="anio" viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
@@ -1303,8 +1302,10 @@
         <p class="reloj-dato" id="reloj-era5"></p>
         <p class="reloj-dato" id="reloj-alb"></p>
         <p class="reloj-nota">Las dos curvas miden cosas distintas: ERA5, horas con 1,5 mm o más en una celda de unos 28 km; Albrook, partes de un instante con cualquier lluvia en un punto. Por eso cada una va a escala de su máximo y solo se compara la hora.</p>
+        <details class="pliegue"><summary>Cómo se midió</summary>
         <p class="reloj-nota" id="reloj-auto"></p>
         <p class="reloj-nota" id="reloj-sesgo">Aquí el máximo de ERA5 llega algo más de 1 h antes que el de Albrook, en línea con un estudio global de junio a agosto: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo de lluvia frente al producto satelital IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
+        </details>
         </div>
       </div></figure>
     </div>
@@ -1370,7 +1371,7 @@
       </article>
       <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
         <h4>Casi toda la lluvia cae de mayo a noviembre, y sobre todo en la tarde</h4>
-        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En esos meses, el observador del aeropuerto de Albrook, a 4 km, informó lluvia (sin contar llovizna ni la de la hora anterior) en alguno de sus partes de 12:00 a 18:59 en 46 de cada 100 tardes (2017–2025). ERA5 da 1 mm o más entre las 12 y las 18 h en 88 de cada 100 tardes (2001–2025), pero no mide lo mismo: suma seis horas en una celda de 28 km, y cada parte mira un instante en un punto. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
+        <p>ERA5 da unos 2.000 mm de lluvia al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En esos meses, el observador del aeropuerto de Albrook, a 4 km, informó lluvia (sin contar llovizna ni la de la hora anterior) en alguno de sus partes de 12:00 a 18:59 en 46 de cada 100 tardes (2017–2025). ERA5 da 1 mm o más entre las 12 y las 18 h en 88 de cada 100 tardes (2001–2025), pero no mide lo mismo: suma seis horas en una celda de 28 km, y cada parte mira un instante en un punto. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
         <button class="ver" type="button"><span>Verlo</span><small>1 de julio de 2023, 14:30 · esquina</small></button>
       </article>
     </div>
@@ -1503,7 +1504,9 @@
     <label>Hora (Panamá)<input type="time" id="ir-hora" step="60" required></label>
     <button class="boton primario" type="submit">Ir</button>
   </form>
+  <details class="pliegue"><summary>Cómo leerlo</summary>
   <p class="nota">Entre 2001 y 2025 el dato de esa hora viene incluido (ERA5). Desde 1940 y hasta 15 días adelante se consulta en línea a Open-Meteo. Sirve para comparar con una foto el sol y las sombras, que están calculados al minuto. La lluvia, las nubes y la fuerza del sol de esa hora son dato de modelo para una celda de ~28 km y casi nunca coinciden con una hora concreta: a la hora de un parte del aeropuerto de Albrook, a 4 km, con lluvia, la escena dibuja lluvia una de cada seis veces, y una de cada tres si se mira una hora antes o después (2017–2025). Por día coincide más: si en Albrook llovió, la escena dibuja lluvia en alguna hora de ese día dos de cada tres veces, aunque en cuatro de cada diez días en que la dibuja no llovió en Albrook. Mientras la escena dibuja lluvia no dibuja sol directo; en una hora en que ERA5 no da lluvia puede dibujar sombras aunque en la foto llueva.</p>
+  </details>
   <div id="consultas" class="consultas" aria-label="Consultas"></div>
   <p class="nota">Los extremos de lluvia y luz salen de la serie ERA5 2001–2025, calculados, no elegidos a mano. Las fechas de sol y sombra son las del año <b id="consultas-anio"></b> (cambia el año con la fecha de arriba).</p>
 </aside>
@@ -1513,7 +1516,7 @@
     <div class="ir-cab"><h2>Capas</h2><button class="boton" type="button" id="cerrar-capas">Cerrar</button></div>
     <div id="encuadres-caja">
       <h2 id="encuadres-t">Encuadres</h2>
-      <p class="lamina-nota">Cada encuadre te lleva a un lugar de Ciudad del Saber en un día y una hora reales en que el dato del clima del visor da sol directo y no da lluvia. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p>
+      <details class="pliegue"><summary>Cómo leerlo</summary><p class="lamina-nota">Cada encuadre te lleva a un lugar de Ciudad del Saber en un día y una hora reales en que el dato del clima del visor da sol directo y no da lluvia. «Volver a ahora» trae la hora de hoy sin mover la cámara.</p></details>
       <p id="encuadres-nota" class="lamina-nota" hidden>La ciudad está apagada, así que solo queda el encuadre del 106.<br><button class="boton" type="button" id="encuadres-encender">Encender la ciudad</button></p>
       <ul id="encuadres" aria-labelledby="encuadres-t"></ul>
       <p id="encuadre-texto" class="lamina-nota" role="status" hidden></p>
@@ -1618,4 +1621,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=cab17f3ca0"></script></body></html>
+<script type="module" src="js/app.js?v=d472c27163"></script></body></html>
