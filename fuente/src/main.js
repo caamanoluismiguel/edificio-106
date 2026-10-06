@@ -859,7 +859,7 @@ async function mostrarTarjeta(e) {
   // el foco del teclado pasa al título de la ficha (sin mover la página); al cerrarla vuelve a donde estaba. Con el foco en la
   // ficha, el doble toque sigue igual: lo escucha el lienzo, no el teclado
   if (el.hidden) { const a = document.activeElement; NAV.focoAntes = a && a !== document.body ? a : null; }
-  NAV.tarjeta = e; el.hidden = false; anunciar();
+  NAV.tarjeta = e; el.hidden = false; anunciar(); cerrarExplica();
   el.setAttribute('aria-live', 'polite');
   $('#te-t').focus({ preventScroll: true });
   if (S.hoja === 1 || S.hoja === 2) ponerHoja(0);         // en el teléfono, la hoja baja a la cerrada y la ficha la cubre
@@ -1416,11 +1416,6 @@ function lecturas(p, c) {
   const sello = S.aguacero && sello0 ? 'aguacero forzado · ' + sello0 : sello0;
   S.sello = sello;                                                 // también va en el pie de la imagen PNG
   $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (c?.fuente === 'mes' ? temp : sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol ${enHorizonte(p) ? 'en el' : 'bajo el'} horizonte · ${temp}`);   // la procedencia primero: en el teléfono el final se corta
-  // estado de la barra (quieto durante el viaje: solo corren el dock y la tarjeta «Viajando a»)
-  const est = $('#estado-txt');
-  if (V) { /* se actualiza al llegar */ }
-  else if (vivo) est.textContent = c?.fuente === 'vivo' ? (c.albrook ? `En vivo · ${hhmm(S.min)} · ${Math.round(c.temp)} °C en Albrook` : `En vivo · ${hhmm(S.min)} · ${Math.round(c.temp)} °C · ${Math.round(c.nubes)} % nubes`) : `Ahora · ${hhmm(S.min)} en Panamá`;
-  else est.textContent = `Explorando · ${S.mesSerie !== null ? MESES[S.fecha.m - 1] + ' de ' + S.fecha.y : fechaTexto(S.fecha)}`;
   // agujas y controles
   $('#hora').value = Math.round(S.min) % 1440;
   $('#dia-anio').value = diaDelAnio(S.fecha);
@@ -1772,7 +1767,7 @@ function prepararUI() {
     b.addEventListener('click', () => explicar(b.dataset.explica));
     b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); explicar(b.dataset.explica); } });
   });
-  $('#rotulo-cerrar').addEventListener('click', () => { anunciar(); S.explica = null; document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false')); lastLect = ''; });
+  $('#rotulo-cerrar').addEventListener('click', () => { anunciar(); cerrarExplica(); });
   $('#rotulo-abrir').addEventListener('click', () => {
     const abrir = document.documentElement.classList.contains('rotulo-plegado');
     ROT.abierto = abrir; ROT.auto = false; if (abrir) soloUnPanel(null);
@@ -1927,7 +1922,7 @@ function prepararUI() {
   });
   // formas de ver
   document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.addEventListener('click', () => {
-    cerrarOferta(); anunciar();
+    cerrarOferta(); anunciar(); cerrarExplica();
     const conTarjeta = !(b.dataset.lente === 'partes' && innerWidth <= 760);   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
     ponerLente(b.dataset.lente, conTarjeta); if (conTarjeta) soloUnPanel('leyenda');
     // las formas de ver que miden el 106: lejos, primero se vuelve a él (a la última vista, o a la que la forma de ver pide)
@@ -1993,6 +1988,7 @@ function prepararUI() {
 /** Un solo panel lateral a la vez (Para qué sirve, Ir a…, Confort, Capas o la tarjeta de la forma de ver): al abrir uno, se
  *  cierran los demás. Con null los cierra todos. */
 function soloUnPanel(k) {
+  if (k) cerrarExplica();                                         // «Qué significa…» no se queda pegado al abrir otro panel
   // en el teléfono, un panel (Capas, Momentos clave, Confort, Para qué sirve) se abre con la hoja cerrada para tener lugar
   if (k && k !== 'leyenda' && S.hoja !== undefined && S.hoja !== 0) ponerHoja(0);
   if (k !== 'sirve' && !$('#sirve').hidden) { $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); }
@@ -2824,6 +2820,12 @@ function explicacion(k, p, c) {
   if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
   if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie y el reloj de la hora de la lluvia, con ERA5 junto a lo que observó Albrook.'];
   return null;
+}
+/** Cierra el «Qué significa…» del narrador (lo mismo que «Entendido»): al elegir otra forma de ver o abrir un panel o una ficha. */
+function cerrarExplica() {
+  if (!S.explica) return;
+  S.explica = null; lastLect = '';
+  document.querySelectorAll('[data-explica]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
 }
 function explicar(k) {
   anunciar();
