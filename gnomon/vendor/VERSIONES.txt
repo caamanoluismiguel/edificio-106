@@ -1,0 +1,1 @@
+qrcode 1.5.4 (npm, MIT, Ryan Day), solo lib/core, empaquetado con Vite 8 desde fuente/gnomon-qr.js; incluye dijkstrajs 1.0.3 (MIT). Sin modificar. Licencias en LICENSE-*.txt.

@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoja del gnomon · Edificio 106</title>
+<meta name="description" content="Hoja imprimible para medir junto al Edificio 106 la sombra de un palo vertical de 1 m: se predice, se mira en el visor y se mide en sitio, con rúbrica y fuentes de error.">
+<link rel="icon" href="../img/icono-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../img/icono.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* los tokens y letras del visor (fuente/cuerpo.html), sin degradados; la hoja es papel blanco con tinta negra */
+  :root {
+    color-scheme: dark;
+    --noche: #0a1216; --fondo: #101b21; --solido: #0e171b;
+    --cal: #efe9de; --cal-2: #b6bdb9; --cal-3: #7f8a86;
+    --sol: #f4b545; --sol-tinta: #1d1405;
+    --linea: rgba(239, 233, 222, 0.13); --linea-2: rgba(239, 233, 222, 0.2);
+    --display: "Bricolage Grotesque", "Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif;
+    --texto: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --datos: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --tinta: #111; --tinta-2: #444; --tinta-3: #777; --raya: #9a9a9a; --papel: #fff;
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--noche); color: var(--cal); font: 16px/1.5 var(--texto); -webkit-font-smoothing: antialiased; }
+  a { color: var(--sol); }
+  :focus-visible { outline: 2px solid var(--sol); outline-offset: 3px; border-radius: 8px; }
+  button, input, select { font: inherit; color: inherit; }
+  .num { font-family: var(--datos); font-variant-numeric: tabular-nums; }
+
+  /* ---------- controles del docente (solo pantalla) ---------- */
+  .docente { max-width: 1040px; margin: 0 auto; padding: 24px 16px 8px; }
+  .docente header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 16px; }
+  .docente h1 { font: 700 30px/1.1 var(--display); margin: 0; }
+  .docente .eyebrow { font: 500 12px/1.4 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--sol); margin: 0 0 6px; }
+  .docente p { color: var(--cal-2); margin: 8px 0 0; max-width: 72ch; font-size: 15px; }
+  .panel { margin-top: 16px; background: var(--solido); border: 1px solid var(--linea-2); border-radius: 18px; padding: 16px; display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .campo { display: grid; gap: 6px; align-content: start; }
+  .campo > span { font: 500 12px/1.3 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
+  .campo input[type=date], .campo select { background: var(--fondo); border: 1px solid var(--linea-2); border-radius: 8px; padding: 10px 12px; min-height: 44px; width: 100%; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: transparent; border: 1px solid var(--linea-2); border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; min-height: 36px; }
+  .chip:hover { border-color: var(--cal-3); }
+  .chip[aria-pressed=true] { background: var(--cal); color: var(--noche); border-color: var(--cal); }
+  .casilla { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--cal-2); cursor: pointer; }
+  .casilla input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--cal); }
+  .acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .boton { border-radius: 999px; padding: 10px 16px; border: 1px solid var(--linea-2); background: transparent; cursor: pointer; min-height: 44px; font-size: 14px; }
+  .boton.primario { background: var(--sol); color: var(--sol-tinta); border-color: var(--sol); font-weight: 600; }
+  .aviso { grid-column: 1 / -1; margin: 0; font-size: 14px; color: var(--cal); background: var(--fondo); border: 1px solid var(--linea-2); border-radius: 12px; padding: 10px 12px; }
+  .nota-pantalla { font-size: 13px; color: var(--cal-3); }
+
+  /* ---------- las hojas ---------- */
+  .hojas { display: grid; grid-template-columns: minmax(0, 210mm); gap: 24px; justify-content: center; padding: 16px 16px 48px; }
+  .pagina { background: var(--papel); color: var(--tinta); width: min(210mm, 100%); padding: 12mm; font: 13px/1.4 var(--texto);
+    border-radius: 12px; box-shadow: 0 1px 0 rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35); -webkit-font-smoothing: auto; }
+  .pagina h2 { font: 700 26px/1.1 var(--display); margin: 0; letter-spacing: -.01em; }
+  .pagina h3 { font: 700 18px/1.2 var(--display); margin: 0; }
+  .pagina h4 { font: 600 14px/1.3 var(--texto); margin: 0 0 4px; }
+  .pagina p { margin: 4px 0; }
+  .pagina .ceja { font: 500 11px/1.3 var(--datos); text-transform: uppercase; letter-spacing: .08em; color: var(--tinta-2); margin: 0 0 4px; }
+  .pagina .sub { color: var(--tinta-2); margin-top: 6px; }
+  .pagina .num { font-family: var(--datos); }
+  .pagina small, .pagina .chica { font-size: 11px; color: var(--tinta-2); }
+  .datos-hoja { display: grid; grid-template-columns: 2fr 1fr 1.3fr; gap: 4px 12px; margin: 10px 0 8px; font-size: 13px; }
+  .linea { display: inline-block; border-bottom: 1px solid var(--tinta); min-width: 18mm; height: 1.2em; vertical-align: bottom; }
+  .linea.larga { display: block; width: 100%; height: 6.5mm; min-width: 0; }
+  .campo-hoja { display: flex; gap: 6px; align-items: flex-end; white-space: nowrap; }
+  .campo-hoja .linea { flex: 1; }
+  .momento { border: 2px solid var(--tinta); border-radius: 8px; padding: 7px 10px; display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; font-size: 13px; }
+  .momento b { font: 600 15px/1.3 var(--texto); }
+  .paso { border-top: 2px solid var(--tinta); padding-top: 7px; margin-top: 9px; }
+  .paso-cab { display: flex; gap: 10px; align-items: baseline; margin-bottom: 4px; }
+  .paso-cab .n { font: 700 22px/1 var(--display); border: 2px solid var(--tinta); border-radius: 999px; width: 30px; height: 30px; display: grid; place-items: center; flex: none; }
+  .paso-cab .cuando { color: var(--tinta-2); font-size: 12px; }
+  .dos { display: grid; grid-template-columns: 58mm 1fr; gap: 12px; align-items: start; }
+  .rosa { width: 58mm; height: 58mm; display: block; }
+  .renglones { display: grid; gap: 7px; }
+  .pista { border: 1px dashed var(--tinta-2); border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+  .qr { width: 30mm; height: 30mm; display: block; }
+  .enlace { font: 400 11px/1.35 var(--datos); word-break: break-all; color: var(--tinta-2); }
+  .tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tabla th, .tabla td { border: 1px solid var(--tinta-2); padding: 4px 6px; text-align: left; vertical-align: top; }
+  .tabla th { font-weight: 600; background: #eee; }
+  .tabla.medir td { height: 8mm; }
+  .tabla.medir td:first-child { width: 24mm; }
+  ol.pasos { margin: 2px 0 6px; padding-left: 18px; }
+  ol.pasos li { margin: 3px 0; }
+  .geo { display: grid; grid-template-columns: 62mm 1fr; gap: 12px; align-items: start; }
+  .lado { width: 62mm; height: auto; display: block; }
+  .rubrica td, .rubrica th { font-size: 11px; line-height: 1.3; }
+  .rubrica th:first-child { width: 22mm; }
+  .caja { border: 1px solid var(--tinta-2); border-radius: 8px; padding: 6px 9px; margin-top: 8px; font-size: 12px; }
+  .caja h4 { margin-bottom: 2px; }
+  .fuentes-lista { font-size: 11px; color: var(--tinta-2); margin: 6px 0 0; padding-left: 16px; }
+  .fuentes-lista li { margin: 1px 0; }
+  .clave .tabla td:first-child { width: 58mm; }
+  .clave .marca-clave { border: 2px solid var(--tinta); border-radius: 999px; padding: 2px 10px; font: 500 11px/1.4 var(--datos); text-transform: uppercase; letter-spacing: .06em; }
+
+  @media (max-width: 760px) {
+    .pagina { padding: 16px; font-size: 13px; }
+    .dos, .geo { grid-template-columns: 1fr; }
+    .datos-hoja { grid-template-columns: 1fr; }
+    .campo-hoja { white-space: normal; flex-wrap: wrap; }
+    .tabla { display: block; overflow-x: auto; }
+  }
+
+  /* ---------- impresión: carta o A4, en blanco y negro ---------- */
+  @page { margin: 10mm; }
+  @media print {
+    html, body { background: #fff; color: #000; }
+    .docente { display: none; }
+    .hojas { display: block; padding: 0; }
+    .pagina { width: auto; padding: 0; border-radius: 0; box-shadow: none; break-after: page; page-break-after: always; }
+    .pagina:last-of-type { break-after: auto; page-break-after: auto; }
+    body[data-imprime=estudiante] .clave { display: none; }
+    body[data-imprime=clave] .estudiante { display: none; }
+    .tabla th { background: #eee; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .paso, .caja, .tabla tr { break-inside: avoid; }
+    .pagina { font-size: 12px; line-height: 1.35; }
+    .pagina h2 { font-size: 22px; }
+    .pagina h3 { font-size: 16px; }
+    .dos { grid-template-columns: 48mm 1fr; }
+    .rosa { width: 48mm; height: 48mm; }
+    .qr { width: 27mm; height: 27mm; }
+    .geo { grid-template-columns: 52mm 1fr; }
+    .lado { width: 52mm; }
+    .linea.larga { height: 5.5mm; }
+    .renglones { gap: 4px; }
+    .paso { margin-top: 6px; padding-top: 5px; }
+    .tabla td, .tabla th { padding: 3px 5px; }
+    .tabla.medir td { height: 6mm; }
+    .pagina h3[style] { margin-top: 6px !important; }
+    .rosa { width: 44mm; height: 44mm; }
+    .dos { grid-template-columns: 44mm 1fr; }
+    .rubrica td, .rubrica th { font-size: 11px; }
+    .caja { margin-top: 6px; padding: 5px 8px; font-size: 11px; }
+    .datos-hoja { margin: 6px 0; }
+  }
+</style>
+</head>
+<body data-imprime="estudiante">
+
+<section class="docente" aria-labelledby="t-docente">
+  <header>
+    <div>
+      <p class="eyebrow">Edificio 106 · para el docente</p>
+      <h1 id="t-docente">Hoja del gnomon</h1>
+    </div>
+    <a href="../">Volver al visor</a>
+  </header>
+  <p>Elige el día y la hora de la medición. La hoja toma sus cifras de una tabla calculada de antemano para cada día de 2026 y 2027, de 7:00 a 17:00 cada 30 minutos y al mediodía solar, con el mismo cálculo del sol que usa el visor.</p>
+  <div class="panel">
+    <label class="campo"><span>Día</span><input type="date" id="fecha" min="2026-01-01" max="2027-12-31" required></label>
+    <label class="campo"><span>Hora (de Panamá)</span><select id="hora"></select></label>
+    <div class="campo"><span>Días sin sombra</span><div class="chips" id="cero"></div></div>
+    <div class="campo"><span>En la hoja del estudiante</span>
+      <label class="casilla"><input type="checkbox" id="pista"> Dar la altura y el acimut del sol, para predecir con la fórmula</label></div>
+    <p class="aviso" id="aviso" role="status" hidden></p>
+    <div class="acciones" style="grid-column: 1 / -1">
+      <button class="boton primario" id="imp-estudiante" type="button">Imprimir la hoja del estudiante</button>
+      <button class="boton" id="imp-clave" type="button">Imprimir la clave del docente</button>
+      <span class="nota-pantalla">Carta o A4, en blanco y negro. La hoja del estudiante son dos páginas y la clave, una.</span>
+    </div>
+  </div>
+</section>
+
+<main class="hojas">
+
+  <!-- ================= Hoja del estudiante, página 1 ================= -->
+  <article class="pagina estudiante" aria-label="Hoja del estudiante, página 1">
+    <p class="ceja">Edificio 106 · Ciudad del Saber · Hoja de campo</p>
+    <h2>La sombra de un palo de 1 m</h2>
+    <p class="sub">Predices la sombra, la miras en el visor y la mides junto al 106. Al final comparas y explicas la diferencia.</p>
+    <div class="datos-hoja">
+      <span class="campo-hoja">Nombre <span class="linea"></span></span>
+      <span class="campo-hoja">Grupo <span class="linea"></span></span>
+      <span class="campo-hoja">Fecha de hoy <span class="linea"></span></span>
+    </div>
+    <div class="momento">
+      <span>Día</span><b data-c="fechaLarga">—</b>
+      <span>Hora</span><span><b data-c="hora">—</b> hora de Panamá (UTC−5, sin horario de verano)</span>
+      <span>Lugar</span><span>junto al Edificio 106, <span class="num">8,9993° N, 79,5827° O</span></span>
+      <span>Materiales</span><span>palo recto marcado a 1 m, plomada o nivel, cinta métrica, tiza, brújula y reloj en hora</span>
+    </div>
+
+    <section class="paso">
+      <div class="paso-cab"><span class="n">1</span><h3>Predice</h3><span class="cuando">antes de salir y sin abrir el visor</span></div>
+      <div class="dos">
+        <svg class="rosa" id="rosa" viewBox="-110 -110 220 220" role="img" aria-label="Rosa para dibujar la sombra: el palo en el centro, anillos cada 0,5 m hasta 2 m, norte geográfico arriba"></svg>
+        <div class="renglones">
+          <p>Dibuja en la rosa la sombra que esperas. El palo está en el centro y cada anillo son 0,5 m. Si pasa de 2 m, llévala hasta el borde y escribe el largo.</p>
+          <p class="campo-hoja">Largo que esperas <span class="linea"></span> m &nbsp; Rumbo <span class="linea"></span> ° desde el norte</p>
+          <p class="campo-hoja">¿De dónde sale tu predicción? <span class="linea"></span></p>
+          <span class="linea larga"></span>
+          <div class="pista" data-pista="no">Pista: piensa si a esa hora el sol está al este o al oeste, y si va alto o bajo. La sombra se proyecta al lado contrario del sol.</div>
+          <div class="pista" data-pista="si" hidden>Dato del sol a esa hora: altura <b class="num" data-c="alt">—</b>, acimut <b class="num" data-c="az">—</b> (desde el norte, en el sentido del reloj). Calculado con el algoritmo de NOAA, el mismo del visor.<br>
+            largo = 1 ÷ tan(altura) &nbsp;·&nbsp; rumbo = acimut + 180° (si pasa de 360°, réstale 360°)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="paso">
+      <div class="paso-cab"><span class="n">2</span><h3>Mira</h3><span class="cuando">en el visor, después de predecir</span></div>
+      <div class="dos" style="grid-template-columns: 34mm 1fr">
+        <div><svg class="qr" id="qr" role="img" aria-label="Código QR que abre el visor en ese día y esa hora"></svg></div>
+        <div class="renglones">
+          <p>Escanea el código o abre el enlace: el visor va a ese día y a esa hora. Busca la sombra de un poste de 1 m y la posición del sol.</p>
+          <p class="enlace" data-c="enlace">—</p>
+          <p class="campo-hoja">Sombra en el visor <span class="linea"></span> m, hacia el <span class="linea"></span></p>
+          <p class="campo-hoja">Sol: altura <span class="linea"></span> °, acimut <span class="linea"></span> °. Rumbo de la sombra (acimut + 180°) <span class="linea"></span> °</p>
+          <p class="campo-hoja">¿Qué tan lejos quedó tu predicción, y por qué? <span class="linea"></span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="paso">
+      <div class="paso-cab"><span class="n">3</span><h3>Mide</h3><span class="cuando">junto al 106, a la hora de la hoja</span></div>
+      <ol class="pasos">
+        <li>Busca suelo plano y al sol. Pon el palo vertical y compruébalo con la plomada o el nivel desde dos lados.</li>
+        <li>A la hora exacta, marca con tiza la punta de la sombra, en el medio de la franja borrosa. Hora de tu reloj: <span class="linea"></span></li>
+        <li>Mide desde el borde del palo del lado de la sombra hasta la marca: <span class="linea"></span> m</li>
+        <li>Con la brújula en el pie del palo, lejos de metales, lee el rumbo hacia la marca: <span class="linea"></span> °. Pásalo al norte geográfico: lectura − <span class="num" data-c="decAbs">5,7</span>° = <span class="linea"></span> °</li>
+      </ol>
+      <table class="tabla medir">
+        <thead><tr><th></th><th>1 · Predicción</th><th>2 · Visor</th><th>3 · Medición</th><th>Medición − visor</th></tr></thead>
+        <tbody><tr><td>Largo (m)</td><td></td><td></td><td></td><td></td></tr><tr><td>Rumbo (°)</td><td></td><td></td><td></td><td></td></tr></tbody>
+      </table>
+      <p style="margin-top:6px">Explica la diferencia entre tu medición y el visor. ¿Qué fuente de error pesa más? Da tu incertidumbre con números (± cm y ± °) y di si la diferencia cabe en ella. Usa la página 2.</p>
+      <span class="linea larga"></span><span class="linea larga"></span>
+    </section>
+  </article>
+
+  <!-- ================= Hoja del estudiante, página 2 ================= -->
+  <article class="pagina estudiante" aria-label="Hoja del estudiante, página 2">
+    <p class="ceja">Hoja del gnomon · <span data-c="fechaCorta">—</span>, <span data-c="hora">—</span> · página 2</p>
+    <h3>Cómo se calcula la sombra</h3>
+    <div class="geo" style="margin-top:6px">
+      <svg class="lado" id="lado" viewBox="0 0 240 130" role="img" aria-label="Corte: el palo de 1 m, el rayo de sol que pasa por su punta con la altura h y la sombra en el suelo"></svg>
+      <div>
+        <p>El palo mide 1 m. Si el sol está a una altura <i>h</i> sobre el horizonte, la sombra en suelo plano mide <b>1 ÷ tan(<i>h</i>)</b> metros. Con el sol a 45° mide 1 m; con el sol más alto, menos, y con el sol más bajo, más.</p>
+        <p>La sombra se proyecta al lado contrario del sol: su rumbo es <b>el acimut del sol + 180°</b>. En esta hoja los rumbos se miden desde el norte geográfico (el de los mapas), en el sentido del reloj: norte 0°, este 90°, sur 180° y oeste 270°.</p>
+        <p>La brújula apunta al norte magnético, que aquí está <b class="num"><span data-c="decAbs">5,7</span>°</b> al oeste del geográfico (declinación magnética de <span data-c="mesAnio">—</span>, modelo WMM-2025 de NOAA, ± <span class="num">0,3</span>°). Por eso a la lectura de la brújula le restas <span class="num" data-c="decAbs">5,7</span>°.</p>
+        <p class="chica">Con el sol a menos de <span class="num">10</span>° la hoja no da el largo: la sombra pasa de <span class="num">5,67</span> m y su punta se borra.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:10px">Fuentes de error para este momento</h3>
+    <table class="tabla" style="margin-top:4px">
+      <thead><tr><th style="width:30mm">Fuente</th><th>Qué hace y cuánto pesa a esta hora</th></tr></thead>
+      <tbody>
+        <tr><td>Terreno inclinado</td><td>La hoja supone suelo horizontal. <span data-c="pendiente">—</span></td></tr>
+        <tr><td>Palo no vertical</td><td>Inclinado 2° hacia la sombra o hacia el sol, la punta se corre <span class="num">3,5</span> cm. Inclinado 2° de lado, la punta se corre <span class="num">3,5</span> cm hacia un costado y cambia el rumbo.</td></tr>
+        <tr><td>Ancho del palo</td><td>Con un palo de punta plana, la punta de la sombra la hace el borde de arriba. Mide desde el borde del palo del lado de la sombra: si mides desde el centro, sumas medio ancho (<span class="num">2</span> cm con un palo de <span class="num">4</span> cm).</td></tr>
+        <tr><td>Penumbra</td><td>El sol no es un punto: su disco mide unos <span class="num">0,53</span>°. Por eso la punta de la sombra es una franja borrosa <span data-c="penumbra">—</span>. Marca el medio.</td></tr>
+        <tr><td>Hora del reloj</td><td><span data-c="cinco">—</span> Anota la hora exacta en que marcas la punta.</td></tr>
+        <tr><td>Brújula</td><td>Sin restar la declinación, el rumbo queda <span class="num" data-c="decAbs">5,7</span>° corrido. Los metales cercanos (rejas, autos, un palo de metal, el celular) desvían la aguja.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="caja">
+      <h4>Qué está verificado y qué no</h4>
+      <p><b>Verificado:</b> la posición del sol que usan esta hoja y el visor (algoritmo de NOAA, basado en Meeus) se comparó con NREL SPA (Reda y Andreas, 2004) en <span class="num" data-c="spaN">1.324</span> momentos de 2001 a 2025 con el sol desde 10°. La altura difiere a lo sumo <span class="num" data-c="spaAlt">0,017</span>° y el acimut <span class="num" data-c="spaAz">0,11</span>°. En la sombra de 1 m eso es a lo sumo <span class="num" data-c="spaLargo">0,9</span> cm de largo y <span class="num" data-c="spaRumbo">0,11</span>° de rumbo. Para 2026 y 2027 se usa el mismo algoritmo, pero la comparación con SPA cubre de 2001 a 2025.</p>
+      <p><b>No verificado:</b> el terreno junto al 106 (la hoja supone suelo plano), tu palo, tu reloj y tu brújula. El visor no dibuja un palo de 1 m: su cifra de la sombra sale del mismo cálculo que esta hoja. Comparar con el visor no comprueba el cálculo; lo que lo pone a prueba es tu medición.</p>
+    </div>
+
+    <h3 style="margin-top:10px">Rúbrica</h3>
+    <table class="tabla rubrica" style="margin-top:4px">
+      <thead><tr><th></th><th>1 · Inicial</th><th>2 · En proceso</th><th>3 · Logrado</th><th>4 · Avanzado</th></tr></thead>
+      <tbody>
+        <tr><th>Predicción</th><td>No da largo ni rumbo.</td><td>Da el largo o el rumbo, sin decir de dónde sale.</td><td>Da largo y rumbo y los razona con la posición del sol (este u oeste, alto o bajo).</td><td>Calcula largo y rumbo con la altura y el acimut y los dibuja a escala en la rosa.</td></tr>
+        <tr><th>Medición</th><td>No anota la hora o no dice cómo midió.</td><td>Mide el largo, pero no comprueba la vertical o no anota la hora.</td><td>Comprueba la vertical, anota la hora y mide largo y rumbo.</td><td>Además repite la medida (otra persona u otra marca) y corrige la brújula por la declinación.</td></tr>
+        <tr><th>Explicación con fuente</th><td>No explica la diferencia.</td><td>La explica sin relacionarla con una causa concreta.</td><td>Relaciona la diferencia con una fuente de error de esta hoja.</td><td>Además cita de dónde sale cada dato (sol de NOAA comprobado contra SPA, declinación del WMM) y separa el error del cálculo del error de su medición.</td></tr>
+        <tr><th>Incertidumbre</th><td>No la declara.</td><td>La menciona sin números.</td><td>Da un margen con números para el largo o el rumbo.</td><td>Da el margen de largo y rumbo, suma las fuentes que pesan y dice si la diferencia cabe en ese margen.</td></tr>
+      </tbody>
+    </table>
+    <ul class="fuentes-lista">
+      <li>Sol: hoja de cálculo solar de NOAA (Meeus, <i>Astronomical Algorithms</i>), en <span class="num">fuente/src/sol.js</span> del visor. Referencia: Reda, I. y Andreas, A. (2004), «Solar position algorithm for solar radiation applications», <i>Solar Energy</i> 76(5), 577–589, doi:10.1016/j.solener.2003.12.003.</li>
+      <li>Declinación magnética: NOAA NCEI, calculadora con el modelo WMM-2025, consultada el 6 de octubre de 2026 (ngdc.noaa.gov/geomag/calculators/magcalc.shtml).</li>
+    </ul>
+  </article>
+
+  <!-- ================= Clave del docente ================= -->
+  <article class="pagina clave" aria-label="Clave del docente">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px">
+      <p class="ceja">Hoja del gnomon · Edificio 106</p><span class="marca-clave">Clave del docente</span>
+    </div>
+    <h2>Lo que debería salir</h2>
+    <p class="sub"><span data-c="fechaLarga">—</span>, <span data-c="hora">—</span> (hora de Panamá). Palo vertical de 1 m en suelo horizontal, en <span class="num">8,9993° N, 79,5827° O</span>.</p>
+    <p class="aviso-hoja" data-c="avisoHoja" hidden style="border:2px solid #000; border-radius:8px; padding:6px 9px; font-weight:600"></p>
+    <table class="tabla" style="margin-top:8px">
+      <tbody>
+        <tr><td>Altura del sol</td><td class="num" data-c="alt">—</td></tr>
+        <tr><td>Acimut del sol (desde el norte geográfico)</td><td class="num" data-c="az">—</td></tr>
+        <tr><td>Largo de la sombra</td><td><b class="num" data-c="largo">—</b> <span data-c="largoVisor"></span></td></tr>
+        <tr><td>Rumbo de la sombra (norte geográfico)</td><td><b class="num" data-c="rumbo">—</b> <span data-c="rumboTexto"></span></td></tr>
+        <tr><td>Lectura esperada en la brújula</td><td><span class="num" data-c="brujula">—</span> <span class="chica">(rumbo + <span data-c="decAbs">5,7</span>°, declinación de <span data-c="mesAnio">—</span>)</span></td></tr>
+        <tr><td>Penumbra en la punta</td><td data-c="penumbraClave">—</td></tr>
+        <tr><td>Cambio en 5 minutos</td><td data-c="cincoClave">—</td></tr>
+        <tr><td>Suelo inclinado 2° hacia la punta</td><td data-c="pendienteClave">—</td></tr>
+        <tr><td>Palo inclinado 2°</td><td>la punta se corre <span class="num">3,5</span> cm</td></tr>
+        <tr><td>Mediodía solar de ese día</td><td data-c="mediodia">—</td></tr>
+      </tbody>
+    </table>
+    <div class="caja">
+      <h4>Enlace del paso 2</h4>
+      <p class="enlace" data-c="enlace">—</p>
+      <p class="chica">Las cifras de esta hoja salen de <span class="num">fuente/gnomon.mjs</span>; <span class="num">node fuente/gnomon.mjs --comprobar</span> las rehace y las compara con SPA.</p>
+      <p class="chica">Abre el visor en ese momento, en la vista aérea. El visor da la sombra en metros con dos decimales y el rumbo en ocho puntos (norte, noreste…); el acimut del sol, en grados enteros.</p>
+    </div>
+    <div class="caja">
+      <h4>Días sin sombra en 2026 y 2027</h4>
+      <p data-c="ceroLista">—</p>
+      <p class="chica">Es el día en que el sol pasa más cerca del cenit al mediodía solar: su declinación iguala la latitud del 106. Calculado con el mismo algoritmo, no supuesto. En los días vecinos la sombra del mediodía también mide pocos centímetros.</p>
+    </div>
+    <div class="caja">
+      <h4>Para leer las respuestas</h4>
+      <p>El cálculo del sol difiere de NREL SPA a lo sumo <span class="num" data-c="spaLargo">0,9</span> cm en el largo y <span class="num" data-c="spaRumbo">0,11</span>° en el rumbo (<span class="num" data-c="spaN">1.324</span> momentos de 2001 a 2025, sol desde 10°). Una diferencia mayor entre la medición y la clave sale de la medición y de lo que la hoja supone (suelo plano, palo vertical), no del cálculo del sol.</p>
+      <p>La declinación magnética del WMM-2025 en el 106 va de <span class="num">5,6</span>° al oeste (enero de 2026) a <span class="num">5,9</span>° al oeste (fin de 2027), unos <span class="num">0,16</span>° más al oeste cada año; incertidumbre del modelo, <span class="num">0,33</span>°. La hoja usa el valor del día 15 de cada mes, interpolado en línea recta entre los dos extremos que da NOAA.</p>
+    </div>
+  </article>
+</main>
+
+<script type="module">
+import { matrizQR } from './vendor/qrcode-nucleo.js';
+
+const $ = (s) => document.querySelector(s);
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const dos = (n) => String(n).padStart(2, '0');
+// coma decimal y punto de miles, como num() del visor
+function num(x, d = 0) {
+  const s = Math.abs(x).toFixed(d), [e, f] = s.split('.');
+  return (x < 0 && +s !== 0 ? '−' : '') + e.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '');
+}
+const hhmm = (m) => `${Math.floor(m / 60)}:${dos(m % 60)}`;
+// rumbo en palabras, ocho puntos, como rumboTexto() de sol.js
+const PUNTOS = ['norte', 'noreste', 'este', 'sureste', 'sur', 'suroeste', 'oeste', 'noroeste'];
+const rumboTexto = (b) => PUNTOS[Math.round((((b % 360) + 360) % 360) / 45) % 8];
+const cm = (x) => `${num(x)} cm`;
+const dif = (x) => x === 0 ? 'cambia menos de 1 cm' : `mide ${cm(Math.abs(x))} ${x > 0 ? 'más' : 'menos'}`;
+
+const META = await fetch('datos/gnomon.json').then((r) => r.json());
+const meses = new Map();
+const mes = (y, m) => { const k = `${y}-${dos(m)}`; if (!meses.has(k)) meses.set(k, fetch(`datos/${k}.json`).then((r) => { if (!r.ok) throw new Error(k); return r.json(); })); return meses.get(k); };
+
+// ---------- controles ----------
+const selHora = $('#hora');
+selHora.innerHTML = `<option value="mediodia">Mediodía solar</option>` + META.horas.map((m) => `<option value="${m}">${hhmm(m)}</option>`).join('');
+$('#cero').innerHTML = META.ceroSombra.map((z) => `<button class="chip" type="button" data-f="${z.y}-${dos(z.m)}-${dos(z.d)}">${z.d} de ${MESES[z.m - 1].slice(0, 3)}. ${z.y}</button>`).join('');
+
+function hoyPanama() { const t = new Date(Date.now() - 5 * 3600e3); return `${t.getUTCFullYear()}-${dos(t.getUTCMonth() + 1)}-${dos(t.getUTCDate())}`; }
+const q = new URLSearchParams(location.search);
+let f0 = q.get('fecha') ?? hoyPanama();
+if (!(f0 >= '2026-01-01' && f0 <= '2027-12-31')) f0 = '2026-01-01';
+$('#fecha').value = f0;
+selHora.value = q.get('hora') && [...selHora.options].some((o) => o.value === q.get('hora')) ? q.get('hora') : '600';
+$('#pista').checked = q.get('pista') === '1';
+
+// ---------- dibujos fijos ----------
+(function rosa() {
+  const R = 100, k = R / 2;   // 2 m en el borde
+  let s = '';
+  for (let i = 1; i <= 4; i++) s += `<circle r="${(i * 0.5 * k).toFixed(1)}" fill="none" stroke="#000" stroke-width="${i === 2 ? 0.9 : 0.5}"${i % 2 ? ' stroke-dasharray="2 2"' : ''}/>`;
+  for (let a = 0; a < 360; a += 10) {
+    const r1 = a % 30 ? R - 4 : R - 8, x = Math.sin(a * Math.PI / 180), y = -Math.cos(a * Math.PI / 180);
+    s += `<line x1="${(x * r1).toFixed(1)}" y1="${(y * r1).toFixed(1)}" x2="${(x * R).toFixed(1)}" y2="${(y * R).toFixed(1)}" stroke="#000" stroke-width="0.6"/>`;
+  }
+  for (let a = 0; a < 360; a += 30) if (a % 90) {
+    const x = Math.sin(a * Math.PI / 180) * (R + 7), y = -Math.cos(a * Math.PI / 180) * (R + 7);
+    s += `<text x="${x.toFixed(1)}" y="${(y + 2.5).toFixed(1)}" font-size="7" text-anchor="middle" font-family="IBM Plex Mono, monospace">${a}</text>`;
+  }
+  for (const [t, a] of [['N', 0], ['E', 90], ['S', 180], ['O', 270]]) {
+    const x = Math.sin(a * Math.PI / 180) * (R + 7), y = -Math.cos(a * Math.PI / 180) * (R + 7);
+    s += `<text x="${x.toFixed(1)}" y="${(y + 3.5).toFixed(1)}" font-size="10" font-weight="700" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif">${t}</text>`;
+  }
+  s += `<text x="${(0.5 * k + 1).toFixed(1)}" y="-2" font-size="6" font-family="IBM Plex Mono, monospace">0,5</text><text x="${(k + 1).toFixed(1)}" y="-2" font-size="6" font-family="IBM Plex Mono, monospace">1 m</text><text x="${(2 * k - 13).toFixed(1)}" y="-2" font-size="6" font-family="IBM Plex Mono, monospace">2 m</text>`;
+  s += `<circle r="2.4" fill="#000"/>`;
+  $('#rosa').innerHTML = s;
+})();
+(function lado() {
+  // corte a escala con el sol a 40°: palo de 1 m = 60 unidades
+  const h = 40 * Math.PI / 180, x0 = 60, y0 = 112, P = 60, L = P / Math.tan(h);
+  const sx = x0 - 52 * Math.cos(h), sy = y0 - P - 52 * Math.sin(h);
+  $('#lado').innerHTML = `
+    <line x1="8" y1="${y0}" x2="232" y2="${y0}" stroke="#000" stroke-width="1.2"/>
+    <line x1="${x0}" y1="${y0}" x2="${x0}" y2="${y0 - P}" stroke="#000" stroke-width="3"/>
+    <line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${(x0 + L).toFixed(1)}" y2="${y0}" stroke="#000" stroke-width="0.8" stroke-dasharray="4 3"/>
+    <circle cx="${(sx - 6).toFixed(1)}" cy="${(sy - 4).toFixed(1)}" r="7" fill="none" stroke="#000" stroke-width="1"/>
+    <line x1="${x0}" y1="${y0 + 0.5}" x2="${(x0 + L).toFixed(1)}" y2="${y0 + 0.5}" stroke="#000" stroke-width="5" opacity=".35"/>
+    <path d="M ${(x0 + L - 26).toFixed(1)} ${y0} A 26 26 0 0 1 ${(x0 + L - 26 * Math.cos(h)).toFixed(1)} ${(y0 - 26 * Math.sin(h)).toFixed(1)}" fill="none" stroke="#000" stroke-width="0.8"/>
+    <text x="${(x0 + L - 38).toFixed(1)}" y="${y0 - 5}" font-size="11" font-style="italic" font-family="Atkinson Hyperlegible Next, sans-serif">h</text>
+    <text x="${x0 - 8}" y="${y0 - P / 2 + 4}" font-size="10" text-anchor="end" font-family="IBM Plex Mono, monospace">1 m</text>
+    <text x="${(x0 + L / 2).toFixed(1)}" y="${y0 + 14}" font-size="10" text-anchor="middle" font-family="IBM Plex Mono, monospace">sombra = 1 ÷ tan h</text>
+    <text x="${(sx - 6).toFixed(1)}" y="${(sy + 12).toFixed(1)}" font-size="9" text-anchor="middle" font-family="Atkinson Hyperlegible Next, sans-serif">sol</text>`;
+})();
+function dibujarQR(texto) {
+  const { n, datos } = matrizQR(texto, 'M'), m = 4;   // margen de 4 módulos, el que pide la norma
+  let d = '';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (datos[y * n + x]) d += `M${x + m} ${y + m}h1v1h-1z`;
+  $('#qr').setAttribute('viewBox', `0 0 ${n + 2 * m} ${n + 2 * m}`);
+  $('#qr').innerHTML = `<rect width="${n + 2 * m}" height="${n + 2 * m}" fill="#fff"/><path d="${d}" fill="#000" shape-rendering="crispEdges"/>`;
+}
+
+// ---------- llenar la hoja ----------
+const poner = (k, v) => document.querySelectorAll(`[data-c="${k}"]`).forEach((el) => { el.textContent = v; });
+async function armar() {
+  const [y, m, d] = $('#fecha').value.split('-').map(Number);
+  const aviso = $('#aviso');
+  if (!y || $('#fecha').value < '2026-01-01' || $('#fecha').value > '2027-12-31') { aviso.hidden = false; aviso.textContent = 'Elige un día de 2026 o 2027.'; return; }
+  let M;
+  try { M = await mes(y, m); } catch (e) { aviso.hidden = false; aviso.textContent = 'No se pudo leer la tabla de ese mes. Revisa la conexión y vuelve a elegir el día.'; return; }
+  const dia = M.dias[d - 1], esMed = selHora.value === 'mediodia';
+  const min = esMed ? dia[0] : +selHora.value;
+  const v = esMed ? dia[1] : dia[2 + META.horas.indexOf(min)];
+  const [alt10, rumbo, largo, pen, d5l, d5r, sube, baja] = v;
+  const alt = alt10 / 10, az = (rumbo + 180) % 360, dec = Math.abs(M.dec);
+  selHora.options[0].textContent = `Mediodía solar (${hhmm(dia[0])})`;
+  const fechaLarga = `${DIAS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${d} de ${MESES[m - 1]} de ${y}`;
+  poner('fechaLarga', fechaLarga);
+  poner('fechaCorta', `${d} de ${MESES[m - 1]} de ${y}`);
+  poner('hora', esMed ? `${hhmm(min)}, mediodía solar` : hhmm(min));
+  poner('mesAnio', `${MESES[m - 1]} de ${y}`);
+  poner('decAbs', num(dec, 1));
+  poner('alt', `${num(alt, 1)}°`);
+  poner('az', `${num(az)}°`);
+  const enlace = `${META.sitio}#m-${y}${dos(m)}${dos(d)}-${dos(Math.floor(min / 60))}${dos(min % 60)}&vista=aerea`;
+  poner('enlace', enlace);
+  dibujarQR(enlace);
+  const bajo = largo === undefined;
+  const avisoTxt = alt <= 0 ? 'A esa hora el sol está bajo el horizonte: no hay sombra que medir. Elige otra hora.'
+    : bajo ? `A esa hora el sol está a ${num(alt, 1)}°, menos de ${META.altMin}°: la sombra pasa de ${num(META.largoMax_cm / 100, 2)} m y su punta se borra. La hoja no da el largo. Elige otra hora.` : '';
+  aviso.hidden = !avisoTxt; aviso.textContent = avisoTxt;
+  const ah = document.querySelector('[data-c="avisoHoja"]'); ah.hidden = !avisoTxt; ah.textContent = avisoTxt;
+  if (bajo) {
+    for (const k of ['largo', 'penumbraClave', 'cincoClave', 'pendienteClave']) poner(k, '—');
+    poner('rumbo', `${num(rumbo)}°`); poner('rumboTexto', `(el visor dice «hacia el ${rumboTexto(rumbo)}»)`); poner('largoVisor', '');
+    poner('brujula', `${num((rumbo + dec + 360) % 360)}°`);
+    poner('pendiente', `Con el sol a menos de ${META.altMin}° la hoja no da cuánto pesa.`);
+    poner('penumbra', `de más de ${cm(META.penumbraMin_cm)}`); poner('cinco', `Con el sol a menos de ${META.altMin}° la hoja no da cuánto cambia.`);
+  } else {
+    const L = largo / 100, chica = largo < 5;
+    poner('largo', `${num(L, 2)} m`);
+    poner('largoVisor', '(el visor da lo mismo, con dos decimales)');
+    poner('rumbo', chica ? `${num(rumbo)}°, poco útil` : `${num(rumbo)}°`);
+    poner('rumboTexto', chica ? '(la sombra cae casi al pie del palo: su rumbo no se puede medir)' : `(el visor dice «hacia el ${rumboTexto(rumbo)}»)`);
+    poner('brujula', chica ? '—' : `${num((rumbo + dec + 360) % 360)}°`);
+    const penTxt = pen < 1 ? 'de menos de 1 cm' : pen === 1 ? 'de alrededor de 1 cm' : `de unos ${cm(pen)}`;
+    poner('penumbra', penTxt); poner('penumbraClave', penTxt.replace(/^de /, ''));
+    const largoCambio = d5l === 0 ? 'casi no cambia de largo' : `se ${d5l < 0 ? 'acorta' : 'alarga'} ${cm(Math.abs(d5l))}`;
+    const giro = chica ? 'su rumbo cambia mucho porque la sombra es casi un punto' : Math.abs(d5r) < 5 ? 'gira menos de 0,5°' : `gira ${num(Math.abs(d5r) / 10, 1)}°`;
+    poner('cinco', `En 5 minutos, a esta hora, la sombra ${largoCambio} y ${giro}.`);
+    poner('cincoClave', `${largoCambio}, ${giro}`);
+    const pendTxt = !sube && !baja ? 'Con el sol tan alto, 2° de pendiente cambian el largo menos de 1 cm.'
+      : `Si el suelo sube 2° hacia la punta, la sombra ${dif(sube)}; si baja 2°, ${dif(baja)}.`;
+    poner('pendiente', pendTxt);
+    poner('pendienteClave', !sube && !baja ? 'menos de 1 cm' : `sube: ${dif(sube)}; baja: ${dif(baja)}`);
+  }
+  const med = dia[1];
+  poner('mediodia', `${hhmm(dia[0])}: sol a ${num(med[0] / 10, 1)}°, sombra de ${num(med[2] / 100, 2)} m${med[2] < 5 ? ', casi al pie del palo' : ` hacia ${num(med[1])}° (${rumboTexto(med[1])})`}`);
+  poner('ceroLista', META.ceroSombra.map((z) => `${z.d} de ${MESES[z.m - 1]} de ${z.y} a las ${hhmm(z.hm)} (sol a ${num(z.alt, 1)}°, sombra de ${num(z.largo_cm, 1)} cm)`).join('; ') + '.');
+  poner('spaN', num(META.spa.momentos));
+  poner('spaAlt', num(META.spa.maxAltura, 3));
+  poner('spaAz', num(META.spa.maxAcimut, 2));
+  poner('spaLargo', num(META.spa.maxLargo_cm, 1));
+  poner('spaRumbo', num(META.spa.maxRumbo, 2));
+  document.querySelectorAll('[data-pista]').forEach((el) => { el.hidden = (el.dataset.pista === 'si') !== $('#pista').checked; });
+  document.querySelectorAll('#cero .chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === $('#fecha').value && esMed)));
+  const u = new URL(location.href); u.searchParams.set('fecha', $('#fecha').value); u.searchParams.set('hora', selHora.value);
+  if ($('#pista').checked) u.searchParams.set('pista', '1'); else u.searchParams.delete('pista');
+  try { history.replaceState(null, '', u); } catch (e) { /* sin historial */ }
+  document.title = `Hoja del gnomon · ${d} de ${MESES[m - 1]} de ${y}, ${hhmm(min)}`;
+}
+$('#fecha').addEventListener('change', armar);
+selHora.addEventListener('change', armar);
+$('#pista').addEventListener('change', armar);
+$('#cero').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (!b) return; $('#fecha').value = b.dataset.f; selHora.value = 'mediodia'; armar(); });
+const imprimir = (que) => { document.body.dataset.imprime = que; window.print(); };
+$('#imp-estudiante').addEventListener('click', () => imprimir('estudiante'));
+$('#imp-clave').addEventListener('click', () => imprimir('clave'));
+addEventListener('afterprint', () => { document.body.dataset.imprime = 'estudiante'; });
+await armar();
+document.documentElement.dataset.listo = '1';
+</script>
+</body>
+</html>
