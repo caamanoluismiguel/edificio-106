@@ -7,8 +7,8 @@
 //   · la luz: cientos de luces de three.js no caben. Cada poste alumbra con la MISMA ley que el poste de la esquina en escena.js
 //     (I · cos θ · (l.y)^1,5 / (d² + 1)), sumada en un mapa del suelo de MAPA.paso m por texel que el navegador arma aquí: R, la
 //     irradiancia sobre un plano horizontal en el suelo; G y B, la de un plano vertical a 1,5 m (un vector horizontal hacia las
-//     lámparas, para los muros); A, la altura del suelo bajo las lámparas. escena.js lo lee como emisivo en el suelo, las calles
-//     y los edificios de la ciudad, por el color de la lámpara del poste de la esquina y con su misma fotocelda (U.poste).
+//     lámparas, para los muros); A, la altura del suelo bajo las lámparas. escena.js lo lee como emisivo en el suelo, las calles,
+//     el 106 y los edificios de la ciudad, por el color de la lámpara del poste de la esquina y con su misma fotocelda (U.poste).
 import * as THREE from 'three/webgpu';
 import { vec3, normalWorld, smoothstep } from 'three/tsl';
 import { CERTEZA } from './ciudad.js';

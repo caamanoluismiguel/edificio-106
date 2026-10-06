@@ -1158,12 +1158,13 @@ export class Escena {
       const teja = /terracotta/.test(nm);
       const abierto = teja ? float(1) : grupo === 'sitio' ? step(y, 1.2).mul(step(1.9, dq)) : grupo === 'contexto' && /turf/.test(nm) ? float(1) : float(0);
       const eCielo = vec3(U.cieloArriba).mul(max(normalWorld.y, 0)).mul(abierto);
-      // los postes de la ciudad puestos por regla (src/postes.js): su mapa del suelo, con la ley del poste de la esquina. Solo en el
-      // contexto, la ciudad y el suelo del sitio; nunca en el 106 (delEdificio) ni en los postes mismos. R es la luz sobre un plano
-      // horizontal en el suelo y G, B la de un muro vertical que mira a las lámparas; arriba de la lámpara no llega nada
+      // los postes de la ciudad puestos por regla (src/postes.js): su mapa del suelo, con la ley del poste de la esquina (que no está
+      // en el mapa: va aparte, en ePoste). En el 106, su sitio, el contexto y la ciudad; no en los postes mismos ni en la vegetación
+      // y los árboles. R es la luz sobre un plano horizontal en el suelo y G, B la de un muro vertical que mira a las lámparas;
+      // arriba de la lámpara no llega nada. De día U.poste es 0 y el término también
       let eLuz = ePoste.add(eVent).add(eCielo);
       const LP = this.luzPostes;
-      if (LP && !opc.sinPostes && (grupo === 'contexto' || (grupo === 'sitio' && !delEdificio))) {
+      if (LP && !opc.sinPostes && grupo !== 'vegetacion' && grupo !== 'arboles' && !leaf) {
         const s = LP.tn.sample(positionWorld.xz.sub(LP.o).div(LP.t));
         const E = s.r.mul(max(normalWorld.y, 0)).add(max(dot(normalWorld.xz, s.gb), 0)).mul(smoothstep(LP.alto, LP.alto.sub(2), positionWorld.y.sub(s.a)));
         eLuz = eLuz.add(vec3(U.posteCol).mul(U.poste.mul(U.postesVer).mul(LP.k)).mul(E));
