@@ -93,6 +93,7 @@ Se puede reportar un dato o una fuente incorrecta, proponer una fuente mejor (so
 
 - `cd fuente && node verificar.mjs`: el sol contra otros algoritmos, las sombras contra trazado de rayos, la sombra en la forma de ver Sol, que no se cuele sol bajo el alero con el sol alto, las luces, los errores y los tirones. Las comprobaciones de sombras tienen un control con un error a propósito que debe hacerlas fallar, para probar que la prueba sirve.
 - `cd fuente && node guardia.mjs`: antes de publicar, compara el sitio contra `origin/main` en git, en el modelo (nodo a nodo) y en 18 cuadros píxel a píxel. Si algo cambia fuera de lo que se dijo que cambiaba, no se publica.
+- `docs/validacion/`: la radiación de ERA5 contra los piranómetros de la grúa del STRI, y la radiación en fachadas contra Radiance 6.1a (el sol directo coincide dentro de 2 %; el cielo de Perez da más luz difusa que el de Hay y Davies que usa el visor).
 - `node ar/probar.mjs --video=<video>.y4m`: la AR con una cámara falsa (encuentra el plano, dibuja el edificio, el sol coincide con el del visor). `node ar/silueta.mjs` y `bash ar/verificar-huellas.sh` comprueban que el modelo de la AR es el mismo del sitio.
 
 ## Fuentes

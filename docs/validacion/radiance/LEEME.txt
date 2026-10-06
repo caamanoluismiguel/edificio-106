@@ -1,0 +1,8 @@
+Reproducir (Radiance 6.1a, https://github.com/LBNL-ETA/Radiance/releases, versión 39b99660; sin instalar: zip para macOS arm64):
+  export PATH=<radiance>/bin:$PATH RAYPATH=.:<radiance>/lib
+  python3 wea.py ../../../datos/clima_horario.bin.gz serie.wea
+  rfluxmtx -I+ -ab 1 -ad 200000 -lw 1e-6 -y 5 - cielo.rad vacio.rad < sensores.pts > dc4.mtx
+  bash anual.sh          # escribe las tres filas de radiance_resultado.txt
+sensores.pts: un punto por fachada con la normal hacia afuera (rumbos 146, 326, 56 y 236, de FACHADAS en fuente/src/sol.js) y el techo (0 0 1).
+Columnas del resultado: SE, NO, NE, SO, techo, en kWh/m² al año (promedio 2001-2025).
+Ojo: con esta versión, -d con -g 0.2 sí pone luz en el parche del suelo (enero, fachada SE: 70,2 kWh/m² con -g 0 y 85,9 con -g 0.2, probado el 6 de octubre de 2026), aunque la página man diga que -d deja solo el sol. Por eso el directo se calcula con -g 0 y el suelo sale de restar «cielo+sol» al total.
