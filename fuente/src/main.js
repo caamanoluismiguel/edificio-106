@@ -1609,6 +1609,47 @@ function pintarMomentos() {
   }
 }
 
+/** Reloj de la lluvia (pestaña «25 años»): a qué hora del día hay lluvia de mayo a noviembre según ERA5 (sectores llenos, la
+ *  hora que termina a las h) y según el observador de Albrook (una línea por los partes de las h:00). Miden cosas distintas
+ *  (horas con 1,5 mm o más en una celda; el instante del parte en un punto): cada curva va a escala de su propio máximo, con
+ *  el radio lineal, y solo se compara la hora del máximo. De 23 a 5 h el parte es AUTO y no hay comparación.
+ *  Datos: fuente/reloj_lluvia.py → datos/reloj_lluvia.json (panel y verificador, 6 de octubre de 2026). */
+let relojPedido = false;
+function pedirReloj() {
+  if (relojPedido) return; relojPedido = true;
+  fetch(conVersion(BASE + 'datos/reloj_lluvia.json')).then((r) => r.json()).then(pintarReloj)
+    .catch((e) => { relojPedido = false; anotar('aviso', 'reloj de la lluvia: ' + e); });
+}
+function pintarReloj(R) {
+  const E = R.era5.pct, A = R.albrook.pct, C = 80, R0 = 0, R1 = 58, RA = 66;     // centro, radios (desde el centro: el radio es el % del máximo), arco AUTO
+  const maxE = Math.max(...E), maxA = Math.max(...A.filter((v) => v !== null));
+  const rad = (v, max) => R0 + (R1 - R0) * v / max;
+  const pt = (h, r) => { const a = h / 24 * 2 * Math.PI; return `${(C + r * Math.sin(a)).toFixed(2)},${(C - r * Math.cos(a)).toFixed(2)}`; };
+  const arco = (h0, h1, r) => `M${pt(h0, r)}A${r},${r} 0 ${h1 - h0 > 12 ? 1 : 0} 1 ${pt(h1, r)}`;
+  const sector = (h0, h1, r0, r1) => `M${pt(h0, r0)}L${pt(h0, r1)}A${r1},${r1} 0 0 1 ${pt(h1, r1)}L${pt(h1, r0)}A${r0},${r0} 0 0 0 ${pt(h0, r0)}Z`;
+  const hh = (h) => String(h).padStart(2, '0');
+  let s = '';
+  E.forEach((v, h) => { const fin = h || 24; s += `<path class="era5" d="${sector(fin - 1, fin, R0, rad(v, maxE))}"><title>ERA5, de ${hh(fin - 1)} a ${hh(fin % 24)} h: ${f1(v)} % de las horas con ${f1(R.era5.umbral_mm)} mm o más</title></path>`; });
+  // Albrook: una línea cerrada por los partes con observador (de 6 a 22 h); de 22 a 6 h cierra por el centro, sin dato
+  const hs = A.map((v, h) => (v === null ? null : h)).filter((h) => h !== null), h0 = hs[0], h1 = hs[hs.length - 1];
+  const linea = hs.map((h, k) => `${k ? 'L' : 'M'}${pt(h, rad(A[h], maxA))}`).join('') + `L${pt(h1, R0)}L${pt(h0, R0)}Z`;
+  s += `<path class="alb" d="${linea}"><title>Albrook, % de partes del observador con lluvia: ${hs.map((h) => `${h}:00 ${f1(A[h])}`).join(' · ')}. ${R.albrook.nota_tarde}</title></path>`;
+  // las horas del máximo, afuera: una raya en el centro de la hora de ERA5 y un arco por la cima de Albrook
+  const pe = R.era5.pico, cima = R.albrook.cima, ca = [Math.min(...cima), Math.max(...cima)];
+  s += `<path class="marca-era5" d="M${pt(pe - 0.5, R1 + 3)}L${pt(pe - 0.5, R1 + 10)}"></path>`;
+  s += `<path class="alb" d="${arco(ca[0], ca[1], R1 + 7)}"></path>`;
+  const sin = R.albrook.sin_observador, desde = Math.min(...sin.filter((h) => h > 12)), hasta = Math.max(...sin.filter((h) => h < 12));
+  s += `<path class="auto" d="${arco(desde - 24 - 0.5, hasta + 0.5, RA)}"></path>`;
+  for (const h of [0, 6, 12, 18]) { const [x, y] = pt(h, 74).split(','); s += `<text x="${x}" y="${y}">${h}</text>`; }
+  const sv = $('#reloj-svg'); sv.innerHTML = s;
+  const mad = R.era5.madrugada;
+  $('#reloj-era5').textContent = `ERA5 da su máximo de ${pe - 1} a ${pe} h.`;
+  $('#reloj-alb').textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${ca[0]} a ${ca[1]} h.`;
+  $('#reloj-auto').textContent = `De ${desde} a ${hasta} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...mad) - 1} a ${Math.max(...mad)} h no se puede contrastar.`;
+  sv.setAttribute('aria-label', `Reloj de 24 horas, cada curva a escala de su máximo. ${$('#reloj-era5').textContent} ${$('#reloj-alb').textContent}`);
+  $('#reloj-lluvia').hidden = false;
+}
+
 /** Texto de un extremo de la serie: la lluvia dice «pluviómetro»; la temperatura, «termómetro», y si va ajustada, la cruda. */
 function textoMomento(m, cuando) {
   const v = `${f1(m.valor, m.valor < 100 ? 1 : 0)} ${m.unidad}`;
@@ -1685,6 +1726,7 @@ function ponerPestana(t) {
   document.querySelectorAll('[data-tab]').forEach((b) => { b.setAttribute('aria-selected', String(b.dataset.tab === t)); b.tabIndex = b.dataset.tab === t ? 0 : -1; });
   for (const k of ['dia', 'anio', 'decadas']) $('#regla-' + k).hidden = k !== t;
   $('#momentos-caja').hidden = t !== 'decadas';
+  if (t === 'decadas') pedirReloj();
   if (t !== 'decadas') { S.mesSerie = null; S.momento = null; }
   lastLect = '';
 }
@@ -2732,7 +2774,7 @@ function explicacion(k, p, c) {
   }
   if (k === 'tab-dia') return ['La regla del día', `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${UMBRAL_TXT}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de las horas más despejadas de ERA5 (0,8 del de Meinel), y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`];
   if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
-  if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie.'];
+  if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie y el reloj de la hora de la lluvia, con ERA5 junto a lo que observó Albrook.'];
   return null;
 }
 function explicar(k) {

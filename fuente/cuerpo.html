@@ -508,6 +508,26 @@
   #momentos button { display: grid; gap: 3px; text-align: left; border: 1px solid var(--linea); background: rgba(239,233,222,.04); border-radius: 12px; padding: 7px 10px; cursor: pointer; white-space: nowrap; transition: border-color .2s; }
   #momentos button:hover { border-color: var(--lluvia); }
   #momentos span { font: 600 12px/1 var(--texto); } #momentos b { font: 500 11px/1 var(--datos); color: var(--lluvia); }
+  /* reloj de la lluvia («25 años»): una sola tinta; ERA5 relleno, Albrook en línea, cada uno a escala de su máximo; el arco punteado es lo que no se compara */
+  #reloj-lluvia { margin: 6px 0 0; container-type: inline-size; }
+  #reloj-lluvia[hidden] { display: none; }
+  #reloj-lluvia .reloj-caja { display: grid; grid-template-columns: 160px minmax(0, 1fr); grid-template-areas: "reloj ley" "textos textos"; gap: 8px 12px; align-items: start; }
+  #reloj-lluvia .reloj-textos { grid-area: textos; display: grid; gap: 8px; }
+  @container (min-width: 600px) { #reloj-lluvia .reloj-caja { grid-template-columns: 160px minmax(0, 4fr) minmax(0, 6fr); grid-template-areas: "reloj ley textos"; column-gap: 18px; } }
+  #reloj-svg { grid-area: reloj; display: block; }
+  #reloj-lluvia .reloj-ley { grid-area: ley; display: grid; gap: 6px; align-self: center; }
+  #reloj-lluvia p { margin: 0; }
+  #reloj-t { font: 500 12px/1.3 var(--datos); color: var(--cal-2); }
+  #reloj-lluvia .era5 { fill: var(--lluvia); fill-opacity: .4; stroke: none; }
+  #reloj-lluvia .alb { fill: none; stroke: var(--lluvia); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  #reloj-svg .marca-era5 { stroke: var(--lluvia); stroke-width: 4; opacity: .5; }
+  #reloj-lluvia .auto { fill: none; stroke: var(--cal-3); stroke-width: 1.5; stroke-dasharray: 1.5 3; stroke-linecap: round; }
+  #reloj-svg text { font: 500 11px/1 var(--datos); fill: var(--cal-2); text-anchor: middle; dominant-baseline: central; }
+  #reloj-lluvia .reloj-fila { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 6px; font: 400 12px/1.3 var(--texto); color: var(--cal-2); }
+  #reloj-lluvia .reloj-dato { font: 400 13px/1.35 var(--texto); color: var(--cal); }
+  #reloj-lluvia .reloj-escala { color: var(--cal-3); }
+  #reloj-lluvia .muestra { width: 12px; height: 12px; margin-top: 2px; }
+  #reloj-lluvia .reloj-nota { font: 400 12px/1.35 var(--texto); color: var(--cal-2); }
   .dock-lect { grid-area: lect; display: grid; grid-template-columns: repeat(3, minmax(0, auto)); gap: 4px 22px; align-content: center; }
   .dock-lect div { display: grid; gap: 4px; min-width: 0; }
   .dock-lect .k { font: 500 12px/1.1 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .09em; white-space: nowrap; }
@@ -1247,6 +1267,23 @@
     <div id="momentos-caja" hidden>
       <p id="dec-leyenda">Lluvia de cada mes, 2001–2025</p>
       <ul id="momentos" aria-label="Extremos de la serie"></ul>
+      <figure id="reloj-lluvia" hidden><div class="reloj-caja">
+        <svg id="reloj-svg" viewBox="0 0 160 160" width="160" height="160" role="img"></svg>
+        <div class="reloj-ley">
+          <p id="reloj-t">La hora de la lluvia, mayo a noviembre (2017 a 2025)</p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><rect class="era5" x="1" y="1" width="10" height="10" rx="1"></rect></svg><span>ERA5, horas con 1,5 mm o más</span></p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><path class="alb" d="M1 9L4 4L7 6L11 2"></path></svg><span>Albrook, partes con lluvia</span></p>
+          <p class="reloj-fila"><svg class="muestra" viewBox="0 0 12 12" aria-hidden="true"><path class="auto" d="M1 6H11"></path></svg><span>Sin observador en Albrook</span></p>
+          <p class="reloj-fila reloj-escala"><span></span><span>% del máximo de cada fuente</span></p>
+        </div>
+        <div class="reloj-textos">
+        <p class="reloj-dato" id="reloj-era5"></p>
+        <p class="reloj-dato" id="reloj-alb"></p>
+        <p class="reloj-nota">Las dos curvas miden cosas distintas: ERA5, horas con 1,5 mm o más en una celda de unos 28 km; Albrook, partes de un instante con cualquier lluvia en un punto. Por eso cada una va a escala de su máximo y solo se compara la hora.</p>
+        <p class="reloj-nota" id="reloj-auto"></p>
+        <p class="reloj-nota" id="reloj-sesgo">Aquí el máximo de ERA5 llega algo más de 1 h antes que el de Albrook, en línea con un estudio global de junio a agosto: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo de lluvia frente al producto satelital IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
+        </div>
+      </div></figure>
     </div>
   </div>
   <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>
@@ -1310,7 +1347,7 @@
       </article>
       <article class="hallazgo simple" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="">
         <h4>Casi toda la lluvia cae de mayo a noviembre, y sobre todo en la tarde</h4>
-        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En esos meses, el observador del aeropuerto de Albrook, a 4 km, informó lluvia en la mitad de las tardes (2017–2025); ERA5, que reparte la lluvia en una celda de 28 km, da 1 mm o más en 87 de cada 100. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
+        <p>Caen unos 2.000 mm de agua al año, casi todo en esos meses y algo más de la mitad entre las 12 y las 18 h. En esos meses, el observador del aeropuerto de Albrook, a 4 km, informó lluvia (sin contar llovizna ni la de la hora anterior) en alguno de sus partes de 12:00 a 18:59 en 46 de cada 100 tardes (2017–2025). ERA5 da 1 mm o más entre las 12 y las 18 h en 88 de cada 100 tardes (2001–2025), pero no mide lo mismo: suma seis horas en una celda de 28 km, y cada parte mira un instante en un punto. Aquí está la hora más lluviosa de 25 años: el agua cae en cortinas desde los tres aleros.</p>
         <button class="ver" type="button"><span>Verlo</span><small>1 de julio de 2023, 14:30 · esquina</small></button>
       </article>
     </div>
@@ -1342,7 +1379,7 @@
     </article>
     <article class="hallazgo" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="">
       <h3>Unos 2.000 mm al año, casi el 90 % de mayo a noviembre</h3>
-      <p>Según el año, entre ~1.670 y ~2.470 mm. En ERA5 algo más de la mitad cae de 12 a 18 h y la hora más probable es de 13 a 14 h (frente a Albrook, una o dos horas antes de lo que informa el observador, que la ve más a las 15:00). En 2001–2010, ERA5 da 2.048 mm al año, entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01); con Tocumen coincide (0,4 %) si se deja fuera 2009, que el cuadro da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad, ni en la hora, ni en los meses. En Tocumen (ETESA/IMHPA, 1977–2010) octubre es el mes más lluvioso (330 mm) y julio baja a 177 mm por el «veranillo»; ERA5 no lo muestra y da julio como el mes más lluvioso.</p>
+      <p>Según el año, entre ~1.670 y ~2.470 mm. En ERA5 algo más de la mitad cae de 12 a 18 h y la hora más probable es de 13 a 14 h (frente a Albrook, algo más de 1 h antes que el observador, que informa lluvia más seguido de 14 a 16 h). En 2001–2010, ERA5 da 2.048 mm al año, entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01); con Tocumen coincide (0,4 %) si se deja fuera 2009, que el cuadro da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad, ni en la hora, ni en los meses. En Tocumen (ETESA/IMHPA, 1977–2010) octubre es el mes más lluvioso (330 mm) y julio baja a 177 mm por el «veranillo»; ERA5 no lo muestra y da julio como el mes más lluvioso.</p>
       <p class="uso"><b>Para el diseño:</b> Justifica circulaciones y accesos cubiertos para las tardes de mayo a noviembre.</p>
       <p class="limite"><b>Límite:</b> ERA5 suaviza los aguaceros: su hora más lluviosa en 25 años son 19 mm y pasa de 10 mm en una hora unas 2 veces al año, mientras el observador de Albrook informa lluvia fuerte en unos 36 partes al año (2017–2025). Canales y bajantes se dimensionan con curvas IDF de una estación.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>01/07/2023 14:30 · esquina: la hora más lluviosa de ERA5 en la serie (19 mm entre las 14:00 y las 15:00); mira las cortinas de agua desde los tres aleros.</small></button>
@@ -1518,7 +1555,7 @@
     <li><b>Datos del clima:</b> reanálisis ERA5 (Hersbach et al., 2020, <i>QJRMS</i> 146, <a href="https://doi.org/10.1002/qj.3803" target="_blank" rel="noopener">doi:10.1002/qj.3803</a>) leído con la API de archivo de Open-Meteo (Zippenfenig, 2024, <a href="https://doi.org/10.5281/zenodo.7970649" target="_blank" rel="noopener">doi:10.5281/zenodo.7970649</a>) para la celda de 9,000° N, 79,500° O (24 m), en hora de Panamá. La lluvia y la radiación de cada hora son el total o el promedio de la hora anterior. El script de descarga y el empaquetado están en el código (<code>fuente/descargar_era5.py</code>, <code>fuente/clima_bin.py</code>). Resolución guardada: lluvia 0,1 mm, temperatura 1/6 °C, radiación 4 W/m², viento 1 km/h, dirección 2°. La temperatura y la humedad se ajustan al leerlas a los partes del aeropuerto de Albrook de 2017 a 2025 (<code>fuente/ajuste_albrook.py</code>): la temperatura por cuantiles de cada mes y hora, y a la humedad se le resta lo que ERA5 marca de más cada mes. Con <code>?era5=crudo</code> en la dirección se ve ERA5 sin ajustar.</li>
     <li><b>Radiación sobre las fachadas:</b> directa por el coseno de incidencia; difusa con el cielo de Hay y Davies (1980); reflejada por un suelo que devuelve el 20 %; sin descontar el cielo que tapan el alero o los vecinos (Duffie y Beckman, <i>Solar Engineering of Thermal Processes</i>). El hallazgo del alero es un corte en 2D con el alero continuo, sin retornos ni ménsulas.</li>
     <li><b>Validación:</b> sol contra Michalsky (1988) y NREL SPA (Reda y Andreas, 2004); sombras 3D contra un trazado de rayos sobre la geometría del modelo, dentro de ±8 cm con el sol entre 14° y 42° (salen unos 5 cm más cortas), y sin sol colado bajo el alero con el sol a más de 60° (la prueba falla, como debe, si el desplazamiento del mapa de sombras se multiplica por 10); lluvia anual de ERA5, 2.048 mm en 2001–2010, frente a 1.885–1.941 mm en Balboa, Albrook y Tocumen (con Tocumen, sin el registro incompleto de 2009, la diferencia baja a 0,4 %). La radiación no tiene contraste local: no hay un piranómetro con datos abiertos cerca. El viento se contrasta con el anemómetro del aeropuerto de Albrook (2020–2025).</li>
-    <li><b>Incertidumbre:</b> ERA5 representa una celda de ~28 km. Con la lluvia diaria de 5.637 estaciones, Lavers et al. (2022, <a href="https://doi.org/10.1002/qj.4351" target="_blank" rel="noopener">doi:10.1002/qj.4351</a>) encuentran sus mayores errores de lluvia en el trópico y que no alcanza los totales más altos medidos. Frente a Albrook (2017–2025), su hora con más lluvia llega una o dos horas antes de la que informa el observador, y su máxima y su mínima diarias se separan menos (4 a 6 °C contra 5 a 8). Las medidas del edificio salen de un modelo con escala ±12 %; las ventanas de los pisos 2 y 3 son inferidas.</li>
+    <li><b>Incertidumbre:</b> ERA5 representa una celda de ~28 km. Con la lluvia diaria de 5.637 estaciones, Lavers et al. (2022, <a href="https://doi.org/10.1002/qj.4351" target="_blank" rel="noopener">doi:10.1002/qj.4351</a>) encuentran sus mayores errores de lluvia en el trópico y que no alcanza los totales más altos medidos. Frente a Albrook (2017–2025), su hora con más lluvia llega algo más de 1 h antes que la del observador, que informa lluvia más seguido de 14 a 16 h, y su máxima y su mínima diarias se separan menos (4 a 6 °C contra 5 a 8). Las medidas del edificio salen de un modelo con escala ±12 %; las ventanas de los pisos 2 y 3 son inferidas.</li>
     <li><b>Confort:</b> Givoni (1992), <i>Energy and Buildings</i> 18, <a href="https://doi.org/10.1016/0378-7788(92)90047-K" target="_blank" rel="noopener">doi:10.1016/0378-7788(92)90047-K</a>; ASHRAE 55-2017, con el origen del modelo adaptativo y sus condiciones en de Dear y Brager (2002), <i>Energy and Buildings</i> 34(6), 549–561, <a href="https://doi.org/10.1016/S0378-7788(02)00005-1" target="_blank" rel="noopener">doi:10.1016/S0378-7788(02)00005-1</a>; UTCI de Bröde et al. (2012), <a href="https://doi.org/10.1007/s00484-011-0454-1" target="_blank" rel="noopener">doi:10.1007/s00484-011-0454-1</a>, con la radiación de SolarCal (Arens et al., 2015); cálculo verificado contra pythermalcomfort (Tartarini y Schiavon, 2020). Umbral de sol directo: 120 W/m², OMM, <i>Guide to Instruments and Methods of Observation</i> (WMO-No. 8), vol. I, 2023, §8.1.1.</li>
     <li><b>Código y pruebas:</b> <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>; <code>fuente/verificar.mjs</code> repite las comprobaciones.</li>
   </ul>

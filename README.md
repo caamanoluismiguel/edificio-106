@@ -48,7 +48,7 @@ Cómo está hecho: MindAR solo reconoce el plano y three.js dibuja la escena en 
 ## Qué no es
 
 - **No es un levantamiento.** La escala del modelo tiene ±12 % y las ventanas de los pisos 2 y 3 son inferidas.
-- **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta la lluvia de la tarde y achica la diferencia entre el día y la noche: su máxima y su mínima diarias se separan de 4 a 6 °C, y en el aeropuerto de Albrook, a 4 km, de 5 a 8 °C. Por eso la temperatura y la humedad de 2001–2025 van ajustadas a Albrook (`fuente/ajuste_albrook.py`), que tampoco es el sitio.
+- **No es una medición del clima en el sitio.** ERA5 representa una celda de unos 28 km: subestima los aguaceros cortos, adelanta en promedio unas 2 h el máximo diario de la lluvia sobre tierra (una media global de junio a agosto contra IMERG, según Watters et al., 2021) y achica la diferencia entre el día y la noche: su máxima y su mínima diarias se separan de 4 a 6 °C, y en el aeropuerto de Albrook, a 4 km, de 5 a 8 °C. Por eso la temperatura y la humedad de 2001–2025 van ajustadas a Albrook (`fuente/ajuste_albrook.py`), que tampoco es el sitio.
 - **No calcula el interior.** Ni temperatura, ni confort, ni ventilación dentro del aula (eso pide una simulación de fluidos). La página dice qué usar en cada caso: EnergyPlus o Ladybug Tools con el archivo de clima de Albrook.
 - **No es el canal en vivo.** Los barcos no son la posición real de ningún barco: siguen el eje del canal de OpenStreetMap a un ritmo cercano al promedio de la ACP. Los edificios del entorno son volúmenes con altura estimada (OpenStreetMap, Open Buildings o Street View) y el relieve lejano tiene errores de algunos metros.
 - **No dimensiona desagües.** Para eso hacen falta curvas de intensidad de lluvia de una estación cercana.
@@ -102,8 +102,9 @@ Se puede reportar un dato o una fuente incorrecta, proponer una fuente mejor (so
 - Hersbach, H. et al. (2023). *ERA5 hourly data on single levels from 1940 to present*. Copernicus Climate Change Service (C3S) Climate Data Store. doi:10.24381/cds.adbb2d47. Contiene información modificada del Servicio de Cambio Climático de Copernicus (2026). Ni la Comisión Europea ni el ECMWF son responsables del uso que se haga de la información de Copernicus ni de los datos que contiene.
 - Zippenfenig, P. (2024). *Open-Meteo.com Weather API*. Zenodo. doi:10.5281/zenodo.7970649. [Weather data by Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0).
 - Lavers, D. A. et al. (2022). An evaluation of ERA5 precipitation for climate monitoring. *Quarterly Journal of the Royal Meteorological Society*, 148(748), 3152–3165. doi:10.1002/qj.4351
+- Watters, D., Battaglia, A. y Allan, R. P. (2021). The Diurnal Cycle of Precipitation according to Multiple Decades of Global Satellite Observations, Three CMIP6 Models, and the ECMWF Reanalysis. *Journal of Climate*, 34(12), 5063–5080. doi:10.1175/JCLI-D-20-0966.1 (el reloj de la lluvia: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo diario frente a IMERG, de junio a agosto).
 - IMHPA. [Caracterización del clima en el distrito de Panamá](https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf) (Tocumen, 1977–2010).
-- Partes METAR de Albrook (MPMG) del [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/), Iowa State University: el «ahora» del visor y el ajuste de la serie a Albrook (calibración 2017–2025).
+- Partes METAR de Albrook (MPMG) del [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/), Iowa State University: el «ahora» del visor, el ajuste de la serie a Albrook (calibración 2017–2025) y el reloj de la lluvia de «25 años» (`fuente/reloj_lluvia.py`, mayo a noviembre de 2017–2025).
 - INEC. [Cuadro 121-01](https://www.inec.gob.pa/archivos/P3771121-01.pdf): Balboa (ACP), Albrook (Autoridad de Aeronáutica Civil) y Tocumen, 2001–2010.
 
 **Sol y radiación**
