@@ -428,7 +428,7 @@ async function armar() {
   poner('decAbs', num(dec, 1));
   poner('alt', `${num(alt, 1)}°`);
   const chica = largo !== undefined && largo < 5;   // sombra de menos de 5 cm: el sol casi en el cenit, sin acimut ni rumbo
-  const SIN_RUMBO = 'la sombra cae al pie del palo y no tiene rumbo que medir';
+  const SIN_RUMBO = 'la sombra cae al pie del palo y su rumbo no se puede medir';
   document.querySelectorAll('[data-c="az"], [data-c="rumbo"]').forEach((el) => el.classList.toggle('num', !chica));   // la frase va en letra de texto
   poner('az', chica ? 'no se da: el sol está casi en el cenit y su acimut no se puede fijar' : `${num(az)}°`);
   poner('azPista', chica ? `casi en el cenit: ${SIN_RUMBO}.` : `acimut ${num(az)}° (desde el norte, en el sentido del reloj).`);
