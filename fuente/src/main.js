@@ -11,7 +11,7 @@ import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
 import { ENCUADRES } from './encuadres.js';
-import { Mapa, LEJOS, CERCA, BORDE_BLANDO, tarjeta } from './navegar.js';
+import { Mapa, LEJOS, CERCA, BORDE_BLANDO, ficha, buscarEdificio, idEnlace } from './navegar.js';
 
 const $ = (s) => document.querySelector(s);
 // la versión es la huella del armado (js/app.js?v=…, la escribe armar-raiz.sh); sin ella, el servidor de desarrollo
@@ -209,7 +209,7 @@ async function arrancar() {
   controls.screenSpacePanning = false; controls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
   U.vaiven.value = reduce ? 0 : 1;
   // gancho para las comprobaciones automáticas (fuente/verificar.mjs): solo existe con ?prueba en la URL
-  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, enlaceMomento, VISTAS, VISTA_FACHADA, posicionSol, NAV, elegirEn, volverAl106 };
+  if (/[?&]prueba/.test(location.search)) window.__e106 = { escena, U, S, esq106: () => ESQ106, controls, clima, viajarA, enlaceMomento, VISTAS, VISTA_FACHADA, posicionSol, NAV, elegirEn, volverAl106, abrirEdificio };
 
   const bytes = {};
   const pModelo = escena.cargar(BASE, (g, l, t) => {
@@ -220,7 +220,7 @@ async function arrancar() {
   });
   escena.alCambiarCiudad = pintarCiudad;
   if (!/[?&]ligero/.test(location.search)) pModelo.then(() => escena.cargaCompleta).then(() => fetch(conVersion(BASE + 'datos/ciudad_mapa.json'))).then((r) => r.json())
-    .then((j) => { NAV.mapa = new Mapa(j); controls.enablePan = true; }).catch((e) => anotar('aviso', 'mapa de la ciudad: ' + e));
+    .then((j) => { NAV.mapa = new Mapa(j); controls.enablePan = true; NAV.listo?.(); }).catch((e) => anotar('aviso', 'mapa de la ciudad: ' + e));
   pModelo.then(() => escena.arrancarCiudad(pFinIntro));
   clima.cargarAjuste(conVersion(BASE + 'datos/ajuste_albrook.json')).then(() => { lastLect = ''; if (clima.ok) pintarMomentos(); });
   clima.cargarResumen(conVersion(BASE + 'datos/clima_resumen.json')).then((ok) => { if (ok) { dibujarDecadas(); pintarMomentos(); pintarConsultas(); } });
@@ -346,10 +346,13 @@ function terminarIntro() {
   controls.enabled = true;
   irAAhora(false);
   // primera visita: tres pasos sobre los controles reales y después la oferta del recorrido (con ?prueba solo si se pide ?guia)
-  if (!visto && !location.hash) setTimeout(() => (/[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search) ? mostrarOferta() : guia(0, true)), 900);
+  if (!visto && !location.hash && !EDIFICIO_Q) setTimeout(() => (/[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search) ? mostrarOferta() : guia(0, true)), 900);
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); }
   irAMomentoHash();
+  // ?edificio=N: cuando llega el mapa, la ficha de ese edificio y la cámara que lo encuadra (con &cam= en el enlace, la cámara se queda)
+  if (EDIFICIO_Q) (NAV.mapa ? Promise.resolve() : new Promise((r) => { NAV.listo = r; }))
+    .then(() => abrirEdificio(EDIFICIO_Q, !/[&]cam=/.test(location.hash))).catch((e) => anotar('aviso', 'ficha: ' + e));
 }
 
 // ---------------- Bienvenida («¿Primera vez aquí?») ----------------
@@ -433,7 +436,9 @@ function enlaceMomento() {
   const c = escena.camera.position, t = controls.target, r1 = (x) => Math.round(x * 10) / 10;
   q.push('cam=' + [c.x, c.y, c.z, t.x, t.y, t.z].map(r1).join(','));
   if (S.encuadre) q.push('encuadre=' + S.encuadre.id);
-  return `${SITIO}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
+  // con la ficha de un edificio abierta, el enlace la vuelve a abrir (?edificio=, ver abrirEdificio)
+  const ed = NAV.tarjeta ? '?edificio=' + encodeURIComponent(idEnlace(NAV.tarjeta, NAV.fichas)) : '';
+  return `${SITIO}${ed}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
 }
 async function copiarEnlace() {
   const u = enlaceMomento(), est = $('#img-estado');
@@ -688,7 +693,9 @@ function pintarEncuadres() {
 // el teclado; Q y E giran, + y − acercan, Inicio vuelve al 106. Dos toques (o doble clic) sobre un edificio vuelan a él y abren su
 // tarjeta; sobre el suelo, llevan ahí el punto que se mira. Lejos del 106 (más de LEJOS m) aparecen «Volver al 106» y la nota de que
 // la ciudad es aproximada; las formas de ver que miden el 106 vuelven primero a él. Sin tocar nada, todo queda como antes.
-const NAV = { mapa: null, lejos: false, arrastra: false, vista: 'esquina', hs: null, tx: null, tz: null, cam: null, tarjeta: null };
+const NAV = { mapa: null, lejos: false, arrastra: false, vista: 'esquina', hs: null, tx: null, tz: null, cam: null, tarjeta: null, fichas: null, listo: null };
+// ?edificio=N (o =osm<id>): abre la ficha de ese edificio al llegar (buscarEdificio en navegar.js dice cómo se elige)
+const EDIFICIO_Q = new URLSearchParams(location.search).get('edificio');
 const _np = new THREE.Vector3();
 /** Cada cuadro, después de controls.update: el punto que se mira sigue al suelo, no sale del límite y la cámara no entra en un
  *  edificio ni baja del suelo. Solo actúa si algo se movió. */
@@ -769,18 +776,7 @@ function elegirEn(x, y) {
   // un edificio se ve si es el 106 o si el entorno ya llegó (con la ciudad o sin ella, cada huella tiene algo dibujado)
   const visible = h.tipo === 'edificio' && (h.e === M.e106 || !!escena.grupos.contexto?.root);
   if (visible && h.e === M.e106) { if (NAV.lejos) volverAl106(); mostrarTarjeta(h.e); return h; }
-  if (visible) {
-    const e = h.e, rad = 0.5 * Math.hypot(e.caja[1] - e.caja[0], e.caja[3] - e.caja[2], e.h);
-    const tgt = new THREE.Vector3(e.cx, e.y0 + Math.min(e.h * 0.45, 8), e.cz);
-    // la cámara del lado desde donde se miraba, a unos 25° sobre el horizonte y a una distancia que deja ver el edificio entero
-    const dir = _np.subVectors(escena.camera.position, tgt).setY(0); if (dir.lengthSq() < 1e-6) dir.set(1, 0, 1);
-    dir.normalize();
-    const dist = Math.min(400, Math.max(30, rad / Math.sin(THREE.MathUtils.degToRad(fovBase() * 0.4))));
-    const pos = tgt.clone().addScaledVector(dir, dist * Math.cos(0.44)); pos.y = tgt.y + dist * Math.sin(0.44);
-    mostrarTarjeta(e);
-    volarA({ pos: pos.toArray(), tgt: tgt.toArray() }, 1.6, null, false);
-    return h;
-  }
+  if (visible) { mostrarTarjeta(h.e); volarAEdificio(h.e); return h; }
   // el suelo (o un edificio que todavía no se dibuja): el punto que se mira va ahí y la cámara lo sigue con el mismo encuadre
   cerrarTarjeta(false);
   const tgt = new THREE.Vector3(h.p.x, h.p.y + 1.5, h.p.z), off = _np.subVectors(escena.camera.position, controls.target);
@@ -789,13 +785,60 @@ function elegirEn(x, y) {
   NAV.hs = 1.5;
   return h;
 }
-function mostrarTarjeta(e) {
-  const T = tarjeta(e, ciudadVisible()), el = $('#tarjeta-edificio');
+/** Vuela a un edificio de la ciudad: la cámara del lado desde donde se miraba, a unos 25° sobre el horizonte y a una distancia que
+ *  deja ver el edificio entero (en el teléfono, más lejos: la ficha ocupa la parte de abajo y el edificio va en el hueco de arriba). */
+function volarAEdificio(e) {
+  const rad = 0.5 * Math.hypot(e.caja[1] - e.caja[0], e.caja[3] - e.caja[2], e.h);
+  const tgt = new THREE.Vector3(e.cx, e.y0 + Math.min(e.h * 0.45, 8), e.cz);
+  const dir = _np.subVectors(escena.camera.position, tgt).setY(0); if (dir.lengthSq() < 1e-6) dir.set(1, 0, 1);
+  dir.normalize();
+  const dist = Math.min(400, Math.max(30, rad / Math.sin(THREE.MathUtils.degToRad(fovBase() * 0.4)))) * (ANCHO_HOJA.matches ? 1.5 : 1);
+  const pos = tgt.clone().addScaledVector(dir, dist * Math.cos(0.44)); pos.y = tgt.y + dist * Math.sin(0.44);
+  volarA({ pos: pos.toArray(), tgt: tgt.toArray() }, 1.6, null, false);
+}
+/** Las fichas (datos/ciudad_fichas.json, de fuente/ciudad-fichas.mjs): se piden la primera vez que hacen falta. */
+function cargarFichas() {
+  return (cargarFichas.p ??= fetch(conVersion(BASE + 'datos/ciudad_fichas.json')).then((r) => r.json()).then((j) => { NAV.fichas = j; return j; })
+    .catch((e) => { cargarFichas.p = null; anotar('aviso', 'fichas: ' + e); return null; }));
+}
+/** ?edificio=N: la ficha de ese edificio y, si `volar`, la cámara que lo encuadra (el 106, en la vista de la esquina). */
+async function abrirEdificio(q, volar = true) {
+  const F = await cargarFichas(), e = buscarEdificio(NAV.mapa, F, q);
+  if (!e) { anotar('aviso', `?edificio=${q}: no está en el mapa de la ciudad`); return null; }
+  if (e === NAV.mapa.e106) { if (volar) volverAl106('esquina'); }
+  else if (volar) volarAEdificio(e);
+  await mostrarTarjeta(e);
+  return e;
+}
+const elDe = (tag, cls, txt) => { const el = document.createElement(tag); if (cls) el.className = cls; if (txt != null) el.textContent = txt; return el; };
+async function mostrarTarjeta(e) {
+  const el = $('#tarjeta-edificio'), F = NAV.fichas ?? await cargarFichas();
+  // la capa marcada y un equipo que dibuja la ciudad (aunque todavía esté llegando)
+  const T = ficha(e, F, !!$('#capa-ciudad')?.checked && escena?.ciudadOpc?.nivel !== 'oculta');
   $('#te-t').textContent = T.titulo;
-  const txt = $('#te-txt'); txt.replaceChildren(...T.lineas.map((l) => { const p = document.createElement('p'); p.textContent = l; return p; }));
-  $('#te-acerca').hidden = !T.es106;
+  const hijos = [];
+  if (T.es106) hijos.push(...T.lineas.map((l) => elDe('p', null, l)));
+  else {
+    if (T.sub) hijos.push(elDe('p', 'te-sub', T.sub));
+    hijos.push(elDe('p', null, 'Es una maqueta aproximada: solo el 106 está medido.'));
+    const dl = elDe('dl'); for (const [k, v] of T.filas) { const d = elDe('div'); d.append(elDe('dt', null, k), elDe('dd', null, v)); dl.append(d); }
+    hijos.push(dl, ...T.notas.map((n) => elDe('p', 'te-nota', n)));
+    const cred = elDe('p', 'te-credito', 'Número, nombre y huella: © ');
+    const a = elDe('a', null, 'colaboradores de OpenStreetMap'); a.href = 'https://www.openstreetmap.org/copyright'; a.target = '_blank'; a.rel = 'noopener';
+    cred.append(a, `, ODbL; base del ${T.base}.` + (T.cerl ? ' Tipos y años: Enscore et al. (2000), informe de ERDC/CERL sobre Fort Clayton.' : ''));
+    const ay = elDe('details'); ay.append(elDe('summary', null, 'Cómo leer esta ficha'),
+      elDe('p', null, 'Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve y el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos.'),
+      elDe('p', null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${T.supuestosCiudad}.`),
+      elDe('p', null, 'Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio.'),
+      elDe('p', null, 'Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.'));
+    hijos.push(cred, ay);
+  }
+  $('#te-txt').replaceChildren(...hijos); $('#te-txt').scrollTop = 0;
+  $('#te-acerca').hidden = $('#te-partes').hidden = !T.es106;
+  $('#te-estado').textContent = '';
   NAV.tarjeta = e; el.hidden = false; anunciar();
   el.setAttribute('aria-live', 'polite');
+  if (S.hoja === 1 || S.hoja === 2) ponerHoja(0);         // en el teléfono, la hoja baja a la cerrada y la ficha la cubre
 }
 function cerrarTarjeta(devolverFoco) {
   const el = $('#tarjeta-edificio'); if (!el || el.hidden) return;
@@ -815,12 +858,18 @@ function prepararNavegar() {
   $('#volver-106').addEventListener('click', () => volverAl106());
   $('#te-cerrar').addEventListener('click', () => cerrarTarjeta(true));
   $('#te-acerca').addEventListener('click', () => { const d = $('#acerca'); d.showModal ? d.showModal() : d.setAttribute('open', ''); });
+  $('#te-partes').addEventListener('click', () => { cerrarTarjeta(false); if (NAV.lejos) volverAl106('esquina'); $('.lentes [data-lente="partes"]')?.click(); });
+  // el enlace de la ficha es el del momento (enlaceMomento), que con la ficha abierta lleva ?edificio=
+  $('#te-enlace').addEventListener('click', async () => {
+    const u = enlaceMomento(), est = $('#te-estado');
+    try { await navigator.clipboard.writeText(u); est.textContent = 'Enlace copiado: abre este edificio, con su ficha, en este mismo momento.'; }
+    catch (e) { prompt('Copia este enlace:', u); }
+  });
   const lienzo = $('#lienzo');
   // doble clic del ratón; con el dedo, dos toques cortos y cercanos (el navegador no da dblclick con touch-action: none)
   lienzo.addEventListener('dblclick', (e) => { e.preventDefault(); elegirEn(e.clientX, e.clientY); });
   const toque = { t: 0, x: 0, y: 0, abajo: null, n: 0 };
   lienzo.addEventListener('pointerdown', (e) => {
-    if (NAV.tarjeta) cerrarTarjeta(false);                 // tocar la escena cierra la tarjeta
     if (e.pointerType === 'mouse') return;
     toque.n++; toque.abajo = toque.n === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null;
   });
@@ -1041,7 +1090,7 @@ function paso(now) {
 // punto que se mira quede en el centro del hueco libre entre los botones de arriba y el panel más alto de abajo.
 // Con el panel lateral de escritorio, lo mismo en horizontal: al centro del espacio a su derecha.
 const ENC = { dy: 0, aplicado: 0, dx: 0, aplicadoX: 0 };
-const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje'];
+const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje', '#tarjeta-edificio'];
 function encuadreMovil(dt) {
   const W = innerWidth, H = innerHeight;
   let obj = 0;
@@ -1054,6 +1103,8 @@ function encuadreMovil(dt) {
   }
   // con el panel lateral de escritorio, lo que se mira va al centro del espacio que queda a su derecha
   let objX = !intro && document.documentElement.classList.contains('panel-lateral') ? $('#dock').getBoundingClientRect().right / 2 : 0;
+  // con la ficha de un edificio abierta (a la izquierda desde 761 px), al centro del espacio a su derecha
+  if (!intro && W > 760 && NAV.tarjeta) objX = Math.max(objX, $('#tarjeta-edificio').getBoundingClientRect().right / 2);
   // en un encuadre con Capas abierta (computador), lo que se mira va al centro del espacio libre a la derecha de Capas
   if (!intro && S.encuadre && W > 760 && !$('#capas').hidden) objX = Math.max(objX, $('#capas').getBoundingClientRect().right / 2);
   const k = reduce ? 1 : Math.min(1, dt * 5);

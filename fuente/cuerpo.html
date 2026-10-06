@@ -425,17 +425,37 @@
   @media (pointer: coarse) { .pista .raton { display: none; } .pista .tactil { display: inline; } }
   /* navegación libre: «Volver al 106», la nota de lejos, la tarjeta del edificio y la pista de la primera vez */
   #lejos { display: grid; justify-items: end; gap: 6px; max-width: 280px; }
-  #lejos[hidden], #tarjeta-edificio[hidden], #pista-navegar[hidden], #te-acerca[hidden] { display: none; }
+  #lejos[hidden], #tarjeta-edificio[hidden], #pista-navegar[hidden] { display: none; }
   #lejos-nota .corta { display: none; }
   #lejos-nota { margin: 0; font: 400 12px/1.35 var(--texto); color: var(--cal-2); text-align: right; background: var(--panel); border: 1px solid var(--linea); border-radius: 12px; padding: 6px 10px; backdrop-filter: blur(10px); }
-  #tarjeta-edificio { width: min(320px, calc(100vw - 32px)); box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(12px); }
-  #tarjeta-edificio .te-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  #te-t { margin: 0; font: 700 18px/1.2 var(--display); color: var(--cal); }
-  #te-cerrar { flex: none; width: 44px; height: 44px; margin: -10px -10px -10px 0; border: 0; background: none; color: var(--cal-2); font: 400 22px/1 var(--texto); cursor: pointer; border-radius: 999px; }
+  /* ficha del edificio: un panel a la izquierda (desde 761 px; a la derecha del panel lateral desde 900) y una hoja abajo en el teléfono.
+     La cabecera y los botones quedan fijos; el texto se desplaza por dentro */
+  #tarjeta-edificio { position: fixed; z-index: 8; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); width: min(360px, calc(100vw - 2 * var(--gutter)));
+    max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--dock-h) - 98px); min-height: 180px; box-sizing: border-box;
+    display: flex; flex-direction: column; gap: 10px; padding: 16px 16px 12px; background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 18px;
+    backdrop-filter: blur(18px); box-shadow: 0 24px 70px rgba(0,0,0,.4); animation: sube .3s var(--ease); }
+  #tarjeta-edificio .te-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  #tarjeta-edificio .eyebrow { margin-bottom: 6px; }
+  #te-t { margin: 0; font: 700 22px/1.15 var(--display); color: var(--cal); }
+  #te-cerrar { flex: none; width: 44px; height: 44px; margin: -10px -10px 0 0; border: 0; background: none; color: var(--cal-2); font: 400 22px/1 var(--texto); cursor: pointer; border-radius: 999px; }
   #te-cerrar:hover { color: var(--cal); background: rgba(239,233,222,.08); }
-  #te-txt p { margin: 6px 0 0; font: 400 13px/1.4 var(--texto); color: var(--cal-2); }
-  #te-txt p:first-child { font-size: 14px; color: var(--cal); }
-  #te-acerca { margin-top: 10px; }
+  #te-txt { flex: 0 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; display: grid; gap: 10px; align-content: start; }
+  #te-txt p { margin: 0; font: 400 13px/1.45 var(--texto); color: var(--cal-2); }
+  #te-txt .te-sub { font-size: 14px; color: var(--cal); margin-top: -4px; }
+  #te-txt dl { margin: 0; display: grid; gap: 8px; }
+  #te-txt dt { font: 500 12px/1.2 var(--datos); color: var(--cal-2); letter-spacing: .08em; text-transform: uppercase; }
+  #te-txt dd { margin: 2px 0 0; font: 400 14px/1.45 var(--texto); color: var(--cal); text-wrap: pretty; }
+  #te-txt .te-nota { padding: 8px 10px; border: 1px solid var(--linea-2); border-radius: 12px; color: var(--cal); }
+  #te-txt .te-credito { font-size: 12px; }
+  #te-txt a { color: var(--sol); }
+  #te-txt details { border-top: 1px solid var(--linea); padding-top: 8px; }
+  #te-txt summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; font: 500 13px/1.2 var(--texto); color: var(--cal); }
+  #te-txt details p { margin-top: 6px; font-size: 13px; }
+  #tarjeta-edificio .te-botones { display: flex; flex-wrap: wrap; gap: 6px; }
+  #tarjeta-edificio .te-botones .boton { min-height: 44px; }
+  #te-partes[hidden], #te-acerca[hidden] { display: none; }
+  #te-estado { margin: 0; font: 400 12px/1.35 var(--texto); color: var(--cal-2); }
+  #te-estado:empty { display: none; }
   #pista-navegar { position: fixed; z-index: 7; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 70px); transform: translateX(-50%); margin: 0; max-width: calc(100vw - 32px); box-sizing: border-box;
     font: 500 12px/1.35 var(--datos); color: var(--cal-2); text-align: center; background: var(--panel-2); border: 1px solid var(--linea); border-radius: 12px; padding: 6px 10px; backdrop-filter: blur(10px); pointer-events: none; }
   #pista-navegar .tactil { display: none; }
@@ -711,7 +731,9 @@
     #lejos { grid-column: 1; grid-row: 1; justify-self: end; align-self: start; max-width: 100%; gap: 4px; }
     #volver-106 { min-height: 44px; }
     #lejos-nota { padding: 4px 10px; } #lejos-nota .larga { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } #lejos-nota .corta { display: inline; }
-    #tarjeta-edificio { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; width: auto; }
+    /* la ficha, hoja abajo sobre el dock: no pasa de algo menos de la mitad de la pantalla y la cámara centra el edificio arriba */
+    #tarjeta-edificio { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 46vh; min-height: min(var(--dock-h), 46vh); z-index: 10; padding: 14px 14px 10px; gap: 8px; background: var(--solido); }
+    #te-t { font-size: 18px; }
     #pista-navegar { top: calc(env(safe-area-inset-top, 0px) + 124px); }
     .hud-botones { display: contents; }
     .vistas { grid-column: 1; grid-row: 1; justify-self: start; }
@@ -925,7 +947,7 @@
     html.panel-lateral .marca { width: 100%; box-sizing: border-box; min-width: 0; }
     html.panel-lateral .marca > span { min-width: 0; flex: 1; text-align: left; }
     html.panel-lateral .marca small { display: none; }
-    html.panel-lateral :is(#recorrido, #oferta-recorrido, #voladizo, #sirve, #confort, #ir-a, #capas, #panel-fachada) {
+    html.panel-lateral :is(#recorrido, #oferta-recorrido, #voladizo, #sirve, #confort, #ir-a, #capas, #panel-fachada, #tarjeta-edificio) {
       left: calc(var(--panel-w) + var(--gutter)); max-width: calc(100vw - var(--panel-w) - 2 * var(--gutter)); }
   }
   /* primera visita: una tarjeta por paso, junto al control real, que se marca con un borde crema */
@@ -1051,11 +1073,6 @@
     <button type="button" id="volver-106" class="boton">Volver al 106</button>
     <p id="lejos-nota"><span class="larga"></span><span class="corta" aria-hidden="true"></span></p>
   </div>
-  <section id="tarjeta-edificio" hidden aria-labelledby="te-t">
-    <div class="te-cab"><h2 id="te-t"></h2><button type="button" id="te-cerrar" aria-label="Cerrar la tarjeta del edificio">×</button></div>
-    <div id="te-txt"></div>
-    <button type="button" id="te-acerca" class="boton" hidden>Acerca del modelo</button>
-  </section>
   <div class="hud-botones">
   <div class="vistas" role="group" aria-label="¿Desde dónde?">
     <button type="button" data-vista="esquina">Esquina</button>
@@ -1113,6 +1130,15 @@
   <p class="pista"><span class="raton">Arrastra para girar · rueda para acercarte</span><span class="tactil">Arrastra para girar · pellizca para acercarte</span></p>
 </aside>
 <p id="pista-navegar" hidden role="status"><span class="raton">Clic derecho y arrastra para recorrer la ciudad · doble clic en un edificio</span><span class="tactil">Arrastra con dos dedos para recorrer la ciudad · toca dos veces un edificio</span></p>
+<!-- ficha del edificio (src/navegar.js, ficha(); datos/ciudad_fichas.json de fuente/ciudad-fichas.mjs): al tocar dos veces un edificio
+     o con ?edificio=N. En el teléfono es una hoja abajo (la cámara centra el edificio en el hueco de arriba); desde 761 px, un panel a la
+     izquierda (a la derecha del panel lateral desde 900 px). Se cierra con × o con Escape -->
+<section id="tarjeta-edificio" hidden aria-labelledby="te-t">
+  <div class="te-cab"><div><p class="eyebrow">Ficha del edificio</p><h2 id="te-t"></h2></div><button type="button" id="te-cerrar" aria-label="Cerrar la ficha del edificio">×</button></div>
+  <div id="te-txt"></div>
+  <div class="te-botones"><button type="button" id="te-partes" class="boton" hidden>Partes y medidas</button><button type="button" id="te-acerca" class="boton" hidden>Acerca del modelo</button><button type="button" id="te-enlace" class="boton">Copiar enlace</button></div>
+  <p id="te-estado" role="status"></p>
+</section>
 <div id="viaje" hidden aria-live="polite"><small><span class="v1">Viajando a</span><span class="v2">Llegaste a</span></small><b id="viaje-destino"></b><i id="viaje-barra"></i></div>
 
 <aside id="voladizo" hidden aria-labelledby="vol-t">
@@ -1408,7 +1434,7 @@
     </div>
     <div class="interruptores">
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
-      <label><input type="checkbox" id="capa-ciudad" checked><b>Ciudad del Saber (aproximada)</b><small>228 edificios armados con un kit de piezas sobre las huellas de OpenStreetMap; los demás son copias del 106 o volúmenes simples. La forma, los pisos y los techos son aproximados: solo el 106 está medido. Si la desmarcas, en lugar del kit quedan copias del 106 y volúmenes simples, y la página descarga menos la próxima vez que la abras. <span id="ciudad-estado"></span></small></label>
+      <label><input type="checkbox" id="capa-ciudad" checked><b>Ciudad del Saber (aproximada)</b><small>228 edificios armados con un kit de piezas sobre las huellas de OpenStreetMap; los demás son copias del 106 o volúmenes simples. La forma, los pisos y los techos son aproximados: solo el 106 está medido. Cada edificio lleva una clase de certeza según qué tan bien se vio en las fotos: I, pisos, techo, muros y mediaguas vistos con confianza alta o media (156); II, se ve el tipo, pero falta algo de lo de la clase I o la vista deja dudas (140); III, casi nada se ve (26). Con dos toques o doble clic sobre un edificio se abre su ficha. Si la desmarcas, en lugar del kit quedan copias del 106 y volúmenes simples, y la página descarga menos la próxima vez que la abras. <span id="ciudad-estado"></span></small></label>
       <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez</b><small>Viene marcada: la escena se dibuja siempre a la resolución más alta. Si en tu equipo el movimiento se siente lento, desmárcala y la página bajará la resolución cuando vaya justo. <span id="res-actual"></span></small></label>
       <label class="solo-noche"><input type="checkbox" id="capa-larga"><b>Exposición larga</b><small>Aclara la noche como una foto de 20 segundos en trípode. No agrega luz: todo sube lo mismo, así que lo claro y lo oscuro siguen en su lugar.</small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Simular aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>

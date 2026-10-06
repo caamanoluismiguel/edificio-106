@@ -4,7 +4,8 @@
 //     de la escena en una rejilla de 40 m y la huella de cada edificio con su número, su tipo, su clase de certeza y cómo se dibuja;
 //   · el suelo bajo un punto, el borde del límite, el rayo que elige un edificio (o un punto del suelo) y la prueba de la cámara
 //     dentro de un edificio;
-//   · los textos de la tarjeta del edificio. Las alturas del mapa son aproximadas y no se muestran.
+//   · cómo buscar el edificio de ?edificio=N y los textos de su ficha (datos/ciudad_fichas.json, de fuente/ciudad-fichas.mjs). Las
+//     alturas del mapa son aproximadas y no se muestran; la ficha da la de Open Buildings.
 // main.js decide cuándo se usa cada cosa. Nada de esto corre hasta que la persona mueve la escena.
 
 /** Distancia (m, en planta) entre el punto que se mira y el centro del 106 desde la que se está «lejos»: la mitad del lado de la
@@ -23,10 +24,11 @@ export const TIPOS = {
   crance: 'bloque de la calle Gonzalo Crance', bloque2_bonilla: 'bloque de la calle Luis Bonilla', nave: 'nave', abierto: 'kiosco o galera',
   moderno: 'edificio contemporáneo', torre: 'torre',
 };
-// las clases con las palabras de la leyenda de certeza (ciudad.js, ?certeza=1) y de CIUDAD.md
+// las clases con las palabras de la leyenda de certeza (ciudad.js, ?certeza=1) y de CIUDAD.md; la II, sola, porque la ficha muestra
+// una clase a la vez
 export const CLASES = {
   I: ['confirmado', 'pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media'],
-  II: ['probable', 'se ve el tipo, pero falta alguno de esos datos o la vista deja dudas'],
+  II: ['probable', 'se ve el tipo, pero falta alguno de los datos de la clase I (pisos, techo, muros o mediaguas) o la vista deja dudas'],
   III: ['supuesto', 'casi nada se ve; el tipo es supuesto'],
 };
 
@@ -130,17 +132,67 @@ export class Mapa {
   }
 }
 
-/** Los textos de la tarjeta de un edificio. `ciudad`: si la capa de la ciudad se ve (si no, en su lugar está el contexto de siempre). */
-export function tarjeta(e, ciudad) {
-  if (e.n === '106') return { titulo: 'Edificio 106', lineas: ['Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.'], es106: true };
-  const titulo = e.n ? `Edificio ${e.n}` : 'Edificio sin número en OpenStreetMap';
-  const tipo = e.t ? TIPOS[e.t] ?? null : null;
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+// números con coma decimal y punto de miles (como num() de main.js)
+const nf = (x) => { const [a, b] = String(x).split('.'); return a.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (b ? ',' + b : ''); };
+const norm = (s) => String(s ?? '').replace(/\s+/g, '').toUpperCase();
+
+/** El edificio de ?edificio=<q> (null si no está). Por número, sin espacios y sin distinguir mayúsculas: el 332B lleva al 332A, que lo
+ *  dibuja; si el número se repite (el 140 y el 246 en OpenStreetMap), el de menor id de OSM. Con «osm» delante, por id de OSM
+ *  (?edificio=osm678917549): así se nombran los que no tienen número o lo repiten. `F`: datos/ciudad_fichas.json. */
+export function buscarEdificio(mapa, F, q) {
+  const k = norm(q); if (!k || !mapa) return null;
+  const osm = /^OSM(\d+)$/.exec(k);
+  if (osm) return mapa.edificios.find((e) => e.o === Number(osm[1])) ?? null;
+  const otra = Object.entries(F?.edificios ?? {}).find(([, f]) => f.une && norm(f.une) === k);
+  if (otra) return mapa.edificios.find((e) => e.o === Number(otra[0])) ?? null;
+  return mapa.edificios.filter((e) => e.n && norm(e.n) === k).sort((a, b) => a.o - b.o)[0] ?? null;
+}
+/** Cómo se nombra el edificio en un enlace: su número si es único; si no tiene o se repite, «osm» y su id. */
+export const idEnlace = (e, F) => (e.n && !F?.edificios?.[e.o]?.rep ? e.n : 'osm' + e.o);
+
+/** La ficha de un edificio (al tocarlo o con ?edificio=N), de datos/ciudad_fichas.json (fuente/ciudad-fichas.mjs). `ciudad`: si la
+ *  capa de la ciudad está marcada (si no, en su lugar está el contexto de siempre). Devuelve el título, una línea bajo él, las filas
+ *  [título, texto] y las notas; los textos de CERL y la tabla de años vienen hechos del generador. */
+export function ficha(e, F, ciudad) {
+  if (e.n === '106') return { titulo: 'Edificio 106', es106: true, filas: [],
+    lineas: ['Es el único edificio medido del visor. Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día, Partes y medidas y Confort lo analizan a él.',
+      'No se arma con el kit de la ciudad ni tiene clase de certeza: su modelo es propio. Cómo se hizo y qué no hace está en «Acerca del modelo».'] };
+  const f = F?.edificios?.[e.o] ?? {}, T = f.t ? F?.tipos?.[f.t] : null, G = T && f.g != null ? T.grupos[f.g] : null;
+  const titulo = e.n ? `Edificio ${e.n}${f.une ? ' y ' + f.une : ''}` : f.nom ?? 'Edificio sin número';
+  const sub = e.n ? f.nom ?? null : f.nom ? 'Sin número en OpenStreetMap' : null;
+  const filas = [];
+  // tipo, origen y año (siempre el del tipo)
+  if (f.t) {
+    const tipo = TIPOS[f.t] ?? f.t, partes = [tipo[0].toUpperCase() + tipo.slice(1) + '.'];
+    if (G) partes.push(`Por número: ${G.txt.replace('{n}', e.n)}. CERL no relaciona la numeración del Ejército con la de Ciudad del Saber.`);
+    else partes.push(`Por forma: se asignó por lo que se ve en las fotos y por la forma y el tamaño de la huella${e.n && T?.grupos.length ? '; su número no está en la lista de CERL de este tipo' : ''}.`);
+    const anios = G?.anios ?? T?.anios; if (anios) partes.push(anios);
+    filas.push(['Tipo', partes.join(' ')]);
+  } else filas.push(['Tipo', 'No tiene un tipo del kit.']);
+  // pisos vistos en las fotos y altura de Open Buildings
+  const p = f.p;
+  if (p) filas.push(['Pisos', p.v ? `«${p.v}» en ${p.f}, con confianza ${p.k}.` : /Street View/.test(p.f) ? `No se ven en las fotos (${p.f}).` : `No se ven: ${p.f}.`]);
+  const ob = f.ob;
+  filas.push(['Altura', !ob ? 'Open Buildings 2.5D no la tiene.' : ob[1] >= 0.6 ? `Unos ${nf(ob[0])} m según Open Buildings 2.5D (2023), estimada desde satélite.`
+    : `Open Buildings 2.5D (2023) ve edificio solo en el ${Math.round(ob[1] * 100)} % de la huella: aquí su altura no sirve.`]);
+  // certeza y lo supuesto
+  const [nom, txt] = CLASES[f.c ?? e.c] ?? CLASES.III;
+  filas.push(['Certeza', `${f.c ?? e.c}, ${nom}: ${txt}. ` + (f.s ? `${f.s[0]} de sus ${f.s[1]} parámetros del kit tienen alguna parte supuesta.` : 'No se arma con el kit, así que no tiene parámetros que contar.')]);
+  // cómo se dibuja
   let como;
-  if (e.m === 'kit') como = ciudad ? 'Está armado con el kit de piezas.' : e.k ? 'Con la ciudad apagada, en su lugar se ve una copia del 106.' : 'Con la ciudad apagada, en su lugar se ve un volumen simple.';
+  if (e.m === 'kit') como = ciudad ? 'Con el kit de piezas, sobre la huella de OpenStreetMap.' : e.k ? 'Con el kit de piezas; con la ciudad apagada, en su lugar se ve una copia del 106.' : 'Con el kit de piezas; con la ciudad apagada, en su lugar se ve un volumen simple.';
   else if (e.m === 'cuartel106') como = 'Repite el volumen del 106.';
   else if (e.m === 'a mano') como = 'Es un volumen hecho a mano.';
-  else como = 'Es un volumen simple, con la altura estimada.';
-  const linea1 = (tipo ? `Tipo: ${tipo}. ` : 'Su tipo no está en el kit. ') + como;
-  const [nom, txt] = CLASES[e.c] ?? CLASES.III;
-  return { titulo, lineas: [linea1, `Certeza ${e.c}, ${nom}: ${txt}.`, 'Es una maqueta aproximada: solo el 106 está medido.'], es106: false };
+  else como = `Es una caja gris con la altura estimada: ${f.t ? 'el kit todavía no arma su forma' : 'su tipo no está en el kit'}.`;
+  if (f.une) como += ` OpenStreetMap lo parte en dos huellas, ${e.n} y ${f.une}: es un solo dúplex y se dibuja una vez, como uno de los 38 del kit.`;
+  filas.push(['Cómo se dibuja', como]);
+  const notas = [];
+  if (f.nota) notas.push(f.nota);
+  if (f.rep) notas.push(`Hay ${f.rep} edificios con el número ${e.n} en OpenStreetMap: el enlace de este usa su id de OSM.`);
+  const b = (F?.osm_base ?? '').split('-').map(Number);
+  const base = b.length === 3 ? `${b[2]} ${MES[b[1] - 1]} ${b[0]}` : '';
+  const sc = F?.supuestos_ciudad;
+  return { titulo, sub, filas, notas, es106: false, base, cerl: /CERL/.test(filas[0][1]),
+    supuestosCiudad: sc ? `${nf(sc[0])} de ${nf(sc[1])} (${Math.round(100 * sc[0] / sc[1])} %)` : '' };
 }
