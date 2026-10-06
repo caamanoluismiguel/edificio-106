@@ -56,10 +56,10 @@ for (const P of PANTALLAS) {
       const v = cam.position.clone().set(e.cx, e.y0 + e.h / 2, e.cz).project(cam);
       const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
       const tapado = ['#tarjeta-edificio', '#dock', '#hud'].some((q) => { const b = document.querySelector(q)?.getBoundingClientRect(); return b && b.width && x >= b.left && x <= b.right && y >= b.top && y <= b.bottom; });
-      return { titulo: document.querySelector('#te-t').textContent, x: Math.round(x), y: Math.round(y), W, H, ficha: [Math.round(ficha.left), Math.round(ficha.top), Math.round(ficha.right), Math.round(ficha.bottom)], tapado,
+      return { foco: document.activeElement?.id, titulo: document.querySelector('#te-t').textContent, x: Math.round(x), y: Math.round(y), W, H, ficha: [Math.round(ficha.left), Math.round(ficha.top), Math.round(ficha.right), Math.round(ficha.bottom)], tapado,
         texto: document.querySelector('#te-txt').innerText.replace(/\s+/g, ' ').slice(0, 160),
         copa: [...document.querySelectorAll('#te-txt p')].map((p) => p.textContent).find((t) => t.startsWith('Estimación de la copa')) ?? null,
-        copaVisible: (() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')); return !!p && p.getClientRects().length > 0; })() };
+        copaVisible: (() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')); return !!p && p.checkVisibility(); })() };   // checkVisibility: dentro de un <details> cerrado getClientRects no da 0
     });
     const archivo = path.join(SALIDA, `${P.nombre}-${rotulo}-${n}.png`);
     await pg.screenshot({ path: archivo });
@@ -70,7 +70,7 @@ for (const P of PANTALLAS) {
       if (s) {
         if (P.disp.hasTouch) await pg.tap('#te-txt details:has(p) > summary'); else await pg.click('#te-txt details:has(p) > summary');
         await pg.waitForTimeout(200);
-        r.copaVisible = await pg.evaluate(() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')); return !!p && p.getClientRects().length > 0; });
+        r.copaVisible = await pg.evaluate(() => { const p = [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')); return !!p && p.checkVisibility(); });
         console.log(`  ✓ copa plegada bajo «${s}»; ${r.copaVisible ? 'se abre con un toque' : 'NO se abre'}`);
       }
     }
@@ -102,7 +102,7 @@ for (const P of PANTALLAS) {
     if (r.tapado || r.x < 0 || r.x > r.W || r.y < 0 || r.y > r.H) mal(`el centro del edificio queda tapado o fuera de la pantalla`);
     if (errores.length) mal('errores: ' + errores.join(' | '));
     // el foco pasa al título de la ficha; Escape la cierra y el foco sale de ella
-    if ((await pg.evaluate(() => document.activeElement?.id)) !== 'te-t') mal('al abrir, el foco no pasó al título de la ficha');
+    if (r.foco !== 'te-t') mal('al abrir, el foco no pasó al título de la ficha');   // medido al abrir: el toque en el pliegue de la copa lo mueve
     await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
     const tras = await pg.evaluate(() => ({ oculta: document.querySelector('#tarjeta-edificio').hidden, foco: document.activeElement?.id || document.activeElement?.tagName }));
     if (!tras.oculta) mal('Escape no cerró la ficha');
