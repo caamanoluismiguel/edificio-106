@@ -40986,14 +40986,14 @@ function KJ(e) {
 }
 function qJ(e) {
 	if (Q.aguacero) return "Es de noche y la escena dibuja un aguacero forzado en Capas: no es el dato.";
-	let t = $.luna, n = e?.nubes ?? 30, r = lJ(e), i = t ? t.frac > .95 ? "la luna llena" : t.frac < .25 ? `una luna ${t.fase < 180 ? "creciente" : "menguante"} delgada` : `la luna ${t.fase < 180 ? "creciente" : "menguante"}` : "";
-	if (!t || t.alt <= 0) return "Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y el poste de la esquina.";
-	if (t.frac < .05) return "Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y el poste de la esquina.";
+	let t = $.luna, n = e?.nubes ?? 30, r = lJ(e), i = X.postesVer.value > 0 ? "el poste de la esquina y los postes de las calles de la ciudad" : "el poste de la esquina", a = t ? t.frac > .95 ? "la luna llena" : t.frac < .25 ? `una luna ${t.fase < 180 ? "creciente" : "menguante"} delgada` : `la luna ${t.fase < 180 ? "creciente" : "menguante"}` : "";
+	if (!t || t.alt <= 0) return `Es de noche y la luna no está en el cielo. Alumbran solo el cielo de la ciudad y ${i}.`;
+	if (t.frac < .05) return `Es de noche y es casi luna nueva. Alumbran solo el cielo de la ciudad y ${i}.`;
 	if (r || n >= 70) {
-		let t = Math.round(n), a = "Alumbran el resplandor de la ciudad en las nubes y el poste de la esquina.";
-		return r && e?.albrook && !e.albrook.auto ? `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${t} % del cielo cubierto y la escena tapa ${i}. ${a}` : `Es de noche${r ? " y el modelo da lluvia" : ""}, con ${t} % del cielo cubierto según el dato: la escena tapa ${i}. ${a}`;
+		let t = Math.round(n), o = `Alumbran el resplandor de la ciudad en las nubes y ${i}.`;
+		return r && e?.albrook && !e.albrook.auto ? `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${t} % del cielo cubierto y la escena tapa ${a}. ${o}` : `Es de noche${r ? " y el modelo da lluvia" : ""}, con ${t} % del cielo cubierto según el dato: la escena tapa ${a}. ${o}`;
 	}
-	return `Es de noche y alumbra ${i}, hacia el ${QV(t.az)}. Suman algo el cielo de la ciudad y el poste de la esquina.`;
+	return `Es de noche y alumbra ${a}, hacia el ${QV(t.az)}. Suman algo el cielo de la ciudad y ${i}.`;
 }
 var JJ = () => matchMedia("(max-width: 760px)").matches || document.documentElement.classList.contains("panel-lateral") ? "" : "Ahora en Ciudad del Saber", YJ = (e) => e?.geo != null && e.geo >= -.833, XJ = matchMedia("(max-width: 760px)");
 function ZJ(e) {
@@ -41727,7 +41727,7 @@ var jY = {
 		que: "El sol está calculado para este minuto exacto. El cielo, las nubes y la lluvia salen del dato del tiempo de esa hora. El suelo y los muros siguen mojados mientras no se seca lo que llovió en las horas anteriores, y la vegetación se mece con el viento de esa hora.",
 		prueba: "Mueve la regla del día y mira cómo giran y se acortan las sombras. Cerca del mediodía, la sombra del alero de 1,65 m cubre las ventanas y casi todo el muro de cada piso.",
 		porque: "Sirve para comparar con una foto real del mismo día y hora el sol y las sombras, que están calculados al minuto, y para ver el edificio con la luz de cualquier momento desde 1940. La lluvia y la fuerza del sol de esa hora son de ERA5 y casi nunca coinciden con lo que se ve en una hora concreta.",
-		ojo: "La fuerza del sol de cada hora es el promedio de ERA5 en su celda: mientras la escena dibuja lluvia no dibuja sol directo, pero en una hora sin lluvia en el dato puede dibujar sombras aunque en el sitio llueva (pasó en seis de cada diez horas de 9 a 14 en que el observador de Albrook informó lluvia, 2017–2025). La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Dos cosas son supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, la única del modelo, se supone LED de 4000 K. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.",
+		ojo: "La fuerza del sol de cada hora es el promedio de ERA5 en su celda: mientras la escena dibuja lluvia no dibuja sol directo, pero en una hora sin lluvia en el dato puede dibujar sombras aunque en el sitio llueva (pasó en seis de cada diez horas de 9 a 14 en que el observador de Albrook informó lluvia, 2017–2025). La cantidad de nubes y de lluvia sale del dato; su forma y su posición exacta no. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna está en su lugar y con su fase de esa noche, y las nubes del dato la tapan; el cielo devuelve el resplandor de la ciudad. Hay cosas supuestas: los cuartos que se ven detrás del vidrio y cuáles tienen la luz prendida (con la luz que derraman) son inventados, no un dato de uso, y la lámpara del poste de la esquina, el único poste real del modelo, se supone LED de 4000 K. Con la ciudad encendida también alumbran los postes de sus calles, que se ponen por regla y llevan esa misma lámpara. En Capas está la exposición larga, que aclara la noche sin agregar luz. Lo que tarda en secarse y cuánto se mueve cada árbol son una estimación sencilla, no una medición.",
 		tec: "Posición del sol: algoritmo de NOAA (hasta 0,03° en altura y 0,11° en azimut frente a NREL SPA). Tiempo: reanálisis ERA5 (Open-Meteo), una celda de unos 28 km que contiene el edificio; para hoy, pronóstico de modelo. Sombras en tiempo real con un mapa de sombras: contra el trazado de rayos sobre la geometría, bajo el alero salen unos 5 cm más cortas."
 	},
 	sol: {
