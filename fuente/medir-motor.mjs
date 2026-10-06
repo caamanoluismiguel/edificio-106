@@ -1,6 +1,6 @@
 // Rendimiento, carga y descarga de esta rama contra otra revisión (por defecto origin/main), con la ciudad encendida por defecto.
 // De a una corrida: nunca dos pruebas de rendimiento en paralelo.
-//   cd fuente && node medir-motor.mjs [revisión] [--webgl] [--movil] [--url=ciudad=0]
+//   cd fuente && node medir-motor.mjs [revisión] [--webgl] [--movil] [--noche] [--url=ciudad=0]   (--noche: a las 21:00 en vez de las 9:30)
 // Por versión (la revisión exportada con git archive y esta carpeta), en el mismo navegador y por turnos:
 //   · carga: primer pintado (first-contentful-paint), 106 completo (los seis grupos del edificio), modelo completo (cargaCompleta)
 //     y ciudad montada, en s desde la navegación, con ?rapido (la intro corta no cambia la carga);
@@ -20,10 +20,10 @@ import { chromium, devices } from 'playwright';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url)), RAIZ = path.resolve(AQUI, '..');
 const ARGS = process.argv.slice(2), REV = ARGS.find((a) => !a.startsWith('--')) ?? 'origin/main';
-const GL = ARGS.includes('--webgl'), MOVIL = ARGS.includes('--movil'), EXTRA = (ARGS.find((a) => a.startsWith('--url=')) ?? '').slice(6);
-const ETIQ = `${MOVIL ? 'movil' : 'pc'}-${GL ? 'webgl' : 'webgpu'}${EXTRA ? '-' + EXTRA.replace(/[^a-z0-9]+/gi, '-') : ''}`;
+const GL = ARGS.includes('--webgl'), MOVIL = ARGS.includes('--movil'), NOCHE = ARGS.includes('--noche'), EXTRA = (ARGS.find((a) => a.startsWith('--url=')) ?? '').slice(6);
+const ETIQ = `${MOVIL ? 'movil' : 'pc'}-${GL ? 'webgl' : 'webgpu'}${NOCHE ? '-noche' : ''}${EXTRA ? '-' + EXTRA.replace(/[^a-z0-9]+/gi, '-') : ''}`;
 const SALIDA = path.join(AQUI, 'verificacion', 'motor'); fs.mkdirSync(SALIDA, { recursive: true });
-const MOMENTO = { fecha: { y: 2024, m: 1, d: 15 }, min: 9 * 60 + 30 };
+const MOMENTO = { fecha: { y: 2024, m: 1, d: 15 }, min: NOCHE ? 21 * 60 : 9 * 60 + 30 };
 const VISTAS = {
   esquina: null,                                                       // la vista de inicio (main.js)
   aerea: 'aerea',                                                      // la vista «Aérea» de main.js

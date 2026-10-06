@@ -74,6 +74,7 @@ Object.assign(U, {
   purkinje: uniform(0),                  // 0..1: cuánto se acerca la imagen a la visión nocturna (menos color, algo más fría)
   poste: uniform(0),                     // intensidad del poste de la esquina (0 de día)
   posteCol: uniform(new THREE.Color(1, 1, 1)),          // color de su lámpara, con luminancia 1
+  postesVer: uniform(0),                 // 1 mientras se ven los postes de la ciudad puestos por regla (src/postes.js)
   ventanasN: uniform(0),                 // encendido de las ventanas y su derrame (0 de día)
   lunaDir: uniform(new THREE.Vector3(0, -1, 0)),        // hacia dónde está la luna (escena)
   lunaLuz: uniform(new THREE.Vector3(0, 1, 0)),         // hacia dónde está el sol visto desde la luna (da el terminador)
@@ -111,6 +112,14 @@ const NOCHE = {
 for (const c of Object.values(NOCHE.lamparas)) { const l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; c.forEach((v, i) => { c[i] = v / l; }); }
 // dónde está la cabeza del poste de la esquina (grupo «sitio»: fuste en (45,6; 16,4), brazo hacia la calle) y la planta del edificio
 const POSTE = new THREE.Vector3(48.6, 11.3, 16.43);
+/** La luz de los postes de la ciudad puestos por regla (src/postes.js): el mapa del suelo que arma postes.js con la misma ley del
+ *  poste de la esquina. Hasta que llega, una textura de 1 × 1 en cero del mismo formato (cambiarla no recompila nada). */
+function crearLuzPostes() {
+  const t = new THREE.DataTexture(new Uint16Array(4), 1, 1, THREE.RGBAFormat, THREE.HalfFloatType);
+  t.magFilter = t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; t.needsUpdate = true;
+  // o y t: origen y tamaño del mapa en x-z; k: 1 / la escala de los valores; alto: altura de la lámpara (los pone postes.js)
+  return { tn: texture(t), o: uniform(new THREE.Vector2(0, 0)), t: uniform(new THREE.Vector2(1, 1)), k: uniform(0), alto: uniform(11.3) };
+}
 const PLANTA = [22.75, 11.5];
 const clayColor = vec3(0.74, 0.72, 0.68);
 const TEX_BLANCA = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);   // mientras llega la textura real
@@ -185,6 +194,8 @@ function conGruesa(s) {
 export class Escena {
   constructor(canvasParent, calidad) {
     this.ciudadOpc = CIUDAD ? { ...CIUDAD } : null;
+    // con la ciudad, el suelo, las calles y los edificios del contexto leen el mapa de luz de los postes (sin ciudad, nada de esto)
+    this.luzPostes = CIUDAD ? crearLuzPostes() : null;
     this.calidad = calidad;           // {nivel, dpr, sombras, particulas, bloom}
     this.parent = canvasParent;
     this.grupos = {};                 // nombre -> {root, minY, maxY, idx}
@@ -677,7 +688,7 @@ export class Escena {
       return loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), base + 'modelo/');
     };
     this.listos = new Set();
-    this._leerGLB = leerGLB; this._cargaTex = cargaTex;   // la ciudad llega después (arrancarCiudad) con el mismo cargador
+    this._leerGLB = leerGLB; this._cargaTex = cargaTex; this._base = base;   // la ciudad llega después (arrancarCiudad) con el mismo cargador
     const uno = async (nombre) => {
       const idx = GRUPOS.indexOf(nombre === 'arboles' ? 'vegetacion' : nombre);   // las copas de CdS se revelan con la vegetación (el armado llega hasta 8,4)
       const gltf = await leerGLB(livianas && (nombre === 'cubiertas' || nombre === 'arboles') ? nombre + '_movil' : nombre);   // arboles_movil: solo las copas sueltas
@@ -796,9 +807,20 @@ export class Escena {
       // el asfalto de los estacionamientos (pulido) lleva la textura del de las calles del contexto, el mismo material: donde se pisan no se nota
       material: (src, opc) => this.#material(src, 'contexto', idx, uniform(0), uniform(1), src.userData?.ciudadParte === 'asfalto' ? cargaTex : sinTex, opc) });
     this.ciudad.pedir(this._leerGLB);
+    // los postes por regla, en paralelo con la ciudad (encendida tarde en Capas: solo los edificios de la ciudad leen su luz)
+    this.luzPostes ??= crearLuzPostes();
+    const pPostes = Promise.all([import('./postes.js'), fetch(conVersion(this._base + 'datos/postes.json')).then((r) => r.json())]).catch((e) => { console.warn('postes', e); return null; });
     const raiz = await this.ciudad.montar();
     try { await this.#compilar(raiz); } catch (e) { /* se compila al dibujar */ }
     this.scene.add(raiz);
+    const pp = await pPostes;
+    if (pp) {
+      const t1 = performance.now(), [{ armarPostes }, d] = pp;
+      this.postes = armarPostes(d, { U, luz: this.luzPostes, material: (src, opc) => this.#material(src, 'contexto', idx, uniform(0), uniform(1), sinTex, opc) });
+      try { await this.#compilar(this.postes.raiz); } catch (e) { /* se compila al dibujar */ }
+      this.scene.add(this.postes.raiz);
+      o.postes = { n: this.postes.n, mapa: this.postes.mapa, ms: Math.round(performance.now() - t1) };
+    }
     // el contexto (si llegó) sin las copias del 106 que el kit reemplaza ni sus cajas; al apagar la ciudad vuelven
     if (this.grupos.contexto?.root) await this.ciudad.filtrarContexto(this.grupos.contexto.root).catch((e) => console.warn('ciudad: filtrar contexto', e));
     this.ciudadLista = true;
@@ -813,6 +835,8 @@ export class Escena {
     const N = NIVEL[n], ver = !N.oculta && this.ciudadEncendida !== false;
     this.ciudad?.usarAlto(N.alto);
     this.ciudad?.mostrar(ver);
+    if (this.postes) this.postes.raiz.visible = ver;
+    U.postesVer.value = ver && this.postes ? 1 : 0;
     if (this.sunG) {
       const usa = ver && N.sombra > 0 && !!this.ciudadLista;
       this.uGruesa.value = usa ? 1 : 0;
@@ -1134,7 +1158,17 @@ export class Escena {
       const teja = /terracotta/.test(nm);
       const abierto = teja ? float(1) : grupo === 'sitio' ? step(y, 1.2).mul(step(1.9, dq)) : grupo === 'contexto' && /turf/.test(nm) ? float(1) : float(0);
       const eCielo = vec3(U.cieloArriba).mul(max(normalWorld.y, 0)).mul(abierto);
-      const eArt = m.colorNode.mul(ePoste.add(eVent).add(eCielo));
+      // los postes de la ciudad puestos por regla (src/postes.js): su mapa del suelo, con la ley del poste de la esquina. Solo en el
+      // contexto, la ciudad y el suelo del sitio; nunca en el 106 (delEdificio) ni en los postes mismos. R es la luz sobre un plano
+      // horizontal en el suelo y G, B la de un muro vertical que mira a las lámparas; arriba de la lámpara no llega nada
+      let eLuz = ePoste.add(eVent).add(eCielo);
+      const LP = this.luzPostes;
+      if (LP && !opc.sinPostes && (grupo === 'contexto' || (grupo === 'sitio' && !delEdificio))) {
+        const s = LP.tn.sample(positionWorld.xz.sub(LP.o).div(LP.t));
+        const E = s.r.mul(max(normalWorld.y, 0)).add(max(dot(normalWorld.xz, s.gb), 0)).mul(smoothstep(LP.alto, LP.alto.sub(2), positionWorld.y.sub(s.a)));
+        eLuz = eLuz.add(vec3(U.posteCol).mul(U.poste.mul(U.postesVer).mul(LP.k)).mul(E));
+      }
+      const eArt = m.colorNode.mul(eLuz);
       m.emissiveNode = m.emissiveNode ? m.emissiveNode.add(eArt) : eArt;
       // la cabeza del poste: la lámpara misma, que satura y hace bloom
       if (grupo === 'sitio' && nm.includes('soffit')) {
