@@ -8,19 +8,18 @@
 //     de tipo tertiary, tertiary_link, secondary, residential o unclassified, y las service que tienen nombre (en Ciudad del Saber
 //     son calles, como Jacinto Palacios o Ricardo Murgas). Las service sin nombre (accesos y estacionamientos), los pasillos de
 //     estacionamiento, las entradas de casa, aceras, senderos, trochas y escaleras, no: no se sabe si tienen luz ni de qué tipo;
-//   · DOS POR CUADRA: una cuadra es el tramo de calle con luz entre dos cruces seguidos con otras calles con luz, o hasta una calle
-//     sin salida (el grafo de OSM: los tramos que OSM parte sin cruce se juntan) y cortado por el límite. Los postes van a un cuarto
-//     y a tres cuartos de su largo ((i + 1/2)·L/n); uno en el medio si mide menos de CORTA m y, pasados LARGA m, uno más por cada
-//     EXTRA m o fracción. Los pedazos de menos de MIN_CUADRA m no llevan;
-//   · un solo lado de cada cuadra, el que deja más lugares libres (la del poste real, en su lado); cada poste se busca desde su
-//     lugar hacia los dos lados hasta media separación y, si ahí no cabe, en el otro lado de la calle;
-//   · el fuste a RETIRO m del borde del asfalto (el ancho de la calle es el que dibuja contexto.mjs) y el brazo hacia la calle;
-//   · no se pone donde cae dentro de otra calle o acera (cruces), a menos de 1 m de un edificio (huellas de OSM y del kit), a menos
-//     de 1,5 m del tronco de un árbol (modelo/arboles.glb y las palmas de vegetacion.glb), sobre lo modelado en el sitio a la
-//     altura de una persona, ni fuera del límite;
-//   · nada dentro de la planta del 106 con sus galerías y escaleras (PLANTA más MARGEN_106 m). El poste real de la esquina es uno
-//     de los dos de su cuadra de Carlos Lara: ocupa el lugar más cercano a él y la regla pone solo el otro. Ninguno a menos de
-//     MIN_SEP m de otro.
+//   · UNO EN CADA CRUCE, en una de sus esquinas, como el poste real (esquina de Carlos Lara y Jorge Gil). Un cruce es un nudo del
+//     grafo de OSM donde se juntan tres o más tramos de calles con luz (los tramos que OSM parte sin cruce no cuentan); los cruces a
+//     menos de GRUPO m unos de otros llevan uno solo. La esquina queda a RETIRO m más allá del medio ancho de las dos calles (medido
+//     en el poste real); de las esquinas libres, la más cercana al rincón (−x, −z) desde el cruce, el del poste real; el brazo
+//     cruza la calle principal (en un empate, la que va más cerca del eje z, como Carlos Lara). El cruce del poste real no lleva otro;
+//   · uno a SIN_SALIDA m de la punta de cada calle sin salida;
+//   · en los tramos de más de TRAMO_LARGO m sin cruces (entre cruces o puntas, cortados por el límite), postes en medio repartidos
+//     parejos a no más de unos 100 m, del lado que deja más lugares libres;
+//   · no se pone donde cae dentro de otra calle o acera, a menos de 1 m de un edificio (huellas de OSM y del kit), a menos de 1,5 m
+//     del tronco de un árbol (modelo/arboles.glb y las palmas de vegetacion.glb), sobre lo modelado en el sitio a la altura de una
+//     persona, dentro de la planta del 106 con sus galerías y escaleras (PLANTA más MARGEN_106 m), ni fuera del límite; ninguno a
+//     menos de MIN_SEP m de otro. Si no hay lugar, falta.
 // El mapa de luz que estos postes dejan en el suelo de noche lo arma el navegador con estos puntos (src/postes.js).
 //   cd fuente && node postes.mjs       escribe datos/postes.json y un resumen en la consola
 import fs from 'node:fs';
@@ -41,17 +40,17 @@ const leer = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 // 11,3 m. El fuste queda a 1,9 m del bordillo de la calle Carlos Lara (bordillo en x 47,5). Los postes de la regla lo copian.
 const REAL = { fuste: [45.6, 16.4], brazo: [1, 0], lampara: 11.3, alcance: 3.0, retiro: 1.9 };
 const REGLA = {
-  porCuadra: { valor: 2, fuente: 'regla propia: dos por cuadra, a un cuarto y a tres cuartos de cada tramo entre cruces No observado' },
-  corta: { valor: 40, fuente: 'regla propia: una cuadra de menos de 40 m lleva un solo poste, en el medio' },
-  larga: { valor: 200, fuente: 'regla propia: pasados 200 m, un poste más por cada 100 m o fracción (con dos postes en 200 m quedan unos 100 m entre ellos; más allá se mantiene esa separación)' },
-  extra: { valor: 100, fuente: 'ver larga' },
-  minCuadra: { valor: 10, fuente: 'regla propia: los pedazos de menos de 10 m (entre dos cruces muy juntos o donde el límite corta la calle) no llevan poste' },
-  minSep: { valor: 12, fuente: 'regla propia: ningún poste a menos de 12 m de otro (en los cruces, las cuadras que se tocan)' },
-  retiro: { valor: REAL.retiro, fuente: 'el del poste de la esquina del 106: fuste a 1,9 m del bordillo (sitio.glb)' },
-  lado: { valor: 'uno', fuente: 'regla propia: un solo lado de cada cuadra, el que deja más lugares libres' },
+  esquina: { valor: 'uno por cruce', fuente: 'regla propia: un poste en cada cruce de calles con luz, en una de sus esquinas, como el poste real junto al 106 (en la esquina de Carlos Lara y Jorge Gil). No observado' },
+  retiro: { valor: 2.9, fuente: 'medido en el poste real: su fuste queda a 2,65 m del borde de Carlos Lara y a 3,1 m del de Jorge Gil (ejes de las calles del sitio en x 52,25 y z 23,5, 8 m de ancho); se toma 2,9 m más allá del medio ancho de cada calle' },
+  rincon: { valor: [-1, -1], fuente: 'regla propia: de las esquinas libres, la más cercana a la dirección (−x, −z) desde el cruce, la del poste real' },
+  brazo: { valor: 'sobre la calle principal', fuente: 'regla propia: el brazo cruza la calle de más categoría de las dos de su esquina; en un empate, la que va más cerca del eje z de la escena, como Carlos Lara bajo el brazo del poste real' },
+  grupo: { valor: 25, fuente: 'regla propia: los cruces a menos de 25 m unos de otros (calzadas dobles, ramales) llevan un solo poste, en el cruce con más calles' },
+  sinSalida: { valor: 10, fuente: 'regla propia: en una calle sin salida, un poste a 10 m de su punta' },
+  tramoLargo: { valor: 150, fuente: 'regla propia: un tramo de más de 150 m sin cruces lleva postes en medio, repartidos parejos y a no más de unos 100 m (ceil(L / 100) − 1), para que no queden tramos largos a oscuras' },
+  minSep: { valor: 12, fuente: 'regla propia: ningún poste a menos de 12 m de otro' },
   margen106: { valor: 4, fuente: 'regla propia: ningún poste a menos de 4 m de la planta del 106 (sus galerías, escaleras y la entrada)' },
 };
-const CORTA = REGLA.corta.valor, LARGA = REGLA.larga.valor, EXTRA = REGLA.extra.valor, MIN_CUADRA = REGLA.minCuadra.valor, MIN_SEP = REGLA.minSep.valor, RETIRO = REGLA.retiro.valor, MARGEN_106 = REGLA.margen106.valor;
+const GRUPO = REGLA.grupo.valor, SIN_SALIDA = REGLA.sinSalida.valor, TRAMO_LARGO = REGLA.tramoLargo.valor, MIN_SEP = REGLA.minSep.valor, MIN_CUADRA = 1, RETIRO = REGLA.retiro.valor, MARGEN_106 = REGLA.margen106.valor;
 const PLANTA = [22.75, 11.5];                         // media planta del 106 (escena.js, PLANTA)
 // anchos de las calles: los de contexto.mjs (ANCHO)
 const ANCHO = { primary: 7.5, primary_link: 5, tertiary: 8, tertiary_link: 5, secondary: 8, residential: 8, unclassified: 8, service: 4, footway: 1.6, steps: 1.6 };
@@ -208,48 +207,77 @@ for (const { nodos, tramos } of caminos) {
   }
   cerrar();
 }
-/** Postes de una cuadra de L m: 1 si es corta, 2 hasta LARGA m y uno más por cada EXTRA m (o fracción) que pase de LARGA. */
-const cuantos = (L) => (L < CORTA ? 1 : L <= LARGA ? 2 : 2 + Math.ceil((L - LARGA) / EXTRA));
+const postes = [{ x: REAL.fuste[0], z: REAL.fuste[1], calle: 'Calle Carlos Lara', real: true, de: 'real' }];
+const motivos = {}; let largoConLuz = 0;
+for (const q of cuadras) largoConLuz += q.length;
+const real = postes[0], adentro = (u) => { const p = coord.get(u); return dentro(LIM, p[0], p[1]); };
+const unit = (d) => { const l = Math.hypot(d[0], d[1]) || 1; return [d[0] / l, d[1] / l]; };
+/** Prueba un lugar: libre y lejos de los demás postes. Devuelve el motivo si no. */
+const probar = (pq, ids) => { const m = libre(pq[0], pq[1], ids); if (m) return m; return postes.some((o) => Math.hypot(o.x - pq[0], o.z - pq[1]) < MIN_SEP) ? 'vecino' : null; };
+const poner = (pq, ang, c, de) => postes.push({ x: pq[0], z: pq[1], y: suelo(pq), ang, calle: c?.nombre || null, tipo: c?.tipo, de });
+const anota = (m) => { motivos[m] = (motivos[m] ?? 0) + 1; };
 
-const postes = [{ x: REAL.fuste[0], z: REAL.fuste[1], calle: 'Calle Carlos Lara', real: true }];
-const motivos = {}, porN = {}, huecos = []; let largoConLuz = 0;
-const real = postes[0];
-// la cuadra del poste real: la de Carlos Lara que pasa más cerca de él (a lo más a medio ancho + retiro + 2 m de su eje)
-let cuadraReal = null, sReal = 0;
-for (const q of cuadras) q.forEach((s, j) => { const d = Math.hypot(real.x - s.p[0], real.z - s.p[1]); if (s.c.nombre === real.calle && d < s.c.w / 2 + RETIRO + 2 && (!cuadraReal || d < cuadraReal.d)) { cuadraReal = { q, d }; sReal = j; } });
-const prio = (q) => Math.min(...q.map((s) => PRIORIDAD[s.c.tipo]));
-const orden = [...cuadras].sort((a, b) => (a === cuadraReal?.q ? -1 : b === cuadraReal?.q ? 1 : 0) || (prio(a) - prio(b)) || (b.length - a.length));
-for (const q of orden) {
-  const L = q.length, n = cuantos(L), ids = new Set(q.map((s) => s.c.id)); largoConLuz += L;
-  porN[n] = (porN[n] ?? 0) + 1;
+// ---- cruces: nudos con tres o más tramos de calles con luz, dentro del límite, juntados en grupos de menos de GRUPO m
+const cruces = [...ady.keys()].filter((u) => grado(u) >= 3 && adentro(u)).sort((a, b) => grado(b) - grado(a));
+const grupos = [];
+for (const u of cruces) { const p = coord.get(u); if (!grupos.some((g) => g.some((v) => { const r = coord.get(v); return Math.hypot(p[0] - r[0], p[1] - r[1]) < GRUPO; }))) grupos.push([u]); else grupos.find((g) => g.some((v) => { const r = coord.get(v); return Math.hypot(p[0] - r[0], p[1] - r[1]) < GRUPO; })).push(u); }
+// el cruce del poste real (el más cercano a él): ahí no se pone otro
+const dReal = (g) => Math.min(...g.map((u) => { const p = coord.get(u); return Math.hypot(p[0] - real.x, p[1] - real.z); }));
+const grupoReal = grupos.reduce((m, g) => (dReal(g) < dReal(m) ? g : m), grupos[0]);
+const RINCON = unit(REGLA.rincon.valor);
+const puntas = [...ady.keys()].filter((u) => grado(u) === 1 && adentro(u)).length;
+let sinEsquina = 0;
+for (const g of grupos) {
+  if (g === grupoReal && dReal(g) < 15) continue;
+  const u = g[0], O = coord.get(u);                                  // el de más calles del grupo
+  // las calles que salen del cruce, ordenadas por ángulo; cada par seguido es una esquina
+  const sal = ady.get(u).map((e) => { const d = unit([coord.get(e.v)[0] - O[0], coord.get(e.v)[1] - O[1]]); return { d, c: e.c, a: Math.atan2(d[1], d[0]) }; }).sort((x, y) => x.a - y.a);
+  const ids = new Set(sal.map((e) => e.c.id));
+  const esquinas = sal.map((A, i) => {
+    const B = sal[(i + 1) % sal.length]; let th = B.a - A.a; if (th <= 0) th += 2 * Math.PI;
+    if (th < (40 * Math.PI) / 180 || th > (200 * Math.PI) / 180) return null;   // ni esquinas muy agudas ni el lado de afuera de una curva
+    const bis = unit([Math.cos(A.a + th / 2), Math.sin(A.a + th / 2)]), w = Math.max(A.c.w, B.c.w) / 2 + RETIRO;
+    const pq = [O[0] + bis[0] * w / Math.sin(th / 2), O[1] + bis[1] * w / Math.sin(th / 2)];
+    // el brazo cruza la calle principal: más categoría; en un empate, la que va más cerca del eje z
+    const pri = (e) => [PRIORIDAD[e.c.tipo], -Math.abs(e.d[1])];
+    const M = pri(A)[0] !== pri(B)[0] ? (pri(A)[0] < pri(B)[0] ? A : B) : (pri(A)[1] <= pri(B)[1] ? A : B);
+    const rel = [pq[0] - O[0], pq[1] - O[1]], t = rel[0] * M.d[0] + rel[1] * M.d[1], v = [rel[0] - t * M.d[0], rel[1] - t * M.d[1]];
+    return { pq, ang: Math.atan2(-v[1], -v[0]), c: M.c, pref: bis[0] * RINCON[0] + bis[1] * RINCON[1] };
+  }).filter(Boolean).sort((x, y) => y.pref - x.pref);
+  const e = esquinas.find((x) => { const m = probar(x.pq, ids); if (m) anota(m); return !m; });
+  if (e) poner(e.pq, e.ang, e.c, 'cruce'); else sinEsquina++;
+}
+
+// ---- calles sin salida: un poste a SIN_SALIDA m de la punta, del lado más cercano al rincón preferido (o el otro si no cabe)
+for (const [u] of ady) {
+  if (grado(u) !== 1 || !adentro(u)) continue;
+  const O = coord.get(u), { v, c } = ady.get(u)[0], d = unit([coord.get(v)[0] - O[0], coord.get(v)[1] - O[1]]), n = [-d[1], d[0]];
+  const base = [O[0] + d[0] * SIN_SALIDA, O[1] + d[1] * SIN_SALIDA], off = c.w / 2 + RETIRO, ids = new Set([c.id]);
+  const lados = n[0] * RINCON[0] + n[1] * RINCON[1] >= 0 ? [1, -1] : [-1, 1];
+  const ok = lados.find((l) => { const m = probar([base[0] + n[0] * off * l, base[1] + n[1] * off * l], ids); if (m) anota(m); return !m; });
+  if (ok !== undefined) poner([base[0] + n[0] * off * ok, base[1] + n[1] * off * ok], Math.atan2(-n[1] * ok, -n[0] * ok), c, 'sin salida');
+}
+
+// ---- tramos largos sin cruces (las cuadras entre cruces o puntas, cortadas por el límite): más de TRAMO_LARGO m, postes en medio
+for (const q of cuadras) {
+  const L = q.length; if (L <= TRAMO_LARGO) continue;
+  const k = Math.ceil(L / 100) - 1, ids = new Set(q.map((s) => s.c.id));
   const cand = (s, lado) => { const off = s.c.w / 2 + RETIRO; return [s.p[0] + s.n[0] * off * lado, s.p[1] + s.n[1] * off * lado]; };
-  const esReal = q === cuadraReal?.q;
-  // el lado: el del poste real en su cuadra; en las demás, el que deja más lugares libres
-  const lado0 = esReal ? Math.sign((real.x - q[sReal].p[0]) * q[sReal].n[0] + (real.z - q[sReal].p[1]) * q[sReal].n[1]) || 1
-    : (q.filter((s) => !libre(...cand(s, 1), ids)).length >= q.filter((s) => !libre(...cand(s, -1), ids)).length ? 1 : -1);
-  // los lugares: a (i + 1/2)·L/n (un cuarto y tres cuartos con dos); en la cuadra del real, él ocupa el lugar más cercano a él
-  let metas = Array.from({ length: n }, (_, i) => (i + 0.5) * L / n);
-  if (esReal) { const k = metas.reduce((m, t, i) => (Math.abs(t - sReal) < Math.abs(metas[m] - sReal) ? i : m), 0); metas.splice(k, 1); }
-  const puestos = esReal ? [sReal] : [], ventana = Math.max(3, L / (2 * n));
-  for (const t of metas) {
-    let elegido = null;
-    // primero en su lado, del punto meta hacia afuera hasta media separación; si no hay lugar, en el otro lado
+  const lado0 = q.filter((s) => !libre(...cand(s, 1), ids)).length >= q.filter((s) => !libre(...cand(s, -1), ids)).length ? 1 : -1;
+  const ventana = L / (2 * (k + 1));
+  for (let i = 1; i <= k; i++) {
+    const t = Math.round(i * L / (k + 1)); let hecho = false;
     for (const lado of [lado0, -lado0]) {
-      for (let d = 0; d <= ventana && !elegido; d++) for (const j of d ? [Math.round(t) - d, Math.round(t) + d] : [Math.round(t)]) {
-        if (j < 0 || j >= L || elegido) continue;
-        const s = q[j], pq = cand(s, lado), m = libre(pq[0], pq[1], ids);
-        if (m) { motivos[m] = (motivos[m] ?? 0) + 1; continue; }
-        if (postes.some((o) => Math.hypot(o.x - pq[0], o.z - pq[1]) < MIN_SEP)) { motivos.vecino = (motivos.vecino ?? 0) + 1; continue; }
-        elegido = { s, j, pq, lado };
+      for (let dd = 0; dd <= ventana && !hecho; dd++) for (const j of dd ? [t - dd, t + dd] : [t]) {
+        if (hecho || j < 0 || j >= L) continue;
+        const s = q[j], pq = cand(s, lado), m = probar(pq, ids);
+        if (m) { anota(m); continue; }
+        poner(pq, Math.atan2(-s.n[1] * lado, -s.n[0] * lado), s.c, 'tramo largo'); hecho = true;
       }
-      if (elegido) break;
+      if (hecho) break;
     }
-    if (!elegido) { motivos.sinLugar = (motivos.sinLugar ?? 0) + 1; continue; }
-    const { s, pq, lado } = elegido, ang = Math.atan2(-s.n[1] * lado, -s.n[0] * lado);   // el brazo hacia la calle
-    postes.push({ x: pq[0], z: pq[1], y: suelo(pq), ang, calle: s.c.nombre || null, tipo: s.c.tipo, otroLado: lado !== lado0 });
-    puestos.push(elegido.j);
+    if (!hecho) anota('sinLugar');
   }
-  puestos.sort((a, b) => a - b); for (let i = 1; i < puestos.length; i++) huecos.push(puestos[i] - puestos[i - 1]);
 }
 
 const nuevos = postes.filter((p) => !p.real);
@@ -269,9 +297,10 @@ const porTipo = {}; for (const p of nuevos) porTipo[p.tipo] = (porTipo[p.tipo] ?
 console.log(`datos/postes.json: ${nuevos.length} postes (más el real de la esquina) · ${(largoConLuz / 1000).toFixed(1)} km de calles con luz dentro del límite · por tipo ${JSON.stringify(porTipo)}`);
 const med = (v) => { const a = [...v].sort((x, y) => x - y); return a.length ? a[a.length >> 1] : null; };
 const vecino = nuevos.map((p) => Math.min(...postes.filter((o) => o !== p).map((o) => Math.hypot(o.x - p.x, o.z - p.z))));
-console.log(`${cuadras.length} cuadras (por número de postes: ${JSON.stringify(porN)}) · ${nuevos.filter((p) => p.otroLado).length} postes en el otro lado`);
-console.log(`separación dentro de una cuadra (a lo largo de la calle): mediana ${med(huecos)} m, mínima ${Math.min(...huecos)}, máxima ${Math.max(...huecos)} · poste más cercano (en línea recta): mediana ${med(vecino).toFixed(1)}, mínima ${Math.min(...vecino).toFixed(1)}, máxima ${Math.max(...vecino).toFixed(1)} m`);
+const porDe = {}; for (const p of nuevos) porDe[p.de] = (porDe[p.de] ?? 0) + 1;
+console.log(`por origen: ${JSON.stringify(porDe)} · ${grupos.length} grupos de cruces (${cruces.length} cruces; el del poste real no lleva otro) · ${sinEsquina} cruces sin esquina libre · ${puntas} calles sin salida · ${cuadras.filter((q) => q.length > TRAMO_LARGO).length} tramos de más de ${TRAMO_LARGO} m`);
+console.log(`poste más cercano (en línea recta, contando el real): mediana ${med(vecino).toFixed(1)}, mínima ${Math.min(...vecino).toFixed(1)}, máxima ${Math.max(...vecino).toFixed(1)} m`);
 console.log(`lugares descartados (metros recorridos): ${JSON.stringify(motivos)} · troncos ${troncos} · ${(fs.statSync(path.join(RAIZ, 'datos/postes.json')).size / 1024).toFixed(0)} KB`);
 const xs = nuevos.map((p) => p.x), zs = nuevos.map((p) => p.z);
 console.log(`caja: x ${Math.min(...xs).toFixed(0)} a ${Math.max(...xs).toFixed(0)}, z ${Math.min(...zs).toFixed(0)} a ${Math.max(...zs).toFixed(0)}`);
-console.log(`cuadra del poste real: ${cuadraReal ? `${cuadraReal.q.length} m, ${cuantos(cuadraReal.q.length)} postes con el real, el real a ${sReal} m de una punta` : 'no se encontró'}`);
+console.log(`cruce del poste real a ${dReal(grupoReal).toFixed(1)} m de él`);
