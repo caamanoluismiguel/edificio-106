@@ -64,9 +64,25 @@ for (const P of PANTALLAS) {
     console.log(`${P.nombre} · ${n}: «${r.titulo}», centro del edificio en (${r.x}, ${r.y}) de ${r.W} × ${r.H}, ficha ${r.ficha.join(', ')} → ${path.basename(archivo)}`);
     if (r.tapado || r.x < 0 || r.x > r.W || r.y < 0 || r.y > r.H) mal(`el centro del edificio queda tapado o fuera de la pantalla`);
     if (errores.length) mal('errores: ' + errores.join(' | '));
-    // Escape cierra la ficha
+    // el foco pasa al título de la ficha; Escape la cierra y el foco sale de ella
+    if ((await pg.evaluate(() => document.activeElement?.id)) !== 'te-t') mal('al abrir, el foco no pasó al título de la ficha');
     await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
-    if (!(await pg.evaluate(() => document.querySelector('#tarjeta-edificio').hidden))) mal('Escape no cerró la ficha');
+    const tras = await pg.evaluate(() => ({ oculta: document.querySelector('#tarjeta-edificio').hidden, foco: document.activeElement?.id || document.activeElement?.tagName }));
+    if (!tras.oculta) mal('Escape no cerró la ficha');
+    if (tras.foco === 'te-t' || tras.foco === 'BODY') mal(`al cerrar, el foco quedó en ${tras.foco}`);
+    // el doble toque (o doble clic) sobre el mismo edificio la vuelve a abrir, con el foco en ella; × la cierra y el foco vuelve a la escena
+    if (n !== '106') {
+      await pg.evaluate(() => document.querySelector('#lienzo').focus());
+      if (P.disp.hasTouch) { await pg.touchscreen.tap(r.x, r.y); await pg.waitForTimeout(120); await pg.touchscreen.tap(r.x, r.y); }
+      else await pg.mouse.dblclick(r.x, r.y);
+      await pg.waitForFunction(() => !document.querySelector('#tarjeta-edificio').hidden, null, { timeout: 5000 }).catch(() => {});
+      const otra = await pg.evaluate(() => ({ t: document.querySelector('#tarjeta-edificio').hidden ? null : document.querySelector('#te-t').textContent, foco: document.activeElement?.id }));
+      if (otra.t !== r.titulo || otra.foco !== 'te-t') mal(`doble toque: ${JSON.stringify(otra)}`);
+      await pg.click('#te-cerrar'); await pg.waitForTimeout(200);
+      const f = await pg.evaluate(() => document.activeElement?.id);
+      if (f !== 'lienzo') mal(`× no devolvió el foco a la escena (${f})`);
+      else console.log(`  ✓ foco: título al abrir, de vuelta al salir; doble ${P.disp.hasTouch ? 'toque' : 'clic'} y × funcionan`);
+    }
     await pg.close();
   }
   await ctx.close();
