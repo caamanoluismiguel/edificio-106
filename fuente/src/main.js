@@ -1122,7 +1122,7 @@ function paso(now) {
 // punto que se mira quede en el centro del hueco libre entre los botones de arriba y el panel más alto de abajo.
 // Con el panel lateral de escritorio, lo mismo en horizontal: al centro del espacio a su derecha.
 const ENC = { dy: 0, aplicado: 0, dx: 0, aplicadoX: 0 };
-const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje', '#tarjeta-edificio'];
+const PANELES_ABAJO = ['#dock', '#rotulo', '#recorrido', '#oferta-recorrido', '#viaje', '#tarjeta-edificio', '#capas', '#confort'];
 function encuadreMovil(dt) {
   const W = innerWidth, H = innerHeight;
   let obj = 0;
@@ -1927,7 +1927,7 @@ function prepararUI() {
   document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.addEventListener('click', () => {
     cerrarOferta(); anunciar(); cerrarExplica();
     const conTarjeta = !(b.dataset.lente === 'partes' && innerWidth <= 760);   // en el teléfono, primero las etiquetas; la tarjeta sale al tocar una
-    ponerLente(b.dataset.lente, conTarjeta); if (conTarjeta) soloUnPanel('leyenda');
+    ponerLente(b.dataset.lente, conTarjeta); if (conTarjeta) { soloUnPanel('leyenda'); verClave(); }
     // las formas de ver que miden el 106: lejos, primero se vuelve a él (a la última vista, o a la que la forma de ver pide)
     if (NAV.lejos && b.dataset.lente !== 'foto') {
       const v = NAV.vista, alto = VISTAS[v].pos[1];
@@ -2187,6 +2187,20 @@ function pintarRadiacion() {
   const f = Object.values(R.fachadas).map((x) => x.directa / x.total);
   document.querySelectorAll('[data-rad-pct]').forEach((el) => { el.textContent = `${Math.round(Math.min(...f) * 100)}–${Math.round(Math.max(...f) * 100)} %`; });
   const el = $('#leyenda'); if (el) el.dataset.lente = '';     // la tarjeta abierta vuelve a tomar las cifras
+}
+/** Con el panel lateral, la clave de color de la forma de ver recién elegida (título, rampa, escala y cajas por fachada de
+ *  #leyenda) queda a la vista: el panel se desplaza lo justo, hacia arriba si el título quedó por encima o hacia abajo hasta
+ *  el final de la clave, sin que el título pase por arriba. Espera a que leyenda() haya dibujado la tarjeta de esa forma de ver. */
+function verClave(n = 0) {
+  if (!document.documentElement.classList.contains('panel-lateral')) return;
+  requestAnimationFrame(() => {
+    const dock = $('#dock'), ley = $('#leyenda');
+    if (ley.hidden || !(ley.dataset.lente ?? '').startsWith(S.lente)) { if (n < 60) verClave(n + 1); return; }
+    const fin = ['#ley-sello', '#ley-fachadas', '#ley-escala', '#ley-rampa'].map((q) => $(q)).find((x) => x && x.offsetHeight > 0) ?? ley;
+    const r = dock.getBoundingClientRect(), a = ley.getBoundingClientRect(), b = fin.getBoundingClientRect();
+    const subir = a.top - (r.top + 8), d = subir < 0 ? subir : Math.min(Math.max(0, b.bottom + 12 - r.bottom), subir);
+    if (Math.abs(d) >= 1) dock.scrollBy({ top: d, behavior: reduce ? 'auto' : 'smooth' });
+  });
 }
 function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';

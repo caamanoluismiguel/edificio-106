@@ -805,7 +805,9 @@
     .dock-lect small { font-size: 12px; }
     #l-fuente { display: none; }
     #capas, #ir-a, #confort { left: 8px; right: 8px; width: auto; }
-    #capas { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px); }
+    /* Capas y Confort se apoyan sobre la hoja y no pasan de la mitad de la pantalla: el edificio queda a la vista arriba
+       (encuadreMovil lo centra en el hueco que dejan; ver PANELES_ABAJO). El panel se desplaza por dentro */
+    #capas, #confort { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 16px); max-height: min(var(--panel-tel, 38dvh), calc(100vh - env(safe-area-inset-top, 0px) - var(--dock-h) - 190px)); }
     #ir-a { top: auto; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); max-height: 82vh; z-index: 11; border-radius: 18px; animation-duration: .32s; animation-timing-function: cubic-bezier(.32, .72, 0, 1); }
     .ir-form { grid-template-columns: 1fr 1fr; } .ir-form .primario { grid-column: 1 / -1; }
     .lentes button { font-size: 13px; }
@@ -916,6 +918,10 @@
     /* alturas: lo que no corresponde a la altura no se dibuja */
     html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley, #dia-ley-caja) { display: none !important; }
     html.hoja-1 #dock :is(.dock-lect, .vistas, .lamina) { display: none !important; }
+    /* con Capas o Confort abiertos, la cerrada guarda «En vivo», la hora con la fecha al lado y el sello del resumen; la regla,
+       el modo y el play vuelven con el asa. Así el panel y la hoja dejan ver el edificio */
+    html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(.regla, #modo-activo, #reproducir) { display: none !important; }
+    html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock #elegir { grid-area: modo; justify-self: end; }
     html.hoja-1 #dock { max-height: 62dvh; }
     /* con la tarjeta de un modo abierta en la cerrada, el narrador deja su lugar (quedan «Volver a ahora» y el sello del resumen) */
     html.hoja-0 #dock:has(#leyenda:not([hidden])) #rotulo > :not(#rotulo-cab) { display: none; }
@@ -1294,16 +1300,16 @@
         <p class="reloj-dato" id="reloj-era5"></p>
         <p class="reloj-dato" id="reloj-alb"></p>
         <p class="reloj-nota">Las dos curvas miden cosas distintas: ERA5, horas con 1,5 mm o más en una celda de unos 28 km; Albrook, partes de un instante con cualquier lluvia en un punto. Por eso cada una va a escala de su máximo y solo se compara la hora.</p>
+        <details class="pliegue"><summary>Cómo se midió</summary>
         <p class="reloj-nota" id="reloj-auto"></p>
         <p class="reloj-nota" id="reloj-sesgo">Aquí el máximo de ERA5 llega algo más de 1 h antes que el de Albrook, en línea con un estudio global de junio a agosto: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo de lluvia frente al producto satelital IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
+        </details>
         </div>
       </div></figure>
     </div>
   </div>
-        <details class="pliegue"><summary>Cómo se midió</summary>
   <button id="lect-resumen" type="button" aria-expanded="false" aria-controls="dock-lect"><span id="lect-resumen-t"></span><span class="sr"> · ver el detalle</span><i aria-hidden="true">▾</i></button>
   <div class="dock-lect" id="dock-lect">
-        </details>
     <div data-explica="sol" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sol</span><b id="l-alt">—</b><small id="l-az"></small></div>
     <div data-explica="sombra" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Sombra de un poste de 1 m</span><b id="l-sombra">—</b><small id="l-sombra-r"></small></div>
     <div data-explica="clima" role="button" tabindex="0" aria-pressed="false" title="Qué significa"><span class="k">Clima</span><b id="l-temp">—</b><small id="l-clima"></small></div>
@@ -1496,15 +1502,15 @@
     <label>Hora (Panamá)<input type="time" id="ir-hora" step="60" required></label>
     <button class="boton primario" type="submit">Ir</button>
   </form>
+  <details class="pliegue"><summary>Cómo leerlo</summary>
   <p class="nota">Entre 2001 y 2025 el dato de esa hora viene incluido (ERA5). Desde 1940 y hasta 15 días adelante se consulta en línea a Open-Meteo. Sirve para comparar con una foto el sol y las sombras, que están calculados al minuto. La lluvia, las nubes y la fuerza del sol de esa hora son dato de modelo para una celda de ~28 km y casi nunca coinciden con una hora concreta: a la hora de un parte del aeropuerto de Albrook, a 4 km, con lluvia, la escena dibuja lluvia una de cada seis veces, y una de cada tres si se mira una hora antes o después (2017–2025). Por día coincide más: si en Albrook llovió, la escena dibuja lluvia en alguna hora de ese día dos de cada tres veces, aunque en cuatro de cada diez días en que la dibuja no llovió en Albrook. Mientras la escena dibuja lluvia no dibuja sol directo; en una hora en que ERA5 no da lluvia puede dibujar sombras aunque en la foto llueva.</p>
+  </details>
   <div id="consultas" class="consultas" aria-label="Consultas"></div>
   <p class="nota">Los extremos de lluvia y luz salen de la serie ERA5 2001–2025, calculados, no elegidos a mano. Las fechas de sol y sombra son las del año <b id="consultas-anio"></b> (cambia el año con la fecha de arriba).</p>
 </aside>
 
 <div id="capas" hidden>
-  <details class="pliegue"><summary>Cómo leerlo</summary>
   <div>
-  </details>
     <div class="ir-cab"><h2>Capas</h2><button class="boton" type="button" id="cerrar-capas">Cerrar</button></div>
     <div id="encuadres-caja">
       <h2 id="encuadres-t">Encuadres</h2>
