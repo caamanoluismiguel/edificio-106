@@ -930,6 +930,7 @@
        «A esta hora conviene», el punto de la carta y el UTCI (confortHora); con Capas también se pliega */
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(#modo-activo, #reproducir) { display: none !important; }
     html.hoja-0:has(#capas:not([hidden])) #dock .regla { display: none !important; }
+    html.hoja-0:has(#confort:not([hidden])) #dock #regla-dia:not([hidden]) + #dia-ley-caja { display: block !important; }   /* la regla de Confort lleva su fuente */
     /* con la regla a la vista la hoja crece: Confort se acorta para dejar unos 320 px arriba (barra y edificio) */
     html.hoja-0 #confort { max-height: min(38dvh, calc(100dvh - env(safe-area-inset-top, 0px) - var(--dock-h) - 320px)); }
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock #elegir { grid-area: modo; justify-self: end; }
