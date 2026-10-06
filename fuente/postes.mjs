@@ -164,7 +164,7 @@ for (const c of conLuzOrd) {
     if (!elegido) continue;
     // el brazo hacia la calle (contra la normal del lado)
     const ang = Math.atan2(-s.n[1] * elegido.lado, -s.n[0] * elegido.lado);
-    postes.push({ x: elegido.q[0], z: elegido.q[1], y: suelo(elegido.q), ang, calle: c.nombre || null, tipo: c.tipo });
+    postes.push({ x: elegido.q[0], z: elegido.q[1], y: suelo(elegido.q), ang, calle: c.nombre || null, tipo: c.tipo, otroLado: elegido.lado !== lado0 });
     desde = 0;
   }
 }
@@ -184,6 +184,7 @@ const out = {
 fs.writeFileSync(path.join(RAIZ, 'datos/postes.json'), JSON.stringify(out));
 const porTipo = {}; for (const p of nuevos) porTipo[p.tipo] = (porTipo[p.tipo] ?? 0) + 1;
 console.log(`datos/postes.json: ${nuevos.length} postes (más el real de la esquina) · ${(largoConLuz / 1000).toFixed(1)} km de calles con luz dentro del límite · por tipo ${JSON.stringify(porTipo)}`);
+console.log(`${nuevos.filter((p) => p.otroLado).length} postes pasan al otro lado de su calle por un hueco de más de 1,5 pasos`);
 console.log(`lugares descartados (metros recorridos): ${JSON.stringify(motivos)} · troncos ${troncos} · ${(fs.statSync(path.join(RAIZ, 'datos/postes.json')).size / 1024).toFixed(0)} KB`);
 const xs = nuevos.map((p) => p.x), zs = nuevos.map((p) => p.z);
 console.log(`caja: x ${Math.min(...xs).toFixed(0)} a ${Math.max(...xs).toFixed(0)}, z ${Math.min(...zs).toFixed(0)} a ${Math.max(...zs).toFixed(0)}`);
