@@ -51,7 +51,7 @@ Cada parámetro de `edificios.json` dice si es SUPUESTO. Los principales:
 * qué extremo tiene la cochera o la escalera cuando no se ve;
 * los colores: un tinte sobre el material del 106 por la palabra observada («crema», «amarillo»), no un color medido.
 
-Decisiones que siguen abiertas y están dichas en su ajuste: el 220 sale con dos pisos (Street View y Open Buildings) aunque CERL da un cuartel de tres pisos terminado en diciembre de 1941, así que puede haber perdido un piso o ser otro edificio; el 104 sigue con el volumen a mano porque su huella compuesta no se puede partir sin verla.
+Decisiones que siguen abiertas y están dichas en su ajuste: el 220 sale con dos pisos (Street View y Open Buildings) aunque CERL da con ese número un cuartel de tres pisos de 61,26 × 18,59 m (201 × 61 ft, p. 4-11), terminado en diciembre de 1941; la huella de OpenStreetMap del 220 mide 27,45 × 15,42 m, así que con esas medidas no se puede decir que sea el mismo edificio; el 104 sigue con el volumen a mano porque su huella compuesta no se puede partir sin verla.
 
 ## Lo que no hace
 
