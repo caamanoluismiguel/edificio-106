@@ -2937,6 +2937,10 @@ function pintarClimaDia() {
   let h = '', fuente = '';
   const reg = (min) => clima.registro(f, min) ?? clima.registroDia(f, min);
   const r0 = reg(0), hay = !!r0, u = umbralLluvia(f.m);
+  // de dónde salen las barras: queda a la vista en el rótulo de la leyenda (fuera del pliegue) y en el title de cada barra
+  const src = !hay ? '' : r0.fuente === 'serie' ? 'ERA5' : r0.modelo === 'era5' ? 'ERA5, consultado en línea' : 'pronóstico de modelo (Open-Meteo)';
+  const srcT = src.replace(' (Open-Meteo)', ' de Open-Meteo');          // en el title de cada barra, sin paréntesis dentro de paréntesis
+  const sello = !hay ? (clima.ok ? 'ERA5, típico 2001–2025' : '') : r0.fuente === 'serie' ? 'ERA5' : r0.modelo === 'era5' ? 'ERA5 en línea' : 'Pronóstico Open-Meteo';
   for (let i = 0; i < 24; i++) {
     const x = i / 24 * 1000 + 2, w = 1000 / 24 - 4;
     if (hay) {
@@ -2945,20 +2949,20 @@ function pintarClimaDia() {
       // gris: cuánto sol directo falta frente al de las horas más despejadas de ERA5 (0,8 de Meinel, sol.js); en las horas en que la escena dibuja lluvia, lleno
       if (alt > 2 && q?.dni != null) { const k = mm >= u ? 0 : clamp01(q.dni / Math.max(40, dniDespejadoEra5(alt))); if (k < 0.85) h += `<rect class="nube" x="${x - 2}" y="6" width="${w + 4}" height="16" opacity="${(0.62 * (1 - k)).toFixed(2)}"></rect>`; }
       // barras llenas: la lluvia que la escena dibuja (desde el umbral del mes); una raya tenue: la lluvia débil de la celda
-      if (mm >= u) { const hh = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(mm) / Math.log1p(15))); h += `<rect class="gota" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm</title></rect>`; }
-      else if (mm >= 0.1) h += `<rect class="gota debil" x="${x}" y="20" width="${w}" height="2" rx="1"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm, lluvia débil en la celda (la escena no la dibuja)</title></rect>`;
+      if (mm >= u) { const hh = Math.max(2, Math.min(16, 3 + 13 * Math.log1p(mm) / Math.log1p(15))); h += `<rect class="gota" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm (${srcT})</title></rect>`; }
+      else if (mm >= 0.1) h += `<rect class="gota debil" x="${x}" y="20" width="${w}" height="2" rx="1"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ${f1(mm)} mm, lluvia débil en la celda (la escena no la dibuja; ${srcT})</title></rect>`;
     } else if (clima.ok) {
       const t = clima.tipico(f.m, i * 60), pr = t?.probLluvia ?? 0;
       if (pr >= 5) { const hh = Math.max(1.5, 16 * pr / 100); h += `<rect class="prob" x="${x}" y="${22 - hh}" width="${w}" height="${hh}" rx="1.5"><title>${hhmm(i * 60)}–${hhmm(i * 60 + 60)}: ERA5 da 1 mm o más en ${Math.round(pr)} % de estas horas (típico de ${MESES[f.m - 1]})</title></rect>`; }
     }
   }
   if (hay) {
-    const src = r0.fuente === 'serie' ? 'ERA5' : r0.modelo === 'era5' ? 'ERA5, consultado en línea' : 'pronóstico de modelo (Open-Meteo)';
     const alb = S.modo === 'ahora' && clima.vivo?.albrook && !clima.vivo.albrook.auto ? '; el ahora sigue el parte de Albrook' : '';
     fuente = `▮ lluvia desde ${f1(u, u % 1 ? 1 : 0)} mm en la hora · ▁ lluvia débil en la celda · gris: sol directo que falta · ${src}${alb}`;
   } else if (clima.ok) fuente = `▮ probabilidad típica de 1 mm o más en la hora (${MESES[f.m - 1]})`;
   g.innerHTML = h;
   $('#dia-ley').textContent = fuente;
+  $('#dia-ley-fuente').textContent = sello; $('#dia-ley-fuente').hidden = !sello;
 }
 
 // ---------------- Consultas: los días que un arquitecto quiere ver ----------------

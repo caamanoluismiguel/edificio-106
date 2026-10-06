@@ -258,7 +258,10 @@
   /* pliegue: texto de método o de lectura que arranca cerrado y se abre con un toque (el mismo patrón que #ley-mas) */
   .pliegue > summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); padding: 4px 0; }
   .pliegue > :not(summary) { margin-top: 6px; }
-  #dia-ley-caja { margin: 2px 0 0; text-align: right; position: relative; z-index: 1; }   /* sobre el range de la regla, que cubre todo su bloque */ #dia-ley-caja .dia-ley { margin-top: 2px; }
+  #dia-ley-caja { margin: 2px 0 0; text-align: right; }   /* fuera de la regla: toda la regla sigue sirviendo para arrastrar la hora */
+  #regla-dia[hidden] + #dia-ley-caja { display: none; }
+  /* la fuente de las barras de lluvia de la regla, siempre a la vista (fuera del pliegue), antes del rótulo */
+  #dia-ley-fuente { font: 500 12px/1.3 var(--datos); color: var(--cal-2); } #dia-ley-fuente::after { content: ' · '; } #dia-ley-fuente[hidden] { display: none; }                   /* solo en la pestaña Día */ #dia-ley-caja .dia-ley { margin-top: 2px; }
   #ir-a .pliegue > .nota, #capas .pliegue > .lamina-nota, #reloj-lluvia .pliegue > p { margin-top: 6px; }
   #ley-mas summary { cursor: pointer; font: 600 12px/1.3 var(--texto); color: var(--sol); }
   #ley-mas p { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
@@ -487,11 +490,11 @@
   html.vivo #ahora::before { background: #5fd38a; }
   html:not(.vivo) #ahora { border-color: rgba(239,233,222,.42); color: var(--cal); }
   html:not(.vivo) #ahora::before { background: var(--cal-2); }
+  #ahora .ahora-temp { white-space: pre; }
+  @media (max-width: 480px) { #ahora .ahora-temp { display: none; } }   /* en el teléfono angosto no cabe: la temperatura sigue en el resumen */
   .dock-centro { grid-area: centro; display: grid; gap: 10px; }
   .pestanas { display: flex; gap: 4px; }
   .pestanas button { border: 1px solid transparent; background: none; cursor: pointer; font: 600 13px/1 var(--texto); color: var(--cal-2); padding: 7px 11px; border-radius: 999px; transition: color .2s, border-color .2s, background .2s; }
-  #ahora .ahora-temp { white-space: pre; }
-  @media (max-width: 480px) { #ahora .ahora-temp { display: none; } }   /* en el teléfono angosto no cabe: la temperatura sigue en el resumen */
   .pestanas button:hover { color: var(--cal); }
   .pestanas button[aria-selected="true"] { color: var(--noche); background: var(--cal); }
   .regla { position: relative; }
@@ -548,10 +551,11 @@
   /* hasta 1600 px el dock va en dos filas cortas: arriba la hora, las pestañas, las lecturas resumidas en un botón que despliega
      el detalle y los botones; abajo la regla */
   @media (max-width: 1600px) {
-    #dock { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr narr" "hora tabs resumen botones" "regla regla regla regla" "momentos momentos momentos momentos" "lect lect lect lect";
+    #dock { grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr narr" "hora tabs resumen botones" "regla regla regla regla" "dley dley dley dley" "momentos momentos momentos momentos" "lect lect lect lect";
       gap: 8px 22px; padding: 12px 18px; }
     .dock-centro { display: contents; }
     .pestanas { grid-area: tabs; align-self: center; } .regla { grid-area: regla; } #regla-dia { margin-top: 18px; } #momentos-caja { grid-area: momentos; }
+    #dia-ley-caja { grid-area: dley; }                 /* con .dock-centro en contents necesita su área (hasta 1600 px y el teléfono) */
     .dock-hora { grid-template-columns: auto auto; grid-template-areas: "h f"; column-gap: 14px; row-gap: 4px; align-items: center; min-width: 0; }
     #l-hora { grid-area: h; font-size: 40px; } #elegir { grid-area: f; }
     #lect-resumen { grid-area: resumen; justify-self: start; display: flex; align-items: center; gap: 10px; max-width: 100%; min-width: 0; min-height: 40px; box-sizing: border-box; padding: 8px 14px;
@@ -564,7 +568,7 @@
   }
   /* en pantallas medianas las pestañas bajan a su propia fila para que el resumen de las lecturas se lea entero */
   @media (max-width: 1200px) and (min-width: 761px) {
-    #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr" "hora resumen botones" "tabs tabs tabs" "regla regla regla" "momentos momentos momentos" "lect lect lect"; }
+    #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr" "hora resumen botones" "tabs tabs tabs" "regla regla regla" "dley dley dley" "momentos momentos momentos" "lect lect lect"; }
     .pestanas { justify-self: start; }
   }
 
@@ -784,7 +788,7 @@
     /* dock compacto: narrador · hora y fecha corta · pestañas · la regla · las lecturas en una línea que se despliega */
     #dock { left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); padding: 8px 12px; gap: 5px 10px;
       grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-areas: "narr narr" "hora botones" "fecha botones" "tabs tabs" "regla regla" "momentos momentos" "resumen resumen" "lect lect"; }
+      grid-template-areas: "narr narr" "hora botones" "fecha botones" "tabs tabs" "regla regla" "dley dley" "momentos momentos" "resumen resumen" "lect lect"; }
     .dock-hora, .dock-centro { display: contents; }
     #l-hora { grid-area: hora; justify-self: start; font-size: 30px; }
     #elegir { grid-area: fecha; justify-self: start; padding: 10px 0; margin: -10px 0; }      /* área táctil de 44 px sin cambiar cómo se ve */
@@ -840,7 +844,7 @@
     .parte span { font-size: 12px; padding: 6px 9px; } .cota { font-size: 12px; padding: 4px 7px; }
   }
   /* teléfonos bajos: la leyenda de la regla del día se explica al tocar «Día» */
-  @media (max-width: 760px) and (max-height: 800px) { #dia-ley-caja { display: none; } }
+  /* en teléfonos bajos el rótulo queda: es una línea y lleva la fuente de las barras */
   @media (max-width: 400px) { .marca svg { display: none; } .marca { padding: 7px 12px; } .acciones { gap: 5px; } }
   @media (max-width: 480px) { .acciones { gap: 6px; } .marca b { font-size: 18px; } }
   @media (max-height: 640px) and (min-width: 761px) { .pista { display: none; } #l-hora { font-size: 36px; } }
@@ -887,7 +891,7 @@
   @media (max-width: 760px) {
     #dock { grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; padding: 0 12px 10px; max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 72px);
       overflow-y: auto; overscroll-behavior: contain; transition: transform .3s cubic-bezier(.32, .72, 0, 1);
-      grid-template-areas: "asa asa asa" "narr narr narr" "hora modo play" "fecha modo play" "regla regla regla" "resumen resumen resumen" "tabs tabs tabs" "momentos momentos momentos"
+      grid-template-areas: "asa asa asa" "narr narr narr" "hora modo play" "fecha modo play" "regla regla regla" "dley dley dley" "resumen resumen resumen" "tabs tabs tabs" "momentos momentos momentos"
         "modos modos modos" "ley ley ley" "ir confort capas" "lect lect lect" "vistas vistas vistas" "lamina lamina lamina"; }
     #dock > * { margin-top: 8px; }
     #hoja-cab { grid-area: asa; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; position: sticky; top: 0; z-index: 1; margin: 0 -12px; padding: 2px 12px 0;
@@ -920,9 +924,13 @@
     /* alturas: lo que no corresponde a la altura no se dibuja */
     html.hoja-0 #dock :is(.pestanas, #momentos-caja, .lentes, #abrir-ir, #abrir-confort, #abrir-capas, .dock-lect, .vistas, .lamina, .dia-ley, #dia-ley-caja) { display: none !important; }
     html.hoja-1 #dock :is(.dock-lect, .vistas, .lamina) { display: none !important; }
-    /* con Capas o Confort abiertos, la cerrada guarda «En vivo», la hora con la fecha al lado y el sello del resumen; la regla,
-       el modo y el play vuelven con el asa. Así el panel y la hoja dejan ver el edificio */
-    html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(.regla, #modo-activo, #reproducir) { display: none !important; }
+    /* con Capas o Confort abiertos, la cerrada guarda «En vivo», la hora con la fecha al lado y el sello del resumen; el modo y
+       el play vuelven con el asa. Así el panel y la hoja dejan ver el edificio. Con Confort la regla queda: al moverla cambian
+       «A esta hora conviene», el punto de la carta y el UTCI (confortHora); con Capas también se pliega */
+    html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(#modo-activo, #reproducir) { display: none !important; }
+    html.hoja-0:has(#capas:not([hidden])) #dock .regla { display: none !important; }
+    /* con la regla a la vista la hoja crece: Confort se acorta para dejar unos 320 px arriba (barra y edificio) */
+    html.hoja-0 #confort { max-height: min(38dvh, calc(100dvh - env(safe-area-inset-top, 0px) - var(--dock-h) - 320px)); }
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock #elegir { grid-area: modo; justify-self: end; }
     html.hoja-1 #dock { max-height: 62dvh; }
     /* con la tarjeta de un modo abierta en la cerrada, el narrador deja su lugar (quedan «Volver a ahora» y el sello del resumen) */
@@ -949,8 +957,8 @@
     html.panel-lateral { --dock-h: 0px !important; }
     html.panel-lateral #dock { left: 0; right: auto; top: calc(env(safe-area-inset-top, 0px) + 64px); bottom: 0; width: var(--panel-w); border-radius: 0; border-width: 0 1px 0 0; box-shadow: none;
       padding: 8px 20px 24px; overflow-y: auto; overscroll-behavior: contain; align-content: start; align-items: center;
-      grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; grid-template-rows: repeat(12, max-content);   /* con alto fijo, las filas auto no crecían con la tarjeta del modo */
-      grid-template-areas: "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "tabs tabs tabs" "momentos momentos momentos" "vistas vistas vistas"
+      grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; grid-template-rows: repeat(13, max-content);   /* con alto fijo, las filas auto no crecían con la tarjeta del modo */
+      grid-template-areas: "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "dley dley dley" "tabs tabs tabs" "momentos momentos momentos" "vistas vistas vistas"
         "modos modos modos" "ley ley ley" "ir confort capas" "lect lect lect" "lamina lamina lamina"; }
     html.panel-lateral #dock > * { margin-top: 12px; }
     html.panel-lateral #rotulo { margin-top: 0; }
@@ -959,7 +967,7 @@
     html.panel-lateral #elegir { grid-area: fecha; justify-self: start; margin-top: 4px; }
     html.panel-lateral #reproducir { grid-area: play; width: 52px; height: 52px; }
     html.panel-lateral #abrir-ir { grid-area: ir; justify-self: start; } html.panel-lateral #abrir-confort { grid-area: confort; } html.panel-lateral #abrir-capas { grid-area: capas; }
-    html.panel-lateral .regla { grid-area: regla; } html.panel-lateral :is(#regla-dia, #regla-anio, #regla-decadas) { margin-top: 34px; }
+    html.panel-lateral .regla { grid-area: regla; } html.panel-lateral #dia-ley-caja { grid-area: dley; } html.panel-lateral :is(#regla-dia, #regla-anio, #regla-decadas) { margin-top: 34px; }
     html.panel-lateral #momentos-caja { grid-area: momentos; }
     html.panel-lateral #lect-resumen { display: none; }
     html.panel-lateral .dock-lect { grid-area: lect; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
@@ -1266,8 +1274,8 @@
       </svg>
       <div class="etiquetas" id="dia-etiquetas"></div>
       <input id="hora" type="range" min="0" max="1439" step="1" aria-label="Hora del día">
-      <details class="pliegue" id="dia-ley-caja"><summary>Cómo leerla</summary><p class="dia-ley" id="dia-ley"></p></details>
     </div>
+    <details class="pliegue" id="dia-ley-caja"><summary><span id="dia-ley-fuente"></span>Cómo leerla</summary><p class="dia-ley" id="dia-ley"></p></details>
     <div class="regla" id="regla-anio" role="tabpanel" aria-labelledby="tab-anio" hidden>
       <svg id="anio" viewBox="0 0 1000 20" preserveAspectRatio="none" aria-hidden="true">
         <g id="anio-marcas"></g>
