@@ -39278,7 +39278,7 @@ function nK(e, t, n) {
 var rK = (e, t) => e.n && !t?.edificios?.[e.o]?.rep ? e.n : "osm" + e.o;
 function iK(e) {
 	let t = (e) => Math.round(100 * e), [n, r] = e.chm.imagenes_fecha.split("-").map(Number);
-	return `Estimación de la copa de árbol de ${eK(e.umbral_m)}\u00a0m o más sobre el suelo sin edificios: ${t(e.distrito.copa_suelo_libre)}\u00a0% dentro del límite del distrito y ${t(e.edificio_106.copa_suelo_libre_por_radio_m[100])}\u00a0% a 100\u00a0m del 106. Sale del mapa de altura de copa de Meta y WRI, hecho con imágenes ${e.chm.imagenes} de ${aK[r - 1]} de ${n}, cuyo error absoluto medio en la altura es de ${eK(e.chm.error_absoluto_medio_altura_m)}\u00a0m en la validación de Tolan et al. (2024). El límite del distrito es una propuesta del visor y no el oficial de la Fundación Ciudad del Saber.`;
+	return `Estimación de la copa de árbol de ${eK(e.umbral_m)}\u00a0m o más sobre el suelo sin edificios: ${t(e.distrito.copa_suelo_libre)}\u00a0% dentro del límite del distrito y ${t(e.edificio_106.copa_suelo_libre_por_radio_m[100])}\u00a0% a 100\u00a0m del 106. Sale del mapa de altura de copa de Meta y WRI, hecho con imágenes ${e.chm.imagenes} de ${aK[r - 1]} de ${n}, cuyo error absoluto medio en la altura es de ${eK(e.chm.error_absoluto_medio_altura_m)}\u00a0m en la validación de Tolan et al. (2024), hecha en ${e.chm.validacion_paises}; en el conjunto de São Paulo fue de ${eK(e.chm.error_absoluto_medio_sao_paulo_m)}\u00a0m. El límite del distrito es una propuesta del visor y no el oficial de la Fundación Ciudad del Saber.`;
 }
 var aK = [
 	"enero",
