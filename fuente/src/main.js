@@ -11,6 +11,9 @@ import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
 import { ENCUADRES } from './encuadres.js';
+import { epw } from './epw.js';
+import { VARIABLES, pintarAnual, diaHora } from './anual.js';
+import { cartaSolar, horasCalorVidrio } from './cartasolar.js';
 import { Mapa, LEJOS, CERCA, BORDE_BLANDO, ficha, buscarEdificio, idEnlace } from './navegar.js';
 
 const $ = (s) => document.querySelector(s);
@@ -1872,6 +1875,34 @@ function prepararUI() {
   globalThis.__abrirIr = abrirIr;
   $('#abrir-confort').addEventListener('click', () => abrirConfort($('#confort').hidden));
   $('#cerrar-confort').addEventListener('click', () => abrirConfort(false));
+  { // El año en un vistazo (src/anual.js): se pinta al abrir Confort y al cambiar el dato o el año
+    const va = $('#anual-var'), ya = $('#anual-ano'), cv = $('#anual');
+    for (let y = 2025; y >= 2001; y--) ya.add(new Option(String(y), String(y)));
+    const pintar = async () => {
+      if (!(await pedirSerie())) return;
+      const V = VARIABLES[va.value], y = +ya.value;
+      pintarAnual(cv, clima, va.value, y);
+      cv.setAttribute('aria-label', `${V.nombre} de cada hora de ${y}, ERA5`);
+      $('#anual-ley').innerHTML = V.pasos.filter((p) => p[1]).map((p) => `<li><i style="background:${p[1]}"></i>${p[2]} ${V.unidad}${p[3] ?? ''}</li>`).join('');
+    };
+    pintarAnual.pintar = pintar;
+    va.addEventListener('change', pintar); ya.addEventListener('change', pintar);
+    cv.addEventListener('click', (e) => {
+      const r = cv.getBoundingClientRect(), q = diaHora(+ya.value, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+      viajarA({ fecha: q.fecha, min: q.h * 60 });
+    });
+  }
+  { // Descargar un año de la serie en EPW (src/epw.js)
+    const sel = $('#epw-ano'); for (let y = 2025; y >= 2001; y--) sel.add(new Option(String(y), String(y)));
+    $('#epw-form').addEventListener('submit', async (e) => {
+      e.preventDefault(); const est = $('#epw-estado'), y = +sel.value;
+      if (!(await pedirSerie())) { est.textContent = 'No se pudo cargar la serie. Prueba de nuevo en unos segundos.'; return; }
+      const nombre = `edificio106_era5${clima.ajuste ? '_ajustado-albrook' : ''}_${y}.epw`;
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([epw(clima, y)], { type: 'text/plain' })); a.download = nombre;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      est.textContent = `Listo: se descargó ${nombre} (8.760 horas).`;
+    });
+  }
   $('#elegir').addEventListener('click', () => abrirIr($('#ir-a').hidden));
   $('#abrir-ir').addEventListener('click', () => abrirIr($('#ir-a').hidden));
   $('#ir-fecha').addEventListener('change', () => { const [y, m] = $('#ir-fecha').value.split('-').map(Number); if (y > 1900 && m) { const f0 = S.fecha; S.fecha = { ...S.fecha, y, m }; pintarConsultas(); S.fecha = f0; } });
@@ -2630,6 +2661,23 @@ function pintarCorte(p, c) {
   }
   el.innerHTML = `<desc id="corte-desc">${desc}</desc>${g}`;
   $('#corte-txt').textContent = txt;
+  pintarCartaSolar(p, L, k);
+}
+
+// Carta solar con la máscara del alero (src/cartasolar.js), debajo del corte: misma fachada, mismo largo de alero, sol de esta hora.
+function pintarCartaSolar(p, L, k) {
+  const el = $('#carta-solar'); if (!el) return;
+  if (!clima.horario) { pedirSerie().then((ok) => { if (ok) pintarCartaSolar(p, L, k); }); return; }
+  const rumbo = FACHADAS['fachada-' + k].rumbo, d = L + CORTE.rehundido;
+  const cortes = { sol: Math.atan((CORTE.alero - CORTE.vidArriba) / d) * 180 / Math.PI, sombra: Math.atan((CORTE.alero - CORTE.vidAbajo) / d) * 180 / Math.PI };
+  el.innerHTML = `<desc id="carta-solar-desc">Carta solar de la fachada ${SIGLA[k]} con la máscara de un alero de ${num(L, 2)} m: el vidrio del piso 2 queda todo a la sombra con el sol a más de ${Math.round(cortes.sombra)} grados de perfil y todo al sol por debajo de ${Math.round(cortes.sol)}.</desc>` + cartaSolar(clima, rumbo, cortes, p);
+  if (!pintarCartaSolar.ley) { pintarCartaSolar.ley = 1; $('#cs-ley').insertAdjacentHTML('beforeend', VARIABLES.temp.pasos.map((q) => `<li><i style="background:${q[1]}"></i>${q[2]} °C</li>`).join('')); }
+  const ck = k + '|' + L;
+  if (pintarCartaSolar.k !== ck) {
+    pintarCartaSolar.k = ck;
+    const h = horasCalorVidrio(clima, rumbo, cortes);
+    $('#cs-cifra').textContent = `Con 30 °C o más, ERA5 ajustado da unas ${miles(Math.round(h.calor / 10) * 10)} horas al año. En unas ${miles(Math.round(h.sol / 10) * 10)} de ellas (${100 * h.sol / h.calor < 0.5 ? 'menos del 1' : Math.round(100 * h.sol / h.calor)} %) el sol directo llega al vidrio del piso 2 de la fachada ${SIGLA[k]} con este alero.`;
+  }
 }
 
 // ---------------- Guardar imagen para la lámina ----------------
@@ -2954,6 +3002,7 @@ async function abrirConfort(abrir) {
     catch (e) { anotar('aviso', 'confort: ' + e); $('#carta-cifras').textContent = 'No se pudieron cargar los datos de confort.'; return; }
     pintarCarta(); pintarUTCI();
   }
+  pintarAnual.pintar?.();
   confortClave = ''; confortHora(posicionSol({ ...S.fecha, h: 0, min: S.min }), climaEn(S.fecha, S.min));
 }
 

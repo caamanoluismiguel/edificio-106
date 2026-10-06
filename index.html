@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=2ae3535e43" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=aeeed91497" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -401,6 +401,14 @@
   .corte-datos span { font: 500 11px/1.2 var(--datos); color: var(--cal-2); text-transform: uppercase; letter-spacing: .06em; }
   .corte-datos b { font: 600 18px/1 var(--datos); font-variant-numeric: tabular-nums; color: var(--sol-2); }
   #corte-txt { font-size: 14px; }
+  .cs-t { margin: 18px 0 8px; font: 600 14px/1.2 var(--texto); color: var(--cal); }
+  #carta-solar { display: block; width: 100%; max-width: 320px; margin: 0 auto; height: auto; background: #111b20; border: 1px solid var(--linea); border-radius: 12px; }
+  #carta-solar .cs-borde { fill: none; stroke: var(--linea-2); } #carta-solar .cs-guia { fill: none; stroke: var(--linea); stroke-dasharray: 2 3; }
+  #carta-solar text { font: 500 11px var(--datos); fill: var(--cal-2); } #carta-solar .cs-p { font: 600 12px var(--texto); fill: var(--cal); }
+  #carta-solar .cs-muro { stroke: var(--cal); stroke-width: 2; } #carta-solar .cs-c0 { fill: none; stroke: var(--cal-2); stroke-width: 1.2; stroke-dasharray: 2 3; }
+  #carta-solar .cs-c1 { fill: none; stroke: var(--cal); stroke-width: 1.2; } #carta-solar .cs-sol { fill: none; stroke: var(--sol); stroke-width: 2.5; }
+  .cs-ley i.cs-lleno { background: var(--cal-2); } .cs-ley i.cs-hueco { background: none; border: 1.5px solid var(--cal-2); box-sizing: border-box; } .cs-ley i.cs-ahora { background: none; border: 2px solid var(--sol); border-radius: 50%; box-sizing: border-box; }
+  #cs-cifra { font-size: 14px; }
   .c-grupo[data-g="viento"] h3 { color: #5fd3b0; }
   .c-grupo[data-g="viento"] .c-item:hover { box-shadow: inset 2px 0 0 0 #5fd3b0; }
   .c-grupo[data-g="viento"] li.activo > .c-item { border-color: #5fd3b0; background: rgba(63, 197, 156, .12); }
@@ -635,6 +643,14 @@
   #ir-a label { display: grid; gap: 6px; font: 600 12px/1 var(--texto); color: var(--cal-2); }
   #ir-a input { font: 500 16px/1 var(--datos); color: var(--cal); background: rgba(239,233,222,.06); border: 1px solid var(--linea-2); border-radius: 12px; padding: 10px; min-width: 0; color-scheme: dark; }
   #ir-a input:focus { outline: 2px solid var(--sol); outline-offset: 1px; }
+  .anual-caja { display: grid; grid-template-columns: auto 1fr; grid-template-rows: 144px auto; gap: 4px 6px; }
+  #anual { grid-column: 2; width: 100%; height: 144px; image-rendering: pixelated; background: rgba(239,233,222,.04); border-radius: 8px; cursor: pointer; }
+  .anual-h { grid-row: 1; display: flex; flex-direction: column; justify-content: space-between; font: 500 11px/1 var(--datos); color: var(--cal-2); text-align: right; }
+  .anual-m { grid-column: 2; display: flex; justify-content: space-around; font: 500 11px/1 var(--datos); color: var(--cal-2); }
+  .anual-h b, .anual-m b { font-weight: 500; }
+  #anual-form label, #epw-form label { display: grid; gap: 6px; font: 600 12px/1 var(--texto); color: var(--cal-2); }
+  #anual-form select, #epw-form select { font: 500 16px/1 var(--datos); color: var(--cal); background: rgba(239,233,222,.06); border: 1px solid var(--linea-2); border-radius: 12px; padding: 10px; min-width: 0; color-scheme: dark; }
+  #anual-form select:focus, #epw-form select:focus { outline: 2px solid var(--sol); outline-offset: 1px; }
   #ir-a .nota { margin: 0; font-size: 12px; line-height: 1.4; color: var(--cal-2); }
   #ir-a .primario { background: var(--sol); color: #1d1405; border-color: var(--sol); padding: 12px 20px; }
   .consultas { display: grid; gap: 14px; }
@@ -1198,6 +1214,11 @@
       <div><span>El vidrio</span><b id="corte-vidrio">–</b></div>
     </div>
     <p id="corte-txt"></p>
+    <h4 class="cs-t">Carta solar con la máscara del alero</h4>
+    <svg id="carta-solar" viewBox="0 0 272 272" role="img" aria-labelledby="carta-solar-desc"><desc id="carta-solar-desc"></desc></svg>
+    <ul class="conf-ley cs-ley" id="cs-ley"><li><i class="cs-lleno"></i>el sol llega al vidrio</li><li><i class="cs-hueco"></i>el alero o el muro lo tapan</li><li><i class="cs-ahora"></i>el sol de esta hora</li></ul>
+    <p id="cs-cifra"></p>
+    <p class="vol-nota">Cada punto es el sol del día 21 de cada mes, de hora en hora, con el color de la temperatura media de ese mes y esa hora en 2001–2025 (ERA5 ajustado a Albrook). El cenit va al centro y el horizonte al borde. La línea recta es el plano del muro; debajo de la curva de puntos el vidrio queda todo al sol y encima de la curva llena, todo a la sombra (ángulos de perfil del corte, Olgyay y Olgyay, 1957). Las horas de 30 °C o más salen de toda la serie, con el sol directo desde 120 W/m² (umbral de la OMM); ERA5 da algo más de sol que el medido en la grúa del STRI.</p>
     <p class="vol-nota">Esquema: alero continuo, sin retornos laterales ni ménsulas. Alturas y vidrio medidos en el modelo 3D (las ventanas de los pisos 2 y 3 son inferidas); el vidrio queda 10 cm hacia adentro del muro. El sol de perfil es el ángulo del sol visto de costado, en un plano perpendicular a la fachada. Mueve la hora o cambia la fecha y el rayo se mueve.</p>
   </section>
 </aside>
@@ -1449,6 +1470,29 @@
     <ul class="conf-ley" id="utci-ley"></ul>
     <p class="nota">Horas con el sol a más de 5°, 2001–2025. UTCI de Bröde et al. (2012) con la temperatura y la humedad de ERA5 ajustadas a Albrook y el viento a 10 m de ERA5; la radiación con el método SolarCal de ASHRAE 55 (persona de pie, absortividad 0,7, suelo al 20 %). Bajo el alero: sin sol directo y con medio cielo; la temperatura radiante de fondo se toma igual a la del aire (aproximación).</p>
   </section>
+  <section aria-labelledby="anual-t">
+    <h3 id="anual-t">El año en un vistazo · cada día por cada hora</h3>
+    <form id="anual-form" class="ir-form" aria-label="Variable y año">
+      <label>Dato<select id="anual-var"><option value="temp">Temperatura</option><option value="lluvia">Lluvia</option><option value="ghi">Radiación global</option></select></label>
+      <label>Año<select id="anual-ano"></select></label>
+    </form>
+    <div class="anual-caja">
+      <span class="anual-h" aria-hidden="true"><b>0 h</b><b>6</b><b>12</b><b>18</b><b>24</b></span>
+      <canvas id="anual" width="365" height="24" role="img" aria-label=""></canvas>
+      <span class="anual-m" aria-hidden="true"><b>E</b><b>F</b><b>M</b><b>A</b><b>M</b><b>J</b><b>J</b><b>A</b><b>S</b><b>O</b><b>N</b><b>D</b></span>
+    </div>
+    <ul class="conf-ley" id="anual-ley"></ul>
+    <p class="nota">Cada columna es un día y cada fila una hora, de arriba hacia abajo. Toca un punto para ir a ese momento. Temperatura de ERA5 ajustada a Albrook; lluvia de ERA5 desde el umbral del visor (1 mm de diciembre a marzo, 1,5 mm de abril a noviembre) y radiación global de la directa y la difusa de ERA5, las dos de la hora que termina. ERA5 es una celda de unos 28 km, no una medición en el sitio, y da más radiación que la medida en la grúa del STRI, sobre todo al mediodía y en la tarde de mayo a noviembre.</p>
+  </section>
+  <section aria-labelledby="epw-t">
+    <h3 id="epw-t">El clima en otro programa</h3>
+    <form id="epw-form" class="ir-form" aria-label="Descargar un año de clima en EPW">
+      <label>Año<select id="epw-ano"></select></label>
+      <button class="boton" type="submit">Descargar EPW</button>
+    </form>
+    <p class="nota" id="epw-estado" aria-live="polite"></p>
+    <p class="nota">Un año de la serie, hora por hora, en el formato de clima de EnergyPlus (EPW): se abre también en CBE Clima, Ladybug y otros. Es la misma serie del visor, ERA5 con la temperatura y la humedad ajustadas a Albrook, no una medición en el sitio. Sin el 29 de febrero; la radiación global sale de la directa y la difusa, y la presión es la estándar.</p>
+  </section>
   <p class="nota" id="confort-fuentes">Datos: reanálisis ERA5 (celda de ~28 km) ajustado a los partes del aeropuerto de Albrook (2017–2025), no una medición en el sitio. Zonas: Givoni (1992), <i>Energy and Buildings</i> 18, variante para países cálidos, digitalizadas de sus figuras 3 y 4; ASHRAE 55-2017, modelo adaptativo al 80 %. Cálculo verificado contra pythermalcomfort.</p>
 </aside>
 
@@ -1574,4 +1618,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=2ae3535e43"></script></body></html>
+<script type="module" src="js/app.js?v=aeeed91497"></script></body></html>
