@@ -33,7 +33,10 @@
   "imagenes_fecha": "2018-10-04",
   "imagenes": "Maxar",
   "error_absoluto_medio_altura_m": 2.8,
-  "error_nota": "MAE de la validación de Tolan et al. (2024) con lidar aparte, en otros sitios; no se midió en Panamá."
+  "error_nota": "MAE de la validación de Tolan et al. (2024) con lidar aparte, en otros sitios; no se midió en Panamá.",
+  "validacion_paises": "Estados Unidos y Brasil",
+  "error_absoluto_medio_sao_paulo_m": 5.1,
+  "error_fuente": "Tolan et al. (2024), tabla 2, modelo SSL + GEDI: MAE 2,7 m en NEON test, 0,6 en CA-Brande y 5,1 en São Paulo; promedio sin ponderar 2,8."
  },
  "fuentes": [
   "Meta and World Resources Institute (WRI), 2024. High Resolution Canopy Height Maps by WRI and Meta, CC BY 4.0 (https://registry.opendata.aws/dataforgood-fb-forests/). Source imagery for CHM © 2016 Maxar; la tesela 032221132 es de imágenes del 4 de octubre de 2018.",

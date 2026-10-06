@@ -73,6 +73,18 @@ for (const P of PANTALLAS) {
         await pg.evaluate(() => [...document.querySelectorAll('#te-txt p')].find((q) => q.textContent.startsWith('Estimación de la copa')).scrollIntoView({ block: 'nearest' }));
         await pg.waitForTimeout(300);
         await pg.screenshot({ path: path.join(SALIDA, `${P.nombre}-${rotulo}-${n}-copa.png`) });
+        // el crédito de la copa (Meta y WRI, OSM) se alcanza al desplazar la ficha hasta el final: queda entero dentro del área visible
+        const cr = await pg.evaluate(async () => {
+          const txt = document.querySelector('#te-txt'), c = [...txt.querySelectorAll('.te-credito')].find((q) => q.textContent.startsWith('Copa: Meta y WRI'));
+          if (!c) return null;
+          txt.scrollTop = txt.scrollHeight; await new Promise((ok) => setTimeout(ok, 300));
+          const a = txt.getBoundingClientRect(), b = c.getBoundingClientRect();
+          return { dentro: b.top >= a.top - 1 && b.bottom <= a.bottom + 1, desplaza: txt.scrollHeight > txt.clientHeight, texto: c.textContent };
+        });
+        if (!cr) mal('la ficha del 106 no tiene el crédito de la copa');
+        else if (!cr.dentro) mal('el crédito de la copa no se alcanza al desplazar la ficha');
+        else console.log(`  ✓ crédito de la copa visible${cr.desplaza ? ' al desplazar la ficha hasta el final' : ' sin desplazar'}`);
+        await pg.screenshot({ path: path.join(SALIDA, `${P.nombre}-${rotulo}-${n}-credito.png`) });
       }
     }
     else if (r.copa) mal('la frase de la copa sale en una ficha que no es la del 106');
