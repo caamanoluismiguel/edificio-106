@@ -1,0 +1,43 @@
+name: Dato o fuente incorrecta
+description: Una cifra, una frase o una fuente del visor o del repositorio que no cuadra.
+title: "[Dato] "
+labels: ["dato"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias. Con la fuente exacta (autor, año y página, DOI o URL oficial) el dato se puede revisar y corregir.
+  - type: textarea
+    id: que
+    attributes:
+      label: ¿Qué está mal?
+      description: Copia la cifra o la frase tal como aparece.
+    validations:
+      required: true
+  - type: input
+    id: donde
+    attributes:
+      label: ¿Dónde aparece?
+      description: El enlace del momento del visor («Copiar enlace»), la sección, o el archivo y la línea del repositorio.
+    validations:
+      required: true
+  - type: textarea
+    id: fuente
+    attributes:
+      label: ¿Qué fuente lo contradice?
+      description: Autor, título, año y página, DOI o URL oficial. Si es un cálculo tuyo, cómo lo hiciste.
+    validations:
+      required: true
+  - type: textarea
+    id: correcto
+    attributes:
+      label: ¿Cómo debería decir?
+    validations:
+      required: false
+  - type: checkboxes
+    id: acepto
+    attributes:
+      label: Aporte
+      options:
+        - label: Acepto que mi aporte quede dentro de la obra bajo su LICENSE (punto 4), como dice CONTRIBUTING.md.
+          required: true

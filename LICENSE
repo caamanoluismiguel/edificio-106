@@ -1,29 +1,55 @@
-MIT License
+Edificio 106 · Isthmus: visor de sol y clima
+Copyright (c) 2026 Luis Miguel Caamaño. Todos los derechos reservados.
 
-Copyright (c) 2026 Luis Miguel Caamaño
+Esta licencia rige desde el commit que la introduce, el 6 de octubre de 2026.
+Las versiones publicadas antes de ese commit, incluidas las del mismo 6 de
+octubre, salieron con licencia MIT y quien las obtuvo conserva los derechos que
+esa licencia le dio sobre esas versiones.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Qué cubre
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+El código, los modelos 3D, los textos, las imágenes, la tarjeta de realidad
+aumentada y los datos elaborados en este repositorio (en adelante, «la obra»),
+salvo las partes de terceros que se listan en TERCEROS.md, que conservan su
+propia licencia.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. Lo que se permite sin pedir permiso
 
----
-Datos derivados (datos/*.json, datos/*.bin.gz): CC BY 4.0, heredada de Open-Meteo
-(https://open-meteo.com/, CC BY 4.0). Contienen información modificada del Servicio de
-Cambio Climático de Copernicus (ERA5, doi:10.24381/cds.adbb2d47); ni la Comisión Europea
-ni el ECMWF son responsables del uso que se haga de ella. Huellas de edificios vecinos:
-© colaboradores de OpenStreetMap (ODbL). src/confort.js porta coeficientes de
-pythermalcomfort (MIT, Copyright (c) 2019 Federico Tartarini).
+a) Ver el código y los archivos en GitHub.
+b) Usar el visor publicado en
+   https://caamanoluismiguel.github.io/edificio-106/ y la realidad aumentada
+   con su tarjeta, en clase, en investigación y para uso personal.
+c) Citar la obra y mostrar capturas o imágenes exportadas del visor en clases,
+   trabajos académicos, presentaciones y publicaciones, con la cita indicada en
+   CITATION.cff.
+d) Hacer una bifurcación (fork) en GitHub y copias locales con el único fin de
+   preparar un aporte a este repositorio según CONTRIBUTING.md.
+
+3. Lo que no se permite sin permiso escrito del autor
+
+Fuera de lo que permite el punto 2:
+
+a) Publicar, alojar, distribuir o poner en línea una copia o una versión
+   modificada de la obra, completa o en parte.
+b) Usar la obra o partes de ella dentro de otro producto, sitio o servicio.
+c) Cualquier uso comercial.
+d) Presentar la obra o una versión de ella como propia o como oficial de
+   Isthmus o de Ciudad del Saber.
+
+4. Aportes
+
+Quien envía un aporte (issue, pull request, comentario, dato, foto o fuente)
+acepta lo que dice CONTRIBUTING.md: declara que tiene derecho a aportarlo y cede al
+autor una licencia perpetua, mundial, gratuita e irrevocable para usarlo,
+modificarlo, sublicenciarlo y publicarlo dentro de la obra bajo esta licencia
+o la que la sustituya. El aporte se reconoce en el historial de git.
+
+5. Sin garantía
+
+La obra se entrega «tal cual», sin garantía de ningún tipo. Es un proyecto
+académico experimental: sus cifras y sus recomendaciones no sustituyen el
+trabajo de un profesional ni una medición en sitio. El autor no responde por
+daños que surjan de su uso.
+
+Para pedir un permiso: abrir un issue en
+https://github.com/caamanoluismiguel/edificio-106/issues

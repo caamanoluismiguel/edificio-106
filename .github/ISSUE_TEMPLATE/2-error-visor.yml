@@ -1,0 +1,40 @@
+name: Error del visor
+description: Algo no carga, se ve mal o no responde.
+title: "[Error] "
+labels: ["error"]
+body:
+  - type: textarea
+    id: que
+    attributes:
+      label: ¿Qué pasó?
+      description: Qué hiciste, qué esperabas ver y qué viste. Una captura ayuda.
+    validations:
+      required: true
+  - type: input
+    id: enlace
+    attributes:
+      label: Enlace del momento
+      description: Usa «Copiar enlace» en el visor, o pega la dirección completa.
+    validations:
+      required: false
+  - type: input
+    id: equipo
+    attributes:
+      label: Equipo y navegador
+      description: Por ejemplo, Android 15 con Chrome 141, o MacBook con Safari 26.
+    validations:
+      required: true
+  - type: textarea
+    id: depurar
+    attributes:
+      label: Diagnóstico (opcional)
+      description: Abre el visor con #depurar al final de la dirección y copia lo que muestra.
+    validations:
+      required: false
+  - type: checkboxes
+    id: acepto
+    attributes:
+      label: Aporte
+      options:
+        - label: Acepto que mi aporte quede dentro de la obra bajo su LICENSE (punto 4), como dice CONTRIBUTING.md.
+          required: true

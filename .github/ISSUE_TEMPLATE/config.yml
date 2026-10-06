@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Cómo aportar
+    url: https://github.com/caamanoluismiguel/edificio-106/blob/main/CONTRIBUTING.md
+    about: Qué se puede aportar, las reglas de contenido y cómo probar un cambio.

@@ -1,0 +1,41 @@
+name: Propuesta
+description: Una fuente mejor, un dato de un edificio de la ciudad o una idea para el visor.
+title: "[Propuesta] "
+labels: ["propuesta"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de proponer una función, revisa «Qué no es» en el README y la sección «Lo que no hace y lo que se descartó» de docs/HISTORIA.md. No envíes capturas de Street View ni de Google Maps.
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: ¿Qué propones?
+      options:
+        - Una fuente mejor
+        - Un dato de un edificio o un árbol de la ciudad
+        - Una idea para el visor
+        - Otra cosa
+    validations:
+      required: true
+  - type: textarea
+    id: que
+    attributes:
+      label: Descríbela
+      description: Qué cambiaría, para quién y por qué. Si es un edificio, su número o su ubicación.
+    validations:
+      required: true
+  - type: textarea
+    id: fuente
+    attributes:
+      label: Fuente o evidencia
+      description: Referencia con página o DOI, o una foto tuya con la fecha en que la tomaste.
+    validations:
+      required: false
+  - type: checkboxes
+    id: acepto
+    attributes:
+      label: Aporte
+      options:
+        - label: Acepto que mi aporte quede dentro de la obra bajo su LICENSE (punto 4), como dice CONTRIBUTING.md.
+          required: true

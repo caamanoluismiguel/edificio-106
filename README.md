@@ -84,6 +84,10 @@ Decisiones que hay que respetar al tocarlo:
 
 Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para bajar de nuevo la serie de clima: `python3 fuente/descargar_era5.py` (reproduce los datos byte a byte).
 
+## Cómo aportar
+
+Se puede reportar un dato o una fuente incorrecta, proponer una fuente mejor (sobre todo panameña), corregir un edificio de la ciudad o mandar un cambio de código. Todo empieza en los [issues](https://github.com/caamanoluismiguel/edificio-106/issues), con su plantilla. Las reglas de contenido y cómo probar un cambio están en [`CONTRIBUTING.md`](CONTRIBUTING.md). La historia de cómo se hizo el visor, etapa por etapa, está en [`docs/HISTORIA.md`](docs/HISTORIA.md).
+
 ## Cómo se comprueba
 
 - `cd fuente && node verificar.mjs`: el sol contra otros algoritmos, las sombras contra trazado de rayos, la sombra en la forma de ver Sol, que no se cuele sol bajo el alero con el sol alto, las luces, los errores y los tirones. Las comprobaciones de sombras tienen un control con un error a propósito que debe hacerlas fallar, para probar que la prueba sirve.
@@ -98,6 +102,7 @@ Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para baja
 - Zippenfenig, P. (2024). *Open-Meteo.com Weather API*. Zenodo. doi:10.5281/zenodo.7970649. [Weather data by Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0).
 - Lavers, D. A. et al. (2022). An evaluation of ERA5 precipitation for climate monitoring. *Quarterly Journal of the Royal Meteorological Society*, 148(748), 3152–3165. doi:10.1002/qj.4351
 - IMHPA. [Caracterización del clima en el distrito de Panamá](https://www.imhpa.gob.pa/uploads/documentos/caracterizacin_del_clima_en_el_distrito_de_panam.pdf) (Tocumen, 1977–2010).
+- Partes METAR de Albrook (MPMG) del [Iowa Environmental Mesonet](https://mesonet.agron.iastate.edu/), Iowa State University: el «ahora» del visor y el ajuste de la serie a Albrook (calibración 2017–2025).
 - INEC. [Cuadro 121-01](https://www.inec.gob.pa/archivos/P3771121-01.pdf): Balboa (ACP), Albrook (Autoridad de Aeronáutica Civil) y Tocumen, 2001–2010.
 
 **Sol y radiación**
@@ -148,4 +153,8 @@ Para armar el sitio: `cd fuente && npm install && bash armar-raiz.sh`. Para baja
 
 Caamaño, L. M. (2026). *Edificio 106 · Isthmus: visor de sol y clima* (versión del 1 de octubre de 2026) [software]. https://github.com/caamanoluismiguel/edificio-106
 
-Ver `CITATION.cff`. El código tiene licencia MIT (`LICENSE`); los datos derivados, CC BY 4.0.
+Ver `CITATION.cff`.
+
+## Licencia
+
+Todos los derechos reservados desde el 6 de octubre de 2026 (antes, MIT). Se puede ver el código, usar el visor en clase y en investigación, citarlo y mostrar sus imágenes con la cita, y hacer fork solo para preparar un aporte. No se puede publicar otra versión ni usarlo con fines comerciales sin permiso. El texto completo está en [`LICENSE`](LICENSE). Los datos y el software de terceros (OpenStreetMap, ERA5 y Open-Meteo, three.js, MindAR y otros) conservan su propia licencia: ver [`TERCEROS.md`](TERCEROS.md).
