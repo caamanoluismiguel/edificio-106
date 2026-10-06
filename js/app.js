@@ -33096,7 +33096,7 @@ function eU() {
 			"III",
 			nU.III,
 			"supuesto",
-			"casi nada se ve; el tipo es supuesto"
+			"casi nada se ve en las fotos o es conjetura"
 		],
 		[
 			"",
@@ -40407,7 +40407,7 @@ async function dJ(e) {
 		let t = uJ("p", "te-credito", "Número, nombre y huella: © "), i = uJ("a", null, "colaboradores de OpenStreetMap");
 		i.href = "https://www.openstreetmap.org/copyright", i.target = "_blank", i.rel = "noopener", t.append(i, `, ODbL; base del ${n.base}.` + (n.cerl ? " Tipos y años: Enscore et al. (2000), informe de ERDC/CERL sobre Fort Clayton." : ""));
 		let a = uJ("details");
-		a.append(uJ("summary", null, "Cómo leer esta ficha"), uJ("p", null, "Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve o es conjetura; si tiene un tipo del kit, el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos."), uJ("p", null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${n.supuestosCiudad}.`), uJ("p", null, "Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio."), uJ("p", null, "Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.")), r.push(t, a);
+		a.append(uJ("summary", null, "Cómo leer esta ficha"), uJ("p", null, "Certeza: cuenta qué tan bien se vio el edificio en las fotos. I, confirmado: pisos, forma y material del techo, muros y mediaguas vistos en Street View con confianza alta o media. II, probable: se ve el tipo, pero falta alguno de esos datos o la vista deja dudas. III, supuesto: casi nada se ve o es conjetura; si tiene un tipo del kit, el tipo es supuesto. Aun en la clase I, las pendientes, las alturas de piso y los colores pueden ser supuestos."), uJ("p", null, `Parámetros supuestos: se cuenta cada parámetro del kit cuya fuente dice SUPUESTO o SUPUESTA; basta una parte, como el tinte de un color, para que cuente. En toda la ciudad son ${n.supuestosCiudad}.`), uJ("p", null, "Tipo y año: el informe de CERL usa la numeración del Ejército y no la relaciona con la de Ciudad del Saber. «Por número» quiere decir que el número del edificio está en la lista de CERL de ese tipo; «por forma», que el tipo se asignó por lo que se ve y por la huella. El año es el del tipo, no el del edificio. Por número, la ficha da también el año que el cuadro de CERL de la p. 7-9 da a esa lista del Ejército; eso no prueba que sea el mismo edificio."), uJ("p", null, "Altura: el percentil 90 de las alturas de Open Buildings dentro de la huella. Pisos: lo que se contó en la foto, con su fecha.")), r.push(t, a);
 	}
 	if (Z("#te-txt").replaceChildren(...r), Z("#te-txt").scrollTop = 0, Z("#te-acerca").hidden = Z("#te-partes").hidden = !n.es106, Z("#te-estado").textContent = "", t.hidden) {
 		let e = document.activeElement;
