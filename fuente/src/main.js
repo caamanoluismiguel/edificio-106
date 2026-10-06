@@ -836,15 +836,24 @@ async function mostrarTarjeta(e) {
   $('#te-txt').replaceChildren(...hijos); $('#te-txt').scrollTop = 0;
   $('#te-acerca').hidden = $('#te-partes').hidden = !T.es106;
   $('#te-estado').textContent = '';
+  // el foco del teclado pasa al título de la ficha (sin mover la página); al cerrarla vuelve a donde estaba. Con el foco en la
+  // ficha, el doble toque sigue igual: lo escucha el lienzo, no el teclado
+  if (el.hidden) { const a = document.activeElement; NAV.focoAntes = a && a !== document.body ? a : null; }
   NAV.tarjeta = e; el.hidden = false; anunciar();
   el.setAttribute('aria-live', 'polite');
+  $('#te-t').focus({ preventScroll: true });
   if (S.hoja === 1 || S.hoja === 2) ponerHoja(0);         // en el teléfono, la hoja baja a la cerrada y la ficha la cubre
 }
+/** Cierra la ficha. Si el foco estaba en ella, vuelve a donde estaba antes de abrirla (o a la escena); `devolverFoco` lo pide
+ *  aunque no estuviera en ella (×, Escape). */
 function cerrarTarjeta(devolverFoco) {
   const el = $('#tarjeta-edificio'); if (!el || el.hidden) return;
-  const dentro = el.contains(document.activeElement);
-  el.hidden = true; NAV.tarjeta = null;
-  if (devolverFoco && dentro) $('#principal')?.focus();
+  const dentro = el.contains(document.activeElement), antes = NAV.focoAntes;
+  el.hidden = true; NAV.tarjeta = null; NAV.focoAntes = null;
+  if (dentro || (devolverFoco && document.activeElement === document.body)) {
+    const destino = antes?.isConnected && !antes.closest('[hidden], [inert]') ? antes : $('#principal');
+    destino?.focus({ preventScroll: true });
+  }
 }
 /** Una sola vez (localStorage «e106-navegar»): al girar por primera vez, cómo recorrer la ciudad. Con ?prueba, solo con ?guia. */
 function pistaNavegar() {
