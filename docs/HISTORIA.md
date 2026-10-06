@@ -147,7 +147,7 @@ Quedan pendientes, entre otros: la prueba de la AR en iPhone, la prueba de la in
 | Árboles | Meta y WRI, High Resolution Canopy Height Maps v1 (Tolan et al., 2024; CC BY 4.0). Source imagery for CHM © 2016 Maxar; la tesela usada es de imágenes del 4 de octubre de 2018 | https://registry.opendata.aws/dataforgood-fb-forests/ |
 | Revisión de los árboles | Sentinel-2 L2A, Copernicus (contains modified Copernicus Sentinel data 2019, 2026) | https://sentinels.copernicus.eu/documents/247904/690755/Sentinel_Data_Legal_Notice |
 | Medidas de los barcos | ACP, OP Notice to Shipping N-1-2024 | https://pancanal.com/wp-content/uploads/2021/08/N01-2024-Vessel-Requirements-AC.pdf |
-| Pisos, techos y colores de la ciudad | Street View de Google, solo como referencia visual. En el árbol actual del repositorio no hay imágenes de Street View; una hoja de verificación con dos recortes (`fuente/verificacion/portico/comparativa-portico.png`) estuvo en `main` hasta el commit que la borró (>>> fecha del push) y sigue en la historia de git | (sin enlace) |
+| Pisos, techos y colores de la ciudad | Street View de Google, solo como referencia visual. En el árbol actual del repositorio no hay imágenes de Street View; una hoja de verificación con dos recortes (`fuente/verificacion/portico/comparativa-portico.png`) estuvo en `main` hasta el commit que la borró (6 de octubre de 2026) y sigue en la historia de git | (sin enlace) |
 | Reconocimiento de la tarjeta de AR | MindAR 1.2.5 (MIT) | https://github.com/hiukim/mind-ar-js |
 | Texturas de asfalto, concreto y pasto | Poly Haven (CC0) | https://polyhaven.com/ |
 
