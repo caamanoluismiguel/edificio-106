@@ -46,7 +46,7 @@ const REGLA = {
   brazo: { valor: 'sobre la calle principal', fuente: 'regla propia: el brazo cruza la calle de más categoría de las dos de su esquina; en un empate, la que va más cerca del eje z de la escena, como Carlos Lara bajo el brazo del poste real' },
   grupo: { valor: 25, fuente: 'regla propia: los cruces a menos de 25 m unos de otros (calzadas dobles, ramales) llevan un solo poste, en el cruce con más calles' },
   sinSalida: { valor: 10, fuente: 'regla propia: en una calle sin salida, un poste a 10 m de su punta' },
-  tramoLargo: { valor: 150, fuente: 'regla propia: un tramo de más de 150 m sin cruces lleva postes en medio, repartidos parejos y a no más de unos 100 m (ceil(L / 100) − 1), para que no queden tramos largos a oscuras' },
+  tramoLargo: { valor: 200, fuente: 'regla propia: un tramo de más de 200 m sin cruces lleva postes en medio, repartidos parejos y a no más de unos 100 m (ceil(L / 100) − 1), para que no queden tramos largos a oscuras' },
   minSep: { valor: 12, fuente: 'regla propia: ningún poste a menos de 12 m de otro' },
   margen106: { valor: 4, fuente: 'regla propia: ningún poste a menos de 4 m de la planta del 106 (sus galerías, escaleras y la entrada)' },
 };
