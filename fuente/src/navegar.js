@@ -158,7 +158,7 @@ export function fraseCopa(C) {
   return `Estimación de la copa de árbol de ${nf(C.umbral_m)}\u00a0m o más sobre el suelo sin edificios: ${pc(C.distrito.copa_suelo_libre)}\u00a0% dentro del límite del distrito `
     + `y ${pc(C.edificio_106.copa_suelo_libre_por_radio_m['100'])}\u00a0% a 100\u00a0m del 106. Sale del mapa de altura de copa de Meta y WRI, hecho con imágenes `
     + `${C.chm.imagenes} de ${MES_LARGO[m - 1]} de ${a}, cuyo error absoluto medio en la altura es de ${nf(C.chm.error_absoluto_medio_altura_m)}\u00a0m en la validación `
-    + `de Tolan et al. (2024), hecha en ${C.chm.validacion_paises}; en el conjunto de São Paulo fue de ${nf(C.chm.error_absoluto_medio_sao_paulo_m)}\u00a0m. El límite del distrito es una propuesta del visor y no el oficial de la Fundación Ciudad del Saber.`;
+    + `de Tolan et al. (2024), hecha en ${C.chm.validacion_paises}; en el conjunto del estado de São Paulo fue de ${nf(C.chm.error_absoluto_medio_sao_paulo_m)}\u00a0m. El límite del distrito es una propuesta del visor y no el oficial de la Fundación Ciudad del Saber.`;
 }
 const MES_LARGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
