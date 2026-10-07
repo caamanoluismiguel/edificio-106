@@ -608,7 +608,19 @@
   .hallazgo.simple .ver { padding: 7px 10px; }
   .hallazgo.simple .eyebrow { font-size: 12px; color: var(--sol); }
   .hallazgo.pregunta .respuesta { font-size: 15px; color: var(--cal); }
-  .pregunta .sello { font: 500 12px/1.3 var(--datos); color: var(--cal-2); white-space: nowrap; }
+  /* los cinco sellos de procedencia (fase C): el mismo texto en todo el visor; los del HTML enlazan a su entrada de «Fuentes y método» */
+  .sello { font: 500 12px/1.3 var(--datos); color: var(--cal-2); white-space: nowrap; }
+  a.sello { text-decoration: underline dotted; text-underline-offset: 3px; }
+  a.sello:hover, a.sello:focus-visible { color: var(--cal); }
+  p.sellos .sello:not(:last-child)::after { content: ' ·'; }    /* el punto queda al final de la línea si los sellos se parten */
+  p.sellos { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 8px; }
+  .hallazgo .pliegue p { font-size: 13px; color: var(--cal-2); }
+  .tabla-fondo { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .tabla-fondo th, .tabla-fondo td { padding: 4px 0 4px 8px; border-top: 1px solid var(--linea); text-align: right; font: 500 12px/1.25 var(--datos); color: var(--cal); white-space: nowrap; }
+  .tabla-fondo th:first-child { text-align: left; padding-left: 0; }
+  .tabla-fondo thead th { font: 500 11px/1.2 var(--datos); letter-spacing: .06em; text-transform: uppercase; color: var(--cal-2); border-top: 0; }
+  #acerca .sellos-glosario { margin: 0; } #acerca .sellos-glosario dt { font: 500 13px/1.3 var(--datos); color: var(--cal); margin-top: 10px; }
+  #acerca .sellos-glosario dd { margin: 3px 0 0; font-size: 15px; color: var(--cal-2); max-width: 62ch; }
   .hallazgo.pregunta .pensar { font-size: 14px; color: var(--cal-2); } .pregunta .pensar b { color: var(--cal); font-weight: 600; }
   #acerca .fuentes li { font-size: 14px; }
   #acerca .aviso { font-size: 13px; color: var(--cal-2); margin-top: 14px; }
@@ -636,8 +648,10 @@
   .conf-conviene li { display: grid; grid-template-columns: 16px 1fr; gap: 6px; } .conf-conviene li i { font-style: normal; color: var(--sol); }
   .conf-conviene li.accion { grid-template-columns: 1fr; padding-left: 10px; border-left: 3px solid var(--sol); font-size: 14px; }
   .conf-porque { margin-top: 8px; font-size: 13px; } .conf-conviene li.cierre { grid-template-columns: 1fr; color: var(--cal-2); font-size: 13px; }
+  .conf-lead { margin: 0; font-size: 13px; line-height: 1.4; color: var(--cal); }
   .conf-sello { margin: 0; font: 500 12px/1.3 var(--datos); color: var(--cal-2); letter-spacing: .02em; }
-  .conf-detalle summary { cursor: pointer; font: 600 13px/1.3 var(--texto); color: var(--sol); } .conf-detalle p { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--cal-2); }
+  .conf-detalle summary { cursor: pointer; font: 600 13px/1.3 var(--texto); color: var(--sol); } .conf-detalle p, .conf-detalle li { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--cal-2); }
+  .conf-detalle ul.estrategias { margin: 0; padding-left: 16px; } .conf-detalle ul.estrategias b { color: var(--cal); font-weight: 600; }
   .conf-conviene b { font-weight: 650; }
   .conf-hora b { font-family: var(--datos); font-variant-numeric: tabular-nums; }
   html:has(#confort:not([hidden])) #rotulo > :not(#rotulo-cab), html:has(#confort:not([hidden])) #panel-fachada { display: none; }
@@ -1320,8 +1334,10 @@
         <div class="reloj-textos">
         <p class="reloj-dato" id="reloj-era5"></p>
         <p class="reloj-dato" id="reloj-alb"></p>
-        <p class="reloj-nota">Las dos curvas miden cosas distintas: ERA5, horas con 1,5 mm o más en una celda de unos 28 km; Albrook, partes de un instante con cualquier lluvia en un punto. Por eso cada una va a escala de su máximo y solo se compara la hora.</p>
+        <p class="reloj-nota">Las dos curvas miden cosas distintas: compara solo la hora del máximo, no la altura.</p>
+        <p class="sellos"><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a><a class="sello" href="#fm-albrook">Albrook · aeropuerto a 4 km</a></p>
         <details class="pliegue"><summary>Cómo se midió</summary>
+        <p class="reloj-nota">ERA5 cuenta las horas con 1,5 mm o más en una celda de unos 28 km; Albrook, los partes de un instante con cualquier lluvia en un punto. Por eso cada curva va a escala de su propio máximo.</p>
         <p class="reloj-nota" id="reloj-tardes">De mayo a noviembre, el observador del aeropuerto de Albrook informó lluvia (sin contar llovizna ni la de la hora anterior) en alguno de sus partes de 12:00 a 18:59 en <span data-tardes="albrook">46</span> de cada 100 tardes (2017–2025). ERA5 da 1 mm o más entre las 12 y las 18 h en <span data-tardes="era5">88</span> de cada 100 tardes (2001–2025), pero no mide lo mismo: suma seis horas en una celda de 28 km, y cada parte mira un instante en un punto.</p>
         <p class="reloj-nota" id="reloj-auto"></p>
         <p class="reloj-nota" id="reloj-sesgo">Aquí el máximo de ERA5 llega algo más de 1 h antes que el de Albrook, en línea con un estudio global de junio a agosto: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo de lluvia frente al producto satelital IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
@@ -1362,56 +1378,56 @@
       <article class="hallazgo simple pregunta" data-fecha="2026-06-21" data-hora="09:00" data-vista="aerea" data-fachada="" data-capa="" data-modo="" data-ayudas="1">
         <p class="eyebrow">1 · Sol</p>
         <h4>¿Por dónde pasa el sol aquí?</h4>
-        <p class="respuesta">Casi por encima: al mediodía pasa a más de 57° de altura todo el año. <span class="sello">Sol calculado (NOAA)</span></p>
+        <p class="respuesta">Casi por encima: al mediodía pasa a más de 57° de altura todo el año. <a class="sello" href="#fm-sol">Sol calculado (NOAA)</a></p>
         <p class="pensar"><b>Para pensar:</b> Con el sol tan alto, ¿qué recibe más sol en un año, el techo o una pared?</p>
         <button class="ver" type="button"><span>Verlo</span><small>21 de junio, 9:00 · vista aérea · el arco del sol</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-momento="cero-0" data-vista="aerea" data-fachada="" data-capa="sombras" data-modo="">
         <p class="eyebrow">2 · Sombra</p>
         <h4>¿Hay días sin sombra?</h4>
-        <p class="respuesta">Sí, dos al año. Este año, el <span data-cero="0">12 de abril</span> y el <span data-cero="1">29 de agosto</span> a las <span data-cero="hora">12:19</span>, la sombra de un poste de 1 m casi desaparece. <span class="sello">Sol calculado (NOAA)</span></p>
+        <p class="respuesta">Sí, dos al año. Este año, el <span data-cero="0">12 de abril</span> y el <span data-cero="1">29 de agosto</span> a las <span data-cero="hora">12:19</span>, la sombra de un poste de 1 m casi desaparece. <a class="sello" href="#fm-sol">Sol calculado (NOAA)</a></p>
         <p class="pensar"><b>Para pensar:</b> Entre esas dos fechas el sol del mediodía viene del norte. ¿Qué fachadas piden protección entonces?</p>
         <button class="ver" type="button"><span>Verlo</span><small><span data-cero="0">12 de abril</span>, <span data-cero="hora">12:19</span> · vista aérea · Sombras del día</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2003-04-11" data-hora="15:30" data-vista="" data-fachada="so" data-capa="calor" data-modo="directa">
         <p class="eyebrow">3 · Fachada</p>
         <h4>¿De qué lado está el sol en las horas más calientes?</h4>
-        <p class="respuesta">La suroeste: en las horas de 30 °C o más, el sol está de su lado en 71 de cada 100. <span class="sello">ERA5 ajustado a Albrook</span></p>
+        <p class="respuesta">La suroeste: en las horas de 30 °C o más, el sol está de su lado en 71 de cada 100. <a class="sello" href="#fm-ajuste">ERA5 ajustado a Albrook</a></p>
         <p class="pensar"><b>Para pensar:</b> Si el alero no alcanza contra el sol bajo de la tarde, ¿qué protección pondrías en esa cara?</p>
         <button class="ver" type="button"><span>Verlo</span><small>11 de abril de 2003, 15:30 · fachada suroeste · Sol en fachadas</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2024-01-15" data-hora="07:30" data-vista="" data-fachada="se" data-capa="calor" data-modo="directa">
         <p class="eyebrow">4 · Alero</p>
         <h4>¿Cuándo entra el sol por la ventana?</h4>
-        <p class="respuesta">Solo cuando va bajo. Visto de perfil contra la fachada, si el sol sube de unos 45°, el alero de 1,65 m deja el vidrio a la sombra. En enero, en la SE, más de la mitad del vidrio recibe sol hasta cerca de las 8:45. <span class="sello">Sol calculado (NOAA)</span></p>
+        <p class="respuesta">Solo cuando va bajo. Visto de perfil contra la fachada, si el sol sube de unos 45°, el alero de 1,65 m deja el vidrio a la sombra. En enero, en la SE, más de la mitad del vidrio recibe sol hasta cerca de las 8:45. <a class="sello" href="#fm-sol">Sol calculado (NOAA)</a></p>
         <p class="pensar"><b>Para pensar:</b> El alero corta el sol alto. ¿Qué haría falta para cortar el bajo?</p>
         <button class="ver" type="button"><span>Verlo</span><small>15 de enero, 7:30 · fachada sureste · pasa la regla a las 10:00 y toca «Ver el corte del alero»</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="" data-modo="" data-pestana="anio">
         <p class="eyebrow">5 · Lluvia</p>
         <h4>¿A qué hora llueve?</h4>
-        <p class="respuesta">De mayo a noviembre, el observador del aeropuerto de Albrook informa lluvia más seguido en la tarde, de 14 a 16 h, que en la mañana. <span class="sello">Albrook · aeropuerto a 4 km, 2017–2025</span></p>
+        <p class="respuesta">De mayo a noviembre, el observador del aeropuerto de Albrook informa lluvia más seguido en la tarde, de 14 a 16 h, que en la mañana. <a class="sello" href="#fm-albrook">Albrook · aeropuerto a 4 km, 2017–2025</a></p>
         <p class="pensar"><b>Para pensar:</b> ¿Qué recorridos usa la gente a esa hora y cuáles necesitan techo?</p>
         <button class="ver" type="button"><span>Verlo</span><small>1 de julio de 2023, 14:30 · una tarde de aguacero, la hora más lluviosa de 25 años (ERA5) · y el reloj de la lluvia en «Año»</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2006-11-23" data-hora="10:30" data-vista="" data-fachada="no" data-capa="lluvia" data-modo="anio">
         <p class="eyebrow">5b · Lluvia con viento</p>
         <h4>¿Por qué una pared se moja más que otra?</h4>
-        <p class="respuesta">Cuando llueve con viento, el agua llega de lado. En un año típico, la exposición de la pared noroeste es más de cinco veces la de la lateral noreste. <span class="sello">ERA5 · zona de 28 km</span></p>
+        <p class="respuesta">Cuando llueve con viento, el agua llega de lado. En un año típico, la exposición de la pared noroeste es más de cinco veces la de la lateral noreste. <a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
         <p class="pensar"><b>Para pensar:</b> ¿Qué reforzarías primero en esa cara?</p>
         <button class="ver" type="button"><span>Verlo</span><small>Año típico · fachada noroeste · Lluvia en fachadas</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2016-02-18" data-hora="14:00" data-vista="aerea" data-fachada="" data-capa="viento" data-modo="seca">
         <p class="eyebrow">6 · Viento</p>
         <h4>¿De dónde viene la brisa?</h4>
-        <p class="respuesta">En la temporada seca, de diciembre a marzo, casi siempre del norte y el noroeste, a unos <span data-viento="seca">13</span>&nbsp;km/h de media. <span class="sello">ERA5 · zona de 28 km</span></p>
+        <p class="respuesta">En la temporada seca, de diciembre a marzo, casi siempre del norte y el noroeste, a unos <span data-viento="seca">13</span>&nbsp;km/h de media. <a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
         <p class="pensar"><b>Para pensar:</b> ¿Dónde pondrías las ventanas por las que entra la brisa y dónde las que la dejan salir?</p>
         <button class="ver" type="button"><span>Verlo</span><small>Temporada seca · vista aérea · Viento</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2003-04-11" data-hora="13:30" data-vista="" data-fachada="so" data-capa="" data-modo="" data-abrir="confort">
         <p class="eyebrow">7 · Confort</p>
         <h4>¿Se está mejor bajo el alero?</h4>
-        <p class="respuesta">Sí. De pie y afuera, bajo el alero la sensación térmica es en promedio unos <span data-alivio>4</span>&nbsp;°C menor que al sol. <span class="sello">ERA5 ajustado a Albrook</span></p>
+        <p class="respuesta">Sí. De pie y afuera, bajo el alero la sensación térmica es en promedio unos <span data-alivio>4</span>&nbsp;°C menor que al sol. <a class="sello" href="#fm-ajuste">ERA5 ajustado a Albrook</a></p>
         <p class="pensar"><b>Para pensar:</b> ¿Qué actividades de la escuela pondrías bajo el alero en la tarde?</p>
         <button class="ver" type="button"><span>Verlo</span><small>11 de abril de 2003, 13:30 · abre Confort: la sensación térmica al sol y bajo el alero</small></button>
       </article>
@@ -1424,48 +1440,69 @@
     </div>
   </section>
   <h3 class="sirve-h">Para arquitectos: seis hallazgos con datos</h3>
-  <p class="sirve-intro">Cruzan la posición del sol (NOAA) con 25 años de datos horarios del reanálisis ERA5 sobre el modelo del edificio. Sirven para discutir orientación, aleros, lluvia y viento; cada uno trae un momento para verlo en la escena y su límite. El clima es de ERA5, un modelo para una zona de unos 28 km, no una medición en el sitio; cuando un hallazgo usa otra fuente, como el aeropuerto de Albrook, a 4 km, la nombra.</p>
+  <p class="sirve-intro">Cruzan la posición del sol (NOAA) con 25 años de datos horarios del reanálisis ERA5 sobre el modelo del edificio. Sirven para discutir orientación, aleros, lluvia y viento; cada uno trae un momento para verlo en la escena y su límite. El sello al pie dice de dónde sale cada uno y lleva a su explicación; cuando un hallazgo usa además otra fuente, como el aeropuerto de Albrook o el INEC, la nombra.</p>
   <div class="hallazgos">
     <article class="hallazgo" id="hallazgo-cero" data-fecha="2026-04-12" data-hora="12:19" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Cero sombra en <span data-cero="anio">2026</span>: <span data-cero="0">12 de abril</span> y <span data-cero="1">29 de agosto</span>, a las <span data-cero="hora">12:19</span></h3>
-      <p>Entre esas dos fechas (139 días) el sol del mediodía pasa al norte del cenit. Por el giro de 56°, las cuatro fachadas reciben sol directo todos los días del año, aunque a veces rasante: sin descontar nubes, la SE unas 2.500 horas al año y la NO unas 1.900.</p>
+      <p>Entre esas dos fechas (139 días) el sol del mediodía pasa al norte del cenit. Por el giro de 56°, las cuatro fachadas reciben sol directo todos los días del año, aunque a veces rasante.</p>
       <p class="uso"><b>Para el diseño:</b> A 9° N ninguna fachada se libra del sol; de abril a agosto las caras NO y NE también necesitan protección.</p>
       <p class="limite"><b>Límite:</b> Geometría solar (NOAA): no descuenta nubes ni vecinos. Afuera se comprueba con un poste.</p>
+      <details class="pliegue"><summary>A fondo</summary><p>Sin descontar nubes, la SE recibe sol directo unas 2.500 horas al año y la NO unas 1.900.</p></details>
+      <p class="sellos"><a class="sello" href="#fm-sol">Sol calculado (NOAA)</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small><span data-cero="dma">12/04/2026</span> <span data-cero="hora">12:19</span> · vista aérea · sol directo en fachadas: las cuatro casi en cero, y en la barra de abajo la «Sombra de un poste de 1 m» queda casi en cero.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2024-03-05" data-hora="09:30" data-vista="aerea" data-fachada="" data-capa="calor" data-modo="directa">
       <h3>Sol directo: SE y SO reciben más del doble que la NO. Con la luz difusa, la diferencia se achica</h3>
-      <p>En una pared sin alero, el sol directo de un año es de unos <span data-rad="se.directa">374</span> kWh/m² en la SE, <span data-rad="so.directa">362</span> en la SO, <span data-rad="ne.directa">302</span> en la NE y <span data-rad="no.directa">144</span> en la NO. Pero el sol directo es solo el <span data-rad-pct>24–43 %</span> del total: sumando la luz difusa del cielo (entre <span data-rad="no.difusa">287</span> en la NO y <span data-rad="se.difusa">325</span> en la SE, porque el cielo brilla más cerca del sol) y la que refleja el suelo (~<span data-rad="se.reflejada">177</span>), los totales son de unos <span data-rad="se.total">876</span> kWh/m² en la SE, <span data-rad="so.total">863</span> en la SO, <span data-rad="ne.total">795</span> en la NE y <span data-rad="no.total">608</span> en la NO. Un techo horizontal recibe unos <span data-rad="techo.total">1.770</span>, de los que <span data-rad="techo.difusa">712</span> son difusa. En «Sol en fachadas → Año típico» están estas mismas cifras.</p>
+      <p>Sin alero, la pared SE recibe en un año unos <span data-rad="se.directa">374</span>&nbsp;kWh/m² de sol directo, la energía que llega a cada metro cuadrado. La NO recibe <span data-rad="no.directa">144</span>. La luz difusa del cielo y la que refleja el suelo suman más que el sol directo en las cuatro, así que la diferencia se achica.</p>
       <p class="uso"><b>Para el diseño:</b> Ordena dónde proteger primero: el techo, luego SE y SO. Pero la NO no está libre: recibe unos siete décimos de lo que recibe la SE, así que su vidrio también necesita control solar, aunque menos.</p>
       <p class="limite"><b>Límite:</b> La difusa y la reflejada se estiman con modelos sencillos: el cielo de Hay-Davies, que brilla más alrededor del sol, y un suelo que devuelve el 20 %. No descuentan vecinos, árboles ni el pedazo de cielo que tapa el alero. Contra lo medido en la grúa del STRI (4,4 km), ERA5 da de mayo a noviembre un 14 % más de radiación, sobre todo al mediodía y en la tarde: en lluvias, el sol de esas horas puede salir de más.</p>
+      <details class="pliegue"><summary>A fondo</summary>
+        <p>En una pared sin alero, en kWh/m² al año. El sol directo es solo el <span data-rad-pct>24–43 %</span> del total; la difusa cambia con la orientación porque el cielo brilla más cerca del sol. En «Sol en fachadas → Año típico» están estas mismas cifras.</p>
+        <table class="tabla-fondo"><thead><tr><th scope="col"><span class="sr">Superficie</span></th><th scope="col">Directa</th><th scope="col">Difusa</th><th scope="col">Reflejada</th><th scope="col">Total</th></tr></thead><tbody>
+          <tr><th scope="row">SE</th><td data-rad="se.directa">374</td><td data-rad="se.difusa">325</td><td data-rad="se.reflejada">177</td><td data-rad="se.total">876</td></tr>
+          <tr><th scope="row">SO</th><td data-rad="so.directa">362</td><td data-rad="so.difusa">324</td><td data-rad="so.reflejada">177</td><td data-rad="so.total">863</td></tr>
+          <tr><th scope="row">NE</th><td data-rad="ne.directa">302</td><td data-rad="ne.difusa">317</td><td data-rad="ne.reflejada">177</td><td data-rad="ne.total">795</td></tr>
+          <tr><th scope="row">NO</th><td data-rad="no.directa">144</td><td data-rad="no.difusa">287</td><td data-rad="no.reflejada">177</td><td data-rad="no.total">608</td></tr>
+          <tr><th scope="row">Techo</th><td data-rad="techo.directa">1.058</td><td data-rad="techo.difusa">712</td><td>—</td><td data-rad="techo.total">1.770</td></tr>
+        </tbody></table>
+      </details>
+      <p class="sellos"><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>05/03/2024 09:30 · vista aérea · Sol en fachadas, solo directo: la SE marca el valor más alto; NO y SO, cero. Cambia a «Total» para ver la difusa.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2024-01-15" data-hora="07:30" data-vista="" data-fachada="se" data-capa="">
       <h3>El alero de 1,65 m quita al vidrio entre 70 % y 85 % de la irradiación directa</h3>
-      <p>El vidrio queda en sombra total cuando el ángulo de perfil pasa de unos 45° y a pleno sol solo por debajo de unos 9°. Más de la mitad del vidrio recibe sol en la SE hasta cerca de las 8:45 en enero, y en el SO desde cerca de las 15:40 en noviembre y diciembre. En la SE los vecinos casi no cuentan: el salón de un piso de enfrente, al otro lado de la calle, le da sombra sobre todo a la planta baja y solo en la primera media hora de sol, en enero hasta cerca de las 7:15. En el SO el edificio 105 sí tapa la última hora de la tarde, desde cerca de las 16:45.</p>
+      <p>Cuando el sol, visto de perfil contra la fachada, sube de unos 45°, el alero deja todo el vidrio a la sombra. El sol bajo entra por debajo. En la SE, más de la mitad del vidrio recibe sol hasta cerca de las 8:45 en enero, y en el SO, desde cerca de las 15:40 en noviembre y diciembre.</p>
       <p class="uso"><b>Para el diseño:</b> Da el ángulo de corte (~45°) para discutir aleros, y muestra que el alero no alcanza contra el sol bajo de la tarde: la SO necesita protección vertical o móvil (quiebrasoles, persianas o árboles).</p>
       <p class="limite"><b>Límite:</b> Pisos 2 y 3, con ventanas inferidas: con ±0,3 m de alero o ±0,15 m de ventana queda entre 65 % y 88 %. La difusa del cielo baja más o menos a la mitad y la reflejada por el suelo casi no cambia.</p>
+      <details class="pliegue"><summary>A fondo</summary><p>El vidrio queda a pleno sol solo con el ángulo de perfil por debajo de unos 9°. En la SE los vecinos casi no cuentan: el salón de un piso de enfrente, al otro lado de la calle, le da sombra sobre todo a la planta baja y solo en la primera media hora de sol, en enero hasta cerca de las 7:15. En el SO el edificio 105 sí tapa la última hora de la tarde, desde cerca de las 16:45.</p></details>
+      <p class="sellos"><a class="sello" href="#fm-sol">Sol calculado (NOAA)</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>15/01/2024 07:30 · fachada SE: el 92 % del vidrio del piso 2 al sol. Pasa la regla a las 10:00: el muro sigue al sol y el vidrio queda casi todo en sombra.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="">
-      <h3>Unos 2.000 mm al año, casi el 90 % de mayo a noviembre</h3>
-      <p>Según el año, entre ~1.670 y ~2.470 mm. En ERA5 algo más de la mitad cae de 12 a 18 h y la hora más probable es de 13 a 14 h (frente a Albrook, algo más de 1 h antes que el observador, que informa lluvia más seguido de 14 a 16 h). En 2001–2010, ERA5 da 2.048 mm al año, entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01); con Tocumen coincide (0,4 %) si se deja fuera 2009, que el cuadro da en 863 mm, un registro que parece incompleto. Coincide en el total, no en la intensidad, ni en la hora, ni en los meses. En Tocumen (ETESA/IMHPA, 1977–2010) octubre es el mes más lluvioso (330 mm) y julio baja a 177 mm por el «veranillo»; ERA5 no lo muestra y da julio como el mes más lluvioso.</p>
+      <h3>Unos <span data-lluvia="media">2.000</span>&nbsp;mm al año, casi el 90 % de mayo a noviembre</h3>
+      <p>Es la media de ERA5 de 2001 a 2025. En el total anda cerca de las estaciones: de 2001 a 2010 da entre 8 y 9 % más que Albrook y Balboa. Por meses se separa: ERA5 da julio como el mes más lluvioso, y en Tocumen el más lluvioso es octubre.</p>
       <p class="uso"><b>Para el diseño:</b> Justifica circulaciones y accesos cubiertos para las tardes de mayo a noviembre.</p>
       <p class="limite"><b>Límite:</b> ERA5 suaviza los aguaceros: su hora más lluviosa en 25 años son 19 mm y pasa de 10 mm en una hora unas 2 veces al año, mientras el observador de Albrook informa lluvia fuerte en unos 36 partes al año (2017–2025). Canales y bajantes se dimensionan con curvas IDF de una estación.</p>
+      <details class="pliegue"><summary>A fondo</summary><p>Según el año, entre ~<span data-lluvia="min">1.670</span> y ~<span data-lluvia="max">2.470</span>&nbsp;mm. En ERA5 algo más de la mitad cae de 12 a 18 h y la hora más probable es de 13 a 14 h. En 2001–2010, ERA5 da <span data-lluvia="d2001">2.048</span>&nbsp;mm al año, entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01); con Tocumen coincide (0,4 %) si se deja fuera 2009, que el cuadro da en 863 mm, un registro que parece incompleto. En Tocumen (ETESA/IMHPA, 1977–2010) octubre es el mes más lluvioso (330 mm) y julio baja a 177 mm por el «veranillo»; ERA5 no lo muestra.</p></details>
+      <p class="sellos"><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>01/07/2023 14:30 · esquina: la hora más lluviosa de ERA5 en la serie (19 mm entre las 14:00 y las 15:00); mira las cortinas de agua desde los tres aleros.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2006-11-23" data-hora="12:30" data-vista="" data-fachada="no" data-capa="">
       <h3>Lluvia batiente: la exposición de la NO es más de cinco veces la de la fachada lateral NE</h3>
-      <p>Índice ISO 15927-3 en campo abierto: NO unos <span data-lv="no">500</span>&nbsp;L/m² al año (de ~320 a ~710 según el año), SO ~<span data-lv="so">360</span>, SE ~<span data-lv="se">280</span> y NE ~<span data-lv="ne">100</span>. En ERA5 el viento durante la lluvia es flojo (mediana de 7 km/h); el modelo no capta las ráfagas de los aguaceros. Con el viento del aeropuerto de Albrook, a 4 km, y la misma lluvia de ERA5, la NO sube a unos 650 y el orden de las fachadas no cambia.</p>
+      <p>El índice de la norma ISO 15927-3 estima la lluvia que el viento empuja contra un plano vertical en campo abierto. Para la NO da unos <span data-lv="no">500</span>&nbsp;L/m² al año y para la NE, ~<span data-lv="ne">100</span>. La SO y la SE quedan en medio.</p>
       <p class="uso"><b>Para el diseño:</b> Indica dónde reforzar alero, bordes que cortan el goteo, juntas y acabados: primero NO y SO; la fachada lateral NE pide menos.</p>
       <p class="limite"><b>Límite:</b> Es lluvia que cruza un plano vertical en campo abierto: ordena fachadas, no mide el agua que recibe el muro. La norma es un método del Reino Unido y no se aplica donde más del 25 % de la lluvia anual viene de tormentas convectivas fuertes (ISO 15927-3:2009, cláusula 1). En Albrook, una de cada tres horas con lluvia trae tormenta; son horas, no cantidad, así que no se sabe si aquí se pasa de ese 25 %.</p>
+      <details class="pliegue"><summary>A fondo</summary><p>SO ~<span data-lv="so">360</span> y SE ~<span data-lv="se">280</span>&nbsp;L/m² al año; la NO va de ~320 a ~710 según el año. En ERA5 el viento durante la lluvia es flojo (mediana de 7 km/h); el modelo no capta las ráfagas de los aguaceros. Con el viento del aeropuerto de Albrook, a 4 km, y la misma lluvia de ERA5, la NO sube a unos 650 y el orden de las fachadas no cambia.</p></details>
+      <p class="sellos"><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>23/11/2006 12:30 · fachada NO: ERA5 da lluvia con viento de unos 25 km/h que llega de frente a esta fachada.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2003-04-11" data-hora="15:30" data-vista="" data-fachada="so" data-capa="calor" data-modo="directa">
       <h3>En las horas más cálidas, el sol está del lado de la fachada lateral SO</h3>
-      <p>En las horas de 30 °C o más de ERA5 ajustado al aeropuerto de Albrook (unas 1.300 al año, de ~900 a ~1.950 según el año; sin ajustar, ERA5 da unas 440), a la hora del dato de temperatura el sol está del lado de la SO (a menos de 90° de su perpendicular) en el 71 %, y en el 69 % con radiación directa de más de 120 W/m², el umbral de la OMM.</p>
+      <p>ERA5 ajustado a Albrook da unas <span data-calor="horas">1.300</span> horas al año de 30 °C o más. En 71 de cada 100, a la hora del dato, el sol está del lado de la fachada SO.</p>
       <p class="uso"><b>Para el diseño:</b> Sugiere priorizar la protección solar de la SO: la Guía de Panamá (2016, p. 37) pone el control solar más importante al principio de la tarde, con la temperatura en su pico.</p>
-      <p class="limite"><b>Límite:</b> ERA5 aplana el día: su máxima y su mínima diarias se separan de 4 a 6 °C, y en Albrook de 5 a 8 °C. Su máxima en 25 años es 32,8 °C; Albrook llegó a 36 °C. El ajuste lleva la temperatura de cada mes y hora a la distribución que midió Albrook en 2017–2025 (la máxima ajustada es 35,6 °C); en los años anteriores se queda algo corto, porque entonces ERA5 se alejaba más de Albrook. Albrook es un aeropuerto a 4 km, no el edificio, y las horas de 30 °C cambian mucho con el umbral.</p>
+      <p class="limite"><b>Límite:</b> El ajuste lleva la temperatura de cada mes y hora a la distribución que midió Albrook en 2017–2025; en los años anteriores se queda algo corto, porque entonces ERA5 se alejaba más de Albrook. Albrook es un aeropuerto a 4 km, no el edificio, y las horas de 30 °C cambian mucho con el umbral.</p>
+      <details class="pliegue"><summary>A fondo</summary><p>Según el año, de ~900 a ~1.950 horas de 30 °C o más; sin ajustar, ERA5 da unas <span data-calor="crudo">440</span>. «Del lado de la SO» es con el sol a menos de 90° de su perpendicular. En el 69 % de las horas de 30 °C o más, el sol está de ese lado y además su radiación directa pasa de 120 W/m², el umbral de la OMM. La máxima de ERA5 en 25 años es <span data-calor="max-crudo">32,8</span>&nbsp;°C, y ajustada, <span data-calor="max-ajustada">35,6</span>&nbsp;°C; Albrook llegó a 36 °C.</p></details>
+      <p class="sellos"><a class="sello" href="#fm-ajuste">ERA5 ajustado a Albrook</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>11/04/2003 15:30 · fachada SO · sol directo en fachadas: más de 30 °C y el SO con el valor más alto.</small></button>
     </article>
   </div>
@@ -1498,24 +1535,35 @@
     <details class="conf-detalle"><summary>Fuentes y límites</summary>
       <p>Son estrategias según el clima de afuera a esta hora, no un cálculo del interior: no se conocen los tabiques, el tipo de ventanas ni cuánto abren, y el tercer piso recibe además el calor del techo.</p>
       <p><b>Givoni</b> (1992, zonas para países cálidos): confort con aire quieto o con brisa según temperatura y humedad. Cerca de un límite dice «en el borde»: el veredicto cambiaría con medio grado o 0,6 g/kg de diferencia (con un grado o 0,5 a 1 g/kg cuando el dato es de modelo sin ajustar). <b>Guía de Panamá</b> (Secretaría Nacional de Energía, 2016, p. 8): confort de 23,5 a 28,5 °C; con aire a unos 0,6 m/s, ASHRAE 55-2017 acepta 1,2 °C más. Las dos suponen la temperatura del aula.</p>
-      <p><b>Sol:</b> ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del modelo, ~45°; mejor la persiana por fuera (Guía, p. 36), y el control solar importa más al principio de la tarde (p. 37). <b>Aire:</b> de frente si el viento llega a menos de 30° de la perpendicular de una fachada larga; de 30 a 60°, entra cerca de la mitad (UN-Habitat, 2014, p. 71); la salida igual o mayor que la entrada (p. 70). ERA5 da el viento a 10 m en terreno abierto, parecido al del aeropuerto de Albrook (unos 9 y 10 km/h de media, 2020–2025); junto a la ventana es de 0,6 a 0,8 veces ese valor, según el piso (p. 29). De mayo a noviembre llega de más direcciones, y en Albrook, en horas de clase (7 a 17 h), cambia más de 45° de una hora a la siguiente una de cada cinco veces. <b>Lluvia:</b> las persianas de vidrio ventilan sin dejar pasar el agua (p. 115). <b>Noche:</b> en clima cálido húmedo conviene ventilar a toda hora (p. 68); enfriar los muros de noche y cerrar de día es una estrategia que Givoni (1992, p. 17) considera aplicable sobre todo en regiones áridas, porque rinde según la diferencia entre el día y la noche. <b>Ventiladores:</b> amplían el rango de confort sin subir la temperatura (Givoni, 1992, p. 17); el panel no sabe si el aula los tiene.</p>
+      <ul class="estrategias">
+        <li><b>Sol:</b> ángulo de perfil sobre cada fachada (Olgyay y Olgyay, 1957) contra el corte del alero del modelo, ~45°; mejor la persiana por fuera (Guía, p. 36), y el control solar importa más al principio de la tarde (p. 37).</li>
+        <li><b>Aire:</b> de frente si el viento llega a menos de 30° de la perpendicular de una fachada larga; de 30 a 60°, entra cerca de la mitad (UN-Habitat, 2014, p. 71); la salida igual o mayor que la entrada (p. 70). ERA5 da el viento a 10 m en terreno abierto, parecido al del aeropuerto de Albrook (unos 9 y 10 km/h de media, 2020–2025); junto a la ventana es de 0,6 a 0,8 veces ese valor, según el piso (p. 29). De mayo a noviembre llega de más direcciones, y en Albrook, en horas de clase (7 a 17 h), cambia más de 45° de una hora a la siguiente una de cada cinco veces.</li>
+        <li><b>Lluvia:</b> las persianas de vidrio ventilan sin dejar pasar el agua (p. 115).</li>
+        <li><b>Noche:</b> en clima cálido húmedo conviene ventilar a toda hora (p. 68); enfriar los muros de noche y cerrar de día es una estrategia que Givoni (1992, p. 17) considera aplicable sobre todo en regiones áridas, porque rinde según la diferencia entre el día y la noche.</li>
+        <li><b>Ventiladores:</b> amplían el rango de confort sin subir la temperatura (Givoni, 1992, p. 17); el panel no sabe si el aula los tiene.</li>
+      </ul>
       <p>El sol cuenta como directo desde 120 W/m² de radiación directa, el umbral con que la Organización Meteorológica Mundial cuenta las horas de sol (<a href="https://community.wmo.int/site/knowledge-hub/programmes-and-initiatives/instruments-and-methods-of-observation-programme-imop/guide-instruments-and-methods-of-observation-wmo-no-8" target="_blank" rel="noopener">WMO-No. 8</a>, vol. I, 2023, §8.1.1, p. 309).</p>
       <p>No se usa la simulación de aulas de Cedeño et al. (2022, <i>Novasinergia</i>): probó de 0,1 a 2 renovaciones de aire por hora, menos de la mitad del mínimo que ella misma calcula, y su relación entre ventilar y sentir calor es una correlación, no una causa.</p>
     </details>
   </section>
   <section aria-labelledby="carta-t">
-    <h3 id="carta-t">Carta psicrométrica · horas de clase, de 7:00 a 17:00, 2001 a 2025</h3>
+    <h3 id="carta-t">¿Cuántas horas de clase son cómodas? · 7:00 a 17:00, 2001–2025</h3>
+    <p class="conf-lead">Es la carta psicrométrica: cada hora va según su temperatura y su humedad. Es el aire de afuera a la sombra, no el del aula: tómalo como un orden de magnitud.</p>
+    <p class="sellos"><a class="sello" href="#fm-ajuste">ERA5 ajustado a Albrook</a><span class="sello">zonas de Givoni (1992) y ASHRAE 55</span></p>
     <svg id="carta" viewBox="0 0 380 262" role="img" aria-labelledby="carta-t carta-desc"><desc id="carta-desc"></desc></svg>
     <ul class="conf-cifras" id="carta-cifras"></ul>
-    <p class="nota">Solo cuentan las horas de 7:00 a 17:00, un horario de clase diurno; en ese tramo el sol está sobre el horizonte todo el año. El modelo adaptativo de ASHRAE 55-2017 (§5.4) vale solo en espacios naturalmente acondicionados que controlan sus ocupantes, con ventanas que ellos abren y cierran, sin aire acondicionado ni calefacción en marcha, con actividad casi sedentaria y ropa que pueden adaptar libremente (de Dear y Brager, 2002, <a href="https://doi.org/10.1016/S0378-7788(02)00005-1" target="_blank" rel="noopener">doi:10.1016/S0378-7788(02)00005-1</a>, p. 556), y con una media exterior de los días anteriores entre 10 y 33,5 °C (aquí, de 24 a 30 °C). Además pide la temperatura operativa del aula, y aquí se usa la del aire de afuera a la sombra; adentro el sol en muros y techo y la gente la suben, así que su porcentaje es una cota superior.</p>
-    <p class="nota">Es el aire exterior a la sombra, no el interior del aula: las zonas suponen un aula ventilada cuyo aire sigue al de afuera; en el 106 los muros pesados pueden retrasar el calor. Givoni pone un techo de humedad; el modelo adaptativo de ASHRAE, medido en edificios ventilados, no. Por eso no coinciden. La carta usa ERA5 ajustado al aeropuerto de Albrook, a 4 km: la temperatura de cada mes y hora se lleva a la distribución que midió Albrook en 2017–2025, y a la humedad se le resta lo que ERA5 marca de más en cada mes (de 0,2 a 0,9 g/kg). Sin ajustar, ERA5 aplana el día (su máxima y su mínima diarias se separan de 4 a 6 °C; en Albrook, de 5 a 8 °C) y pierde las tardes calientes, que son las que más pesan. Muchas horas caen cerca del límite de humedad de Givoni, así que esa cifra va de 44 a 52 % según cómo se calibre el ajuste. Albrook no es el edificio: toma la carta como un orden de magnitud.</p>
+    <details class="conf-detalle"><summary>Cómo leerla</summary>
+    <p>Solo cuentan las horas de 7:00 a 17:00, un horario de clase diurno; en ese tramo el sol está sobre el horizonte todo el año. El modelo adaptativo de ASHRAE 55-2017 (§5.4) vale solo en espacios naturalmente acondicionados que controlan sus ocupantes, con ventanas que ellos abren y cierran, sin aire acondicionado ni calefacción en marcha, con actividad casi sedentaria y ropa que pueden adaptar libremente (de Dear y Brager, 2002, <a href="https://doi.org/10.1016/S0378-7788(02)00005-1" target="_blank" rel="noopener">doi:10.1016/S0378-7788(02)00005-1</a>, p. 556), y con una media exterior de los días anteriores entre 10 y 33,5 °C (aquí, de 24 a 30 °C). Además pide la temperatura operativa del aula, y aquí se usa la del aire de afuera a la sombra; adentro el sol en muros y techo y la gente la suben, así que su porcentaje es una cota superior.</p>
+    <p>Las zonas suponen un aula ventilada cuyo aire sigue al de afuera; en el 106 los muros pesados pueden retrasar el calor. Givoni pone un techo de humedad; el modelo adaptativo de ASHRAE, medido en edificios ventilados, no. Por eso no coinciden. La carta usa ERA5 ajustado al aeropuerto de Albrook, a 4 km: la temperatura de cada mes y hora se lleva a la distribución que midió Albrook en 2017–2025, y a la humedad se le resta lo que ERA5 marca de más en cada mes (de 0,2 a 0,9 g/kg). Sin ajustar, ERA5 aplana el día (su máxima y su mínima diarias se separan de 4 a 6 °C; en Albrook, de 5 a 8 °C) y pierde las tardes calientes, que son las que más pesan. Muchas horas caen cerca del límite de humedad de Givoni, así que esa cifra va de 44 a 52 % según cómo se calibre el ajuste. Albrook no es el edificio.</p>
+    </details>
   </section>
   <section aria-labelledby="utci-t">
-    <h3 id="utci-t">Sensación térmica afuera, de pie (UTCI) · al sol y bajo el alero</h3>
+    <h3 id="utci-t">Sensación térmica afuera, de pie · al sol y bajo el alero</h3>
     <p class="conf-hora" id="utci-hora" aria-live="polite"></p>
     <svg id="utci" viewBox="0 0 380 136" role="img" aria-labelledby="utci-t utci-desc"><desc id="utci-desc"></desc></svg>
     <ul class="conf-ley" id="utci-ley"></ul>
-    <p class="nota">Horas con el sol a más de 5°, 2001–2025. UTCI de Bröde et al. (2012) con la temperatura y la humedad de ERA5 ajustadas a Albrook y el viento a 10 m de ERA5; la radiación con el método SolarCal de ASHRAE 55 (persona de pie, absortividad 0,7, suelo al 20 %). Bajo el alero: sin sol directo y con medio cielo; la temperatura radiante de fondo se toma igual a la del aire (aproximación).</p>
+    <p class="nota">La sensación térmica es el índice UTCI, que junta la temperatura, la humedad, el viento y la radiación en una sola temperatura. Las barras cuentan las horas con el sol a más de 5°, de 2001 a 2025.</p>
+    <details class="conf-detalle"><summary>Cómo se calcula</summary><p>UTCI de Bröde et al. (2012) con la temperatura y la humedad de ERA5 ajustadas a Albrook y el viento a 10 m de ERA5; la radiación con el método SolarCal de ASHRAE 55 (persona de pie, absortividad 0,7, suelo al 20 %). Bajo el alero: sin sol directo y con medio cielo; la temperatura radiante de fondo se toma igual a la del aire (aproximación).</p></details>
   </section>
   <section aria-labelledby="anual-t">
     <h3 id="anual-t">El año en un vistazo · cada día por cada hora</h3>
@@ -1540,7 +1588,7 @@
     <p class="nota" id="epw-estado" aria-live="polite"></p>
     <p class="nota">Un año de la serie, hora por hora, en el formato de clima de EnergyPlus (EPW): se abre también en CBE Clima, Ladybug y otros. Es la misma serie del visor, ERA5 con la temperatura y la humedad ajustadas a Albrook, no una medición en el sitio. Sin el 29 de febrero; la radiación global sale de la directa y la difusa, y la presión es la estándar.</p>
   </section>
-  <p class="nota" id="confort-fuentes">Datos: reanálisis ERA5 (celda de ~28 km) ajustado a los partes del aeropuerto de Albrook (2017–2025), no una medición en el sitio. Zonas: Givoni (1992), <i>Energy and Buildings</i> 18, variante para países cálidos, digitalizadas de sus figuras 3 y 4; ASHRAE 55-2017, modelo adaptativo al 80 %. Cálculo verificado contra pythermalcomfort.</p>
+  <p class="nota" id="confort-fuentes">Datos: <a class="sello" href="#fm-ajuste">ERA5 ajustado a Albrook</a>; la lluvia y la radiación, <a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a>. Zonas: Givoni (1992), <i>Energy and Buildings</i> 18, variante para países cálidos, digitalizadas de sus figuras 3 y 4; ASHRAE 55-2017, modelo adaptativo al 80 %. Cálculo verificado contra pythermalcomfort.</p>
 </aside>
 
 <aside id="ir-a" hidden aria-labelledby="ir-a-t">
@@ -1550,8 +1598,10 @@
     <label>Hora (Panamá)<input type="time" id="ir-hora" step="60" required></label>
     <button class="boton primario" type="submit">Ir</button>
   </form>
+  <p class="nota ir-corto">El sol y las sombras están calculados al minuto: sirven para comparar con una foto. La lluvia y las nubes vienen de un modelo y casi nunca coinciden con una hora concreta.</p>
+  <p class="sellos"><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a><a class="sello" href="#fm-pronostico">Pronóstico Open-Meteo</a></p>
   <details class="pliegue"><summary>Cómo leerlo</summary>
-  <p class="nota">Entre 2001 y 2025 el dato de esa hora viene incluido (ERA5). Desde 1940 y hasta 15 días adelante se consulta en línea a Open-Meteo. Sirve para comparar con una foto el sol y las sombras, que están calculados al minuto. La lluvia, las nubes y la fuerza del sol de esa hora son dato de modelo para una celda de ~28 km y casi nunca coinciden con una hora concreta: a la hora de un parte del aeropuerto de Albrook, a 4 km, con lluvia, la escena dibuja lluvia una de cada seis veces, y una de cada tres si se mira una hora antes o después (2017–2025). Por día coincide más: si en Albrook llovió, la escena dibuja lluvia en alguna hora de ese día dos de cada tres veces, aunque en cuatro de cada diez días en que la dibuja no llovió en Albrook. Mientras la escena dibuja lluvia no dibuja sol directo; en una hora en que ERA5 no da lluvia puede dibujar sombras aunque en la foto llueva.</p>
+  <p class="nota">Entre 2001 y 2025 el dato de esa hora viene incluido (ERA5). Desde 1940 y hasta 15 días adelante se consulta en línea a Open-Meteo. La lluvia, las nubes y la fuerza del sol de esa hora son dato de modelo: a la hora de un parte del aeropuerto de Albrook, a 4 km, con lluvia, la escena dibuja lluvia una de cada seis veces, y una de cada tres si se mira una hora antes o después (2017–2025). Por día coincide más: si en Albrook llovió, la escena dibuja lluvia en alguna hora de ese día dos de cada tres veces, aunque en cuatro de cada diez días en que la dibuja no llovió en Albrook. Mientras la escena dibuja lluvia no dibuja sol directo; en una hora en que ERA5 no da lluvia puede dibujar sombras aunque en la foto llueva.</p>
   </details>
   <div id="consultas" class="consultas" aria-label="Consultas"></div>
   <p class="nota">Los extremos de lluvia y luz salen de la serie ERA5 2001–2025, calculados, no elegidos a mano. Las fechas de sol y sombra son las del año <b id="consultas-anio"></b> (cambia el año con la fecha de arriba).</p>
@@ -1617,12 +1667,26 @@
     <li><b>¿Qué quieres ver?</b> «Cómo se ve» es la escena; «Sol en fachadas» pinta la radiación solar que incide en cada punto del edificio, con la sombra real de los aleros (solo directo o total, con difusa y reflejada); «Lluvia en fachadas», el índice de lluvia con viento de ISO 15927-3; «Viento», la rosa de vientos y qué fachada recibe el viento de frente; «Sombras del día», la sombra de cada hora del día sobre el terreno; «Partes y medidas», el nombre de cada parte del edificio y qué hace, con una persona de 1,70 m para comparar y el alero explicado como voladizo. «Capas» → «Simular aguacero» fuerza la lluvia aunque el dato diga otra cosa.</li>
     <li id="cenit-txt"></li>
   </ul>
+  <h3 id="fm-sellos">Los sellos de procedencia</h3>
+  <p>Junto a las cifras del visor va uno de estos cinco sellos, que dice de dónde salen.</p>
+  <dl class="sellos-glosario">
+    <dt id="fm-era5" tabindex="-1">ERA5 · zona de 28 km</dt>
+    <dd>El reanálisis ERA5, del servicio Copernicus, es un modelo del clima alimentado con mediciones. Da el tiempo de cada hora para una celda de 0,25° (unos 28 km), con su punto central a 9 km al este del edificio. No es una medición en el sitio: no ve los árboles, la topografía de Clayton ni los edificios vecinos, suaviza los aguaceros y aplana el día. Sus límites, con cifras, están abajo en «Incertidumbre».</dd>
+    <dt id="fm-albrook" tabindex="-1">Albrook · aeropuerto a 4 km</dt>
+    <dd>Los partes horarios del aeropuerto de Albrook, a 4,1 km del edificio: lo que mide y observa esa estación, no el edificio. Dan la temperatura, la humedad y el viento del «En vivo» y sirven para contrastar ERA5. La lluvia solo cuenta si el parte lo hizo un observador, porque de 23 a 5 h es automático. Detalle abajo, en «Aeropuerto de Albrook (MPMG)».</dd>
+    <dt id="fm-ajuste" tabindex="-1">ERA5 ajustado a Albrook</dt>
+    <dd>ERA5 con la temperatura y la humedad llevadas a lo que midió Albrook de 2017 a 2025: la temperatura por cuantiles de cada mes y hora, y a la humedad se le resta lo que ERA5 marca de más cada mes (de 0,2 a 0,9 g/kg). Sigue siendo un modelo, no una medición en el sitio. Detalle abajo, en «Datos del clima».</dd>
+    <dt id="fm-sol" tabindex="-1">Sol calculado (NOAA)</dt>
+    <dd>La posición del sol, calculada para cada minuto con el algoritmo de la calculadora solar de NOAA. No depende del tiempo: vale igual para cualquier fecha, pero no descuenta nubes. Detalle y validación abajo, en «Sol».</dd>
+    <dt id="fm-pronostico" tabindex="-1">Pronóstico Open-Meteo</dt>
+    <dd>Para hoy, los días recientes y hasta 15 días adelante, el pronóstico de modelo de Open-Meteo, que combina varios modelos. No es ERA5 ni está ajustado a Albrook. Detalle abajo, en «Tiempo».</dd>
+  </dl>
   <h3>Qué no es</h3>
   <ul>
     <li>No es un levantamiento: es un modelo paramétrico, con escala aproximada (±12 %) y ventanas regularizadas a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026).</li>
-    <li>El tiempo es dato de modelo, no una medición en el sitio: ERA5 representa una celda de 0,25° (unos 28 km), con su punto central a 9 km al este.</li>
-    <li>No sirve para dimensionar canales, bajantes ni desagües: ERA5 suaviza los aguaceros.</li>
-    <li>No calcula la ventilación interior ni la temperatura de las superficies; el panel «Confort» compara el clima de afuera con dos zonas de confort, sin decir si adentro del aula se está cómodo; la radiación difusa y reflejada se estima con un modelo simple. En «Para qué sirve» → «Qué no hace esta herramienta» está qué usar para cada cosa. De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna de esa noche (su posición y su fase están calculadas, y las nubes del dato la tapan), el resplandor de la ciudad en el cielo, el poste de la esquina y, con la ciudad encendida, los postes de sus calles. Las ventanas encendidas, el tipo de lámpara de los postes y dónde están los de las calles son una suposición, no un dato.</li>
+    <li>El tiempo es dato de modelo, no una medición en el sitio: lo explica el sello «ERA5 · zona de 28 km», arriba.</li>
+    <li>No sirve para dimensionar canales, bajantes ni desagües, no calcula la ventilación interior ni la temperatura de las superficies, y el panel «Confort» no dice si adentro del aula se está cómodo. Qué usar para cada cosa está en «Para qué sirve» → «Qué no hace esta herramienta».</li>
+    <li>De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna de esa noche (su posición y su fase están calculadas, y las nubes del dato la tapan), el resplandor de la ciudad en el cielo, el poste de la esquina y, con la ciudad encendida, los postes de sus calles. Las ventanas encendidas, el tipo de lámpara de los postes y dónde están los de las calles son una suposición, no un dato.</li>
   </ul>
   <h3>Contexto</h3>
   <p>Isthmus, que abrió en 2000, se presenta como el primer programa en operar en Ciudad del Saber, en la antigua base militar de Clayton; hoy tiene su sede en el Edificio 106. El proyecto de Fort Clayton se aprobó en 1919 y sus primeros 36 edificios estaban listos en agosto de 1920; en junio de 1939 el Congreso de EE. UU. empezó a financiar la ampliación. La base pasó a Panamá el 30 de noviembre de 1999, y según la Fundación Ciudad del Saber, de 243 edificios recibidos se conservan más de 130.</p>
