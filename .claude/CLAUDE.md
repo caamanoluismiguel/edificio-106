@@ -130,6 +130,12 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 - **Carga:** las letras de Google van como hoja `media="print"` que pasa a `all` al llegar (no bloquean la primera pintura) y `arrancar()` espera un cuadro y un `setTimeout`. El armado minifica de verdad (`minify: true` en `rollupOptions.output` de `vite.config.js`; el modo librería no quitaba espacios).
 - El stash de git es compartido entre worktrees. Nada de `git stash` a secas: se usa un commit temporal.
 
+## Evaluaciones de Codex para continuar el trabajo
+
+- `docs/ciudad/GLB-DESCARGAS-USOS.md`: inspección del GLB de Descargas, huella SHA-256, usos posibles, límites y prueba de alineación propuesta (7 oct 2026). No está integrado ni acreditado como levantamiento.
+- `docs/analisis/CBE-CLIMA.md`: ya exportamos EPW compatibles en intención con CBE Clima y portamos `pythermalcomfort`; no se encontró integración de la aplicación ni prueba documentada de importación. Usos externos propuestos y condiciones para contrastar resultados (7 oct 2026).
+- Estas notas documentan opciones; no autorizan por sí mismas integrarlas o publicarlas.
+
 ## Referencias fuera del repo (en la máquina de LM)
 
 - `~/projects/edificio-106-AR-PLAN.md`: plan y lecciones de la AR.
