@@ -20,7 +20,7 @@ import numpy as np
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 METAR = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/projects/edificio-106-estaciones/metar')
-PERIODO, MESES = (2017, 2025), list(range(5, 12))
+PERIODO, MESES = (2017, 2025), json.load(open(os.path.join(AQUI, 'src', 'temporadas.json')))['lluvias']   # mayo a noviembre
 UMBRAL = 1.5                                   # umbralLluvia de mayo a noviembre
 
 b = gzip.decompress(open(os.path.join(AQUI, '../datos/clima_horario.bin.gz'), 'rb').read()); assert b[:4] == b'C107'

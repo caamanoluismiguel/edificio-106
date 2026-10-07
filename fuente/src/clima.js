@@ -4,11 +4,22 @@
 import { binario } from './datos.js';
 import { LAT, LON } from './sol.js';
 import { ajustarT, ajustarHR, ruidoT } from './ajuste.js';
+import TEMPORADAS from './temporadas.json';
 // Umbral con que un dato de modelo (ERA5 o pronóstico) cuenta como lluvia en la escena y en los textos: 1 mm en la hora de
 // diciembre a marzo y 1,5 mm de abril a noviembre. Con esos valores, ERA5 2017–2025 tiene unas 0,81 veces las horas con lluvia que
 // informa el observador del aeropuerto de Albrook de diciembre a marzo y 1,15 de abril a noviembre, de 7 a 18 h (panel de expertos y verificador, 2 de octubre de 2026; ERA5 junta
-// la lluvia en la tarde y reparte llovizna de modelo, así que con 0,1 mm llovía unas 3.000 horas al año). Abril va con las lluvias.
+// la lluvia en la tarde y reparte llovizna de modelo, así que con 0,1 mm llovía unas 3.000 horas al año). Abril, que es de
+// transición en las temporadas (abajo), aquí va con el umbral de las lluvias.
 export const umbralLluvia = (m) => (m >= 4 && m <= 11 ? 1.5 : 1);
+
+// Temporadas: una sola definición (temporadas.json, la misma que leen consultas.py y reloj_lluvia.py). Decisión de LM,
+// 6 de octubre de 2026: la seca va de diciembre a marzo y las lluvias de mayo a noviembre; abril es de transición y solo
+// cuenta en «Año».
+export const SECA = TEMPORADAS.seca, LLUVIAS = TEMPORADAS.lluvias;
+export const esSeca = (m) => SECA.includes(m), esLluvias = (m) => LLUVIAS.includes(m);
+const NOMBRE_MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const rango = (ms) => `${NOMBRE_MES[ms[0] - 1]} a ${NOMBRE_MES[ms[ms.length - 1] - 1]}`;
+export const SECA_TXT = rango(SECA), LLUVIAS_TXT = rango(LLUVIAS);   // «diciembre a marzo», «mayo a noviembre»
 
 const T0 = Date.UTC(2001, 0, 1, 0);            // primera hora de la serie (hora de Panamá tratada como UTC)
 // datos/clima_horario.bin, formato 'C107' (fuente/clima_bin.py): firma, n (uint32) y columnas de n horas seguidas;

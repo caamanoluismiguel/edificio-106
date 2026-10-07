@@ -1,7 +1,9 @@
 """Catálogo de consultas (extremos de la serie ERA5 2001–2025) para el panel «Ir a…».
 Lee el binario horario del sitio; escribe datos/consultas.json. Todo sale de los datos, nada a mano."""
-import gzip, json, sys, datetime as dt
+import gzip, json, os, sys, datetime as dt
 import numpy as np
+# temporadas del visor: una sola definición, la misma que usa src/clima.js (seca de diciembre a marzo, lluvias de mayo a noviembre, abril de transición)
+TEMPORADAS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src', 'temporadas.json')))
 b = gzip.decompress(open(sys.argv[1], 'rb').read()); n = int(np.frombuffer(b[4:8], np.uint32)[0])
 assert b[:4] == b'C107', 'formato %r: se esperaba C107 (rehazlo con clima_bin.py)' % b[:4]
 C, o = {}, 8   # formato 'C107' (ver clima_bin.py): la lluvia es uint16, el resto uint8
@@ -65,7 +67,7 @@ for k, th in FAC.items():
     c = np.cos((D - th) * rad); c[c < 0] = 0
     I = 2 / 9 * V * np.power(P, 8 / 9) * c           # l/m² en la hora
     i = int(np.argmax(I)); fm, hm = marca(i)
-    lluvioso = np.isin(np.array([(t0 + dt.timedelta(hours=int(x))).month for x in range(0, n, 24)]).repeat(24)[:n], [5, 6, 7, 8, 9, 10, 11])
+    lluvioso = np.isin(np.array([(t0 + dt.timedelta(hours=int(x))).month for x in range(0, n, 24)]).repeat(24)[:n], TEMPORADAS['lluvias'])
     out['lluviaViento'][k] = dict(anual=round(float(I.sum() / anios)), temporada=round(float(I[lluvioso].sum() / anios)), max=dict(fecha=fm, hora=hm, l=round(float(I[i]), 1), mm=round(float(P[i]), 1), viento=round(float(V[i] * 3.6)), dir=int(D[i])))
 # día típico de cada mes: el día real más cercano a la mediana del mes en sol (kWh/m²) y lluvia (mm), en unidades de desviación
 meses = np.array([(t0 + dt.timedelta(days=j)).month for j in range(nd)])
@@ -79,7 +81,7 @@ out['tipicos'] = tip
 # viento: rosa de 16 rumbos por temporada, calmas y horas con viento de frente en cada fachada
 mesH = np.array([(t0 + dt.timedelta(hours=int(i))).month for i in range(0, n, 24)]).repeat(24)[:n]
 Vk = C['viento']                                   # km/h
-TEMP = {'seca': [12, 1, 2, 3, 4], 'lluvias': [5, 6, 7, 8, 9, 10, 11], 'anio': list(range(1, 13))}
+TEMP = {'seca': TEMPORADAS['seca'], 'lluvias': TEMPORADAS['lluvias'], 'anio': list(range(1, 13))}   # abril (transición) solo cuenta en el año
 vien = {}
 for kk, ms in TEMP.items():
     sel = np.isin(mesH, ms); tot = sel.sum(); mov = sel & (Vk >= 3.6)

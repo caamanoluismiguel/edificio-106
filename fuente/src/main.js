@@ -7,7 +7,7 @@ import { Sonido } from './sonido.js';
 import { puntosIntro, conVersion } from './datos.js';
 import { posicionSol, vectorSol, diasCeroSombra, saleYPone, sombraPoste, rumboTexto, FACHADAS, incidencia, dniDespejado, dniDespejadoEra5, mediodiaSolar, EJE_LARGO } from './sol.js';
 import { posicionLuna } from './luna.js';
-import { Clima, textoAlbrook, umbralLluvia } from './clima.js';
+import { Clima, textoAlbrook, umbralLluvia, LLUVIAS, esLluvias, SECA_TXT, LLUVIAS_TXT } from './clima.js';
 import { utci, categoriaUTCI, CATEGORIAS_UTCI, tmrtSol, tmrtSombra, humedadAbs, GIVONI, dentroPoligono } from './confort.js';
 import QRCode from 'qrcode';
 import { ENCUADRES } from './encuadres.js';
@@ -1574,9 +1574,10 @@ function dibujarReglas() {
   const pon = (x, txt, cls) => { const s = document.createElement('span'); s.style.left = x + '%'; s.className = cls || ''; s.textContent = txt; et.appendChild(s); };
   for (const h of [0, 6, 12, 18]) pon(h / 24 * 100, String(h).padStart(2, '0'));
   pon(sale / 14.4, '↑ ' + hhmm(sale), 'arriba'); pon(pone / 14.4, '↓ ' + hhmm(pone), 'arriba');
-  // año: meses, temporada de lluvias (mayo–noviembre), solsticios y los dos días de cero sombra
+  // año: meses, temporada de lluvias (LLUVIAS de clima.js: mayo a noviembre), solsticios y los dos días de cero sombra
   const y = f.y, x = (m, d) => diaDelAnio({ y, m, d }) / 364 * 1000;
-  let a = `<rect x="${x(5, 1)}" y="4" width="${x(11, 30) - x(5, 1)}" height="12" fill="var(--lluvia)" opacity=".26" rx="2"></rect>`;
+  const l0 = x(LLUVIAS[0], 1), l1 = x(LLUVIAS[LLUVIAS.length - 1], new Date(Date.UTC(y, LLUVIAS[LLUVIAS.length - 1], 0)).getUTCDate());
+  let a = `<rect x="${l0}" y="4" width="${l1 - l0}" height="12" fill="var(--lluvia)" opacity=".26" rx="2"></rect>`;
   a += `<rect x="0" y="9" width="1000" height="2" fill="var(--linea-2)"></rect>`;
   for (let m = 1; m <= 12; m++) a += `<line class="mes" x1="${x(m, 1)}" x2="${x(m, 1)}" y1="2" y2="18"></line>`;
   for (const [m, d] of [[6, 21], [12, 21]]) a += `<line class="tick med" x1="${x(m, d)}" x2="${x(m, d)}" y1="1" y2="19"></line>`;
@@ -2158,8 +2159,8 @@ const LENTES = {
     tec: 'Índice de lluvia batiente de la norma ISO 15927-3 en campo abierto: (2/9) · v · r^(8/9) · cos(D − θ), con v el viento a 10 m de altura (m/s), r la lluvia (mm/h), D de dónde viene el viento y θ hacia dónde mira la fachada. Datos ERA5, celda de unos 28 km.' },
   viento: { t: 'Viento: de dónde viene y qué fachada lo recibe de frente', rampa: rampaCSS(PAL.viento), esc: ['nada', '', 'mucho'],
     que: 'En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.',
-    leer: '«Esta hora» muestra con flechas el viento de esa hora y, abajo, cuánto llega de frente a cada fachada (a menos de 60° de su perpendicular y desde 5 km/h). «Seca» (diciembre a abril; para el IMHPA, diciembre y abril son meses de transición), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada.',
-    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 12 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.',
+    leer: '«Esta hora» muestra con flechas el viento de esa hora y, abajo, cuánto llega de frente a cada fachada (a menos de 60° de su perpendicular y desde 5 km/h). «Seca» (diciembre a marzo), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada. Abril es de transición y solo entra en «Año». La temporada seca a veces se extiende hasta abril: según ERA5, abril fue seco en 8 de los 25 años, con menos de 60 mm en el mes, el mínimo que la clasificación de Köppen pide al mes más seco de un clima tropical lluvioso todo el año (Peel et al., 2007, tabla 1). Con ese criterio, diciembre fue seco en 10 de los 25 y mayo en ninguno. Para el IMHPA, diciembre y abril son meses de transición.',
+    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 13 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.',
     porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.880 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, es de 0,6 a 0,8 veces el de 10 m (UN-Habitat, 2014, p. 29), y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste baja a unas 5.200 horas al año (ERA5, en los mismos años, unas 5.500) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos.' },
@@ -2281,7 +2282,7 @@ function leyenda(c) {
   }
   if (S.lente === 'viento') {
     if (S.vientoModo === 'hora') nota = S.vientoDato ? `Ahora el viento viene del ${rumboTexto(c.dir)} a ${Math.round(c.viento)} km/h.` : 'Para esta hora no hay dato de viento con dirección (solo valores típicos). Elige «Seca», «Lluvias» o «Año», o una fecha entre 2001 y 2025.';
-    else if (consultas?.viento) { const V = consultas.viento[S.vientoModo]; nota = `${S.vientoModo === 'seca' ? 'Temporada seca (diciembre a abril)' : S.vientoModo === 'lluvias' ? 'Temporada de lluvias (mayo a noviembre)' : 'Todo el año'}, 2001–2025: velocidad media ${Math.round(V.media)} km/h; viento flojo (menos de 1 m/s) el ${Math.round(V.calma)} % del tiempo. El color de las fachadas es relativo: el más claro es la que más lo recibe. Pétalos: el largo es el % de horas; más claro, más rápido (de 0 a 18 km/h o más de media). El verde de las fachadas es otra cosa: horas con viento de frente.`; }
+    else if (consultas?.viento) { const V = consultas.viento[S.vientoModo]; nota = `${S.vientoModo === 'seca' ? `Temporada seca (${SECA_TXT})` : S.vientoModo === 'lluvias' ? `Temporada de lluvias (${LLUVIAS_TXT})` : 'Todo el año'}, 2001–2025: velocidad media ${Math.round(V.media)} km/h; viento flojo (menos de 1 m/s) el ${Math.round(V.calma)} % del tiempo. El color de las fachadas es relativo: el más claro es la que más lo recibe. Pétalos: el largo es el % de horas; más claro, más rápido (de 0 a 18 km/h o más de media). El verde de las fachadas es otra cosa: horas con viento de frente.`; }
   }
   if (S.lente === 'lluvia' && S.aguaModo === 'hora' && !S.viaje) {
     if (S.sinMm) nota = 'Albrook informa lluvia, pero el parte no da milímetros y el modelo no da lluvia a esta hora: no se puede calcular el índice.';
@@ -2996,9 +2997,9 @@ function listaConsultas() {
     if (C.viento) {
       const tS = C.tipicos[1], tL = C.tipicos[8];
       vi({ t: 'El viento de la temporada seca', f: deISO(tS.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'seca', v: `${f1(C.viento.seca.media)} km/h de media`,
-        txt: `De diciembre a abril el viento llega casi siempre del norte y el noroeste (${Math.round(C.viento.seca.frec[0] + C.viento.seca.frec[15] + C.viento.seca.frec[14])} % de las horas), a unos ${Math.round(C.viento.seca.media)} km/h de media: la fachada noroeste lo recibe de frente la mayor parte del tiempo.` });
+        txt: `De ${SECA_TXT} el viento llega casi siempre del norte y el noroeste (${Math.round(C.viento.seca.frec[0] + C.viento.seca.frec[15] + C.viento.seca.frec[14])} % de las horas), a unos ${Math.round(C.viento.seca.media)} km/h de media: la fachada noroeste lo recibe de frente la mayor parte del tiempo.` });
       vi({ t: 'El viento de la temporada de lluvias', f: deISO(tL.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'lluvias', v: `${f1(C.viento.lluvias.media)} km/h de media`,
-        txt: `De mayo a noviembre el viento es más flojo (unos ${Math.round(C.viento.lluvias.media)} km/h de media) y más variable: sigue mandando el noroeste, pero también llega del sur y del oeste; en calma el ${Math.round(C.viento.lluvias.calma)} % del tiempo.` });
+        txt: `De ${LLUVIAS_TXT} el viento es más flojo (unos ${Math.round(C.viento.lluvias.media)} km/h de media) y más variable: sigue mandando el noroeste, pero también llega del sur y del oeste; en calma el ${Math.round(C.viento.lluvias.calma)} % del tiempo.` });
       vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${dec(C.viento.anio.frente.no)} h al año`,
         txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${dec(C.viento.anio.frente.no)}, NE ${dec(C.viento.anio.frente.ne)}, SO ${dec(C.viento.anio.frente.so)}, SE ${dec(C.viento.anio.frente.se)}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
     }
@@ -3108,8 +3109,11 @@ const CORTO = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fac
 const LARGAS = ['fachada-no', 'fachada-se'];
 const OPUESTA = { 'fachada-se': 'fachada-no', 'fachada-no': 'fachada-se', 'fachada-ne': 'fachada-so', 'fachada-so': 'fachada-ne' };
 function conviene(p, c) {
-  const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0, mes = S.fecha.m, seca = mes === 12 || mes <= 4, h = S.min / 60;
-  // banda «en el borde»: con ERA5 crudo, la diferencia de humedad con las estaciones (1 g/kg en la seca, 0,5 en lluvias) y 1 °C;
+  const out = [], w = humedadAbs(c.temp, c.humedad), dia = p.alt > 0, mes = S.fecha.m, h = S.min / 60;
+  // `seca` aquí no es la temporada del visor: son los meses en que ERA5 marca más humedad que Albrook, de diciembre a abril
+  // (sesgo de 0,57 a 0,92 g/kg en datos/ajuste_albrook.json; de mayo a noviembre, de 0,18 a 0,27). Abril va con ellos.
+  const seca = !esLluvias(mes);
+  // banda «en el borde»: con ERA5 crudo, la diferencia de humedad con las estaciones (1 g/kg de diciembre a abril, 0,5 en lluvias) y 1 °C;
   // con el parte de Albrook o la serie ajustada, lo que deja el redondeo del parte al grado entero: 0,5 °C y 0,6 g/kg
   // en el texto, en enteros (el parte de Albrook redondea al grado); el cálculo sigue con los valores sin redondear
   const fino = !!(c.albrook || c.ajustado), T = String(Math.round(c.temp)), W = String(Math.round(w)), banda = fino ? 0.6 : seca ? 1 : 0.5, dT = fino ? 0.5 : 1;
@@ -3154,7 +3158,7 @@ function conviene(p, c) {
       datos.push(`Sol en el vidrio con ángulo de perfil ${al.map((x) => x.replace(' (perfil ', ' ').replace('°)', '°')).join(' y ')}; el alero tapa el vidrio desde unos 45°.`); }
   }
   // 4. Aire: con las fachadas largas como eje
-  const v = c.viento ?? 0, variable = mes >= 5 && mes <= 11 ? ' (en esta época el viento llega de más direcciones y puede cambiar en la hora)' : '';
+  const v = c.viento ?? 0, variable = esLluvias(mes) ? ' (en esta época el viento llega de más direcciones y puede cambiar en la hora)' : '';
   if (c.dir == null || v < 5) { acciones.push('<b>Si hay ventiladores, préndelos.</b> El viento es flojo (menos de 5 km/h a 10 m de altura); si hay ventanas altas, ábrelas para que salga el aire caliente.'); datos.push(`Viento de ${Math.round(v)} km/h a 10 m de altura: la ventilación cruzada rinde poco.`); }
   else {
     let k = LARGAS[0], ang = 180;
