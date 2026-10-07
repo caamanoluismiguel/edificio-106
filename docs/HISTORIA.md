@@ -4,6 +4,8 @@ Este documento cuenta cómo se armó el visor de sol y clima del Edificio 106 y 
 
 ## De dónde salió
 
+Actualización del registro: se añadió la corrección de Confort en móvil del 7 de octubre de 2026, realizada por OpenAI Codex. El recuento de la introducción corresponde al corte histórico del 6 de octubre.
+
 El punto de partida fue un modelo de Blender del 106, `Isthmus_v016.blend`, hecho antes de este repositorio por LM con ayuda de IA (Claude), a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026). El script `fuente/export_web.py` lo parte en grupos de armado (sitio, arquitectura, ventanas, cubiertas, entrada, detalles, vegetación y contexto) y los exporta como GLB para la web. La escala del modelo tiene un margen de ±12 % y las ventanas de los pisos 2 y 3 son inferidas, así que se trata como una maqueta digital.
 
 La pregunta era concreta: cómo trabajan la orientación, los aleros, la lluvia y el viento en un edificio real del trópico, con datos que un docente o un estudiante de arquitectura puedan revisar y discutir en clase. De ahí salen las dos piezas que el visor tuvo desde el primer día: el sol calculado para cada minuto y el clima de cada hora entre 2001 y 2025.
@@ -104,6 +106,12 @@ Ese mismo día se midió la carga del sitio publicado con Lighthouse 13.5.0, cin
 La ficha del 106 ganó una frase con la copa de árbol de 3 m o más sobre el suelo sin edificios, como estimación: 30 % dentro del límite propuesto y 7 % a 100 m del 106, del mapa de altura de copa de Meta y WRI. Las cifras salen de `fuente/copa.py`, que escribe `datos/copa.json` (`228f42d`).
 
 La pestaña «25 años» ganó un reloj de 24 horas de la lluvia: de mayo a noviembre de 2017 a 2025, el % de horas en que ERA5 da 1,5 mm o más en la celda frente al % de partes de rutina de Albrook en que el observador informa lluvia. Son frecuencias y no milímetros, y cada curva se dibuja a escala de su propio máximo. De 23 a 5 h los partes son automáticos y esas horas no se comparan. Las cifras salen de `fuente/reloj_lluvia.py`, que escribe `datos/reloj_lluvia.json` (`75443b0`).
+
+### 7 de octubre: Codex corrige la altura de Confort en móvil
+
+Luis Miguel Caamaño detectó en su teléfono que «Confort térmico» se abría como una franja casi sin contenido legible. **OpenAI Codex implementó y documentó el ajuste** en la rama `fix/confort-movil`, sobre `5f8979c`: el CSS reservaba 320 px para la escena además de la barra inferior, y dejaba solo 62 px para Confort en una reproducción de 393 × 700. Codex redujo esa reserva a la cabecera y los márgenes, respetó las áreas seguras y descontó la tarjeta del recorrido cuando está presente. El panel pasó a 266 px en esa reproducción, manteniendo la regla de la hora y el desplazamiento del contenido.
+
+Se recompiló el sitio y se comprobaron seis tamaños de ventana, cambiar la hora, cerrar y reabrir el panel y la parada 11 del recorrido con Playwright/Chromium. Validación local con emulación táctil, sin prueba en teléfono físico ni publicación en este ajuste. La causa, la fórmula, las mediciones y las capturas quedan en [el registro de Codex](ux/confort-movil/README.md).
 
 ## Cómo se trabajó
 

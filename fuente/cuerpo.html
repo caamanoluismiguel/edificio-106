@@ -956,8 +956,9 @@
        «A esta hora conviene», el punto de la carta y el UTCI (confortHora); con Capas también se pliega */
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock :is(#modo-activo, #reproducir) { display: none !important; }
     html.hoja-0:has(#capas:not([hidden])) #dock :is(.regla, #dia-ley-caja) { display: none !important; }
-    /* con la regla a la vista la hoja crece: Confort se acorta para dejar unos 320 px arriba (barra y edificio) */
-    html.hoja-0 #confort { max-height: min(38dvh, calc(100dvh - env(safe-area-inset-top, 0px) - var(--dock-h) - 320px)); }
+    /* Confort conserva espacio de lectura aunque las barras del navegador reduzcan el alto disponible.
+       La regla sigue visible; se reserva la cabecera, no 320 px fijos que dejaban solo el título del panel. */
+    html.hoja-0 #confort { max-height: min(38dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--dock-h) - 96px - var(--confort-rec-h, 0px))); }
     html.hoja-0:has(#capas:not([hidden]), #confort:not([hidden])) #dock #elegir { grid-area: modo; justify-self: end; }
     html.hoja-1 #dock { max-height: 62dvh; }
     /* con la tarjeta de un modo abierta en la cerrada, el narrador deja su lugar (quedan «Volver a ahora» y el sello del resumen) */
@@ -1038,7 +1039,7 @@
   @media (max-width: 760px) { #guia { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); } }
   /* la parada «Confort» del recorrido: Confort se apila encima de la tarjeta del paso (--rec-h es su alto real); en el teléfono la tarjeta va plegada */
   @media (min-width: 761px) and (min-height: 501px) { html.en-recorrido #confort { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 36px + var(--rec-h, 0px)); } }
-  @media (max-width: 760px) { html.en-recorrido #confort { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 22px + var(--rec-h, 0px)); } }
+  @media (max-width: 760px) { html.en-recorrido #confort { --confort-rec-h: calc(6px + var(--rec-h, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 22px + var(--rec-h, 0px)); } }
   .guia-foco { outline: 2px solid var(--cal); outline-offset: 4px; }
   /* en pantallas táctiles, los grupos de botones de arriba y las pestañas se tocan con el dedo: al menos 40 px de alto */
   @media (pointer: coarse) {

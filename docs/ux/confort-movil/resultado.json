@@ -1,0 +1,275 @@
+{
+  "results": [
+    {
+      "width": 393,
+      "height": 700,
+      "#confort": {
+        "top": 100,
+        "bottom": 366,
+        "height": 266,
+        "scrollHeight": 2295,
+        "clientHeight": 264
+      },
+      "#dock": {
+        "top": 374.40625,
+        "bottom": 692,
+        "height": 317.59375,
+        "scrollHeight": 316,
+        "clientHeight": 316
+      },
+      "#confort .ir-cab": {
+        "top": 117,
+        "bottom": 153,
+        "height": 36,
+        "scrollHeight": 36,
+        "clientHeight": 36
+      },
+      "#confort section": {
+        "top": 167,
+        "bottom": 435.71875,
+        "height": 268.71875,
+        "scrollHeight": 269,
+        "clientHeight": 269
+      },
+      "#hora": {
+        "top": 540.40625,
+        "bottom": 610.40625,
+        "height": 70,
+        "scrollHeight": 70,
+        "clientHeight": 70
+      }
+    },
+    {
+      "width": 360,
+      "height": 640,
+      "#confort": {
+        "top": 80,
+        "bottom": 306,
+        "height": 226,
+        "scrollHeight": 2364,
+        "clientHeight": 224
+      },
+      "#dock": {
+        "top": 314.40625,
+        "bottom": 632,
+        "height": 317.59375,
+        "scrollHeight": 316,
+        "clientHeight": 316
+      },
+      "#confort .ir-cab": {
+        "top": 97,
+        "bottom": 133,
+        "height": 36,
+        "scrollHeight": 36,
+        "clientHeight": 36
+      },
+      "#confort section": {
+        "top": 147,
+        "bottom": 435.3125,
+        "height": 288.3125,
+        "scrollHeight": 288,
+        "clientHeight": 288
+      },
+      "#hora": {
+        "top": 480.40625,
+        "bottom": 550.40625,
+        "height": 70,
+        "scrollHeight": 70,
+        "clientHeight": 70
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "#confort": {
+        "top": 189.28125,
+        "bottom": 510,
+        "height": 320.71875,
+        "scrollHeight": 2310,
+        "clientHeight": 319
+      },
+      "#dock": {
+        "top": 518.40625,
+        "bottom": 836,
+        "height": 317.59375,
+        "scrollHeight": 316,
+        "clientHeight": 316
+      },
+      "#confort .ir-cab": {
+        "top": 206.28125,
+        "bottom": 242.28125,
+        "height": 36,
+        "scrollHeight": 36,
+        "clientHeight": 36
+      },
+      "#confort section": {
+        "top": 256.28125,
+        "bottom": 525,
+        "height": 268.71875,
+        "scrollHeight": 269,
+        "clientHeight": 269
+      },
+      "#hora": {
+        "top": 684.40625,
+        "bottom": 754.40625,
+        "height": 70,
+        "scrollHeight": 70,
+        "clientHeight": 70
+      }
+    },
+    {
+      "width": 393,
+      "height": 600,
+      "#confort": {
+        "top": 80,
+        "bottom": 266,
+        "height": 186,
+        "scrollHeight": 2295,
+        "clientHeight": 184
+      },
+      "#dock": {
+        "top": 274.40625,
+        "bottom": 592,
+        "height": 317.59375,
+        "scrollHeight": 316,
+        "clientHeight": 316
+      },
+      "#confort .ir-cab": {
+        "top": 97,
+        "bottom": 133,
+        "height": 36,
+        "scrollHeight": 36,
+        "clientHeight": 36
+      },
+      "#confort section": {
+        "top": 147,
+        "bottom": 415.71875,
+        "height": 268.71875,
+        "scrollHeight": 269,
+        "clientHeight": 269
+      },
+      "#hora": {
+        "top": 440.40625,
+        "bottom": 510.40625,
+        "height": 70,
+        "scrollHeight": 70,
+        "clientHeight": 70
+      }
+    },
+    {
+      "width": 820,
+      "height": 700,
+      "#confort": {
+        "top": 70,
+        "bottom": 330,
+        "height": 260,
+        "scrollHeight": 2250,
+        "clientHeight": 258
+      },
+      "#dock": {
+        "top": 340.21875,
+        "bottom": 686,
+        "height": 345.78125,
+        "scrollHeight": 344,
+        "clientHeight": 344
+      },
+      "#confort .ir-cab": {
+        "top": 87,
+        "bottom": 123,
+        "height": 36,
+        "scrollHeight": 36,
+        "clientHeight": 36
+      },
+      "#confort section": {
+        "top": 137,
+        "bottom": 405.71875,
+        "height": 268.71875,
+        "scrollHeight": 269,
+        "clientHeight": 269
+      },
+      "#hora": {
+        "top": 560.40625,
+        "bottom": 630.40625,
+        "height": 70,
+        "scrollHeight": 70,
+        "clientHeight": 70
+      }
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "#confort": {
+        "top": 70,
+        "bottom": 876,
+        "height": 806,
+        "scrollHeight": 2250,
+        "clientHeight": 804
+      },
+      "#dock": {
+        "top": 64,
+        "bottom": 900,
+        "height": 836,
+        "scrollHeight": 1197,
+        "clientHeight": 836
+      },
+      "#confort .ir-cab": {
+        "top": 87,
+        "bottom": 123,
+        "height": 36,
+        "scrollHeight": 36,
+        "clientHeight": 36
+      },
+      "#confort section": {
+        "top": 137,
+        "bottom": 405.71875,
+        "height": 268.71875,
+        "scrollHeight": 269,
+        "clientHeight": 269
+      },
+      "#hora": {
+        "top": 243.390625,
+        "bottom": 313.390625,
+        "height": 70,
+        "scrollHeight": 70,
+        "clientHeight": 70
+      }
+    }
+  ],
+  "tour": {
+    "#confort": {
+      "top": 80,
+      "bottom": 233,
+      "height": 153,
+      "scrollHeight": 2261,
+      "clientHeight": 151
+    },
+    "#dock": {
+      "top": 374.40625,
+      "bottom": 692,
+      "height": 317.59375,
+      "scrollHeight": 316,
+      "clientHeight": 316
+    },
+    "#confort .ir-cab": {
+      "top": -808,
+      "bottom": -772,
+      "height": 36,
+      "scrollHeight": 36,
+      "clientHeight": 36
+    },
+    "#confort section": {
+      "top": -758,
+      "bottom": -541.46875,
+      "height": 216.53125,
+      "scrollHeight": 217,
+      "clientHeight": 217
+    },
+    "#hora": {
+      "top": 540.40625,
+      "bottom": 610.40625,
+      "height": 70,
+      "scrollHeight": 70,
+      "clientHeight": 70
+    }
+  }
+}

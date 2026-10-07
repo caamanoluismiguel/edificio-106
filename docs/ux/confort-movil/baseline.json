@@ -1,0 +1,37 @@
+{
+  "#confort": {
+    "top": 304,
+    "bottom": 366,
+    "height": 62,
+    "scrollHeight": 2295,
+    "clientHeight": 60
+  },
+  "#dock": {
+    "top": 374.40625,
+    "bottom": 692,
+    "height": 317.59375,
+    "scrollHeight": 316,
+    "clientHeight": 316
+  },
+  "#confort .ir-cab": {
+    "top": 321,
+    "bottom": 357,
+    "height": 36,
+    "scrollHeight": 36,
+    "clientHeight": 36
+  },
+  "#confort section": {
+    "top": 371,
+    "bottom": 639.71875,
+    "height": 268.71875,
+    "scrollHeight": 269,
+    "clientHeight": 269
+  },
+  "#hora": {
+    "top": 540.40625,
+    "bottom": 610.40625,
+    "height": 70,
+    "scrollHeight": 70,
+    "clientHeight": 70
+  }
+}
