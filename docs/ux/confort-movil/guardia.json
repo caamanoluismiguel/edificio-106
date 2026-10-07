@@ -1,0 +1,255 @@
+{
+ "fecha": "2026-10-07T17:26:33.827Z",
+ "revision": "origin/main",
+ "commitRevision": "5f8979c",
+ "rama": "fix/confort-movil",
+ "commitRama": "fe86812",
+ "sinCommitear": [],
+ "backend": "WebGPU",
+ "git": {
+  "contenida": true,
+  "cambiosSitio": [
+   {
+    "estado": "M",
+    "archivo": "docs/HISTORIA.md"
+   },
+   {
+    "estado": "A",
+    "archivo": "docs/ux/confort-movil/README.md"
+   },
+   {
+    "estado": "A",
+    "archivo": "docs/ux/confort-movil/antes.png"
+   },
+   {
+    "estado": "A",
+    "archivo": "docs/ux/confort-movil/baseline.json"
+   },
+   {
+    "estado": "A",
+    "archivo": "docs/ux/confort-movil/despues-393x700.png"
+   },
+   {
+    "estado": "A",
+    "archivo": "docs/ux/confort-movil/despues-recorrido.png"
+   },
+   {
+    "estado": "A",
+    "archivo": "docs/ux/confort-movil/resultado.json"
+   },
+   {
+    "estado": "M",
+    "archivo": "index.html"
+   }
+  ],
+  "cambiosFuente": [
+   {
+    "estado": "M",
+    "archivo": "fuente/cuerpo.html"
+   }
+  ],
+  "borrados": []
+ },
+ "modelo": {
+  "cambian": [],
+  "detalle": [
+   "arboles.glb            idéntico (295112 bytes, md5 9ea33915a40597b74ec5b32055b5a419)",
+   "arboles_movil.glb      idéntico (209484 bytes, md5 4a0b51ff9b565ed52f7cf322af27a361)",
+   "arquitectura.glb       idéntico (86672 bytes, md5 c3de5cea492e47205c10bea567d9b233)",
+   "ciudad.glb             idéntico (3556464 bytes, md5 90cfc097bb82e9e46150460e388ba086)",
+   "ciudad_alto.glb        idéntico (9969712 bytes, md5 8050251befd26012a779ccb4027927b9)",
+   "contexto.glb           idéntico (1706672 bytes, md5 30cb6638c055456975ad6a0cdce938ad)",
+   "cubiertas.glb          idéntico (4107480 bytes, md5 03391bb3c569c1232166fc8472c3bbb4)",
+   "cubiertas_movil.glb    idéntico (3135840 bytes, md5 b56316dab420dfc161fcf0c4a8716c92)",
+   "cubiertas_sombra.glb   idéntico (336440 bytes, md5 60449f2043bc3fdf2c8b79512086d845)",
+   "detalles.glb           idéntico (233900 bytes, md5 e2ae61aee2b4e9144e23082c7a0a35ca)",
+   "entrada.glb            idéntico (189376 bytes, md5 624257368b42fcb32b951ae57ae12bb3)",
+   "sitio.glb              idéntico (116604 bytes, md5 b17f8024180d050e60eb30f9ebbba042)",
+   "vegetacion.glb         idéntico (812192 bytes, md5 f78a2b4dd182c3472acd82211c7da268)",
+   "ventanas.glb           idéntico (126644 bytes, md5 a35e9f2ea6fe9428ed483ecd94f8725f)"
+  ]
+ },
+ "imagen": {
+  "umbralNiveles": 8,
+  "maxPixeles": 10,
+  "lluvia": {
+   "fecha": {
+    "y": 2023,
+    "m": 7,
+    "d": 1
+   },
+   "min": 870,
+   "lluvia": 19
+  },
+  "erroresAntes": [],
+  "erroresDespues": [],
+  "casos": [
+   {
+    "caso": "esquina-manana",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "esquina-tarde",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "aerea-manana",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 1,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "aerea-mediodia",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "planta-mediodia",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "planta-tarde",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "fachada-se",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "fachada-no",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "fachada-ne",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "fachada-so",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "noche-esquina",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 1,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "noche-aerea",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "lente-sol",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "lente-lluvia",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "lente-viento",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "lente-sombras",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "lente-partes",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 1,
+    "mediaNivel": 0,
+    "caja": null
+   },
+   {
+    "caso": "lluvia-esquina",
+    "estado": "IGUAL",
+    "px": 0,
+    "pct": 0,
+    "maxNivel": 0,
+    "mediaNivel": 0,
+    "caja": null
+   }
+  ]
+ },
+ "carga": {
+  "ok": true,
+  "salida": "✓ teléfono (WebGPU, nivel bajo, profundidad de campo 1.00, ciudad medio): 9 grupos\n✓ teléfono ?arboles=0 (WebGPU, nivel bajo, profundidad de campo 1.00, ciudad medio): 8 grupos\n✓ teléfono ?ciudad=0 (WebGPU, nivel bajo, profundidad de campo 1.00, ciudad no): 9 grupos\n✓ computador (WebGPU, nivel alto, profundidad de campo 1.00, ciudad completo): 9 grupos\n✓ computador ?arboles=0 (WebGPU, nivel alto, profundidad de campo 1.00, ciudad completo): 8 grupos\n✓ computador ?ciudad=0 (WebGPU, nivel alto, profundidad de campo 1.00, ciudad no): 9 grupos\n✓ computador en WebGL 2 (WebGL 2, nivel medio, profundidad de campo 1.00, ciudad completo): 9 grupos\n✓ computador con «webgl» viejo guardado (WebGPU, nivel alto, profundidad de campo 1.00, ciudad completo): 9 grupos\n✓ computador con la ciudad apagada guardada (WebGPU, nivel alto, profundidad de campo 1.00, ciudad no): 9 grupos\n✓ computador con la ciudad apagada guardada y ?ciudad=1 (WebGPU, nivel alto, profundidad de campo 1.00, ciudad completo): 9 grupos\nRESULTADO: todo carga en teléfono y computador\n"
+ }
+}

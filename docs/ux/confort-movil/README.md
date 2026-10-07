@@ -4,7 +4,7 @@ Fecha: 7 de octubre de 2026 (Bogotá).
 
 **Autoría del ajuste: OpenAI Codex**, a solicitud de Luis Miguel Caamaño, quien detectó el problema y aportó una captura de su teléfono. Codex inspeccionó la captura, reprodujo el fallo, modificó el CSS, recompiló el sitio y comprobó el resultado con Playwright/Chromium. Este registro también fue redactado por Codex.
 
-Base: `5f8979c9fc151986a72cc9bd0fe216150374eae5`. Rama de trabajo: `fix/confort-movil`. Validación local; este trabajo no incluyó publicación en GitHub Pages.
+Base: `5f8979c9fc151986a72cc9bd0fe216150374eae5`. Rama de trabajo: `fix/confort-movil`. Implementación registrada en `fe86812`; LM autorizó después la publicación en GitHub Pages.
 
 ## Problema y causa
 
@@ -57,4 +57,17 @@ Pasaron las comprobaciones de altura, posición dentro de la ventana y desplazam
 
 Para repetir manualmente: servir la raíz del repo, abrir `/?prueba&rapido#m-20240125-1950` con una ventana de 393 × 700, desplegar los controles con el asa y tocar «Confort». Leer y desplazar el panel, cambiar la hora y comprobar su cierre. En el recorrido, avanzar hasta la parada 11 y mostrar la respuesta.
 
-Alcance de la validación: navegador de escritorio con emulación táctil; no se probó este ajuste en un teléfono físico. No se ejecutaron el guardia completo ni `verificar.mjs`, y esta comprobación no sustituye las verificaciones requeridas antes de publicar.
+Alcance de la validación: navegador de escritorio con emulación táctil; no se probó este ajuste en un teléfono físico. No se ejecutó `verificar.mjs`: el cambio es de distribución CSS y no modifica la escena ni sus cálculos.
+
+## Verificación previa a publicación
+
+El 7 de octubre, tras la autorización de LM, Codex ejecutó `git fetch origin`, confirmó que `origin/main` estaba contenido en la rama, recompiló y comprobó que el resultado coincidía con el commit. También cruzó las cifras de esta nota con los JSON y revisó los enlaces locales y las líneas añadidas en busca de los patrones de secretos del proyecto, sin coincidencias.
+
+El guardia completo, `node fuente/guardia.mjs origin/main`, terminó con código 0 sobre `fe86812`, comparado con `5f8979c`. [Informe conservado](guardia.json):
+
+- Git: avance rápido y ningún archivo borrado.
+- Modelos: los 14 GLB comparados permanecen idénticos.
+- Imagen: los 18 casos pasaron, con 0 píxeles por encima del umbral de 8 niveles. La mayor diferencia de un canal fue de 1 nivel.
+- Carga: pasaron los 10 escenarios de teléfono y computador, incluidas las variantes de árboles, ciudad, WebGL 2 y preferencias guardadas.
+
+No se cambió código después de estas pruebas; solo se agregó este registro de verificación.
