@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=e1d88794ed" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=bf31943ace" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -1324,6 +1324,7 @@
         <p class="reloj-dato" id="reloj-alb"></p>
         <p class="reloj-nota">Las dos curvas miden cosas distintas: ERA5, horas con 1,5 mm o más en una celda de unos 28 km; Albrook, partes de un instante con cualquier lluvia en un punto. Por eso cada una va a escala de su máximo y solo se compara la hora.</p>
         <details class="pliegue"><summary>Cómo se midió</summary>
+        <p class="reloj-nota" id="reloj-tardes">De mayo a noviembre, el observador del aeropuerto de Albrook informó lluvia (sin contar llovizna ni la de la hora anterior) en alguno de sus partes de 12:00 a 18:59 en <span data-tardes="albrook">46</span> de cada 100 tardes (2017–2025). ERA5 da 1 mm o más entre las 12 y las 18 h en <span data-tardes="era5">88</span> de cada 100 tardes (2001–2025), pero no mide lo mismo: suma seis horas en una celda de 28 km, y cada parte mira un instante en un punto.</p>
         <p class="reloj-nota" id="reloj-auto"></p>
         <p class="reloj-nota" id="reloj-sesgo">Aquí el máximo de ERA5 llega algo más de 1 h antes que el de Albrook, en línea con un estudio global de junio a agosto: sobre tierra, ERA5 adelanta en promedio unas 2 h el máximo de lluvia frente al producto satelital IMERG (Watters et al., 2021, <i>Journal of Climate</i>, doi:10.1175/JCLI-D-20-0966.1).</p>
         </details>
@@ -1400,19 +1401,19 @@
         <h4>¿Por qué una pared se moja más que otra?</h4>
         <p class="respuesta">Cuando llueve con viento, el agua llega de lado. En un año típico, la exposición de la pared noroeste es más de cinco veces la de la lateral noreste. <span class="sello">ERA5 · zona de 28 km</span></p>
         <p class="pensar"><b>Para pensar:</b> ¿Qué reforzarías primero en esa cara?</p>
-        <button class="ver" type="button"><span>Verlo</span><small>Año típico · fachada noroeste · mapa de lluvia</small></button>
+        <button class="ver" type="button"><span>Verlo</span><small>Año típico · fachada noroeste · Lluvia en fachadas</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2016-02-18" data-hora="14:00" data-vista="aerea" data-fachada="" data-capa="viento" data-modo="seca">
         <p class="eyebrow">6 · Viento</p>
         <h4>¿De dónde viene la brisa?</h4>
-        <p class="respuesta">En la temporada seca, de diciembre a marzo, casi siempre del norte y el noroeste, a unos <span data-viento="seca">13</span> km/h de media. <span class="sello">ERA5 · zona de 28 km</span></p>
+        <p class="respuesta">En la temporada seca, de diciembre a marzo, casi siempre del norte y el noroeste, a unos <span data-viento="seca">13</span>&nbsp;km/h de media. <span class="sello">ERA5 · zona de 28 km</span></p>
         <p class="pensar"><b>Para pensar:</b> ¿Dónde pondrías las ventanas por las que entra la brisa y dónde las que la dejan salir?</p>
         <button class="ver" type="button"><span>Verlo</span><small>Temporada seca · vista aérea · Viento</small></button>
       </article>
       <article class="hallazgo simple pregunta" data-fecha="2003-04-11" data-hora="13:30" data-vista="" data-fachada="so" data-capa="" data-modo="" data-abrir="confort">
         <p class="eyebrow">7 · Confort</p>
         <h4>¿Se está mejor bajo el alero?</h4>
-        <p class="respuesta">Sí. De pie y afuera, bajo el alero la sensación térmica es en promedio unos <span data-alivio>4</span> °C menor que al sol. <span class="sello">ERA5 ajustado a Albrook</span></p>
+        <p class="respuesta">Sí. De pie y afuera, bajo el alero la sensación térmica es en promedio unos <span data-alivio>4</span>&nbsp;°C menor que al sol. <span class="sello">ERA5 ajustado a Albrook</span></p>
         <p class="pensar"><b>Para pensar:</b> ¿Qué actividades de la escuela pondrías bajo el alero en la tarde?</p>
         <button class="ver" type="button"><span>Verlo</span><small>11 de abril de 2003, 13:30 · abre Confort: la sensación térmica al sol y bajo el alero</small></button>
       </article>
@@ -1457,7 +1458,7 @@
     </article>
     <article class="hallazgo" data-fecha="2006-11-23" data-hora="12:30" data-vista="" data-fachada="no" data-capa="">
       <h3>Lluvia batiente: la exposición de la NO es más de cinco veces la de la fachada lateral NE</h3>
-      <p>Índice ISO 15927-3 en campo abierto: NO unos <span data-lv="no">500</span> L/m² al año (de ~320 a ~710 según el año), SO ~<span data-lv="so">360</span>, SE ~<span data-lv="se">280</span> y NE ~<span data-lv="ne">100</span>. En ERA5 el viento durante la lluvia es flojo (mediana de 7 km/h); el modelo no capta las ráfagas de los aguaceros. Con el viento del aeropuerto de Albrook, a 4 km, y la misma lluvia de ERA5, la NO sube a unos 650 y el orden de las fachadas no cambia.</p>
+      <p>Índice ISO 15927-3 en campo abierto: NO unos <span data-lv="no">500</span>&nbsp;L/m² al año (de ~320 a ~710 según el año), SO ~<span data-lv="so">360</span>, SE ~<span data-lv="se">280</span> y NE ~<span data-lv="ne">100</span>. En ERA5 el viento durante la lluvia es flojo (mediana de 7 km/h); el modelo no capta las ráfagas de los aguaceros. Con el viento del aeropuerto de Albrook, a 4 km, y la misma lluvia de ERA5, la NO sube a unos 650 y el orden de las fachadas no cambia.</p>
       <p class="uso"><b>Para el diseño:</b> Indica dónde reforzar alero, bordes que cortan el goteo, juntas y acabados: primero NO y SO; la fachada lateral NE pide menos.</p>
       <p class="limite"><b>Límite:</b> Es lluvia que cruza un plano vertical en campo abierto: ordena fachadas, no mide el agua que recibe el muro. La norma es un método del Reino Unido y no se aplica donde más del 25 % de la lluvia anual viene de tormentas convectivas fuertes (ISO 15927-3:2009, cláusula 1). En Albrook, una de cada tres horas con lluvia trae tormenta; son horas, no cantidad, así que no se sabe si aquí se pasa de ese 25 %.</p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>23/11/2006 12:30 · fachada NO: ERA5 da lluvia con viento de unos 25 km/h que llega de frente a esta fachada.</small></button>
@@ -1668,4 +1669,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=e1d88794ed"></script></body></html>
+<script type="module" src="js/app.js?v=bf31943ace"></script></body></html>
