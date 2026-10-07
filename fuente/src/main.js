@@ -1408,7 +1408,7 @@ function lecturas(p, c) {
     // una línea de sellos (fase C, vocabulario fijo de «Fuentes y método»); qué variable sale de cada fuente lo dice entero
     // «Qué significa · El tiempo» (explicacion('clima')), al tocar la lectura «Clima»
     if (c.fuente === 'vivo') fuente = c.albrook ? (c.albrook.auto
-        ? `Albrook · aeropuerto a 4 km, parte automático de las ${c.albrook.hora}, sin lluvia · lluvia, nubes y luz: Pronóstico Open-Meteo · Sol calculado (NOAA)`
+        ? `Albrook · aeropuerto a 4 km, parte automático de las ${c.albrook.hora}, que no informa la lluvia · lluvia, nubes y luz: Pronóstico Open-Meteo · Sol calculado (NOAA)`
         : `Albrook · aeropuerto a 4 km, parte de las ${c.albrook.hora} · nubes y luz: Pronóstico Open-Meteo · Sol calculado (NOAA)`)
       : `Pronóstico Open-Meteo, ${c.hora} · Sol calculado (NOAA)`;
     else if (c.fuente === 'serie') fuente = `${!clima.r?.era5 ? 'Archivo histórico de Open-Meteo' : c.ajustado ? 'ERA5 ajustado a Albrook' : 'ERA5 · zona de 28 km'} · dato de esa hora · Sol calculado (NOAA)`;
@@ -1418,7 +1418,7 @@ function lecturas(p, c) {
       : c.cargandoSerie ? 'Cargando la serie horaria 2001–2025…' : c.buscando ? 'Buscando el dato de ese día en Open-Meteo…' : globalThis.MODELO_B64 ? 'Típico para esta fecha y hora (mediana 2001–2025). Fuera de 2001–2025 el dato exacto se consulta en línea, y esta vista previa no tiene conexión.' : 'Típico para esta fecha y hora (mediana 2001–2025): no hay dato en línea para ese día.';
     if (c.fuente === 'tipico' && c.ajustado && !c.cargandoSerie && !c.buscando) fuente = fuente.replace(/\.$/, ', con la temperatura y la humedad ajustadas a Albrook.');
   }
-  $('#l-temp').textContent = temp; $('#l-clima').textContent = det; $('#l-fuente').textContent = fuente;
+  $('#l-temp').textContent = temp; $('#l-clima').textContent = det; ponSello($('#l-fuente'), fuente);
   // resumen de una línea para el teléfono: solo los valores
   // sello corto de procedencia, siempre visible (en el teléfono la línea larga de la fuente no se muestra)
   const sello0 = !c || V ? '' : selloDe(c);
@@ -1466,8 +1466,10 @@ function textoNoche(c) {
   if (L.frac < 0.05) return `Es de noche y es casi luna nueva. Alumbran solo ${fuentes}.`;
   if (llueveYa || nub >= 70) {
     const N = Math.round(nub), cola = `Alumbran ${fuentesNubes}.`;
-    if (llueveYa && c?.albrook && !c.albrook.auto) return `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia; el modelo da ${N} % del cielo cubierto y la escena tapa ${fase}. ${cola}`;
-    return `Es de noche${llueveYa ? ' y el modelo da lluvia' : ''}, con ${N} % del cielo cubierto según el dato: la escena tapa ${fase}. ${cola}`;
+    // plegado se ve la primera frase (fase C: 20 palabras o menos)
+    if (llueveYa && c?.albrook && !c.albrook.auto) return `Es de noche y el aeropuerto de Albrook, a 4 km, informa lluvia. El modelo da ${N} % del cielo cubierto y la escena tapa ${fase}. ${cola}`;
+    if (llueveYa) return `Es de noche y ${c?.fuente === 'serie' || c?.modelo === 'era5' ? 'ERA5' : 'el pronóstico'} da lluvia. El cielo está cubierto en un ${N} % según el dato y la escena tapa ${fase}. ${cola}`;
+    return `Es de noche, con ${N} % del cielo cubierto según el dato: la escena tapa ${fase}. ${cola}`;
   }
   return `Es de noche y alumbra ${fase}, hacia el ${rumboTexto(L.az)}. Suman algo ${fuentes}.`;
 }
@@ -1504,6 +1506,12 @@ function selloDe(c, hora = false) {
   if (c.fuente === 'dia') return c.modelo === 'era5' ? 'ERA5 · zona de 28 km' : 'Pronóstico Open-Meteo';
   if (c.fuente === 'mes') return 'ERA5 · zona de 28 km, mes';
   return c.ajustado ? 'ERA5 ajustado a Albrook, típico' : 'ERA5 · zona de 28 km, típico';
+}
+/** Escribe un sello armado por código: un espacio duro antes de cada «·», para que el punto nunca empiece una línea, y las
+ *  palabras con guion («Open-Meteo») sin partir. */
+function ponSello(el, txt) {
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  el.innerHTML = esc(txt).replace(/ · /g, '&nbsp;· ').replace(/[^\s&;]+-[^\s&;]+/g, (w) => `<span class="nw">${w}</span>`);
 }
 function rotulo(p, c, sp) {
   const forzada = rotuloTexto(p, c, sp), largo = $('#rotulo-texto').textContent, corto = forzada ?? primeraFrase(largo);
@@ -1545,7 +1553,7 @@ function rotuloTexto(p, c, sp) {
     if (!lluviaDibujada(c) && solARatos(c, p)) clTxt += ' El sol sale a ratos o llega velado: la sombra que ves es la de la media de la hora.';   // las nubes, en la frase de antes; los W/m², en la lectura «Clima»
     clTxt += ` ${Math.round(c.temp)} °C, humedad ${Math.round(c.humedad)} %, viento ${Math.round(c.viento)} km/h desde el ${rumboTexto(c.dir)}.`;
   }
-  else if (c?.fuente === 'mes') clTxt = ` En ${MESES[S.fecha.m - 1]} de ${S.fecha.y} ERA5 da ${Math.round(c.lluviaMes)} mm (media de ${MESES[S.fecha.m - 1]} en 2001–2025: ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm). La lluvia que cae en la escena es proporcional al total del mes, no la de una hora.`;
+  else if (c?.fuente === 'mes') clTxt = ` En ${MESES[S.fecha.m - 1]} de ${S.fecha.y} ERA5 da ${Math.round(c.lluviaMes)} mm. La media de ${MESES[S.fecha.m - 1]} en 2001–2025 es de ${Math.round(clima.r.climMensual[S.fecha.m - 1])} mm. La lluvia que cae en la escena es proporcional al total del mes, no la de una hora.`;
   if (S.modo === 'ahora') { tipo.textContent = tipoVivo(); txt.textContent = solTxt + clTxt; }
   else { tipo.textContent = ''; txt.textContent = (S.mesSerie !== null ? '' : solTxt) + clTxt; }
   // plegado no se muestra una sombra al centímetro cuando la escena no la dibuja así: con lluvia (del dato o forzada en Capas),
@@ -2364,11 +2372,11 @@ function leyenda(c) {
   // procedencia corta de las cifras de la tarjeta, a la vista en la hoja cerrada del teléfono, donde la nota no cabe
   const modoT = $('#ley-modos [aria-pressed="true"]')?.textContent ?? '', prono = c?.fuente === 'vivo' || (c?.fuente === 'dia' && c.modelo !== 'era5');
   $('#ley-corte').hidden = S.lente !== 'sol';
-  $('#ley-sello').textContent = !MODOS[S.lente] ? '' : !horaLente ? `${modoT} · ERA5 · zona de 28 km, 2001–2025`
+  ponSello($('#ley-sello'), !MODOS[S.lente] ? '' : !horaLente ? `${modoT} · ERA5 · zona de 28 km, 2001–2025`
     : S.lente === 'viento' && c?.albrook ? `${modoT} · viento: Albrook · aeropuerto a 4 km`
     : prono ? `${modoT} · Pronóstico Open-Meteo${S.lente === 'lluvia' && c.albrook ? ' · viento: Albrook · aeropuerto a 4 km' : ''}`
     : c?.fuente === 'mes' && S.lente === 'sol' ? `${modoT} · cielo despejado con las nubes del mes`
-    : c?.fuente === 'serie' || c?.modelo === 'era5' ? `${modoT} · ERA5 · zona de 28 km` : modoT;
+    : c?.fuente === 'serie' || c?.modelo === 'era5' ? `${modoT} · ERA5 · zona de 28 km` : modoT);
   if (S.lente === 'sombras') nota = !escena._diagClave ? 'El diagrama aparece cuando termina de cargar el modelo.' : `Sombras del ${fechaTexto(S.fecha)}. Se ven mejor desde arriba: botón «Planta».`;
   if (esPartes) nota = 'Toca otra etiqueta sobre el edificio para ver esa parte. Si no ves alguna, gira el edificio: cada etiqueta aparece en la cara que tienes enfrente.';
   $('#ley-nota').textContent = nota; $('#ley-nota').hidden = !nota;
@@ -2762,7 +2770,7 @@ function pintarCartaSolar(p, L, k) {
   if (pintarCartaSolar.k !== ck) {
     pintarCartaSolar.k = ck;
     const h = horasCalorVidrio(clima, rumbo, cortes);
-    $('#cs-cifra').textContent = `Con 30 °C o más, ERA5 ajustado da unas ${miles(Math.round(h.calor / 10) * 10)} horas al año. En unas ${miles(Math.round(h.sol / 10) * 10)} de ellas (${100 * h.sol / h.calor < 0.5 ? 'menos del 1' : Math.round(100 * h.sol / h.calor)} %) el sol directo llega al vidrio del piso 2 de la fachada ${SIGLA[k]} con este alero.`;
+    $('#cs-cifra').textContent = `Con 30 °C o más, ERA5 ajustado a Albrook da unas ${miles(Math.round(h.calor / 10) * 10)} horas al año. En unas ${miles(Math.round(h.sol / 10) * 10)} de ellas (${100 * h.sol / h.calor < 0.5 ? 'menos del 1' : Math.round(100 * h.sol / h.calor)} %) el sol directo llega al vidrio del piso 2 de la fachada ${SIGLA[k]} con este alero.`;
   }
 }
 
@@ -3039,7 +3047,7 @@ function pintarClimaDia() {
   } else if (clima.ok) fuente = `▮ probabilidad típica de 1 mm o más en la hora (${MESES[f.m - 1]})`;
   g.innerHTML = h;
   $('#dia-ley').textContent = fuente;
-  $('#dia-ley-fuente').textContent = sello; $('#dia-ley-fuente').hidden = !sello;
+  ponSello($('#dia-ley-fuente'), sello); $('#dia-ley-fuente').hidden = !sello;
 }
 
 // ---------------- Consultas: los días que un arquitecto quiere ver ----------------
@@ -3175,7 +3183,7 @@ function confortHora(p, c) {
   $('#conviene').innerHTML = R.hacer.map((t) => `<li class="accion">${t}</li>`).join('');
   $('#conviene-porque').innerHTML = R.porque.map(([cl, gl, t]) => `<li${cl ? ` class="${cl}"` : ''}>${gl ? `<i aria-hidden="true">${gl}</i>` : ''}<span>${gl ? sr(gl) : ''}${t}</span></li>`).join('') + R.datos.map((t) => `<li class="cierre">${t}</li>`).join('');
   $('#conviene-resumen').textContent = `Por qué · Givoni ${R.porque[0][1]} · Guía de Panamá ${R.porque[1][1]}`;
-  $('#conviene-sello').textContent = `Clima de afuera, no del aula · ${selloDe(c, true)} · viento a 10 m`;
+  ponSello($('#conviene-sello'), `Clima de afuera, no del aula · ${selloDe(c, true)} · viento a 10 m`);
   const w = humedadAbs(c.temp, c.humedad), C = confortJ.carta, dentro = c.temp >= C.t0 && c.temp <= C.t1 && w >= C.w0 && w <= C.w1;
   if (g) g.innerHTML = dentro ? `<circle cx="${cx(c.temp).toFixed(1)}" cy="${cy(w).toFixed(1)}" r="5.5" fill="#c9653f" stroke="#efe9de" stroke-width="2"><title>Esta hora: ${Math.round(c.temp)} °C, ${Math.round(w)} g/kg</title></circle>` : '';
   const va = (c.viento ?? 0) / 3.6, hora = `${hhmm(S.min)}`;
