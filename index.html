@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=6618a419e9" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=852aa2d896" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -575,6 +575,11 @@
     #dock { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "narr narr narr" "hora resumen botones" "tabs tabs tabs" "regla regla regla" "dley dley dley" "momentos momentos momentos" "lect lect lect"; }
     .pestanas { justify-self: start; }
   }
+  /* hasta 899 px los botones dejan al resumen en «ER…»: el resumen pasa a la fila de las pestañas, donde sobra ancho (fase C) */
+  @media (max-width: 899px) and (min-width: 761px) {
+    #dock { grid-template-areas: "narr narr narr" "hora . botones" "tabs resumen resumen" "regla regla regla" "dley dley dley" "momentos momentos momentos" "lect lect lect"; }
+    #lect-resumen { justify-self: stretch; } #lect-resumen-t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  }
 
   /* ---------- para qué sirve ---------- */
   #sirve { position: fixed; z-index: 7; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 70px); bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 28px);
@@ -613,6 +618,7 @@
   .sello { font: 500 12px/1.3 var(--datos); color: var(--cal-2); white-space: nowrap; }
   a.sello { text-decoration: underline dotted; text-underline-offset: 3px; }
   a.sello:hover, a.sello:focus-visible { color: var(--cal); }
+  .nw { white-space: nowrap; }
   p.sellos .sello:not(:last-child)::after { content: ' ·'; }    /* el punto queda al final de la línea si los sellos se parten */
   p.sellos { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 8px; }
   .hallazgo .pliegue p { font-size: 13px; color: var(--cal-2); }
@@ -1477,15 +1483,15 @@
       <p class="uso"><b>Para el diseño:</b> Da el ángulo de corte (~45°) para discutir aleros, y muestra que el alero no alcanza contra el sol bajo de la tarde: la SO necesita protección vertical o móvil (quiebrasoles, persianas o árboles).</p>
       <p class="limite"><b>Límite:</b> Pisos 2 y 3, con ventanas inferidas: con ±0,3 m de alero o ±0,15 m de ventana queda entre 65 % y 88 %. La difusa del cielo baja más o menos a la mitad y la reflejada por el suelo casi no cambia.</p>
       <details class="pliegue"><summary>A fondo</summary><p>El vidrio queda a pleno sol solo con el ángulo de perfil por debajo de unos 9°. En la SE los vecinos casi no cuentan: el salón de un piso de enfrente, al otro lado de la calle, le da sombra sobre todo a la planta baja y solo en la primera media hora de sol, en enero hasta cerca de las 7:15. En el SO el edificio 105 sí tapa la última hora de la tarde, desde cerca de las 16:45.</p></details>
-      <p class="sellos"><a class="sello" href="#fm-sol">Sol calculado (NOAA)</a></p>
+      <p class="sellos"><a class="sello" href="#fm-sol">Sol calculado (NOAA)</a><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>15/01/2024 07:30 · fachada SE: el 92 % del vidrio del piso 2 al sol. Pasa la regla a las 10:00: el muro sigue al sol y el vidrio queda casi todo en sombra.</small></button>
     </article>
     <article class="hallazgo" data-fecha="2023-07-01" data-hora="14:30" data-vista="esquina" data-fachada="" data-capa="">
       <h3>Unos <span data-lluvia="media">2.000</span>&nbsp;mm al año, casi el 90 % de mayo a noviembre</h3>
-      <p>Es la media de ERA5 de 2001 a 2025. En el total anda cerca de las estaciones: de 2001 a 2010 da entre 8 y 9 % más que Albrook y Balboa. Por meses se separa: ERA5 da julio como el mes más lluvioso, y en Tocumen el más lluvioso es octubre.</p>
+      <p>Es la media de ERA5 de 2001 a 2025. En el total anda cerca de las estaciones: de 2001 a 2010 da entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01). Por meses se separa: ERA5 da julio como el mes más lluvioso, y en Tocumen (ETESA, 1977–2010) el más lluvioso es octubre.</p>
       <p class="uso"><b>Para el diseño:</b> Justifica circulaciones y accesos cubiertos para las tardes de mayo a noviembre.</p>
       <p class="limite"><b>Límite:</b> ERA5 suaviza los aguaceros: su hora más lluviosa en 25 años son 19 mm y pasa de 10 mm en una hora unas 2 veces al año, mientras el observador de Albrook informa lluvia fuerte en unos 36 partes al año (2017–2025). Canales y bajantes se dimensionan con curvas IDF de una estación.</p>
-      <details class="pliegue"><summary>A fondo</summary><p>Según el año, entre ~<span data-lluvia="min">1.670</span> y ~<span data-lluvia="max">2.470</span>&nbsp;mm. En ERA5 algo más de la mitad cae de 12 a 18 h y la hora más probable es de 13 a 14 h. En 2001–2010, ERA5 da <span data-lluvia="d2001">2.048</span>&nbsp;mm al año, entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01); con Tocumen coincide (0,4 %) si se deja fuera 2009, que el cuadro da en 863 mm, un registro que parece incompleto. En Tocumen (ETESA/IMHPA, 1977–2010) octubre es el mes más lluvioso (330 mm) y julio baja a 177 mm por el «veranillo»; ERA5 no lo muestra.</p></details>
+      <details class="pliegue"><summary>A fondo</summary><p>Según el año, entre ~<span data-lluvia="min">1.670</span> y ~<span data-lluvia="max">2.470</span>&nbsp;mm. En ERA5 algo más de la mitad cae de 12 a 18 h y la hora más probable es de 13 a 14 h. En 2001–2010, ERA5 da <span data-lluvia="d2001">2.048</span>&nbsp;mm al año, entre 8 y 9 % más que Albrook y Balboa (INEC, cuadro 121-01); con Tocumen coincide (0,4 %) si se deja fuera 2009, que el cuadro da en 863 mm, un registro que parece incompleto. En Tocumen (ETESA, 1977–2010) octubre es el mes más lluvioso (330 mm) y julio baja a 177 mm por el «veranillo»; ERA5 no lo muestra.</p></details>
       <p class="sellos"><a class="sello" href="#fm-era5">ERA5 · zona de 28 km</a></p>
       <button class="ver" type="button"><span>Verlo en la escena</span><small>01/07/2023 14:30 · esquina: la hora más lluviosa de ERA5 en la serie (19 mm entre las 14:00 y las 15:00); mira las cortinas de agua desde los tres aleros.</small></button>
     </article>
@@ -1549,7 +1555,7 @@
     </details>
   </section>
   <section aria-labelledby="carta-t">
-    <h3 id="carta-t">¿Cuántas horas de clase son cómodas? · 7:00 a 17:00, 2001–2025</h3>
+    <h3 id="carta-t">¿Cuántas horas de clase caen en la zona de confort? · 7:00 a 17:00, 2001–2025</h3>
     <p class="conf-lead">Es la carta psicrométrica: cada hora va según su temperatura y su humedad. Es el aire de afuera a la sombra, no el del aula: tómalo como un orden de magnitud.</p>
     <p class="sellos"><a class="sello" href="#fm-ajuste">ERA5 ajustado a Albrook</a><span class="sello">zonas de Givoni (1992) y ASHRAE 55</span></p>
     <svg id="carta" viewBox="0 0 380 262" role="img" aria-labelledby="carta-t carta-desc"><desc id="carta-desc"></desc></svg>
@@ -1679,7 +1685,7 @@
     <dt id="fm-ajuste" tabindex="-1">ERA5 ajustado a Albrook</dt>
     <dd>ERA5 con la temperatura y la humedad llevadas a lo que midió Albrook de 2017 a 2025: la temperatura por cuantiles de cada mes y hora, y a la humedad se le resta lo que ERA5 marca de más cada mes (de 0,2 a 0,9 g/kg). Sigue siendo un modelo, no una medición en el sitio. Detalle abajo, en «Datos del clima».</dd>
     <dt id="fm-sol" tabindex="-1">Sol calculado (NOAA)</dt>
-    <dd>La posición del sol, calculada para cada minuto con el algoritmo de la calculadora solar de NOAA. No depende del tiempo: vale igual para cualquier fecha, pero no descuenta nubes. Detalle y validación abajo, en «Sol».</dd>
+    <dd>La posición del sol, calculada para cada minuto con el algoritmo de la calculadora solar de NOAA. No depende del tiempo: vale igual para cualquier fecha del visor, pero no descuenta nubes. Detalle y validación abajo, en «Sol».</dd>
     <dt id="fm-pronostico" tabindex="-1">Pronóstico Open-Meteo</dt>
     <dd>Para hoy, los días recientes y hasta 15 días adelante, el pronóstico de modelo de Open-Meteo, que combina varios modelos. No es ERA5 ni está ajustado a Albrook. Detalle abajo, en «Tiempo».</dd>
   </dl>
@@ -1687,7 +1693,7 @@
   <ul>
     <li>No es un levantamiento: es un modelo paramétrico, con escala aproximada (±12 %) y ventanas regularizadas a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026).</li>
     <li>El tiempo es dato de modelo, no una medición en el sitio: lo explica el sello «ERA5 · zona de 28 km», arriba.</li>
-    <li>No sirve para dimensionar canales, bajantes ni desagües, no calcula la ventilación interior ni la temperatura de las superficies, y el panel «Confort» no dice si adentro del aula se está cómodo. Qué usar para cada cosa está en «Para qué sirve» → «Qué no hace esta herramienta».</li>
+    <li>No sirve para dimensionar canales, bajantes ni desagües. Tampoco calcula la ventilación interior ni la temperatura de las superficies, ni dice si adentro del aula se está cómodo: el panel «Confort» mira el clima de afuera. Qué usar para cada cosa está en «Para qué sirve» → «Qué no hace esta herramienta».</li>
     <li>De noche solo alumbran fuentes reales o declaradas, con otra exposición (no es una simulación fotométrica): la luna de esa noche (su posición y su fase están calculadas, y las nubes del dato la tapan), el resplandor de la ciudad en el cielo, el poste de la esquina y, con la ciudad encendida, los postes de sus calles. Las ventanas encendidas, el tipo de lámpara de los postes y dónde están los de las calles son una suposición, no un dato.</li>
   </ul>
   <h3>Contexto</h3>
@@ -1733,4 +1739,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=6618a419e9"></script></body></html>
+<script type="module" src="js/app.js?v=852aa2d896"></script></body></html>
