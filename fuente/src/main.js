@@ -1648,6 +1648,8 @@ function pintarReloj(R) {
   $('#reloj-alb').textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${ca[0]} a ${ca[1]} h.`;
   $('#reloj-auto').textContent = `De ${desde} a ${hasta} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...mad) - 1} a ${Math.max(...mad)} h no se puede contrastar.`;
   sv.setAttribute('aria-label', `Reloj de 24 horas, cada curva a escala de su máximo. ${$('#reloj-era5').textContent} ${$('#reloj-alb').textContent}`);
+  // las tardes con lluvia (casa: «Cómo se midió» del reloj); en el HTML, 46 y 88 son solo el respaldo si no carga el JSON
+  document.querySelectorAll('[data-tardes]').forEach((el) => { const v = R.tardes?.[el.dataset.tardes]?.pct; if (v != null) el.textContent = String(Math.round(v)); });
   relojListo = true; $('#reloj-lluvia').hidden = S.pestana !== 'anio';
 }
 
@@ -2175,7 +2177,7 @@ const LENTES = {
   viento: { t: 'Viento: de dónde viene y qué fachada lo recibe de frente', rampa: rampaCSS(PAL.viento), esc: ['nada', '', 'mucho'],
     que: 'En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.',
     leer: '«Esta hora» muestra con flechas el viento de esa hora y, abajo, cuánto llega de frente a cada fachada (a menos de 60° de su perpendicular y desde 5 km/h). «Seca» (diciembre a marzo), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada. Abril es de transición: solo entra en «Año».',
-    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos {MEDIA_SECA} km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos {MEDIA_LLUVIAS} km/h) y más variable.',
+    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos {MEDIA_SECA}\u00a0km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos {MEDIA_LLUVIAS}\u00a0km/h) y más variable.',
     porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas {FRENTE_NO} horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, es de 0,6 a 0,8 veces el de 10 m (UN-Habitat, 2014, p. 29), y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste baja a unas 5.200 horas al año (ERA5, en los mismos años, unas 5.500) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos.' },
@@ -2201,7 +2203,8 @@ function textoRad(t) {
   const R = consultas?.radiacion?.fachadas;
   return t.replace('{RAD_NO_SE}', R ? ` (~${dec(R.no.total)} contra ~${dec(R.se.total)} kWh/m² al año en una pared sin alero)` : '');
 }
-/** Cifras del viento (consultas.json → viento) en los textos que las citan; sin consultas, las de 2001–2025 de hoy. */
+/** Cifras del viento (consultas.json → viento) en los textos que las citan. 5880, 12.9 y 7.7 son solo el respaldo si no carga
+ *  consultas.json (los valores de hoy, seca de diciembre a marzo): si el JSON cambia, actualízalos. */
 function textoViento(t) {
   const V = consultas?.viento;
   return t.replace('{FRENTE_NO}', dec(V?.anio?.frente?.no ?? 5880)).replace('{MEDIA_SECA}', String(Math.round(V?.seca?.media ?? 12.9))).replace('{MEDIA_LLUVIAS}', String(Math.round(V?.lluvias?.media ?? 7.7)));
@@ -2882,6 +2885,10 @@ function explicar(k) {
 }
 
 // ---------------- Recorrido guiado ----------------
+/** Parada «Confort»: el panel se desplaza hasta la sensación térmica al sol y bajo el alero, la respuesta de la pregunta. */
+function verUTCI() {
+  requestAnimationFrame(() => { const c = $('#confort'), s = $('#utci-t')?.closest('section'); if (c && s && !c.hidden) c.scrollTop = s.offsetTop - 12; });
+}
 function pasosRecorrido() {
   const a = ahoraPanama(), y = a.y, z = diasCeroSombra(y)[0];
   return [
@@ -2916,7 +2923,7 @@ function pasosRecorrido() {
     { t: 'Confort: ¿dónde se está mejor?', txt: 'El panel «Confort» junta lo que viste: con el sol, el viento y la lluvia de esta hora, dice qué conviene abrir o tapar. Más abajo está la sensación térmica afuera, de pie: mira cuánto baja bajo el alero.', dis: 'Es el clima de afuera, no el del aula: para el interior hace falta una simulación, como EnergyPlus.',
       pre: 'Es la 1:30 de la tarde del 11 de abril de 2003: su máxima, ajustada a Albrook, fue de 34,4 °C, en el 1 % de los días más calurosos de 2001 a 2025. ¿Dónde crees que una persona de pie siente menos calor, al sol o bajo el alero?',
       antes: () => viajarA({ fecha: { y: 2003, m: 4, d: 11 }, min: 13 * 60 + 30, fachada: 'so', lente: 'foto' }),
-      ir: () => { viajarA({ fecha: { y: 2003, m: 4, d: 11 }, min: 13 * 60 + 30, fachada: 'so', lente: 'foto' }); abrirConfort(true); if (ANCHO_HOJA.matches) plegarRecorrido(true); } },
+      ir: () => { viajarA({ fecha: { y: 2003, m: 4, d: 11 }, min: 13 * 60 + 30, fachada: 'so', lente: 'foto' }); if (ANCHO_HOJA.matches) plegarRecorrido(true); abrirConfort(true).then(verUTCI); } },
     { t: 'Ahora te toca', txt: 'Con «Momentos clave» puedes ir a cualquier fecha desde 1940, o a los récords de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia lo que quieres ver cuando quieras.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
       ir: () => { S.aguaModo = 'hora'; irAAhora(true); ponerLente('foto', false); } },
   ];
