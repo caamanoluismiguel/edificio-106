@@ -1422,7 +1422,7 @@ function lecturas(p, c) {
   const sello0 = !c || V ? '' : c.fuente === 'vivo' ? (c.albrook ? 'Albrook' : 'pronóstico') : c.fuente === 'serie' ? (c.ajustado ? 'ERA5 ajustado' : 'ERA5') : c.fuente === 'dia' && c.modelo === 'era5' ? 'ERA5' : c.fuente === 'dia' ? 'pronóstico' : c.fuente === 'mes' ? 'ERA5, mes' : c.ajustado ? 'típico ajustado' : 'típico';
   const sello = S.aguacero && sello0 ? 'aguacero forzado · ' + sello0 : sello0;
   S.sello = sello;                                                 // también va en el pie de la imagen PNG
-  $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (c?.fuente === 'mes' ? temp : sp ? `Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent} · ${temp}` : `Sol ${enHorizonte(p) ? 'en el' : 'bajo el'} horizonte · ${temp}`);   // la procedencia primero: en el teléfono el final se corta
+  $('#lect-resumen-t').textContent = V ? 'Viajando…' : (sello ? `${sello} · ` : '') + (c?.fuente === 'mes' ? temp : sp ? `${temp} · Sol ${$('#l-alt').textContent} · sombra ${$('#l-sombra').textContent}` : `${temp} · Sol ${enHorizonte(p) ? 'en el' : 'bajo el'} horizonte`);   // la procedencia y su temperatura primero: en el teléfono el final se corta, y la sombra y el sol ya los da el narrador
   // agujas y controles
   $('#hora').value = Math.round(S.min) % 1440;
   $('#dia-anio').value = diaDelAnio(S.fecha);
@@ -1440,11 +1440,6 @@ function lecturas(p, c) {
   leyenda(c);
   marcaSol(p);
   if (S.fachada) { if (V) $('#fachada-texto').textContent = `Viajando al ${fechaTexto(V.f1)}, a las ${hhmm(V.m1)}.`; else textoFachada(p, c); }
-  // fachadas: irradiancia
-  Object.keys(FACHADAS).forEach((k, i) => {
-    const el = document.querySelector(`[data-fachada="${k}"]`); if (!el) return;
-    const v = S.irr?.[i] ?? 0; el.querySelector('i').style.setProperty('--v', Math.min(1, v / 800)); el.querySelector('b').textContent = miles(v) + ' W/m²';
-  });
 }
 
 // el pequeño sol de la marca sigue la hora que muestra la escena
@@ -1615,12 +1610,12 @@ function pintarMomentos() {
   }
 }
 
-/** Reloj de la lluvia (pestaña «25 años»): a qué hora del día hay lluvia de mayo a noviembre según ERA5 (sectores llenos, la
+/** Reloj de la lluvia (pestaña «Año», bajo la regla del año): a qué hora del día hay lluvia de mayo a noviembre según ERA5 (sectores llenos, la
  *  hora que termina a las h) y según el observador de Albrook (una línea por los partes de las h:00). Miden cosas distintas
  *  (horas con 1,5 mm o más en una celda; el instante del parte en un punto): cada curva va a escala de su propio máximo, con
  *  el radio lineal, y solo se compara la hora del máximo. De 23 a 5 h el parte es AUTO y no hay comparación.
  *  Datos: fuente/reloj_lluvia.py → datos/reloj_lluvia.json (panel y verificador, 6 de octubre de 2026). */
-let relojPedido = false;
+let relojPedido = false, relojListo = false;
 function pedirReloj() {
   if (relojPedido) return; relojPedido = true;
   fetch(conVersion(BASE + 'datos/reloj_lluvia.json')).then((r) => r.json()).then(pintarReloj)
@@ -1653,7 +1648,7 @@ function pintarReloj(R) {
   $('#reloj-alb').textContent = `En Albrook, un aeropuerto a 4 km, el observador informa lluvia más seguido de ${ca[0]} a ${ca[1]} h.`;
   $('#reloj-auto').textContent = `De ${desde} a ${hasta} h el parte de Albrook es automático y no informa si llueve (arco punteado): el máximo menor que da ERA5 de ${Math.min(...mad) - 1} a ${Math.max(...mad)} h no se puede contrastar.`;
   sv.setAttribute('aria-label', `Reloj de 24 horas, cada curva a escala de su máximo. ${$('#reloj-era5').textContent} ${$('#reloj-alb').textContent}`);
-  $('#reloj-lluvia').hidden = false;
+  relojListo = true; $('#reloj-lluvia').hidden = S.pestana !== 'anio';
 }
 
 /** Texto de un extremo de la serie: la lluvia dice «pluviómetro»; la temperatura, «termómetro», y si va ajustada, la cruda. */
@@ -1731,8 +1726,10 @@ function ponerPestana(t) {
   S.pestana = t;
   document.querySelectorAll('[data-tab]').forEach((b) => { b.setAttribute('aria-selected', String(b.dataset.tab === t)); b.tabIndex = b.dataset.tab === t ? 0 : -1; });
   for (const k of ['dia', 'anio', 'decadas']) $('#regla-' + k).hidden = k !== t;
-  $('#momentos-caja').hidden = t !== 'decadas';
-  if (t === 'decadas') pedirReloj();
+  $('#momentos-caja').hidden = t === 'dia';
+  $('#dec-leyenda').hidden = $('#momentos').hidden = $('#momentos-t').hidden = t !== 'decadas';
+  $('#reloj-lluvia').hidden = t !== 'anio' || !relojListo;
+  if (t === 'anio') pedirReloj();
   if (t !== 'decadas') { S.mesSerie = null; S.momento = null; }
   lastLect = '';
 }
@@ -1742,6 +1739,8 @@ function prepararUI() {
   // el rótulo y el panel de capas se apoyan sobre el dock: su altura real va a --dock-h
   const ro = new ResizeObserver(() => document.documentElement.style.setProperty('--dock-h', $('#dock').offsetHeight + 'px'));
   ro.observe($('#dock'));
+  // el alto de la tarjeta del recorrido, para apilar Confort encima en la parada «Confort»
+  new ResizeObserver(() => document.documentElement.style.setProperty('--rec-h', $('#recorrido').offsetHeight + 'px')).observe($('#recorrido'));
   $('#sonido').addEventListener('click', () => {
     const on = $('#sonido').getAttribute('aria-pressed') !== 'true';
     on ? sonido.encender() : sonido.apagar();
@@ -1787,10 +1786,9 @@ function prepararUI() {
   prepararPartes();
   // recorrido guiado
   const abrirRec = () => { cerrarOferta(); abrirSirve(false); $('#acerca').close?.(); recorrido(0); };
-  ['#abrir-recorrido', '#sirve-recorrido', '#acerca-recorrido', '#oferta-si'].forEach((x) => $(x)?.addEventListener('click', abrirRec));
+  ['#abrir-recorrido', '#sirve-recorrido', '#oferta-si'].forEach((x) => $(x)?.addEventListener('click', abrirRec));
   $('#oferta-no').addEventListener('click', () => { cerrarOferta(); });
   $('#oferta-sirve').addEventListener('click', () => { cerrarOferta(); abrirSirve(true); $('#sirve').scrollTop = 0; });
-  $('#acerca-sirve').addEventListener('click', () => { $('#acerca').close?.(); abrirSirve(true); $('#sirve').scrollTop = 0; });
   $('#rec-sig').addEventListener('click', () => recorrido(S.paso + 1));
   $('#rec-prev').addEventListener('click', () => recorrido(S.paso - 1));
   $('#rec-salir').addEventListener('click', () => { recorrido(null); enfocar($('#abrir-recorrido')); });
@@ -1813,14 +1811,14 @@ function prepararUI() {
   });
   // ---- hoja inferior del teléfono: los modos, las vistas, la tarjeta del modo y la lámina bajan al dock; en pantallas
   // anchas vuelven a su lugar. Los nodos se mueven (no se copian), así que sus eventos siguen igual.
-  const LAMINA = $('#capas .lamina:not(#sobre-la-mesa)');
+  const LAMINA = $('#para-la-clase');
   // desde 900 px el dock es un panel lateral fijo con las mismas piezas (?panel=0 lo apaga, para comparar la escena con main)
   const ANCHO_PANEL = matchMedia('(min-width: 900px) and (min-height: 501px)'), conPanel = !/[?&]panel=0/.test(location.search);
   const acomodarHoja = () => {
     const panel = conPanel && ANCHO_PANEL.matches;
     document.documentElement.classList.toggle('panel-lateral', panel);
     if (ANCHO_HOJA.matches || panel) for (const el of [$('.vistas'), $('.lentes'), $('#leyenda'), LAMINA]) $('#dock').appendChild(el);
-    else { $('.hud-botones').append($('.vistas'), $('.lentes')); $('#hud').appendChild($('#leyenda')); $('#capas').insertBefore(LAMINA, $('#sobre-la-mesa')); }
+    else { $('.hud-botones').append($('.vistas'), $('.lentes')); $('#hud').appendChild($('#leyenda')); $('#capas').insertBefore(LAMINA, $('.capas-pie')); }
     ponerHoja(ANCHO_HOJA.matches ? 0 : undefined);
   };
   ANCHO_HOJA.addEventListener('change', acomodarHoja); ANCHO_PANEL.addEventListener('change', acomodarHoja); acomodarHoja();
@@ -1855,15 +1853,20 @@ function prepararUI() {
   }
   ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
-  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); soloUnPanel('sirve'); } };
+  const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); soloUnPanel('sirve'); cargarConfort().catch((e) => anotar('aviso', 'confort: ' + e)); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
   document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
     const art = b.closest('.hallazgo'), d = art.dataset;
     document.querySelectorAll('.hallazgo').forEach((x) => x.classList.toggle('activo', x === art));
-    const [hh, mi] = d.hora.split(':').map(Number);
+    let fecha, min;
+    if (d.momento === 'cero-0') { const y = ahoraPanama().y, z = diasCeroSombra(y)[0]; fecha = { y, m: z.m, d: z.d }; min = minMediodia(z); }   // el día sin sombra de este año
+    else { const [hh, mi] = d.hora.split(':').map(Number); fecha = deISO(d.fecha); min = hh * 60 + mi; }
     if (innerWidth <= 760) abrirSirve(false);
-    viajarA({ fecha: deISO(d.fecha), min: hh * 60 + mi, vista: d.fachada ? null : d.vista || 'esquina', fachada: d.fachada || null, lente: d.capa === 'calor' ? 'sol' : d.capa || 'foto', modo: d.modo || null });
+    viajarA({ fecha, min, vista: d.fachada ? null : d.vista || 'esquina', fachada: d.fachada || null, lente: d.capa === 'calor' ? 'sol' : d.capa || 'foto', modo: d.modo || null });
+    if (d.ayudas === '1') { S.ayudas = true; $('#capa-ayudas').checked = true; }     // el arco del sol
+    if (d.pestana) ponerPestana(d.pestana);                                          // después de viajarA, que pone Día
+    if (d.abrir === 'confort') abrirConfort(true);
   }));
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
@@ -1968,6 +1971,8 @@ function prepararUI() {
   document.querySelectorAll('.vistas [data-vista]').forEach((b) => b.addEventListener('click', () => { cerrarOferta(); S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; volarA(VISTAS[b.dataset.vista], 1.6, b.dataset.vista); }));
   $('#brujula').addEventListener('click', () => { cerrarOferta(); volarA(VISTAS.planta, 1.6, 'planta'); });
   document.querySelectorAll('[data-ir-fachada]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); irAFachada(a.dataset.irFachada, true); }));
+  // las cajas de la leyenda se regeneran con cada cambio: un solo oyente, por delegación
+  $('#ley-fachadas').addEventListener('click', (ev) => { const b = ev.target.closest('[data-ir-fachada]'); if (b) irAFachada(b.dataset.irFachada, true); });
   $('#qr-cerrar').addEventListener('click', () => cerrarQR(true));
   $('#salir-fachada').addEventListener('click', () => { S.fachada = null; document.documentElement.classList.remove('en-fachada'); $('#panel-fachada').hidden = true; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* visor */ } volarA(VISTAS.esquina, 1.6, 'esquina'); });
   addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (intro) return; if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); } else irAMomentoHash(); });   // un segundo QR escaneado con la página abierta también trae su tarjeta
@@ -1989,8 +1994,18 @@ function prepararUI() {
   });
   addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarTarjeta(true); cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
+  pintarCeroSombra();
   const d = diasCeroSombra(hoy.y);
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(minMediodia(d[0]))}. Ese mediodía, un poste casi no hace sombra.`;
+}
+
+/** Los días sin sombra del año en curso en «Para qué sirve»: solo los span[data-cero] (nunca el <article>), y la fecha y la hora
+ *  del «Verlo» del hallazgo 1. La tarjeta 2 calcula su momento al tocar «Verlo» (data-momento="cero-0"). */
+function pintarCeroSombra() {
+  const y = ahoraPanama().y, z = diasCeroSombra(y), h = hhmm(minMediodia(z[0])), dos = (n) => String(n).padStart(2, '0');
+  const val = { anio: String(y), 0: `${z[0].d} de ${MESES[z[0].m - 1]}`, 1: `${z[1].d} de ${MESES[z[1].m - 1]}`, hora: h, dma: `${dos(z[0].d)}/${dos(z[0].m)}/${y}` };
+  document.querySelectorAll('span[data-cero]').forEach((el) => { if (val[el.dataset.cero] != null) el.textContent = val[el.dataset.cero]; });
+  const art = $('#hallazgo-cero'); if (art) { art.dataset.fecha = `${y}-${dos(z[0].m)}-${dos(z[0].d)}`; art.dataset.hora = h; }
 }
 
 /** Un solo panel lateral a la vez (Para qué sirve, Ir a…, Confort, Capas o la tarjeta de la forma de ver): al abrir uno, se
@@ -2153,15 +2168,15 @@ const LENTES = {
   lluvia: { t: 'Lluvia en fachadas: qué fachada se moja cuando llueve con viento', rampa: rampaCSS(PAL.lluvia), esc: ['nada', '', 'mucha'],
     que: 'Con viento, la lluvia no cae derecha: se moja más la fachada que mira hacia donde viene el viento. Cada fachada se pinta en azules según esa exposición: oscuro es nada y azul claro es mucha.',
     leer: '«Esta hora» usa la lluvia y el viento de esa hora, en litros por metro cuadrado. «Año típico» es el promedio de un año, sumando 25 años de datos.',
-    prueba: 'Pasa a «Año típico»: la noroeste se moja más de cinco veces lo que la fachada lateral noreste. Luego abre «Momentos clave» y elige «La fachada que más se moja».',
+    prueba: 'Pasa a «Año típico»: la exposición de la noroeste es más de cinco veces la de la fachada lateral noreste. Luego abre «Momentos clave» y elige «La fachada que más se moja».',
     porque: 'Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados, y dónde no conviene poner materiales que sufren con el agua.',
     ojo: 'Es un índice para comparar las fachadas entre sí, no el agua que de verdad llega al muro: no descuenta el alero, los árboles ni los edificios vecinos, y el viento del modelo no tiene ráfagas. La norma no vale donde más del 25 % de la lluvia del año viene de tormentas convectivas fuertes; en Albrook una de cada tres horas con lluvia trae tormenta, pero son horas y no cantidad, así que no se sabe si aquí se pasa de ese 25 %. El índice ordena fachadas; no es la cifra de la norma. Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material.',
     tec: 'Índice de lluvia batiente de la norma ISO 15927-3 en campo abierto: (2/9) · v · r^(8/9) · cos(D − θ), con v el viento a 10 m de altura (m/s), r la lluvia (mm/h), D de dónde viene el viento y θ hacia dónde mira la fachada. Datos ERA5, celda de unos 28 km.' },
   viento: { t: 'Viento: de dónde viene y qué fachada lo recibe de frente', rampa: rampaCSS(PAL.viento), esc: ['nada', '', 'mucho'],
     que: 'En el suelo se dibuja una rosa de vientos: cada pétalo apunta hacia donde viene el viento y es más largo cuanto más seguido sopla desde ahí; su color es la velocidad media. Las fachadas se pintan en verde según cuánto viento reciben de frente.',
     leer: '«Esta hora» muestra con flechas el viento de esa hora y, abajo, cuánto llega de frente a cada fachada (a menos de 60° de su perpendicular y desde 5 km/h). «Seca» (diciembre a marzo), «Lluvias» (mayo a noviembre) y «Año» muestran la rosa de 25 años y, abajo, las horas con viento de frente en cada fachada. Abril es de transición: solo entra en «Año».',
-    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos 13 km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos 8 km/h) y más variable.',
-    porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.880 horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
+    prueba: 'Compara «Seca» con «Lluvias»: en la temporada seca el viento es más fuerte (unos {MEDIA_SECA} km/h de media) y casi siempre llega del norte y el noroeste; en la de lluvias es más flojo (unos {MEDIA_LLUVIAS} km/h) y más variable.',
+    porque: 'Es el primer dato para la ventilación cruzada: las entradas de aire van en la fachada que recibe el viento de frente y las salidas, en la opuesta. Aquí la noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas {FRENTE_NO} horas al año, más de cuatro veces que cualquier otra: es la fachada natural de entrada, y la sureste, la de salida.',
     ojo: 'Es el viento a 10 m de altura en terreno abierto, promedio de una celda de unos 28 km y sin ráfagas. Entre árboles y edificios, a la altura de las ventanas, es de 0,6 a 0,8 veces el de 10 m (UN-Habitat, 2014, p. 29), y puede cambiar de dirección. No simula cómo entra y sale el aire del edificio: para eso hace falta una simulación de fluidos (CFD). Solo se pintan las paredes: el techo, los aleros y el suelo quedan con su material. Con el viento del aeropuerto de Albrook, a 4 km (2020–2025), la noroeste baja a unas 5.200 horas al año (ERA5, en los mismos años, unas 5.500) y la lateral noreste baja a unas 600, menos de la mitad que con ERA5: en la temporada seca ERA5 pone el viento del norte y Albrook, del noroeste.',
     tec: 'Viento a 10 m de ERA5, hora por hora, 2001–2025. Rosa de 16 rumbos; viento flojo, menos de 1 m/s (3,6 km/h). Viento de frente, un criterio de este proyecto: dirección dentro de ±60° de la perpendicular a la fachada y al menos 5 km/h. Las ventanas de dos fachadas vecinas se solapan, así que una hora puede contar para las dos.' },
   sombras: { t: 'Sombras del día: la proyección de sombra del edificio en cada hora',
@@ -2186,11 +2201,19 @@ function textoRad(t) {
   const R = consultas?.radiacion?.fachadas;
   return t.replace('{RAD_NO_SE}', R ? ` (~${dec(R.no.total)} contra ~${dec(R.se.total)} kWh/m² al año en una pared sin alero)` : '');
 }
+/** Cifras del viento (consultas.json → viento) en los textos que las citan; sin consultas, las de 2001–2025 de hoy. */
+function textoViento(t) {
+  const V = consultas?.viento;
+  return t.replace('{FRENTE_NO}', dec(V?.anio?.frente?.no ?? 5880)).replace('{MEDIA_SECA}', String(Math.round(V?.seca?.media ?? 12.9))).replace('{MEDIA_LLUVIAS}', String(Math.round(V?.lluvias?.media ?? 7.7)));
+}
 function pintarRadiacion() {
   const R = consultas?.radiacion; if (!R) return;
   document.querySelectorAll('[data-rad]').forEach((el) => { const [a, b] = el.dataset.rad.split('.'), v = a === 'techo' ? R.techo[b] : R.fachadas[a]?.[b]; if (v != null) el.textContent = miles(v); });
   const f = Object.values(R.fachadas).map((x) => x.directa / x.total);
   document.querySelectorAll('[data-rad-pct]').forEach((el) => { el.textContent = `${Math.round(Math.min(...f) * 100)}–${Math.round(Math.max(...f) * 100)} %`; });
+  // la lluvia batiente del hallazgo 5 y la brisa de la seca de la tarjeta 6
+  document.querySelectorAll('[data-lv]').forEach((el) => { const v = consultas.lluviaViento?.[el.dataset.lv]?.anual; if (v != null) el.textContent = dec(v); });
+  document.querySelectorAll('[data-viento]').forEach((el) => { const v = consultas.viento?.[el.dataset.viento]?.media; if (v != null) el.textContent = String(Math.round(v)); });
   const el = $('#leyenda'); if (el) el.dataset.lente = '';     // la tarjeta abierta vuelve a tomar las cifras
 }
 /** Con el panel lateral, la clave de color de la forma de ver recién elegida (título, rampa, escala y cajas por fachada de
@@ -2243,7 +2266,7 @@ function leyenda(c) {
       $('#lp-voladizo').hidden = S.parte !== 'alero';
     }
     $('#ley-leer').textContent = L.leer ?? ''; $('#ley-leer').hidden = !L.leer;
-    $('#ley-prueba').textContent = L.prueba; $('#ley-porque').textContent = textoRad(L.porque); $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
+    $('#ley-prueba').textContent = textoViento(L.prueba); $('#ley-porque').textContent = textoViento(textoRad(L.porque)); $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
     const M = MODOS[S.lente];
     $('#ley-modos').innerHTML = M ? M.map(([k, t]) => `<button type="button" data-modo="${k}">${t}</button>`).join('') : '';
     $('#ley-modos').hidden = !M; $('#ley-modos').dataset.lente = S.lente;
@@ -2252,18 +2275,20 @@ function leyenda(c) {
   $('#ley-modos').querySelectorAll('[data-modo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modo === actual)));
   if (esPartes) document.querySelectorAll('#ley-parte [data-mostrar]').forEach((b) => b.setAttribute('aria-pressed', String(!!S[b.dataset.mostrar])));
   const ks = Object.keys(FACHADAS), nom = { 'fachada-se': 'SE', 'fachada-no': 'NO', 'fachada-ne': 'NE', 'fachada-so': 'SO' };
+  // cada caja de una fachada (no el techo) es también la puerta para ir a ella; el clic se escucha en #ley-fachadas
+  const caja = (k, adentro) => `<li><button type="button" data-ir-fachada="${k}" title="Ir a la fachada ${nom[k]}">${adentro}</button></li>`;
   let filas = '';
   if (anioSol && consultas?.radiacion) {
     const R = consultas.radiacion;
-    filas = ks.map((k) => `<li><span>${nom[k]}</span><b>${dec(R.fachadas[k.slice(8)].total)}</b><small>kWh/m² año</small></li>`).join('') + `<li><span>TECHO</span><b>${dec(R.techo.total)}</b><small>kWh/m² año</small></li>`;
-  } else if (S.lente === 'sol') filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${miles(S.irr?.[i] ?? 0)}</b><small>W/m²</small></li>`).join('') + `<li><span>TECHO</span><b>${miles(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
+    filas = ks.map((k) => caja(k, `<span>${nom[k]}</span><b>${dec(R.fachadas[k.slice(8)].total)}</b><small>kWh/m² año</small>`)).join('') + `<li><span>TECHO</span><b>${dec(R.techo.total)}</b><small>kWh/m² año</small></li>`;
+  } else if (S.lente === 'sol') filas = ks.map((k, i) => caja(k, `<span>${nom[k]}</span><b>${miles(S.irr?.[i] ?? 0)}</b><small>W/m²</small>`)).join('') + `<li><span>TECHO</span><b>${miles(S.irrTecho ?? 0)}</b><small>W/m²</small></li>`;
   else if (S.lente === 'viento') {
     const hora = S.vientoModo === 'hora';
-    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${hora ? (S.vientoDato ? miles(S.vientoF?.[i] ?? 0) : '—') : dec(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small></li>`).join('');
+    filas = ks.map((k, i) => caja(k, `<span>${nom[k]}</span><b>${hora ? (S.vientoDato ? miles(S.vientoF?.[i] ?? 0) : '—') : dec(S.vientoF?.[i] ?? 0)}</b><small>${hora ? 'km/h de frente' : S.vientoModo === 'anio' ? 'h al año' : 'h por temporada'}</small>`)).join('');
   }
   else if (S.lente === 'lluvia') {
     const anual = S.aguaModo === 'anio';
-    filas = ks.map((k, i) => `<li><span>${nom[k]}</span><b>${anual ? dec(S.agua?.[i] ?? 0) : S.aguaDato ? f1(S.agua?.[i] ?? 0) : '—'}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small></li>`).join('');
+    filas = ks.map((k, i) => caja(k, `<span>${nom[k]}</span><b>${anual ? dec(S.agua?.[i] ?? 0) : S.aguaDato ? f1(S.agua?.[i] ?? 0) : '—'}</b><small>${anual ? 'L/m² al año' : 'L/m² en la hora'}</small>`)).join('');
   }
   $('#ley-fachadas').innerHTML = filas; $('#ley-fachadas').hidden = !filas; $('#ley-fachadas').classList.toggle('cinco', S.lente === 'sol');
   // nota de la situación: qué pasa en este momento
@@ -2839,8 +2864,8 @@ function explicacion(k, p, c) {
     return ['El tiempo de esa hora', `${partes.join(', ')}. ${txtLl} ${c.fuente === 'vivo' ? (c.albrook ? `La temperatura, la humedad y el viento son del parte del aeropuerto de Albrook, a 4 km, de las ${c.albrook.hora} (el parte redondea al grado entero)${c.albrook.auto ? '; de noche el parte es automático y no dice si llueve, así que la lluvia es del pronóstico' : `, y ${textoAlbrook(c.albrook).replace(/^Albrook /, '')}`}. Las nubes y el sol directo son del pronóstico de modelo de Open-Meteo.` : 'Es el pronóstico de modelo de Open-Meteo para ahora.') : c.fuente === 'dia' && c.modelo !== 'era5' ? 'Es el pronóstico de modelo de Open-Meteo para ese día, consultado en línea: no es ERA5 ni está ajustado a Albrook.' : (c.ajustado ? 'Es el dato del reanálisis ERA5, un modelo alimentado con mediciones para una celda de unos 28 km, con la temperatura y la humedad ajustadas a lo que midió el aeropuerto de Albrook, a 4 km, en 2017–2025. Un aguacero' : 'Es el dato del reanálisis ERA5: un modelo alimentado con mediciones, para una celda de unos 28 km. Un aguacero')+' muy local puede no aparecer: comparado con el aeropuerto de Albrook, a 4 km, a la hora de un parte con lluvia la escena dibuja lluvia una de cada seis veces (2017–2025). El sol directo es el promedio de la hora en la celda: en las horas de 9 a 14 en que Albrook informó lluvia, ERA5 daba 300 W/m² o más en casi la mitad (48 %). La escena dibuja lluvia desde ' + UMBRAL_TXT + ': con esos umbrales, ERA5 tiene unas 0,8 veces las horas con lluvia que informa el observador de Albrook de diciembre a marzo, y unas 1,15 veces de abril a noviembre (2017–2025, de 7 a 18 h). Mientras la escena dibuja lluvia, no dibuja sol directo.'}`];
   }
   if (k === 'tab-dia') return ['La regla del día', `Es un día completo, de 00:00 a 24:00. El color es la luz del cielo; ↑ y ↓ marcan la salida y la puesta del sol, y la marca del centro, el mediodía solar. Las barras llenas son la lluvia que la escena dibuja (${UMBRAL_TXT}) y las rayas tenues, la lluvia débil de la celda; lo gris, cuánto sol directo falta frente al de las horas más despejadas de ERA5 (0,8 del de Meinel), y va lleno en las horas en que la escena dibuja lluvia. Arrástrala para recorrer el día.`];
-  if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año.'];
-  if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los extremos de la serie y el reloj de la hora de la lluvia, con ERA5 junto a lo que observó Albrook.'];
+  if (k === 'tab-anio') return ['La regla del año', 'Cada punto es un día del año. La franja azul es la temporada de lluvias (mayo a noviembre), las dos líneas son los solsticios (hacia el 21 de junio y el 21 de diciembre) y los puntos dorados, los dos días sin sombra. Arrástrala para ver cómo cambia el recorrido del sol en el año. Debajo está el reloj de la lluvia, de mayo a noviembre de 2017 a 2025: a qué hora da lluvia ERA5 y a qué hora la informa el observador de Albrook.'];
+  if (k === 'tab-decadas') return ['25 años de lluvia', 'Cada barra es la lluvia de un mes entre 2001 y 2025. Se ven los años secos y los muy lluviosos, y que casi toda la lluvia cae de mayo a noviembre. Arrástrala para recorrer los meses, o ▶ para pasarlos en 25 segundos; abajo están los récords de la serie.'];
   return null;
 }
 /** Cierra el «Qué significa…» del narrador (lo mismo que «Entendido»): al elegir otra forma de ver o abrir un panel o una ficha. */
@@ -2864,31 +2889,35 @@ function pasosRecorrido() {
       ir: () => viajarA({ fecha: { y: a.y, m: a.m, d: a.d }, min: a.min, vista: 'esquina', lente: 'foto', aAhora: true }) },
     { t: 'El norte y el recorrido del sol', txt: 'La rosa del suelo marca el norte real. El edificio no mira al norte: su eje largo gira 56°, así que sus cuatro fachadas miran al sureste, noroeste, noreste y suroeste. El arco dorado es el recorrido del sol hoy, con las horas marcadas.', dis: 'A 9° al norte del ecuador el sol del mediodía pasa a más de 57° de altura durante todo el año. Por eso aquí el techo recibe más sol que cualquier pared.',
       ir: () => { volarA(VISTAS.aerea, 1.8, 'aerea', false); S.ayudas = true; $('#capa-ayudas').checked = true; } },
-    { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol sube, los aleros dejan las ventanas en sombra; lo que cuenta es su ángulo visto de perfil contra cada fachada.', dis: 'Eso hace un alero de 1,65 m en el trópico: con el sol alto protege el vidrio; con el sol bajo de la tarde, no alcanza.',
+    { t: 'Un día en un minuto', txt: 'El sol sale por el este y se pone por el oeste. Mira cómo gira la sombra del edificio y cómo se acorta hacia el mediodía. Cuando el sol sube, los aleros dejan las ventanas en sombra; lo que cuenta es su ángulo visto de perfil contra cada fachada.', dis: 'Al mediodía la sombra es la más corta del día: aquí el sol del mediodía nunca baja de 57°, así que ni en diciembre la sombra de un poste de 1 m pasa de unos 0,64 m.',
       ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('foto', false); ponerPestana('dia'); reproducir(); } },
-    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol en fachadas», cada punto del edificio se pinta según la radiación solar que incide sobre él, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos siete décimos de lo que recibe la sureste.',
-      pre: 'Son las 3:30 de la tarde del 25 de marzo y el sol ya va bajando hacia el oeste. Mira el edificio desde arriba: ¿cuál de las cuatro paredes crees que lo recibe más de frente?',
-      antes: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, vista: 'aerea', lente: 'foto' }),
-      ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
     { t: 'El día sin sombra', txt: `Dos veces al año, en abril y en agosto, el sol del mediodía pasa casi justo encima. Este año, el primero es el ${z.d} de ${MESES[z.m - 1]} a las ${hhmm(minMediodia(z))}: la sombra de un poste casi desaparece y la del edificio queda debajo de sus aleros.`, dis: 'Entre abril y agosto el sol del mediodía viene del norte: las fachadas que miran al norte también necesitan protección.',
       ir: () => viajarA({ fecha: { y, m: z.m, d: z.d }, min: minMediodia(z), vista: 'aerea', lente: 'foto' }) },
     { t: 'Las sombras de todo un día', txt: 'La forma de ver «Sombras del día» dibuja la sombra de cada hora sobre el terreno. El 21 de diciembre las sombras son las más largas del año y se proyectan hacia el norte; en la tarde, el jardín noreste queda a la sombra del edificio.', dis: 'Sirve para decidir dónde poner un patio, una terraza o un árbol.',
       pre: 'Está amaneciendo el 21 de diciembre. En esta época el sol del mediodía viene del sur, y la rosa del suelo te dice dónde queda el norte. ¿Hacia dónde crees que se proyectarán las sombras del edificio a lo largo del día?',
       antes: () => { S.ayudas = true; $('#capa-ayudas').checked = true; viajarA({ fecha: { y, m: 12, d: 21 }, min: Math.round(saleYPone(y, 12, 21).sale) + 12, vista: 'planta', lente: 'foto' }); },
       ir: () => viajarA({ fecha: { y, m: 12, d: 21 }, min: 15 * 60, vista: 'planta', lente: 'sombras' }) },
+    { t: '¿Qué fachada recibe más sol?', txt: 'Con la forma de ver «Sol en fachadas», cada punto del edificio se pinta según la radiación solar que incide sobre él, contando la sombra de los aleros: azul es nada; rojo, naranja y amarillo, cada vez más. A las 3:30 de la tarde, la fachada lateral suroeste lo recibe casi de frente, salvo bajo los aleros.', dis: 'Contando solo el sol directo, la sureste y la suroeste reciben en un año más del doble que la noroeste; sumando la luz difusa del cielo, la noroeste recibe unos siete décimos de lo que recibe la sureste.',
+      pre: 'Son las 3:30 de la tarde del 25 de marzo y el sol ya va bajando hacia el oeste. Mira el edificio desde arriba: ¿cuál de las cuatro paredes crees que lo recibe más de frente?',
+      antes: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, vista: 'aerea', lente: 'foto' }),
+      ir: () => viajarA({ fecha: { y: 2024, m: 3, d: 25 }, min: 15 * 60 + 30, fachada: 'so', lente: 'sol' }) },
+    { t: 'El alero', txt: 'La forma de ver «Partes y medidas» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. El alero sale 1,65 m del muro. Cuando el sol, visto de perfil contra la fachada, sube de unos 45°, deja el vidrio a la sombra; el sol bajo de la mañana y de la tarde entra por debajo.', dis: 'El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos, o abre «Ver el corte del alero» con la forma de ver «Sol en fachadas».',
+      ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('partes', false); elegirParte('alero'); } },
     { t: 'La lluvia', txt: 'ERA5 da unos 2.000 mm al año, casi todo de mayo a noviembre y sobre todo en la tarde. Esta es la hora más lluviosa de 25 años de datos: 19 mm entre las 14:00 y las 15:00 del 1 de julio de 2023. Mira las cortinas de agua que caen de los tres aleros.', dis: 'Por eso los aleros anchos: alejan el agua de los muros y de las ventanas.',
       ir: () => viajarA({ fecha: { y: 2023, m: 7, d: 1 }, min: 14 * 60 + 30, vista: 'esquina', lente: 'foto' }) },
-    { t: 'La lluvia con viento', txt: 'La forma de ver «Lluvia en fachadas» muestra qué fachada se moja más cuando llueve con viento. En un año típico, la noroeste recibe más de cinco veces lo que la fachada lateral noreste.', dis: 'Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados.',
+    { t: 'La lluvia con viento', txt: 'La forma de ver «Lluvia en fachadas» muestra qué fachada se moja más cuando llueve con viento. En un año típico, la exposición de la noroeste a la lluvia con viento es más de cinco veces la de la fachada lateral noreste.', dis: 'Dice dónde reforzar aleros, bordes que cortan el goteo, juntas y acabados.',
       pre: 'Cuando llueve con viento, el agua no cae derecha y moja unas paredes más que otras. ¿Cuál de las cuatro crees que se moja más?',
       antes: () => viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, vista: 'aerea', lente: 'foto' }),
       ir: () => { S.aguaModo = 'anio'; viajarA({ fecha: { y: 2006, m: 11, d: 23 }, min: 10 * 60 + 30, fachada: 'no', lente: 'lluvia' }); } },
-    { t: 'El viento', txt: 'La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas seis de cada diez horas del año sopla entre el oeste noroeste y el norte (ERA5 y el aeropuerto de Albrook, 2020–2025), y la fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas 5.880 horas al año.', dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
+    { t: 'El viento', txt: `La forma de ver «Viento» dibuja en el suelo una rosa de vientos: cada pétalo apunta hacia donde viene el viento. Unas seis de cada diez horas del año sopla entre el oeste noroeste y el norte (ERA5 y el aeropuerto de Albrook, 2020–2025), y la fachada noroeste lo recibe de frente o en diagonal (a menos de 60° de su perpendicular) unas ${dec(consultas?.viento?.anio?.frente?.no ?? 5880)} horas al año.`, dis: 'Para ventilar de forma cruzada, las entradas de aire van en la fachada noroeste y las salidas en la sureste. Es el viento de afuera, a 10 m de altura: no simula el aire dentro del edificio.',
       pre: 'Acabas de ver cuál pared se moja más con la lluvia. Con esa pista, ¿de qué lado crees que llega el viento cuando llueve? ¿Y qué pared lo recibe de frente?',
       antes: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'foto' }); },
       ir: () => { S.aguaModo = 'hora'; viajarA({ fecha: { y: 2016, m: 2, d: 18 }, min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'anio' }); } },
-    { t: 'Las partes del edificio', txt: 'La forma de ver «Partes y medidas» le pone nombre a cada cosa: techo a cuatro aguas, alero, ménsula, base o zócalo, módulo. Toca una etiqueta para saber qué es, cómo es en este edificio y qué hace. La persona de 1,70 m junto a la esquina sirve para comparar tamaños.', dis: 'El alero trabaja como un voladizo: si fuera el doble de largo, el esfuerzo en su raíz sería cuatro veces mayor. Tócalo y prueba otros largos.',
-      ir: () => { volarA(VISTAS.esquina, 1.6, 'esquina', false); ponerLente('partes', false); elegirParte('alero'); } },
-    { t: 'Ahora te toca', txt: 'Con «Momentos clave» puedes ir a cualquier fecha desde 1940, o a los días extremos de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia lo que quieres ver: Cómo se ve, Sol en fachadas, Lluvia en fachadas, Viento, Sombras del día o Partes y medidas. En «Confort», abajo a la derecha, ves qué sugiere el clima de afuera a cada hora: por dónde entraría la brisa y en qué vidrios incide el sol.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
+    { t: 'Confort: ¿dónde se está mejor?', txt: 'El panel «Confort» junta lo que viste: con el sol, el viento y la lluvia de esta hora, dice qué conviene abrir o tapar. Más abajo está la sensación térmica afuera, de pie: mira cuánto baja bajo el alero.', dis: 'Es el clima de afuera, no el del aula: para el interior hace falta una simulación, como EnergyPlus.',
+      pre: 'Es la 1:30 de la tarde del 11 de abril de 2003: su máxima, ajustada a Albrook, fue de 34,4 °C, en el 1 % de los días más calurosos de 2001 a 2025. ¿Dónde crees que una persona de pie siente menos calor, al sol o bajo el alero?',
+      antes: () => viajarA({ fecha: { y: 2003, m: 4, d: 11 }, min: 13 * 60 + 30, fachada: 'so', lente: 'foto' }),
+      ir: () => { viajarA({ fecha: { y: 2003, m: 4, d: 11 }, min: 13 * 60 + 30, fachada: 'so', lente: 'foto' }); abrirConfort(true); if (ANCHO_HOJA.matches) plegarRecorrido(true); } },
+    { t: 'Ahora te toca', txt: 'Con «Momentos clave» puedes ir a cualquier fecha desde 1940, o a los récords de la serie. Toca cualquier dato de abajo para saber qué significa, y cambia lo que quieres ver cuando quieras.', dis: '«Para qué sirve» reúne los hallazgos principales y lo que esta herramienta no hace, con qué usar después: temperatura interior, ventilación, microclima y drenaje.',
       ir: () => { S.aguaModo = 'hora'; irAAhora(true); ponerLente('foto', false); } },
   ];
 }
@@ -2982,9 +3011,9 @@ function listaConsultas() {
     const ds = C.diasSol[1] ?? C.diasSol[0], tE = C.tipicos[0], tJ = C.tipicos[5];
     fa({ t: 'Sol de la tarde en la fachada lateral SO', f: deISO(ds.fecha), min: 15 * 60 + 30, fachada: 'so', lente: 'sol', v: `${f1(ds.kwh, 2)} kWh/m²·día`, txt: `Uno de los días con más sol de la serie (${f1(ds.kwh, 2)} kWh/m²): a las 15:30 el sol incide casi de frente sobre la fachada lateral SO; el alero deja las ventanas a la sombra y el sol solo incide en la franja de muro que queda debajo de ellas.` });
     fa({ t: 'Sol de la mañana en la entrada SE', f: deISO(tE.fecha), min: 7 * 60 + 45, fachada: 'se', lente: 'sol', v: 'día típico', txt: 'Un día típico de enero: el sol bajo de la mañana entra bajo el alero de la fachada principal. Pasa la regla a las 10:00 para ver el ángulo de corte.' });
-    fa({ t: 'Sol del poniente en la NO (junio)', f: deISO(tJ.fecha), min: 17 * 60, fachada: 'no', lente: 'sol', v: 'día típico', txt: `En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, la que menos sol directo recibe en el año (${miles(C.radiacion?.fachadas.no.directa ?? 144)} kWh/m², contra ${miles(C.radiacion?.fachadas.se.directa ?? 374)} de la SE). Suele estar nublado: mira el valor en W/m².` });
+    fa({ t: 'Sol del poniente en la NO (junio)', f: deISO(tJ.fecha), min: 17 * 60, fachada: 'no', lente: 'sol', v: 'día típico', txt: `En junio el sol se pone por el oeste-noroeste y alcanza la fachada NO, la que menos sol directo recibe en el año. Suele estar nublado: mira el valor en W/m².` });
     const lv = g('Lluvia');
-    const H = C.horasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${f1(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)}: ${f1(q.mm)} mm. Es el promedio de una celda de ~28 km: en el sitio pudo llover más.` }));
+    const H = C.horasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${f1(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)}: ${f1(q.mm)} mm.` }));
     lv({ t: 'La hora más lluviosa', ...H[0], vista: 'esquina', lente: 'foto', rank: H });
     const D = C.diasLluvia.map((q) => ({ f: deISO(q.fecha), min: q.hora * 60 - 30, v: `${miles(q.mm)} mm`, txt: `${fechaTexto(deISO(q.fecha))}: ${miles(q.mm)} mm en el día; la hora más fuerte, de ${hhmm(q.hora * 60 - 60)} a ${hhmm(q.hora * 60)} (${f1(q.pico)} mm).` }));
     lv({ t: 'El día más lluvioso', ...D[0], vista: 'esquina', lente: 'foto', rank: D });
@@ -3001,7 +3030,7 @@ function listaConsultas() {
       vi({ t: 'El viento de la temporada de lluvias', f: deISO(tL.fecha), min: 14 * 60, vista: 'aerea', lente: 'viento', modo: 'lluvias', v: `${f1(C.viento.lluvias.media)} km/h de media`,
         txt: `De ${LLUVIAS_TXT} el viento es más flojo (unos ${Math.round(C.viento.lluvias.media)} km/h de media) y más variable: sigue mandando el noroeste, pero también llega del sur y del oeste; en calma el ${Math.round(C.viento.lluvias.calma)} % del tiempo.` });
       vi({ t: 'Qué fachada recibe el viento de frente', f: deISO(tS.fecha), min: 14 * 60, fachada: 'no', lente: 'viento', modo: 'anio', v: `NO · ${dec(C.viento.anio.frente.no)} h al año`,
-        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${dec(C.viento.anio.frente.no)}, NE ${dec(C.viento.anio.frente.ne)}, SO ${dec(C.viento.anio.frente.so)}, SE ${dec(C.viento.anio.frente.se)}. Para ventilar de forma cruzada: entrada por la NO, salida por la SE.` });
+        txt: `Horas al año con viento de frente (±60°, 5 km/h o más): NO ${dec(C.viento.anio.frente.no)}, NE ${dec(C.viento.anio.frente.ne)}, SO ${dec(C.viento.anio.frente.so)}, SE ${dec(C.viento.anio.frente.se)}.` });
     }
     const lz = g('Luz y cielo');
     const S5 = C.diasSol.map((q) => ({ f: deISO(q.fecha), min: md(deISO(q.fecha)), v: `${f1(q.kwh, 2)} kWh/m²`, txt: `${fechaTexto(deISO(q.fecha))}: ${f1(q.kwh, 2)} kWh/m² de radiación global sobre el plano horizontal; un día medio recibe ${f1(C.solMedio, 2)}.` }));
@@ -3016,7 +3045,18 @@ function listaConsultas() {
 }
 // ---------------- Confort térmico: carta psicrométrica y sensación térmica (UTCI) ----------------
 // Lo de 25 años viene precalculado en datos/confort.json (fuente/confort.mjs); aquí solo se dibuja y se calcula la hora elegida.
-let confortJ = null;
+let confortJ = null, confortP = null, confortPintado = false;
+/** confort.json se pide una sola vez, al abrir Confort o «Para qué sirve» (la tarjeta 7 cita su alivio medio bajo el alero). */
+function cargarConfort() {
+  return confortP ??= fetch(conVersion(BASE + 'datos/confort.json')).then((r) => r.json())
+    .then((j) => { confortJ = j; pintarAlivio(); return j; })
+    .catch((e) => { confortP = null; throw e; });
+}
+/** El mismo dato de la lista del UTCI (utci.alivioMedioAlero), redondeado; mientras no carga, el span dice «4». */
+function pintarAlivio() {
+  const v = confortJ?.utci?.alivioMedioAlero; if (v == null) return;
+  document.querySelectorAll('[data-alivio]').forEach((el) => { el.textContent = String(Math.round(v)); });
+}
 // categorías de UTCI en calor, de «sin estrés» a «extremo»: pasos planos de color, sin degradado (índices de CATEGORIAS_UTCI)
 const UTCI_COL = { 4: '#8fa39b', 5: '#f2c46b', 6: '#e8913a', 7: '#cf5a2c', 8: '#9e2f1c', 9: '#5e1a12' };
 async function abrirConfort(abrir) {
@@ -3025,10 +3065,10 @@ async function abrirConfort(abrir) {
   pedirSerie();
   cerrarOferta(); abrirVoladizo(false); soloUnPanel('confort');
   if (NAV.lejos) volverAl106();                        // Confort habla de las fachadas del 106
-  if (!confortJ) {
-    try { confortJ = await (await fetch(conVersion(BASE + 'datos/confort.json'))).json(); }
+  if (!confortPintado) {
+    try { await cargarConfort(); }
     catch (e) { anotar('aviso', 'confort: ' + e); $('#carta-cifras').textContent = 'No se pudieron cargar los datos de confort.'; return; }
-    pintarCarta(); pintarUTCI();
+    if (!confortPintado) { confortPintado = true; pintarCarta(); pintarUTCI(); }
   }
   pintarAnual.pintar?.();
   confortClave = ''; confortHora(posicionSol({ ...S.fecha, h: 0, min: S.min }), climaEn(S.fecha, S.min));
