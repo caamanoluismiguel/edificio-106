@@ -1,5 +1,7 @@
 # GLB de Descargas: posibles usos en Edificio 106
 
+**Dictamen final para Claude Code, 8 de octubre de 2026: NO vale la pena integrar este GLB en el proyecto con la evidencia actual.** La evaluación posterior encontró duplicación de las huellas existentes, alturas genéricas, vías que necesitan reconstrucción y ningún parque identificable. Conservarlo como referencia de comparación. Los usos propuestos más abajo documentan hipótesis iniciales, no trabajo recomendado; ver el [dictamen y su evidencia](comparacion-glb/PROCEDENCIA-Y-PILOTO.md).
+
 Fecha: 7 de octubre de 2026. Autor: OpenAI Codex, a solicitud de Luis Miguel Caamaño. Análisis desde urbanismo, Three.js y datos; es una evaluación preliminar, no un levantamiento ni una integración aprobada. Repo examinado: `75c21ca`.
 
 ## Archivo inspeccionado

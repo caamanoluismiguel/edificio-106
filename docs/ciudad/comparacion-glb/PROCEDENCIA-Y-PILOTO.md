@@ -1,5 +1,13 @@
 # Procedencia del GLB y muestra para evaluar contexto exterior
 
+## Dictamen para Claude Code
+
+**NO vale la pena integrar este GLB en Edificio 106 con la evidencia actual.** Decisión de evaluación de Codex, 8 de octubre de 2026, expresada según el criterio solicitado por LM: comunicar claramente a Claude si conviene usarlo.
+
+Repite las 322 huellas del inventario y 660 trazados OSM existentes. Las alturas responden a reglas genéricas, las vías necesitan reconstrucción y no aporta parques identificables. Su contexto exterior no ha demostrado una mejora que compense ese trabajo; la comprobación nominal no encuentra aporte en las vistas principales del 106. Para ampliar datos, la fuente OSM conserva identificadores y etiquetas que este GLB pierde.
+
+Conservar el archivo y estos informes como referencia de comparación. **No iniciar una integración, reconstrucción de calles o piloto en el visor a partir de estas notas.** La muestra de seis piezas es evidencia del análisis terminado, no una recomendación de desarrollo. Reconsiderar solo ante un uso concreto que necesite esa cobertura exterior y una mejora comprobable frente a los datos actuales.
+
 8 de octubre de 2026. Autor: OpenAI Codex. Luis Miguel confirmó en este chat que generó el archivo con el repositorio identificado, [cartesiancs/map3d](https://github.com/cartesiancs/map3d). Codex consultó el commit `2c5d732477ba7c55995572aae926bf80303c00b9`; la versión exacta usada al exportar no quedó registrada. El atributo de descarga de macOS indica `http://localhost:5173/`, coherente con una aplicación local, aunque por sí solo no identifica el programa.
 
 **La revisión del exportador explica la escala, las alturas repetidas y las vías verdes.** La comparación anterior deja de depender de una conjetura sobre la herramienta. No convierte sus alturas en mediciones reales.
@@ -72,11 +80,11 @@ Se hizo un cribado con las poses de cámara del proyecto, proporción 1440 × 90
 
 Intersectar esa envolvente amplia no significa aparecer en pantalla con la altura real. Además, el visor modifica la niebla con el tiempo atmosférico y con la distancia de cámara; no puede descartarse su efecto con un único radio fijo.
 
-## Decisión del piloto
+## Resultado de la evaluación de la muestra
 
-No hay evidencia de mejora en las vistas principales del 106 que justifique incorporar de inmediato las 325 piezas. El piloto queda acotado a la muestra de seis nodos y a vistas de contexto donde pudiera aparecer, especialmente «Una fila de dúplex» y «Cuarteles».
+No hay evidencia de mejora en las vistas principales del 106 que justifique incorporar las 325 piezas. La revisión se cierra con los seis nodos identificados y el dictamen de no integrar el GLB. Las intersecciones potenciales en «Una fila de dúplex» y «Cuarteles» no bastan para recomendar desarrollo.
 
-Las seis identidades ya están recuperadas. Antes de una prueba visual dentro del visor, corresponde contrastar alturas y suelo, y resolver la cubierta del nodo 601 por separado. Entonces se puede producir un antes y después en una escena de evaluación, midiendo si se ve y cuánto cuesta dibujarlo. La elección del GLB como fuente sigue siendo revisable: OSM conserva las etiquetas que el exportador descartó.
+Las seis identidades ya están recuperadas. Una futura reconsideración necesitaría un objetivo concreto, alturas y suelo contrastados, y resolver la cubierta del nodo 601 por separado. Esas condiciones pendientes no constituyen una lista de trabajo autorizada o recomendada. OSM conserva las etiquetas que el exportador descartó y ofrece una base más informativa para una ampliación que llegue a justificarse.
 
 Para parques, la tarea útil sigue siendo obtener entidades con nombre, límite, fecha y fuente. El código revisado no aporta una capa de parques que se pueda habilitar simplemente. No se cambió el visor ni se integró el GLB durante este paso.
 

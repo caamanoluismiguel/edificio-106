@@ -1,5 +1,7 @@
 # Comparación del GLB con la ciudad actual
 
+**Dictamen para Claude Code: NO integrar este GLB.** No se ha demostrado una mejora que justifique repetir huellas existentes, reconstruir vías y revisar alturas. La muestra exterior es evidencia de la evaluación, no un piloto de integración recomendado. [Decisión razonada](PROCEDENCIA-Y-PILOTO.md).
+
 7 de octubre de 2026, ampliado el 8 de octubre. Autor: OpenAI Codex, a solicitud de Luis Miguel Caamaño. Base del repositorio: `c826508`, sobre el sitio publicado `75c21ca`. Resultado de una comparación geométrica local; no se ha integrado el GLB ni modificado el sitio. La [procedencia y muestra piloto](PROCEDENCIA-Y-PILOTO.md) incorporan la confirmación de LM de que generó el archivo con map3d y el contraste de sus reglas de escala y altura.
 
 **El GLB repite las huellas de los 322 edificios del inventario actual.** Incluye las 85 cajas grises y el 106. Su aportación potencial está en el contexto exterior, no en nuevas plantas dentro del campus. Las coincidencias casi exactas son compatibles con una base cartográfica compartida con OSM; no acreditan por sí solas la procedencia o licencia del archivo.

@@ -132,6 +132,7 @@ Después del push, Pages tarda de 1 a 3 minutos. Comprobar que lo que está en v
 
 ## Evaluaciones de Codex para continuar el trabajo
 
+- **Criterio de LM, 8 oct 2026:** al informar a Claude sobre este GLB, dejar explícito si vale la pena usarlo y por qué. **Dictamen actual: NO vale la pena integrarlo en Edificio 106.** Repite datos existentes, requiere reconstruir vías y revisar alturas, no aporta parques y no se demostró beneficio del contexto exterior. Conservar como referencia; la muestra analizada no es una integración recomendada. Decisión y evidencia en `docs/ciudad/comparacion-glb/PROCEDENCIA-Y-PILOTO.md`.
 - `docs/ciudad/GLB-DESCARGAS-USOS.md`: inspección del GLB de Descargas, huella SHA-256, usos posibles, límites y prueba de alineación propuesta (7 oct 2026). No está integrado ni acreditado como levantamiento.
 - `docs/ciudad/comparacion-glb/README.md`: comparación realizada por Codex, con script reproducible, pares por OSM ID, transformación y plano. Coinciden las 322 huellas del inventario; las 325 piezas sin correspondencia tienen centro fuera de la consulta OSM. No usar la escala horizontal como escala vertical ni interpretar los residuos como exactitud en sitio.
 - `docs/ciudad/comparacion-glb/CALLES-Y-PARQUES.md`: 811 polilíneas recuperadas, 660 pares OSM, 151 líneas exteriores y ausencia de parques identificables en el GLB. Incluye prueba de GLTFLoader, fuentes de calles y copas existentes, y referencia oficial de espacios verdes (8 oct 2026).

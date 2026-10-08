@@ -1,5 +1,7 @@
 # Calles y parques del GLB y del proyecto
 
+**Dictamen para Claude Code: NO usar este GLB como fuente de integración de calles o parques.** Repite trazados OSM que el proyecto ya conserva con más información, exige reconstruir su representación y no aporta parques identificables. Los usos exploratorios descritos aquí no son una recomendación de implementarlos. [Dictamen completo](PROCEDENCIA-Y-PILOTO.md).
+
 8 de octubre de 2026. Autor: OpenAI Codex, a solicitud de Luis Miguel Caamaño. Ampliación de la [comparación de edificios](README.md). Se inspeccionó el mismo archivo de Descargas y se mantuvo la transformación horizontal obtenida con los edificios, sin reajustarla a las calles.
 
 Actualización de procedencia: LM confirmó que generó el archivo con map3d. La [revisión del exportador](PROCEDENCIA-Y-PILOTO.md) confirma que dibuja las vías en verde: ese color no identifica parques.
