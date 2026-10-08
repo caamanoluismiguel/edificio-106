@@ -1,0 +1,26 @@
+{
+  "autor": "OpenAI Codex",
+  "solapamiento_horas": 24,
+  "diferencias_c107": {
+    "nubes": 0,
+    "lluvia": 0,
+    "temp": 0,
+    "humedad": 0,
+    "dni": 0,
+    "difusa": 0,
+    "viento": 0,
+    "dir": 0
+  },
+  "indice": 219144,
+  "valores": {
+    "nubes": 62.0,
+    "lluvia": 0.0,
+    "temp": 26.166666666666668,
+    "humedad": 86.0,
+    "dni": 0.0,
+    "difusa": 0.0,
+    "viento": 16.0,
+    "dir": 340.0
+  },
+  "evidencia_sha256": "1a6bc6bc7d7ef918891938e3172cbdd45c0bc978a7e0f0d6633031237b2678f5"
+}

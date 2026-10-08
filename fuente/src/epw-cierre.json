@@ -1,0 +1,19 @@
+{
+  "indice": 219144,
+  "fecha": "2026-01-01T00:00",
+  "zona": "America/Panama",
+  "valores": {
+    "nubes": 62.0,
+    "lluvia": 0.0,
+    "temp": 26.166666666666668,
+    "humedad": 86.0,
+    "dni": 0.0,
+    "difusa": 0.0,
+    "viento": 16.0,
+    "dir": 340.0
+  },
+  "fuente": "ERA5 Copernicus C3S via Open-Meteo; CC BY 4.0",
+  "consultado": "2026-10-08",
+  "url": "https://archive-api.open-meteo.com/v1/archive?latitude=8.9993&longitude=-79.5827&start_date=2025-12-31&end_date=2026-01-01&hourly=cloud_cover%2Cprecipitation%2Ctemperature_2m%2Crelative_humidity_2m%2Cdirect_normal_irradiance%2Cdiffuse_radiation%2Cwind_speed_10m%2Cwind_direction_10m&models=era5&timezone=America%2FPanama",
+  "evidencia_sha256": "1a6bc6bc7d7ef918891938e3172cbdd45c0bc978a7e0f0d6633031237b2678f5"
+}

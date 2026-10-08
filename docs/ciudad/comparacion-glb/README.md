@@ -56,7 +56,7 @@ También se midió la máxima distancia de cada vértice a los segmentos del otr
 ## Qué uso queda justificado
 
 1. **Comparación docente y auditoría de procedencia:** conservar esta superposición como evidencia de la repetición de huellas y de la cobertura exterior.
-2. **Estudiar contexto lejano:** seleccionar una muestra de las 325 piezas exteriores, acreditar origen, licencia, fecha, identidad y alturas, y comprobar si su presencia aporta algo a las vistas del proyecto. Luego medir carga y dibujo en móvil antes de plantear una integración.
+2. **Contexto lejano evaluado:** se identificaron seis piezas exteriores y se revisaron encuadres nominales. No se demostró un beneficio que justifique integrar el GLB; la muestra queda como evidencia, sin recomendar un piloto en el visor.
 3. **Revisión de cajas grises:** este GLB no aporta una planta diferente que justifique reemplazarlas. Para mejorar cubiertas o fachadas hace falta otra evidencia.
 
 Las sombras de precisión siguen condicionadas a verificar alturas y cotas. La comparación no justifica sustituir el 106 ni los modelos por tipología ya documentados. La procedencia de la herramienta, la muestra y sus seis identidades OSM quedaron documentadas en [Procedencia y piloto](PROCEDENCIA-Y-PILOTO.md). Siguen pendientes sus alturas reales y cotas.

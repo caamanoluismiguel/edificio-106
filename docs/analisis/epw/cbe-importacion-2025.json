@@ -1,0 +1,196 @@
+{
+  "autor": "OpenAI Codex",
+  "fecha": "2026-10-08",
+  "cbe_commit": "8e3d08911b93aded23589c247ca997cea462f7a6",
+  "python": "3.11.15",
+  "versions": {
+    "dash": "3.2.0",
+    "pvlib": "0.9.1",
+    "pythermalcomfort": "2.9.1",
+    "pandas": "2.2.0",
+    "numpy": "1.26.3",
+    "scipy": "1.12.0",
+    "numba": "0.68.0"
+  },
+  "epw": "edificio106_2025.epw",
+  "epw_sha256": "2f28ae2e3dd8478d80aeca7ffce72fa5327dc6478bf4f01ede796cb4707b0c8d",
+  "upload_callback_success": true,
+  "callback_message": "The EPW was successfully loaded!",
+  "callback_color": "green",
+  "rows": 8760,
+  "columns": 65,
+  "metadata": {
+    "url": "edificio106_2025.epw",
+    "lat": 8.9993,
+    "lon": -79.5827,
+    "time_zone": -5.0,
+    "site_elevation": "24",
+    "city": "Edificio 106 Ciudad del Saber (ERA5)",
+    "state": "Panama",
+    "country": "PAN",
+    "period": "2020-2030"
+  },
+  "maximum_errors": {
+    "year": 0.0,
+    "month": 0.0,
+    "day": 0.0,
+    "hour": 0.0,
+    "DBT": 0.0,
+    "DPT": 0.0,
+    "RH": 0.0,
+    "p_atm": 0.0,
+    "glob_hor_rad": 0.0,
+    "dir_nor_rad": 0.0,
+    "dif_hor_rad": 0.0,
+    "wind_dir": 0.0,
+    "wind_speed": 0.0,
+    "tot_sky_cover": 0.0
+  },
+  "stats": {
+    "DBT": {
+      "min": 22.3,
+      "max": 35.1,
+      "mean": 27.252054794520546
+    },
+    "RH": {
+      "min": 42.0,
+      "max": 100.0,
+      "mean": 82.26586757990867
+    },
+    "wind_speed": {
+      "min": 0.0,
+      "max": 7.5,
+      "mean": 2.539292237442922
+    },
+    "glob_hor_rad": {
+      "min": 0.0,
+      "max": 965.0,
+      "mean": 196.11164383561643
+    },
+    "dir_nor_rad": {
+      "min": 0.0,
+      "max": 844.0,
+      "mean": 160.43607305936072
+    },
+    "dif_hor_rad": {
+      "min": 0.0,
+      "max": 424.0,
+      "mean": 82.27123287671233
+    }
+  },
+  "samples": [
+    {
+      "epw": [
+        2025,
+        1,
+        1,
+        1
+      ],
+      "cbe_time": "2019-01-01 06:00:00+00:00",
+      "values": {
+        "year": 2025.0,
+        "month": 1.0,
+        "day": 1.0,
+        "hour": 1.0,
+        "DBT": 25.3,
+        "DPT": 23.0,
+        "RH": 87.0,
+        "p_atm": 101037.0,
+        "glob_hor_rad": 0.0,
+        "dir_nor_rad": 0.0,
+        "dif_hor_rad": 0.0,
+        "wind_dir": 310.0,
+        "wind_speed": 3.3,
+        "tot_sky_cover": 10.0
+      }
+    },
+    {
+      "epw": [
+        2025,
+        2,
+        28,
+        24
+      ],
+      "cbe_time": "2019-03-01 05:00:00+00:00",
+      "values": {
+        "year": 2025.0,
+        "month": 2.0,
+        "day": 28.0,
+        "hour": 24.0,
+        "DBT": 26.1,
+        "DPT": 21.7,
+        "RH": 77.0,
+        "p_atm": 101037.0,
+        "glob_hor_rad": 0.0,
+        "dir_nor_rad": 0.0,
+        "dif_hor_rad": 0.0,
+        "wind_dir": 348.0,
+        "wind_speed": 3.9,
+        "tot_sky_cover": 2.0
+      }
+    },
+    {
+      "epw": [
+        2025,
+        3,
+        1,
+        1
+      ],
+      "cbe_time": "2019-03-01 06:00:00+00:00",
+      "values": {
+        "year": 2025.0,
+        "month": 3.0,
+        "day": 1.0,
+        "hour": 1.0,
+        "DBT": 25.7,
+        "DPT": 21.5,
+        "RH": 78.0,
+        "p_atm": 101037.0,
+        "glob_hor_rad": 0.0,
+        "dir_nor_rad": 0.0,
+        "dif_hor_rad": 0.0,
+        "wind_dir": 348.0,
+        "wind_speed": 3.6,
+        "tot_sky_cover": 2.0
+      }
+    },
+    {
+      "epw": [
+        2025,
+        12,
+        31,
+        24
+      ],
+      "cbe_time": "2020-01-01 05:00:00+00:00",
+      "values": {
+        "year": 2025.0,
+        "month": 12.0,
+        "day": 31.0,
+        "hour": 24.0,
+        "DBT": 26.1,
+        "DPT": 22.9,
+        "RH": 83.0,
+        "p_atm": 101037.0,
+        "glob_hor_rad": 0.0,
+        "dir_nor_rad": 0.0,
+        "dif_hor_rad": 0.0,
+        "wind_dir": 340.0,
+        "wind_speed": 4.4,
+        "tot_sky_cover": 6.0
+      }
+    }
+  ],
+  "filters": "Todos los meses y horas; unidades SI; sin filtros.",
+  "derived_nan_counts": {
+    "MRT": 0,
+    "utci_noSun_Wind": 0,
+    "utci_noSun_noWind": 0,
+    "utci_Sun_Wind": 0,
+    "utci_Sun_noWind": 0,
+    "utci_noSun_Wind_categories": 0,
+    "utci_noSun_noWind_categories": 0,
+    "utci_Sun_Wind_categories": 0,
+    "utci_Sun_noWind_categories": 0
+  },
+  "scope": "Carga local original submitted_data + create_df completa; no prueba el navegador ni el servicio público."
+}
