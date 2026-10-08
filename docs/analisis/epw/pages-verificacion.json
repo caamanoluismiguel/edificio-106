@@ -1,0 +1,20 @@
+{
+  "fecha": "2026-10-08",
+  "commit": "e5b2ac22ec4402b8ebe0ef075c0c01ca36fa8647",
+  "build": "49579a24a4",
+  "estado_pages": "built",
+  "archivos": [
+    {
+      "archivo": "index.html",
+      "local_md5": "5b2dbddd7bd7f0b86c150e067a114ab8",
+      "servido_md5": "5b2dbddd7bd7f0b86c150e067a114ab8",
+      "coincide": true
+    },
+    {
+      "archivo": "js/app.js",
+      "local_md5": "252efee38bc8e5d778a463842f007aaf",
+      "servido_md5": "252efee38bc8e5d778a463842f007aaf",
+      "coincide": true
+    }
+  ]
+}

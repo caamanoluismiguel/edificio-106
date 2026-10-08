@@ -89,7 +89,7 @@ Se consultó la [API histórica de Open-Meteo](https://open-meteo.com/en/docs/hi
 
 Pruebas de [`auditar.mjs`](epw/auditar.mjs): 2024 idéntico byte a byte; en 2025 solo cambian COMMENTS 2 y la última fila frente a `aa47881`. La salida anterior tiene SHA-256 `98d65c44c2982e84e547c6c4541fa4e4f4515686f9e58eb1f88bf98521255c7e`. El cierre coincide con una extensión del C107 solo en memoria leída por `Clima.th`; modo crudo comprobado; una serie acortada una hora conserva el aviso de dos sustituciones. El JSON de resultados contiene la nueva última fila y hashes.
 
-Compilación completada con `bash fuente/armar-raiz.sh`: versión local `49579a24a4`; `index.html` y `js/app.js` regenerados. Vite informó avisos sobre `inlineDynamicImports` y `new URL('../', import.meta.url)`; no bloquearon el armado. No publicado.
+Compilación completada con `bash fuente/armar-raiz.sh`: versión local `49579a24a4`; `index.html` y `js/app.js` regenerados. Vite informó avisos sobre `inlineDynamicImports` y `new URL('../', import.meta.url)`; no bloquearon el armado. Publicado el 8 de octubre de 2026; Pages verificado contra los archivos locales. Guardia: 18 vistas y carga móvil/escritorio aprobadas.
 
 ## Importación local en CBE completada
 
@@ -108,6 +108,6 @@ Reproducir desde la raíz con el Python del entorno de CBE: `python docs/analisi
 
 ## Estado para el relevo
 
-Análisis, recuperación y pruebas terminados. Queda publicar los cambios del visor cuando LM indique «publica», siguiendo fetch, reconciliación y guardia del repo. Para cualquier uso académico de CBE, rotular el año concreto y conservar filtros y versión; sus metadatos automáticos no justifican presentar 2024 o 2025 como una década.
+Análisis, recuperación, pruebas y publicación terminados el 8 de octubre de 2026. Main recibió el cambio funcional 954f9e1 y la verificación e5b2ac2; Pages sirvió HTML y JavaScript idénticos a los locales. Evidencia en `epw/pages-verificacion.json`. Para cualquier uso académico de CBE, rotular el año concreto y conservar filtros y versión; sus metadatos automáticos no justifican presentar 2024 o 2025 como una década.
 
 El [GLB de Descargas](../ciudad/GLB-DESCARGAS-USOS.md) permanece descartado para integración. CBE analiza clima; el EPW no contiene edificios ni sombras específicas y no resuelve el microclima urbano.
