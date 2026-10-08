@@ -1,6 +1,6 @@
 # Comparación del GLB con la ciudad actual
 
-7 de octubre de 2026. Autor: OpenAI Codex, a solicitud de Luis Miguel Caamaño. Base del repositorio: `c826508`, sobre el sitio publicado `75c21ca`. Resultado de una comparación geométrica local; no se ha integrado el GLB ni modificado el sitio.
+7 de octubre de 2026, ampliado el 8 de octubre. Autor: OpenAI Codex, a solicitud de Luis Miguel Caamaño. Base del repositorio: `c826508`, sobre el sitio publicado `75c21ca`. Resultado de una comparación geométrica local; no se ha integrado el GLB ni modificado el sitio. La [procedencia y muestra piloto](PROCEDENCIA-Y-PILOTO.md) incorporan la confirmación de LM de que generó el archivo con map3d y el contraste de sus reglas de escala y altura.
 
 **El GLB repite las huellas de los 322 edificios del inventario actual.** Incluye las 85 cajas grises y el 106. Su aportación potencial está en el contexto exterior, no en nuevas plantas dentro del campus. Las coincidencias casi exactas son compatibles con una base cartográfica compartida con OSM; no acreditan por sí solas la procedencia o licencia del archivo.
 
@@ -46,7 +46,7 @@ También se midió la máxima distancia de cada vértice a los segmentos del otr
 
 ## Alturas y relieve
 
-- 747 de los 991 volúmenes tienen altura 10 en las unidades originales del GLB. Dentro del inventario actual son 272 de 322. La repetición sugiere un valor genérico, aunque falta conocer el procedimiento de exportación.
+- 747 de los 991 volúmenes tienen altura 10 en las unidades originales del GLB. Dentro del inventario actual son 272 de 322. La revisión posterior de map3d confirmó la regla de altura genérica de 10 y la reprodujo para 604 de las 666 piezas con identidad OSM recuperada; las 62 restantes siguen la regla de niveles multiplicados por 2,2.
 - Todos los volúmenes extraídos arrancan de una base numéricamente cero. No aportan un relieve de apoyo por edificio.
 - La pieza identificada como el 106 es el nodo 25 y tiene altura 6,6 unidades originales. El mapa actual consigna 15,7 m aproximados para ese edificio. **No son magnitudes comparables hasta verificar la escala vertical y qué representa cada altura.**
 - La escala obtenida en planta no autoriza a multiplicar las alturas por el mismo factor. Tampoco certifica norte geográfico, cotas reales ni exactitud del modelo actual.
@@ -57,7 +57,7 @@ También se midió la máxima distancia de cada vértice a los segmentos del otr
 2. **Estudiar contexto lejano:** seleccionar una muestra de las 325 piezas exteriores, acreditar origen, licencia, fecha, identidad y alturas, y comprobar si su presencia aporta algo a las vistas del proyecto. Luego medir carga y dibujo en móvil antes de plantear una integración.
 3. **Revisión de cajas grises:** este GLB no aporta una planta diferente que justifique reemplazarlas. Para mejorar cubiertas o fachadas hace falta otra evidencia.
 
-Las sombras de precisión siguen condicionadas a verificar alturas y cotas. La comparación no justifica sustituir el 106 ni los modelos por tipología ya documentados. El siguiente paso útil para decidir sobre el contexto exterior es obtener la procedencia del archivo y revisar una muestra de esas piezas; no rehacer la ciudad completa.
+Las sombras de precisión siguen condicionadas a verificar alturas y cotas. La comparación no justifica sustituir el 106 ni los modelos por tipología ya documentados. La procedencia de la herramienta, la muestra y sus seis identidades OSM quedaron documentadas en [Procedencia y piloto](PROCEDENCIA-Y-PILOTO.md). Siguen pendientes sus alturas reales y cotas.
 
 ## Reproducir y continuar en Claude Code
 

@@ -2,6 +2,8 @@
 
 8 de octubre de 2026. Autor: OpenAI Codex, a solicitud de Luis Miguel Caamaño. Ampliación de la [comparación de edificios](README.md). Se inspeccionó el mismo archivo de Descargas y se mantuvo la transformación horizontal obtenida con los edificios, sin reajustarla a las calles.
 
+Actualización de procedencia: LM confirmó que generó el archivo con map3d. La [revisión del exportador](PROCEDENCIA-Y-PILOTO.md) confirma que dibuja las vías en verde: ese color no identifica parques.
+
 **El GLB permite recuperar trazados de calles y caminos, pero no aporta parques identificables ni calzadas listas para incorporar al visor.** Buena parte de los trazados coincide con los datos OSM existentes; el contexto exterior sigue siendo su principal aporte potencial.
 
 ![Calles recuperadas y copas aproximadas del proyecto](calles.png)

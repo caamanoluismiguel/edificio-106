@@ -41,7 +41,7 @@ Antes de usar las 811 primitivas auxiliares, revisar cómo las generó el export
 
 ## Prueba pequeña recomendada
 
-1. Pedir origen, herramienta de exportación, fecha, unidad, norte y procedencia de las alturas. Siguen sin respuesta en esta evaluación.
+1. Registrar origen, herramienta de exportación, fecha, unidad, norte y procedencia de las alturas. Actualización del 8 de octubre: LM confirmó map3d y Codex contrastó sus reglas de escala y altura; ver [Procedencia y piloto](comparacion-glb/PROCEDENCIA-Y-PILOTO.md). La versión exacta de exportación y las alturas reales no están acreditadas.
 2. Identificar el 106 y al menos otros dos puntos separados y no alineados para estimar traslación, giro y escala. Reservar puntos distintos para comprobar el ajuste; verificar la cota vertical por separado.
 3. Comparar una muestra distribuida: el 106, vecinos cercanos, una caja gris y edificios alejados. Registrar identidad actual, geometría candidata, diferencias, fuente de contraste y decisión.
 4. Medir errores en unidades reales solo cuando la escala esté acreditada. El umbral de aceptación depende del uso: contexto lejano y sombra sobre una ventana requieren precisiones distintas.

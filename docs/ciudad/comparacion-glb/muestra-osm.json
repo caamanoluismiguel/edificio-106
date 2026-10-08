@@ -1,0 +1,301 @@
+{
+  "fecha_consulta": "2026-10-08",
+  "fuente": "OpenStreetMap API v0.6",
+  "atribucion": "© colaboradores de OpenStreetMap, ODbL 1.0; https://www.openstreetmap.org/copyright",
+  "metodo": "Menor distancia simétrica vértice-segmento entre candidatos de seis recuadros; umbral 0,1 m del marco del proyecto. No es exactitud sobre terreno.",
+  "pares": [
+    {
+      "glb_node": 225,
+      "max_vertex_segment_difference": 0.009883306540794674,
+      "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.56476126,8.99458633,-79.56296126,8.99638633",
+      "osm": {
+        "id": 540071289,
+        "type": "way",
+        "tags": {
+          "addr:housenumber": "1",
+          "building": "house"
+        },
+        "geometry": [
+          {
+            "lat": 8.9955853,
+            "lon": -79.5638575
+          },
+          {
+            "lat": 8.9955543,
+            "lon": -79.5638157
+          },
+          {
+            "lat": 8.9955728,
+            "lon": -79.5638017
+          },
+          {
+            "lat": 8.9955394,
+            "lon": -79.5637566
+          },
+          {
+            "lat": 8.9953756,
+            "lon": -79.5638811
+          },
+          {
+            "lat": 8.9954141,
+            "lon": -79.563933
+          },
+          {
+            "lat": 8.9954276,
+            "lon": -79.5639228
+          },
+          {
+            "lat": 8.9954535,
+            "lon": -79.5639577
+          },
+          {
+            "lat": 8.9955853,
+            "lon": -79.5638575
+          }
+        ]
+      }
+    },
+    {
+      "glb_node": 592,
+      "max_vertex_segment_difference": 0.007363522288816018,
+      "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.56289349,8.99854480,-79.56109349,9.00034480",
+      "osm": {
+        "id": 1280763824,
+        "type": "way",
+        "tags": {
+          "building": "yes",
+          "building:levels": "5"
+        },
+        "geometry": [
+          {
+            "lat": 8.9994573,
+            "lon": -79.5616243
+          },
+          {
+            "lat": 8.9992709,
+            "lon": -79.5618098
+          },
+          {
+            "lat": 8.9992222,
+            "lon": -79.5618583
+          },
+          {
+            "lat": 8.9990293,
+            "lon": -79.5620502
+          },
+          {
+            "lat": 8.9992198,
+            "lon": -79.5622464
+          },
+          {
+            "lat": 8.9993234,
+            "lon": -79.5621433
+          },
+          {
+            "lat": 8.9993744,
+            "lon": -79.5621959
+          },
+          {
+            "lat": 8.9993437,
+            "lon": -79.5622264
+          },
+          {
+            "lat": 8.9994613,
+            "lon": -79.5623474
+          },
+          {
+            "lat": 8.9998726,
+            "lon": -79.5619381
+          },
+          {
+            "lat": 8.9997561,
+            "lon": -79.561818
+          },
+          {
+            "lat": 8.9996706,
+            "lon": -79.5619031
+          },
+          {
+            "lat": 8.9996209,
+            "lon": -79.5618519
+          },
+          {
+            "lat": 8.9996501,
+            "lon": -79.561823
+          },
+          {
+            "lat": 8.999602,
+            "lon": -79.5617734
+          },
+          {
+            "lat": 8.9994573,
+            "lon": -79.5616243
+          }
+        ]
+      }
+    },
+    {
+      "glb_node": 248,
+      "max_vertex_segment_difference": 0.011877699871069524,
+      "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.56479076,8.99247072,-79.56299076,8.99427072",
+      "osm": {
+        "id": 540073991,
+        "type": "way",
+        "tags": {
+          "addr:housenumber": "25",
+          "building": "house"
+        },
+        "geometry": [
+          {
+            "lat": 8.9934767,
+            "lon": -79.5639274
+          },
+          {
+            "lat": 8.993469,
+            "lon": -79.5638712
+          },
+          {
+            "lat": 8.9934295,
+            "lon": -79.5638767
+          },
+          {
+            "lat": 8.9934224,
+            "lon": -79.5638252
+          },
+          {
+            "lat": 8.9932805,
+            "lon": -79.5638452
+          },
+          {
+            "lat": 8.9932953,
+            "lon": -79.5639529
+          },
+          {
+            "lat": 8.9934767,
+            "lon": -79.5639274
+          }
+        ]
+      }
+    },
+    {
+      "glb_node": 598,
+      "max_vertex_segment_difference": 0.007487843915971159,
+      "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.55827527,9.00412877,-79.55647527,9.00592877",
+      "osm": {
+        "id": 1280763838,
+        "type": "way",
+        "tags": {
+          "building": "school"
+        },
+        "geometry": [
+          {
+            "lat": 9.0048327,
+            "lon": -79.5574285
+          },
+          {
+            "lat": 9.0048857,
+            "lon": -79.5572294
+          },
+          {
+            "lat": 9.0052248,
+            "lon": -79.5573219
+          },
+          {
+            "lat": 9.0051718,
+            "lon": -79.557521
+          },
+          {
+            "lat": 9.0048327,
+            "lon": -79.5574285
+          }
+        ]
+      }
+    },
+    {
+      "glb_node": 728,
+      "max_vertex_segment_difference": 0.005747927954306153,
+      "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.56461451,9.00470572,-79.56281451,9.00650572",
+      "osm": {
+        "id": 1293780733,
+        "type": "way",
+        "tags": {
+          "building": "yes",
+          "building:levels": "2"
+        },
+        "geometry": [
+          {
+            "lat": 9.0056389,
+            "lon": -79.563848
+          },
+          {
+            "lat": 9.0055276,
+            "lon": -79.5638234
+          },
+          {
+            "lat": 9.0055797,
+            "lon": -79.5635819
+          },
+          {
+            "lat": 9.0056901,
+            "lon": -79.5636063
+          },
+          {
+            "lat": 9.005681,
+            "lon": -79.5636481
+          },
+          {
+            "lat": 9.0056707,
+            "lon": -79.5636458
+          },
+          {
+            "lat": 9.0056375,
+            "lon": -79.5637995
+          },
+          {
+            "lat": 9.0056488,
+            "lon": -79.563802
+          },
+          {
+            "lat": 9.0056389,
+            "lon": -79.563848
+          }
+        ]
+      }
+    },
+    {
+      "glb_node": 601,
+      "max_vertex_segment_difference": 0.016712794205849334,
+      "source_url": "https://api.openstreetmap.org/api/0.6/map?bbox=-79.55597770,8.98989075,-79.55417770,8.99169075",
+      "osm": {
+        "id": 1280763843,
+        "type": "way",
+        "tags": {
+          "building": "roof",
+          "layer": "1"
+        },
+        "geometry": [
+          {
+            "lat": 8.990852,
+            "lon": -79.5550426
+          },
+          {
+            "lat": 8.9907845,
+            "lon": -79.5551487
+          },
+          {
+            "lat": 8.9907296,
+            "lon": -79.5551129
+          },
+          {
+            "lat": 8.9907975,
+            "lon": -79.5550063
+          },
+          {
+            "lat": 8.990852,
+            "lon": -79.5550426
+          }
+        ]
+      }
+    }
+  ]
+}
