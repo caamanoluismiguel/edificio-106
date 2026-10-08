@@ -1,0 +1,26 @@
+{
+  "autor": "OpenAI Codex",
+  "fecha": "2026-10-08",
+  "three_revision": "186",
+  "glb_sha256": "c09b25daf4eddef945b66ab7d80a82e6a4a3b661f94f55918f776dd3634668a2",
+  "count": 811,
+  "first": {
+    "type": "Mesh",
+    "instanced": false,
+    "position": 8,
+    "segments": 8,
+    "min": [
+      -1,
+      -1,
+      0
+    ],
+    "max": [
+      1,
+      2,
+      0
+    ],
+    "material": "MeshStandardMaterial"
+  },
+  "sameBounds": true,
+  "allOrdinaryMeshes": true
+}

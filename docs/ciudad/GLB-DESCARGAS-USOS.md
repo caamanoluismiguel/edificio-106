@@ -47,4 +47,10 @@ Antes de usar las 811 primitivas auxiliares, revisar cómo las generó el export
 4. Medir errores en unidades reales solo cuando la escala esté acreditada. El umbral de aceptación depende del uso: contexto lejano y sombra sobre una ventana requieren precisiones distintas.
 5. Probar únicamente las piezas que aporten información verificable, en una rama aparte y con las comprobaciones de geometría, imagen y carga del proyecto.
 
-Decisión actual: conservar como referencia para comparación. No se ha alineado, validado en sitio, integrado ni publicado el GLB. Relación con el análisis climático: ver [CBE Clima](../analisis/CBE-CLIMA.md); Clima analiza EPW, no acredita la geometría urbana.
+## Resultado de la comparación posterior
+
+Codex realizó la [alineación y comparación de huellas](comparacion-glb/README.md) el 7 de octubre de 2026. Encontró correspondencias para los 322 edificios del inventario, incluidas las 85 cajas grises. No aparecieron piezas adicionales con centro dentro del límite del campus. Hay 325 volúmenes con centro fuera de la caja de consulta OSM del proyecto que podrían servir para estudiar una ampliación del contexto. La comparación de plantas no acredita las alturas ni la procedencia.
+
+Decisión actual: conservar como referencia; la comparación no justifica sustituir los edificios actuales. El GLB está alineado horizontalmente para análisis, pero no está validado en sitio, integrado ni publicado. Relación con el análisis climático: ver [CBE Clima](../analisis/CBE-CLIMA.md); Clima analiza EPW, no acredita la geometría urbana.
+
+Ampliación del 8 de octubre: la [revisión de calles y parques](comparacion-glb/CALLES-Y-PARQUES.md) recuperó 811 polilíneas auxiliares y encontró 660 correspondencias con vías OSM existentes. Las 151 restantes no intersectan la consulta ni el límite propuesto del proyecto. No se identificaron parques en el GLB. Los trazados están en atributos especiales que GLTFLoader no reconstruye como calles al cargar el archivo directamente.

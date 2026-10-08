@@ -1,0 +1,6162 @@
+{
+  "autor": "OpenAI Codex",
+  "fecha": "2026-10-08",
+  "glb_sha256": "c09b25daf4eddef945b66ab7d80a82e6a4a3b661f94f55918f776dd3634668a2",
+  "transformacion": {
+    "convencion": "[x,z] de GLTFLoader como vector fila @ rotacion * escala + traslacion",
+    "escala_horizontal": 2.1827563008351407,
+    "rotacion": [
+      [
+        0.8191948932314821,
+        0.5735152368537917
+      ],
+      [
+        -0.5735152368537916,
+        0.8191948932314819
+      ]
+    ],
+    "traslacion": [
+      859.4648415698422,
+      -33.55258203875137
+    ],
+    "giro_grados": 34.99571949894242
+  },
+  "metodo": "Misma transformación que los edificios, sin reajuste. Diez vecinos por centro ponderado por longitud; igual cantidad de vértices y comparación ordenada directa o inversa; máximo <0,1 m nominales.",
+  "fuentes_sha256": {
+    "fuente/osm-amplio.json": "63fd61f078192fc9931abc4d8caec8e73819f2dd02cff562c4a5aefa178f961b",
+    "fuente/contexto.mjs": "8ab1769cac28d36c88932e3646c494c0264a315225f9b3c691694862377562eb",
+    "fuente/arboles_cds.geojson": "923cc55a40d955b573468d84ed856d73a5906299973296b045ebfa9a939961e5"
+  },
+  "conteos": {
+    "lineas_glb": 811,
+    "segmentos_glb": 5538,
+    "vias_osm": 741,
+    "correspondencias": 660,
+    "glb_sin_correspondencia": 151,
+    "osm_sin_correspondencia": 81,
+    "sin_correspondencia_intersectan_consulta": 0,
+    "sin_correspondencia_intersectan_campus": 0,
+    "lineas_cerradas": 12,
+    "cerradas_emparejadas": 10
+  },
+  "tipos_emparejados": {
+    "service": 320,
+    "track": 5,
+    "residential": 153,
+    "path": 31,
+    "tertiary": 15,
+    "primary_link": 2,
+    "footway": 122,
+    "steps": 3,
+    "primary": 5,
+    "unclassified": 1,
+    "elevator": 1,
+    "tertiary_link": 2
+  },
+  "error_vertices": {
+    "min": 0.0004139884802551309,
+    "mediana": 0.005004348232068786,
+    "p95": 0.012411103866897444,
+    "max": 0.03258836628987274
+  },
+  "y_original_rango": [
+    0.10000000149011612,
+    0.10000000149011612
+  ],
+  "nombres_y_tipos": "Recuperados por correspondencia con OSM, no presentes en el GLB.",
+  "pares": [
+    {
+      "glb_index": 0,
+      "glb_node": 991,
+      "osm_id": 61698786,
+      "tipo_osm": "service",
+      "nombre_osm": "Avenida Paseo de las Iguanas",
+      "error_max_vertices": 0.015316489294706066,
+      "cerrado": false
+    },
+    {
+      "glb_index": 1,
+      "glb_node": 992,
+      "osm_id": 62161190,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.018602138475452255,
+      "cerrado": false
+    },
+    {
+      "glb_index": 2,
+      "glb_node": 993,
+      "osm_id": 62161200,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009356408291223304,
+      "cerrado": false
+    },
+    {
+      "glb_index": 3,
+      "glb_node": 994,
+      "osm_id": 62161258,
+      "tipo_osm": "track",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010712639662408752,
+      "cerrado": false
+    },
+    {
+      "glb_index": 5,
+      "glb_node": 996,
+      "osm_id": 85686812,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007245036991088931,
+      "cerrado": false
+    },
+    {
+      "glb_index": 6,
+      "glb_node": 997,
+      "osm_id": 85686813,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Víctor Iglesias",
+      "error_max_vertices": 0.003037234127066187,
+      "cerrado": false
+    },
+    {
+      "glb_index": 7,
+      "glb_node": 998,
+      "osm_id": 85686815,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00566001637909792,
+      "cerrado": false
+    },
+    {
+      "glb_index": 8,
+      "glb_node": 999,
+      "osm_id": 85686818,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Winthrop",
+      "error_max_vertices": 0.003097331893722748,
+      "cerrado": false
+    },
+    {
+      "glb_index": 9,
+      "glb_node": 1000,
+      "osm_id": 85686825,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Anderson",
+      "error_max_vertices": 0.005521373574200933,
+      "cerrado": false
+    },
+    {
+      "glb_index": 10,
+      "glb_node": 1001,
+      "osm_id": 85686828,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hasson Drive",
+      "error_max_vertices": 0.00899876944471083,
+      "cerrado": false
+    },
+    {
+      "glb_index": 11,
+      "glb_node": 1002,
+      "osm_id": 85686830,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012258187603337273,
+      "cerrado": false
+    },
+    {
+      "glb_index": 12,
+      "glb_node": 1003,
+      "osm_id": 85686833,
+      "tipo_osm": "path",
+      "nombre_osm": "Calle Coiner",
+      "error_max_vertices": 0.006283571970341116,
+      "cerrado": false
+    },
+    {
+      "glb_index": 13,
+      "glb_node": 1004,
+      "osm_id": 85686834,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Guanábano",
+      "error_max_vertices": 0.011332446659135883,
+      "cerrado": false
+    },
+    {
+      "glb_index": 14,
+      "glb_node": 1005,
+      "osm_id": 85686837,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005927931221645998,
+      "cerrado": false
+    },
+    {
+      "glb_index": 15,
+      "glb_node": 1006,
+      "osm_id": 85686840,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Ricardo Murgas",
+      "error_max_vertices": 0.007090701414596264,
+      "cerrado": false
+    },
+    {
+      "glb_index": 16,
+      "glb_node": 1007,
+      "osm_id": 85686842,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Estanslao Orobio",
+      "error_max_vertices": 0.0028783441331582432,
+      "cerrado": false
+    },
+    {
+      "glb_index": 17,
+      "glb_node": 1008,
+      "osm_id": 85686845,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Carretera Hospital",
+      "error_max_vertices": 0.005004348232068786,
+      "cerrado": false
+    },
+    {
+      "glb_index": 18,
+      "glb_node": 1009,
+      "osm_id": 85686846,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Maritza Alabarca",
+      "error_max_vertices": 0.004772333459259071,
+      "cerrado": false
+    },
+    {
+      "glb_index": 19,
+      "glb_node": 1010,
+      "osm_id": 85686855,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005343139713970894,
+      "cerrado": false
+    },
+    {
+      "glb_index": 20,
+      "glb_node": 1011,
+      "osm_id": 85686860,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004852031572982539,
+      "cerrado": false
+    },
+    {
+      "glb_index": 21,
+      "glb_node": 1012,
+      "osm_id": 85686862,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006553777941777298,
+      "cerrado": false
+    },
+    {
+      "glb_index": 22,
+      "glb_node": 1013,
+      "osm_id": 85686863,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Aroldo Cano A.",
+      "error_max_vertices": 0.00634488930986334,
+      "cerrado": false
+    },
+    {
+      "glb_index": 23,
+      "glb_node": 1014,
+      "osm_id": 85686869,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Croft",
+      "error_max_vertices": 0.0064518230738798005,
+      "cerrado": false
+    },
+    {
+      "glb_index": 24,
+      "glb_node": 1015,
+      "osm_id": 85686877,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00689872583693232,
+      "cerrado": false
+    },
+    {
+      "glb_index": 25,
+      "glb_node": 1016,
+      "osm_id": 85686878,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Agramente",
+      "error_max_vertices": 0.0050417391076492835,
+      "cerrado": false
+    },
+    {
+      "glb_index": 26,
+      "glb_node": 1017,
+      "osm_id": 85686879,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Gerward",
+      "error_max_vertices": 0.0032637110772385093,
+      "cerrado": false
+    },
+    {
+      "glb_index": 27,
+      "glb_node": 1018,
+      "osm_id": 85686887,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001704365833980576,
+      "cerrado": false
+    },
+    {
+      "glb_index": 28,
+      "glb_node": 1019,
+      "osm_id": 85686890,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Ricardo Murgas",
+      "error_max_vertices": 0.007090701414596264,
+      "cerrado": false
+    },
+    {
+      "glb_index": 29,
+      "glb_node": 1020,
+      "osm_id": 85686900,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011632794408535147,
+      "cerrado": false
+    },
+    {
+      "glb_index": 30,
+      "glb_node": 1021,
+      "osm_id": 85686935,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Celestino Villarreta",
+      "error_max_vertices": 0.0037677085944987335,
+      "cerrado": false
+    },
+    {
+      "glb_index": 31,
+      "glb_node": 1022,
+      "osm_id": 85686936,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005219346167246601,
+      "cerrado": false
+    },
+    {
+      "glb_index": 32,
+      "glb_node": 1023,
+      "osm_id": 85686945,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Stewart",
+      "error_max_vertices": 0.0032873452054427692,
+      "cerrado": false
+    },
+    {
+      "glb_index": 33,
+      "glb_node": 1024,
+      "osm_id": 85686947,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle McIntosh",
+      "error_max_vertices": 0.0028811272733450235,
+      "cerrado": false
+    },
+    {
+      "glb_index": 34,
+      "glb_node": 1025,
+      "osm_id": 85686952,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Johnston",
+      "error_max_vertices": 0.009597206433652066,
+      "cerrado": false
+    },
+    {
+      "glb_index": 35,
+      "glb_node": 1026,
+      "osm_id": 85686954,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Rodolfo Benítez",
+      "error_max_vertices": 0.0035939737923543114,
+      "cerrado": false
+    },
+    {
+      "glb_index": 36,
+      "glb_node": 1027,
+      "osm_id": 85686958,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00479643837904776,
+      "cerrado": false
+    },
+    {
+      "glb_index": 37,
+      "glb_node": 1028,
+      "osm_id": 85686961,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005359377600088795,
+      "cerrado": false
+    },
+    {
+      "glb_index": 38,
+      "glb_node": 1029,
+      "osm_id": 85686975,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Ovidio Saldaña",
+      "error_max_vertices": 0.003812443919918198,
+      "cerrado": false
+    },
+    {
+      "glb_index": 39,
+      "glb_node": 1030,
+      "osm_id": 85686978,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006899705301528583,
+      "cerrado": false
+    },
+    {
+      "glb_index": 40,
+      "glb_node": 1031,
+      "osm_id": 85687006,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00605676643945277,
+      "cerrado": false
+    },
+    {
+      "glb_index": 41,
+      "glb_node": 1032,
+      "osm_id": 85687019,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Riche",
+      "error_max_vertices": 0.0041269308033047205,
+      "cerrado": false
+    },
+    {
+      "glb_index": 42,
+      "glb_node": 1033,
+      "osm_id": 85687021,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004995547548210247,
+      "cerrado": false
+    },
+    {
+      "glb_index": 43,
+      "glb_node": 1034,
+      "osm_id": 85687027,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01200450762405866,
+      "cerrado": false
+    },
+    {
+      "glb_index": 44,
+      "glb_node": 1035,
+      "osm_id": 85687035,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Evelio Lara",
+      "error_max_vertices": 0.006129973164257176,
+      "cerrado": false
+    },
+    {
+      "glb_index": 45,
+      "glb_node": 1036,
+      "osm_id": 85687037,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Martiza Alabarca",
+      "error_max_vertices": 0.003531914908721044,
+      "cerrado": false
+    },
+    {
+      "glb_index": 46,
+      "glb_node": 1037,
+      "osm_id": 85687042,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006597449749898629,
+      "cerrado": false
+    },
+    {
+      "glb_index": 47,
+      "glb_node": 1038,
+      "osm_id": 85687045,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00864895779765771,
+      "cerrado": false
+    },
+    {
+      "glb_index": 48,
+      "glb_node": 1039,
+      "osm_id": 85687047,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0076284082432243865,
+      "cerrado": false
+    },
+    {
+      "glb_index": 49,
+      "glb_node": 1040,
+      "osm_id": 85687048,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Riche",
+      "error_max_vertices": 0.004839012103341496,
+      "cerrado": false
+    },
+    {
+      "glb_index": 50,
+      "glb_node": 1041,
+      "osm_id": 85687049,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004659300408688876,
+      "cerrado": false
+    },
+    {
+      "glb_index": 51,
+      "glb_node": 1042,
+      "osm_id": 85687061,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012143831596338002,
+      "cerrado": false
+    },
+    {
+      "glb_index": 52,
+      "glb_node": 1043,
+      "osm_id": 85687064,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006054606064002225,
+      "cerrado": false
+    },
+    {
+      "glb_index": 53,
+      "glb_node": 1044,
+      "osm_id": 85687067,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0061330299355116125,
+      "cerrado": false
+    },
+    {
+      "glb_index": 54,
+      "glb_node": 1045,
+      "osm_id": 85687068,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jorge Gil",
+      "error_max_vertices": 0.003481361049259059,
+      "cerrado": false
+    },
+    {
+      "glb_index": 55,
+      "glb_node": 1046,
+      "osm_id": 85687069,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009356408291223304,
+      "cerrado": false
+    },
+    {
+      "glb_index": 56,
+      "glb_node": 1047,
+      "osm_id": 85687070,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008074850048203477,
+      "cerrado": false
+    },
+    {
+      "glb_index": 57,
+      "glb_node": 1048,
+      "osm_id": 85687071,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Aroldo Cano Arosemena",
+      "error_max_vertices": 0.002861776470215678,
+      "cerrado": false
+    },
+    {
+      "glb_index": 58,
+      "glb_node": 1049,
+      "osm_id": 85687072,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00667684610792805,
+      "cerrado": false
+    },
+    {
+      "glb_index": 59,
+      "glb_node": 1050,
+      "osm_id": 85687076,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Papaya",
+      "error_max_vertices": 0.013730700529699397,
+      "cerrado": false
+    },
+    {
+      "glb_index": 60,
+      "glb_node": 1051,
+      "osm_id": 85687077,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007266601010823319,
+      "cerrado": false
+    },
+    {
+      "glb_index": 61,
+      "glb_node": 1052,
+      "osm_id": 85687082,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Mandarina",
+      "error_max_vertices": 0.004784290091586298,
+      "cerrado": false
+    },
+    {
+      "glb_index": 62,
+      "glb_node": 1053,
+      "osm_id": 85687084,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004847747058828495,
+      "cerrado": false
+    },
+    {
+      "glb_index": 63,
+      "glb_node": 1054,
+      "osm_id": 85687087,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jacinto Palacios",
+      "error_max_vertices": 0.004103800226674538,
+      "cerrado": false
+    },
+    {
+      "glb_index": 64,
+      "glb_node": 1055,
+      "osm_id": 85687090,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007266601010823319,
+      "cerrado": false
+    },
+    {
+      "glb_index": 66,
+      "glb_node": 1057,
+      "osm_id": 85687106,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0044258132635877885,
+      "cerrado": false
+    },
+    {
+      "glb_index": 67,
+      "glb_node": 1058,
+      "osm_id": 85687110,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Rosa Landecho",
+      "error_max_vertices": 0.00840882006795029,
+      "cerrado": false
+    },
+    {
+      "glb_index": 68,
+      "glb_node": 1059,
+      "osm_id": 85687117,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008532329786284423,
+      "cerrado": false
+    },
+    {
+      "glb_index": 69,
+      "glb_node": 1060,
+      "osm_id": 85687119,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010506920593151269,
+      "cerrado": false
+    },
+    {
+      "glb_index": 70,
+      "glb_node": 1061,
+      "osm_id": 85687124,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Avenida Demetrio B. Lakas",
+      "error_max_vertices": 0.005004348232068786,
+      "cerrado": false
+    },
+    {
+      "glb_index": 71,
+      "glb_node": 1062,
+      "osm_id": 85687158,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006002750937125623,
+      "cerrado": false
+    },
+    {
+      "glb_index": 72,
+      "glb_node": 1063,
+      "osm_id": 85687162,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008367937662060126,
+      "cerrado": false
+    },
+    {
+      "glb_index": 73,
+      "glb_node": 1064,
+      "osm_id": 85687163,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Rosa Landecho",
+      "error_max_vertices": 0.006976226864777346,
+      "cerrado": false
+    },
+    {
+      "glb_index": 74,
+      "glb_node": 1065,
+      "osm_id": 85687169,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01211564772844921,
+      "cerrado": false
+    },
+    {
+      "glb_index": 75,
+      "glb_node": 1066,
+      "osm_id": 85687175,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004901330184905255,
+      "cerrado": false
+    },
+    {
+      "glb_index": 76,
+      "glb_node": 1067,
+      "osm_id": 85687185,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0047298965279767985,
+      "cerrado": false
+    },
+    {
+      "glb_index": 77,
+      "glb_node": 1068,
+      "osm_id": 85687202,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Guandú",
+      "error_max_vertices": 0.008145057566182029,
+      "cerrado": false
+    },
+    {
+      "glb_index": 78,
+      "glb_node": 1069,
+      "osm_id": 85687219,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Ezequiel González",
+      "error_max_vertices": 0.004054181212930806,
+      "cerrado": false
+    },
+    {
+      "glb_index": 79,
+      "glb_node": 1070,
+      "osm_id": 85687225,
+      "tipo_osm": "primary_link",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0032978207909366993,
+      "cerrado": false
+    },
+    {
+      "glb_index": 80,
+      "glb_node": 1071,
+      "osm_id": 85687228,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Dwyer",
+      "error_max_vertices": 0.008816208054807968,
+      "cerrado": false
+    },
+    {
+      "glb_index": 81,
+      "glb_node": 1072,
+      "osm_id": 85687232,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005621962189665672,
+      "cerrado": false
+    },
+    {
+      "glb_index": 82,
+      "glb_node": 1073,
+      "osm_id": 85687238,
+      "tipo_osm": "residential",
+      "nombre_osm": "Lassiter Road",
+      "error_max_vertices": 0.004746954148618012,
+      "cerrado": false
+    },
+    {
+      "glb_index": 83,
+      "glb_node": 1074,
+      "osm_id": 85687247,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0066034790190058704,
+      "cerrado": false
+    },
+    {
+      "glb_index": 84,
+      "glb_node": 1075,
+      "osm_id": 85687249,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008367937662060126,
+      "cerrado": false
+    },
+    {
+      "glb_index": 85,
+      "glb_node": 1076,
+      "osm_id": 85687252,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Anderson",
+      "error_max_vertices": 0.005521373574200933,
+      "cerrado": false
+    },
+    {
+      "glb_index": 86,
+      "glb_node": 1077,
+      "osm_id": 85687258,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Jacinto Palacios",
+      "error_max_vertices": 0.006561590383508646,
+      "cerrado": false
+    },
+    {
+      "glb_index": 87,
+      "glb_node": 1078,
+      "osm_id": 85687260,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00580571507463632,
+      "cerrado": false
+    },
+    {
+      "glb_index": 88,
+      "glb_node": 1079,
+      "osm_id": 85687264,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Teófilo De La Torre",
+      "error_max_vertices": 0.00675677572936874,
+      "cerrado": false
+    },
+    {
+      "glb_index": 89,
+      "glb_node": 1080,
+      "osm_id": 85687273,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00925567215323605,
+      "cerrado": false
+    },
+    {
+      "glb_index": 90,
+      "glb_node": 1081,
+      "osm_id": 85687274,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0066034790190058704,
+      "cerrado": false
+    },
+    {
+      "glb_index": 91,
+      "glb_node": 1082,
+      "osm_id": 85687278,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Walter Reed",
+      "error_max_vertices": 0.0059064315053886695,
+      "cerrado": false
+    },
+    {
+      "glb_index": 92,
+      "glb_node": 1083,
+      "osm_id": 85687279,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004647085169942237,
+      "cerrado": false
+    },
+    {
+      "glb_index": 93,
+      "glb_node": 1084,
+      "osm_id": 85687291,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.00302469874648476,
+      "cerrado": false
+    },
+    {
+      "glb_index": 94,
+      "glb_node": 1085,
+      "osm_id": 85687300,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012143831596338002,
+      "cerrado": false
+    },
+    {
+      "glb_index": 95,
+      "glb_node": 1086,
+      "osm_id": 85687303,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Mango",
+      "error_max_vertices": 0.008975232061903198,
+      "cerrado": false
+    },
+    {
+      "glb_index": 96,
+      "glb_node": 1087,
+      "osm_id": 85687304,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Deshan",
+      "error_max_vertices": 0.014145858355061214,
+      "cerrado": false
+    },
+    {
+      "glb_index": 97,
+      "glb_node": 1088,
+      "osm_id": 85687309,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carrol",
+      "error_max_vertices": 0.0070632758688638385,
+      "cerrado": false
+    },
+    {
+      "glb_index": 98,
+      "glb_node": 1089,
+      "osm_id": 85687312,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Anderson",
+      "error_max_vertices": 0.004067761126988519,
+      "cerrado": false
+    },
+    {
+      "glb_index": 99,
+      "glb_node": 1090,
+      "osm_id": 85687319,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Ricardo Murgas",
+      "error_max_vertices": 0.006417325585936224,
+      "cerrado": false
+    },
+    {
+      "glb_index": 100,
+      "glb_node": 1091,
+      "osm_id": 85687328,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Gonzalo Crance",
+      "error_max_vertices": 0.005407611985626618,
+      "cerrado": false
+    },
+    {
+      "glb_index": 101,
+      "glb_node": 1092,
+      "osm_id": 85687329,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Parke",
+      "error_max_vertices": 0.0012235352015473617,
+      "cerrado": false
+    },
+    {
+      "glb_index": 102,
+      "glb_node": 1093,
+      "osm_id": 85687337,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005221926876706482,
+      "cerrado": false
+    },
+    {
+      "glb_index": 104,
+      "glb_node": 1095,
+      "osm_id": 85687345,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Victor Garibaldo",
+      "error_max_vertices": 0.0027500844990007234,
+      "cerrado": false
+    },
+    {
+      "glb_index": 105,
+      "glb_node": 1096,
+      "osm_id": 85687347,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0050550015181373125,
+      "cerrado": false
+    },
+    {
+      "glb_index": 106,
+      "glb_node": 1097,
+      "osm_id": 85687351,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Palmer",
+      "error_max_vertices": 0.005557961616186219,
+      "cerrado": false
+    },
+    {
+      "glb_index": 107,
+      "glb_node": 1098,
+      "osm_id": 85687352,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carlos Lara",
+      "error_max_vertices": 0.0022927337009128607,
+      "cerrado": false
+    },
+    {
+      "glb_index": 108,
+      "glb_node": 1099,
+      "osm_id": 85687363,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006139404654176995,
+      "cerrado": false
+    },
+    {
+      "glb_index": 109,
+      "glb_node": 1100,
+      "osm_id": 85687368,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013838426342362127,
+      "cerrado": false
+    },
+    {
+      "glb_index": 110,
+      "glb_node": 1101,
+      "osm_id": 85687370,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Víctor Iglesias",
+      "error_max_vertices": 0.004103800226674538,
+      "cerrado": false
+    },
+    {
+      "glb_index": 111,
+      "glb_node": 1102,
+      "osm_id": 85687371,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01148032377590658,
+      "cerrado": false
+    },
+    {
+      "glb_index": 112,
+      "glb_node": 1103,
+      "osm_id": 85687378,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006190656188571807,
+      "cerrado": false
+    },
+    {
+      "glb_index": 113,
+      "glb_node": 1104,
+      "osm_id": 85687382,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Anderson",
+      "error_max_vertices": 0.00481106152209717,
+      "cerrado": false
+    },
+    {
+      "glb_index": 114,
+      "glb_node": 1105,
+      "osm_id": 85687387,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012373718817570939,
+      "cerrado": false
+    },
+    {
+      "glb_index": 115,
+      "glb_node": 1106,
+      "osm_id": 85687405,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0059896266910138786,
+      "cerrado": false
+    },
+    {
+      "glb_index": 116,
+      "glb_node": 1107,
+      "osm_id": 85687407,
+      "tipo_osm": "track",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013680320894727068,
+      "cerrado": false
+    },
+    {
+      "glb_index": 117,
+      "glb_node": 1108,
+      "osm_id": 85687408,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010553285674886824,
+      "cerrado": false
+    },
+    {
+      "glb_index": 118,
+      "glb_node": 1109,
+      "osm_id": 85687410,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Miles",
+      "error_max_vertices": 0.0033501551913656,
+      "cerrado": false
+    },
+    {
+      "glb_index": 119,
+      "glb_node": 1110,
+      "osm_id": 85687413,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carrol Place",
+      "error_max_vertices": 0.004889438311727105,
+      "cerrado": false
+    },
+    {
+      "glb_index": 120,
+      "glb_node": 1111,
+      "osm_id": 85687419,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005275876896708065,
+      "cerrado": false
+    },
+    {
+      "glb_index": 121,
+      "glb_node": 1112,
+      "osm_id": 85687430,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hill",
+      "error_max_vertices": 0.0014216185530942322,
+      "cerrado": false
+    },
+    {
+      "glb_index": 122,
+      "glb_node": 1113,
+      "osm_id": 85687432,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Wells",
+      "error_max_vertices": 0.00481106152209717,
+      "cerrado": false
+    },
+    {
+      "glb_index": 123,
+      "glb_node": 1114,
+      "osm_id": 85687433,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005080173797505153,
+      "cerrado": false
+    },
+    {
+      "glb_index": 124,
+      "glb_node": 1115,
+      "osm_id": 85687436,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004218202265487648,
+      "cerrado": false
+    },
+    {
+      "glb_index": 126,
+      "glb_node": 1117,
+      "osm_id": 85687444,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004909494698078351,
+      "cerrado": false
+    },
+    {
+      "glb_index": 127,
+      "glb_node": 1118,
+      "osm_id": 85687446,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Gustavo Lara",
+      "error_max_vertices": 0.005970824212715613,
+      "cerrado": false
+    },
+    {
+      "glb_index": 128,
+      "glb_node": 1119,
+      "osm_id": 85687450,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Kohler Place",
+      "error_max_vertices": 0.00392317911661117,
+      "cerrado": false
+    },
+    {
+      "glb_index": 129,
+      "glb_node": 1120,
+      "osm_id": 85687452,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.020547170558482934,
+      "cerrado": false
+    },
+    {
+      "glb_index": 130,
+      "glb_node": 1121,
+      "osm_id": 85687458,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Riche",
+      "error_max_vertices": 0.0044258132635877885,
+      "cerrado": false
+    },
+    {
+      "glb_index": 131,
+      "glb_node": 1122,
+      "osm_id": 85687472,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011632794408535147,
+      "cerrado": false
+    },
+    {
+      "glb_index": 132,
+      "glb_node": 1123,
+      "osm_id": 85687473,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013101594353580647,
+      "cerrado": false
+    },
+    {
+      "glb_index": 133,
+      "glb_node": 1124,
+      "osm_id": 85687476,
+      "tipo_osm": "primary_link",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0029011439993440733,
+      "cerrado": false
+    },
+    {
+      "glb_index": 134,
+      "glb_node": 1125,
+      "osm_id": 85687479,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Ricardo Murgas",
+      "error_max_vertices": 0.005219346167246601,
+      "cerrado": false
+    },
+    {
+      "glb_index": 135,
+      "glb_node": 1126,
+      "osm_id": 85687481,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005413643709788801,
+      "cerrado": false
+    },
+    {
+      "glb_index": 136,
+      "glb_node": 1127,
+      "osm_id": 85687482,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00658717966508298,
+      "cerrado": false
+    },
+    {
+      "glb_index": 137,
+      "glb_node": 1128,
+      "osm_id": 85687483,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005096247723701606,
+      "cerrado": false
+    },
+    {
+      "glb_index": 138,
+      "glb_node": 1129,
+      "osm_id": 86327958,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008045180448936009,
+      "cerrado": false
+    },
+    {
+      "glb_index": 139,
+      "glb_node": 1130,
+      "osm_id": 86327959,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0084405057829477,
+      "cerrado": false
+    },
+    {
+      "glb_index": 140,
+      "glb_node": 1131,
+      "osm_id": 86369597,
+      "tipo_osm": "residential",
+      "nombre_osm": "Avenida Wright",
+      "error_max_vertices": 0.00646133236038993,
+      "cerrado": false
+    },
+    {
+      "glb_index": 141,
+      "glb_node": 1132,
+      "osm_id": 86369599,
+      "tipo_osm": "residential",
+      "nombre_osm": "Avenida Mitchell",
+      "error_max_vertices": 0.006185579207730084,
+      "cerrado": false
+    },
+    {
+      "glb_index": 142,
+      "glb_node": 1133,
+      "osm_id": 86369603,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Sara Sotillo",
+      "error_max_vertices": 0.008652657942244797,
+      "cerrado": false
+    },
+    {
+      "glb_index": 143,
+      "glb_node": 1134,
+      "osm_id": 146247077,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Luis Bonilla",
+      "error_max_vertices": 0.00634488930986334,
+      "cerrado": false
+    },
+    {
+      "glb_index": 144,
+      "glb_node": 1135,
+      "osm_id": 179076839,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008243862050394075,
+      "cerrado": true
+    },
+    {
+      "glb_index": 145,
+      "glb_node": 1136,
+      "osm_id": 179076846,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007873648601553552,
+      "cerrado": false
+    },
+    {
+      "glb_index": 146,
+      "glb_node": 1137,
+      "osm_id": 179076847,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008487927290902895,
+      "cerrado": false
+    },
+    {
+      "glb_index": 147,
+      "glb_node": 1138,
+      "osm_id": 179076852,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013337361869130674,
+      "cerrado": false
+    },
+    {
+      "glb_index": 148,
+      "glb_node": 1139,
+      "osm_id": 179076854,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013157149623643368,
+      "cerrado": false
+    },
+    {
+      "glb_index": 149,
+      "glb_node": 1140,
+      "osm_id": 179076856,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00956189591279854,
+      "cerrado": false
+    },
+    {
+      "glb_index": 150,
+      "glb_node": 1141,
+      "osm_id": 179076870,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01185116673245107,
+      "cerrado": false
+    },
+    {
+      "glb_index": 151,
+      "glb_node": 1142,
+      "osm_id": 179076871,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01034837167861354,
+      "cerrado": false
+    },
+    {
+      "glb_index": 152,
+      "glb_node": 1143,
+      "osm_id": 179076873,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010103211750737438,
+      "cerrado": false
+    },
+    {
+      "glb_index": 162,
+      "glb_node": 1153,
+      "osm_id": 180592981,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010515334385898285,
+      "cerrado": false
+    },
+    {
+      "glb_index": 165,
+      "glb_node": 1156,
+      "osm_id": 180593004,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011738582268993903,
+      "cerrado": false
+    },
+    {
+      "glb_index": 168,
+      "glb_node": 1159,
+      "osm_id": 180593010,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01144327533351917,
+      "cerrado": false
+    },
+    {
+      "glb_index": 169,
+      "glb_node": 1160,
+      "osm_id": 180593011,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011098736415731624,
+      "cerrado": false
+    },
+    {
+      "glb_index": 175,
+      "glb_node": 1166,
+      "osm_id": 263823743,
+      "tipo_osm": "steps",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005276993480161676,
+      "cerrado": false
+    },
+    {
+      "glb_index": 176,
+      "glb_node": 1167,
+      "osm_id": 263823744,
+      "tipo_osm": "steps",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005255606499120908,
+      "cerrado": false
+    },
+    {
+      "glb_index": 177,
+      "glb_node": 1168,
+      "osm_id": 263956805,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013917204948324997,
+      "cerrado": false
+    },
+    {
+      "glb_index": 180,
+      "glb_node": 1171,
+      "osm_id": 353913254,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0063065217503537,
+      "cerrado": false
+    },
+    {
+      "glb_index": 181,
+      "glb_node": 1172,
+      "osm_id": 362836176,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.016924366852059478,
+      "cerrado": false
+    },
+    {
+      "glb_index": 182,
+      "glb_node": 1173,
+      "osm_id": 362836578,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005326869109511768,
+      "cerrado": false
+    },
+    {
+      "glb_index": 183,
+      "glb_node": 1174,
+      "osm_id": 362836580,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Stone Wood",
+      "error_max_vertices": 0.004472705206182498,
+      "cerrado": false
+    },
+    {
+      "glb_index": 184,
+      "glb_node": 1175,
+      "osm_id": 362836581,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Blossom Wood",
+      "error_max_vertices": 0.004723027881316749,
+      "cerrado": false
+    },
+    {
+      "glb_index": 185,
+      "glb_node": 1176,
+      "osm_id": 362836582,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hazel Wood",
+      "error_max_vertices": 0.0048261878388373295,
+      "cerrado": false
+    },
+    {
+      "glb_index": 186,
+      "glb_node": 1177,
+      "osm_id": 362836583,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Cove Wood",
+      "error_max_vertices": 0.004891909557766928,
+      "cerrado": false
+    },
+    {
+      "glb_index": 190,
+      "glb_node": 1181,
+      "osm_id": 365601516,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010482332962516744,
+      "cerrado": false
+    },
+    {
+      "glb_index": 206,
+      "glb_node": 1197,
+      "osm_id": 380821866,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Alder Wood",
+      "error_max_vertices": 0.004660463182967458,
+      "cerrado": false
+    },
+    {
+      "glb_index": 208,
+      "glb_node": 1199,
+      "osm_id": 380825493,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Mabry Drive",
+      "error_max_vertices": 0.005873994222621423,
+      "cerrado": false
+    },
+    {
+      "glb_index": 209,
+      "glb_node": 1200,
+      "osm_id": 380825495,
+      "tipo_osm": "service",
+      "nombre_osm": "Clayton Park",
+      "error_max_vertices": 0.004508908126317538,
+      "cerrado": false
+    },
+    {
+      "glb_index": 211,
+      "glb_node": 1202,
+      "osm_id": 380828983,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Jacinto Palacios",
+      "error_max_vertices": 0.006268704218382016,
+      "cerrado": false
+    },
+    {
+      "glb_index": 212,
+      "glb_node": 1203,
+      "osm_id": 382260659,
+      "tipo_osm": "primary",
+      "nombre_osm": "Avenida Omar Torrijos Herrera",
+      "error_max_vertices": 0.005413643709788801,
+      "cerrado": false
+    },
+    {
+      "glb_index": 213,
+      "glb_node": 1204,
+      "osm_id": 382327305,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035913322167553476,
+      "cerrado": false
+    },
+    {
+      "glb_index": 215,
+      "glb_node": 1206,
+      "osm_id": 387387460,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0038446858031303995,
+      "cerrado": false
+    },
+    {
+      "glb_index": 216,
+      "glb_node": 1207,
+      "osm_id": 387400201,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Teófilo De La Torre",
+      "error_max_vertices": 0.007546974789683492,
+      "cerrado": false
+    },
+    {
+      "glb_index": 217,
+      "glb_node": 1208,
+      "osm_id": 387419464,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008238647646839736,
+      "cerrado": false
+    },
+    {
+      "glb_index": 219,
+      "glb_node": 1210,
+      "osm_id": 425616200,
+      "tipo_osm": "unclassified",
+      "nombre_osm": "Carretera Chivo Chivo",
+      "error_max_vertices": 0.030345876491046742,
+      "cerrado": false
+    },
+    {
+      "glb_index": 221,
+      "glb_node": 1212,
+      "osm_id": 479134184,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009195050786822433,
+      "cerrado": true
+    },
+    {
+      "glb_index": 222,
+      "glb_node": 1213,
+      "osm_id": 526563204,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Los Senderos",
+      "error_max_vertices": 0.009494875462022639,
+      "cerrado": false
+    },
+    {
+      "glb_index": 223,
+      "glb_node": 1214,
+      "osm_id": 526563206,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009993918217410835,
+      "cerrado": false
+    },
+    {
+      "glb_index": 224,
+      "glb_node": 1215,
+      "osm_id": 526563208,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010482332962516744,
+      "cerrado": false
+    },
+    {
+      "glb_index": 225,
+      "glb_node": 1216,
+      "osm_id": 526563215,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.0029636911984207513,
+      "cerrado": false
+    },
+    {
+      "glb_index": 226,
+      "glb_node": 1217,
+      "osm_id": 536708754,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007805071481567097,
+      "cerrado": false
+    },
+    {
+      "glb_index": 229,
+      "glb_node": 1220,
+      "osm_id": 538086326,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Stone Wood",
+      "error_max_vertices": 0.004619395569097898,
+      "cerrado": false
+    },
+    {
+      "glb_index": 230,
+      "glb_node": 1221,
+      "osm_id": 547146342,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004673964713965338,
+      "cerrado": false
+    },
+    {
+      "glb_index": 231,
+      "glb_node": 1222,
+      "osm_id": 548769467,
+      "tipo_osm": "service",
+      "nombre_osm": "Avenida Foresta",
+      "error_max_vertices": 0.016972430966083106,
+      "cerrado": false
+    },
+    {
+      "glb_index": 237,
+      "glb_node": 1228,
+      "osm_id": 579403694,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007919150475677681,
+      "cerrado": false
+    },
+    {
+      "glb_index": 238,
+      "glb_node": 1229,
+      "osm_id": 579403695,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008635014905010134,
+      "cerrado": false
+    },
+    {
+      "glb_index": 239,
+      "glb_node": 1230,
+      "osm_id": 579404487,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003920999492235799,
+      "cerrado": false
+    },
+    {
+      "glb_index": 240,
+      "glb_node": 1231,
+      "osm_id": 605345802,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00808278971773982,
+      "cerrado": false
+    },
+    {
+      "glb_index": 242,
+      "glb_node": 1233,
+      "osm_id": 605345804,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013279784175046216,
+      "cerrado": false
+    },
+    {
+      "glb_index": 243,
+      "glb_node": 1234,
+      "osm_id": 605345805,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012506833733087997,
+      "cerrado": false
+    },
+    {
+      "glb_index": 244,
+      "glb_node": 1235,
+      "osm_id": 605345806,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011259810217152671,
+      "cerrado": false
+    },
+    {
+      "glb_index": 245,
+      "glb_node": 1236,
+      "osm_id": 605345807,
+      "tipo_osm": "path",
+      "nombre_osm": "Camino de Cruces",
+      "error_max_vertices": 0.007251138061224449,
+      "cerrado": false
+    },
+    {
+      "glb_index": 246,
+      "glb_node": 1237,
+      "osm_id": 605345808,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0019986849720173556,
+      "cerrado": false
+    },
+    {
+      "glb_index": 247,
+      "glb_node": 1238,
+      "osm_id": 605345809,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0024716949026696677,
+      "cerrado": false
+    },
+    {
+      "glb_index": 248,
+      "glb_node": 1239,
+      "osm_id": 605345810,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0024820189506635348,
+      "cerrado": false
+    },
+    {
+      "glb_index": 249,
+      "glb_node": 1240,
+      "osm_id": 605345811,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0030513866382039334,
+      "cerrado": false
+    },
+    {
+      "glb_index": 250,
+      "glb_node": 1241,
+      "osm_id": 605345812,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0029378106605762806,
+      "cerrado": false
+    },
+    {
+      "glb_index": 251,
+      "glb_node": 1242,
+      "osm_id": 605345815,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0032051676528222044,
+      "cerrado": false
+    },
+    {
+      "glb_index": 252,
+      "glb_node": 1243,
+      "osm_id": 605345819,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004253886543218403,
+      "cerrado": false
+    },
+    {
+      "glb_index": 253,
+      "glb_node": 1244,
+      "osm_id": 605345820,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009303471439042026,
+      "cerrado": false
+    },
+    {
+      "glb_index": 254,
+      "glb_node": 1245,
+      "osm_id": 605345821,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004596299271620758,
+      "cerrado": false
+    },
+    {
+      "glb_index": 255,
+      "glb_node": 1246,
+      "osm_id": 605345822,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004000707566684835,
+      "cerrado": false
+    },
+    {
+      "glb_index": 256,
+      "glb_node": 1247,
+      "osm_id": 605345823,
+      "tipo_osm": "track",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035164188255286687,
+      "cerrado": false
+    },
+    {
+      "glb_index": 257,
+      "glb_node": 1248,
+      "osm_id": 605345825,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004668918693626391,
+      "cerrado": false
+    },
+    {
+      "glb_index": 258,
+      "glb_node": 1249,
+      "osm_id": 605349282,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004230451713823045,
+      "cerrado": false
+    },
+    {
+      "glb_index": 259,
+      "glb_node": 1250,
+      "osm_id": 608482515,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004233325538894128,
+      "cerrado": false
+    },
+    {
+      "glb_index": 260,
+      "glb_node": 1251,
+      "osm_id": 608482524,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001580266103806428,
+      "cerrado": false
+    },
+    {
+      "glb_index": 261,
+      "glb_node": 1252,
+      "osm_id": 608482525,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016861502774936914,
+      "cerrado": false
+    },
+    {
+      "glb_index": 262,
+      "glb_node": 1253,
+      "osm_id": 608482526,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0007779957032653267,
+      "cerrado": false
+    },
+    {
+      "glb_index": 263,
+      "glb_node": 1254,
+      "osm_id": 608482527,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00089691491743332,
+      "cerrado": false
+    },
+    {
+      "glb_index": 264,
+      "glb_node": 1255,
+      "osm_id": 608482528,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0004139884802551309,
+      "cerrado": false
+    },
+    {
+      "glb_index": 265,
+      "glb_node": 1256,
+      "osm_id": 608482532,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0029148008393904933,
+      "cerrado": false
+    },
+    {
+      "glb_index": 266,
+      "glb_node": 1257,
+      "osm_id": 608482533,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00297166473990908,
+      "cerrado": false
+    },
+    {
+      "glb_index": 267,
+      "glb_node": 1258,
+      "osm_id": 608482537,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003736659232453814,
+      "cerrado": false
+    },
+    {
+      "glb_index": 268,
+      "glb_node": 1259,
+      "osm_id": 619180365,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004987690655721836,
+      "cerrado": false
+    },
+    {
+      "glb_index": 269,
+      "glb_node": 1260,
+      "osm_id": 619201343,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0065925655851595604,
+      "cerrado": false
+    },
+    {
+      "glb_index": 270,
+      "glb_node": 1261,
+      "osm_id": 619201352,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Avenida Demetrio B. Lakas",
+      "error_max_vertices": 0.005114379042789591,
+      "cerrado": false
+    },
+    {
+      "glb_index": 273,
+      "glb_node": 1264,
+      "osm_id": 619211682,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0020154711282011455,
+      "cerrado": false
+    },
+    {
+      "glb_index": 274,
+      "glb_node": 1265,
+      "osm_id": 619211683,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.005385081440366246,
+      "cerrado": false
+    },
+    {
+      "glb_index": 298,
+      "glb_node": 1289,
+      "osm_id": 619877577,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Ash Wood",
+      "error_max_vertices": 0.00501305493230589,
+      "cerrado": false
+    },
+    {
+      "glb_index": 299,
+      "glb_node": 1290,
+      "osm_id": 619877580,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Rose Wood",
+      "error_max_vertices": 0.004702050626552197,
+      "cerrado": false
+    },
+    {
+      "glb_index": 300,
+      "glb_node": 1291,
+      "osm_id": 619877582,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Mandarina",
+      "error_max_vertices": 0.004758111364909669,
+      "cerrado": false
+    },
+    {
+      "glb_index": 301,
+      "glb_node": 1292,
+      "osm_id": 619877587,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005394697012440056,
+      "cerrado": false
+    },
+    {
+      "glb_index": 302,
+      "glb_node": 1293,
+      "osm_id": 619877600,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007817955085742475,
+      "cerrado": false
+    },
+    {
+      "glb_index": 303,
+      "glb_node": 1294,
+      "osm_id": 619877603,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007595166859067769,
+      "cerrado": false
+    },
+    {
+      "glb_index": 304,
+      "glb_node": 1295,
+      "osm_id": 620344996,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007595166859067769,
+      "cerrado": false
+    },
+    {
+      "glb_index": 305,
+      "glb_node": 1296,
+      "osm_id": 620344998,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carrol",
+      "error_max_vertices": 0.009290571362103208,
+      "cerrado": false
+    },
+    {
+      "glb_index": 306,
+      "glb_node": 1297,
+      "osm_id": 620345015,
+      "tipo_osm": "residential",
+      "nombre_osm": "Avenida Cárdenas",
+      "error_max_vertices": 0.007251138061224449,
+      "cerrado": false
+    },
+    {
+      "glb_index": 307,
+      "glb_node": 1298,
+      "osm_id": 620345021,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002497712430528668,
+      "cerrado": false
+    },
+    {
+      "glb_index": 308,
+      "glb_node": 1299,
+      "osm_id": 620345022,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002239054178345261,
+      "cerrado": false
+    },
+    {
+      "glb_index": 309,
+      "glb_node": 1300,
+      "osm_id": 620345023,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025804102590499907,
+      "cerrado": false
+    },
+    {
+      "glb_index": 310,
+      "glb_node": 1301,
+      "osm_id": 620351901,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Alberto Constance",
+      "error_max_vertices": 0.009597206433652066,
+      "cerrado": false
+    },
+    {
+      "glb_index": 311,
+      "glb_node": 1302,
+      "osm_id": 620351903,
+      "tipo_osm": "track",
+      "nombre_osm": "Calle Alberto Constance",
+      "error_max_vertices": 0.01006541353332001,
+      "cerrado": false
+    },
+    {
+      "glb_index": 312,
+      "glb_node": 1303,
+      "osm_id": 620351904,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle José del Sid",
+      "error_max_vertices": 0.009317408931961925,
+      "cerrado": false
+    },
+    {
+      "glb_index": 313,
+      "glb_node": 1304,
+      "osm_id": 620351906,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Rufina Alfaro",
+      "error_max_vertices": 0.018282048949989388,
+      "cerrado": false
+    },
+    {
+      "glb_index": 316,
+      "glb_node": 1307,
+      "osm_id": 620717638,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005200714431648437,
+      "cerrado": false
+    },
+    {
+      "glb_index": 317,
+      "glb_node": 1308,
+      "osm_id": 620717639,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004995547548210247,
+      "cerrado": false
+    },
+    {
+      "glb_index": 318,
+      "glb_node": 1309,
+      "osm_id": 620719272,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Víctor Iglesias",
+      "error_max_vertices": 0.003160350225147209,
+      "cerrado": false
+    },
+    {
+      "glb_index": 319,
+      "glb_node": 1310,
+      "osm_id": 620719275,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Martiza Alabarca",
+      "error_max_vertices": 0.004206614952043222,
+      "cerrado": false
+    },
+    {
+      "glb_index": 320,
+      "glb_node": 1311,
+      "osm_id": 620719277,
+      "tipo_osm": "residential",
+      "nombre_osm": "Carretera Hospital",
+      "error_max_vertices": 0.0034428129201054714,
+      "cerrado": false
+    },
+    {
+      "glb_index": 321,
+      "glb_node": 1312,
+      "osm_id": 620904394,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Jacinto Palacios",
+      "error_max_vertices": 0.00649412493498876,
+      "cerrado": false
+    },
+    {
+      "glb_index": 322,
+      "glb_node": 1313,
+      "osm_id": 620917934,
+      "tipo_osm": "primary",
+      "nombre_osm": "Avenida Omar Torrijos Herrera",
+      "error_max_vertices": 0.03148312409609031,
+      "cerrado": false
+    },
+    {
+      "glb_index": 323,
+      "glb_node": 1314,
+      "osm_id": 628903173,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0026702868455186746,
+      "cerrado": false
+    },
+    {
+      "glb_index": 324,
+      "glb_node": 1315,
+      "osm_id": 628903175,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0027225514945454967,
+      "cerrado": false
+    },
+    {
+      "glb_index": 325,
+      "glb_node": 1316,
+      "osm_id": 631889555,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Lazear",
+      "error_max_vertices": 0.007375553304161255,
+      "cerrado": false
+    },
+    {
+      "glb_index": 326,
+      "glb_node": 1317,
+      "osm_id": 660936081,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004110330750319595,
+      "cerrado": false
+    },
+    {
+      "glb_index": 327,
+      "glb_node": 1318,
+      "osm_id": 660936096,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008926280490499285,
+      "cerrado": false
+    },
+    {
+      "glb_index": 328,
+      "glb_node": 1319,
+      "osm_id": 660936098,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008634497454313664,
+      "cerrado": false
+    },
+    {
+      "glb_index": 329,
+      "glb_node": 1320,
+      "osm_id": 662198330,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0024716949026696677,
+      "cerrado": false
+    },
+    {
+      "glb_index": 331,
+      "glb_node": 1322,
+      "osm_id": 672453888,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Smith",
+      "error_max_vertices": 0.004958744670871778,
+      "cerrado": false
+    },
+    {
+      "glb_index": 332,
+      "glb_node": 1323,
+      "osm_id": 681757883,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035913322167553476,
+      "cerrado": false
+    },
+    {
+      "glb_index": 333,
+      "glb_node": 1324,
+      "osm_id": 682257503,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carrol",
+      "error_max_vertices": 0.0071082749957240236,
+      "cerrado": false
+    },
+    {
+      "glb_index": 334,
+      "glb_node": 1325,
+      "osm_id": 691498228,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0059923302394900855,
+      "cerrado": false
+    },
+    {
+      "glb_index": 335,
+      "glb_node": 1326,
+      "osm_id": 691498230,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005243983768018391,
+      "cerrado": false
+    },
+    {
+      "glb_index": 336,
+      "glb_node": 1327,
+      "osm_id": 691498231,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005143680627307748,
+      "cerrado": false
+    },
+    {
+      "glb_index": 337,
+      "glb_node": 1328,
+      "osm_id": 698085774,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016150207714314023,
+      "cerrado": false
+    },
+    {
+      "glb_index": 338,
+      "glb_node": 1329,
+      "osm_id": 698798131,
+      "tipo_osm": "primary",
+      "nombre_osm": "Avenida Omar Torrijos Herrera",
+      "error_max_vertices": 0.019308380376916772,
+      "cerrado": false
+    },
+    {
+      "glb_index": 339,
+      "glb_node": 1330,
+      "osm_id": 698798132,
+      "tipo_osm": "primary",
+      "nombre_osm": "Avenida Omar Torrijos Herrera",
+      "error_max_vertices": 0.011008484877737604,
+      "cerrado": false
+    },
+    {
+      "glb_index": 340,
+      "glb_node": 1331,
+      "osm_id": 701195587,
+      "tipo_osm": "primary",
+      "nombre_osm": "Avenida Omar Torrijos Herrera",
+      "error_max_vertices": 0.010739965579924954,
+      "cerrado": false
+    },
+    {
+      "glb_index": 341,
+      "glb_node": 1332,
+      "osm_id": 771960175,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0055602795473635655,
+      "cerrado": false
+    },
+    {
+      "glb_index": 342,
+      "glb_node": 1333,
+      "osm_id": 771960176,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005593389364827444,
+      "cerrado": false
+    },
+    {
+      "glb_index": 343,
+      "glb_node": 1334,
+      "osm_id": 771960177,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005726542424031986,
+      "cerrado": false
+    },
+    {
+      "glb_index": 344,
+      "glb_node": 1335,
+      "osm_id": 771960178,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0057228016436223295,
+      "cerrado": false
+    },
+    {
+      "glb_index": 345,
+      "glb_node": 1336,
+      "osm_id": 772052920,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003980639828979262,
+      "cerrado": false
+    },
+    {
+      "glb_index": 352,
+      "glb_node": 1343,
+      "osm_id": 776076193,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003760101661312031,
+      "cerrado": false
+    },
+    {
+      "glb_index": 353,
+      "glb_node": 1344,
+      "osm_id": 776076194,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003848238918892498,
+      "cerrado": false
+    },
+    {
+      "glb_index": 354,
+      "glb_node": 1345,
+      "osm_id": 776076195,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00402626342277315,
+      "cerrado": false
+    },
+    {
+      "glb_index": 355,
+      "glb_node": 1346,
+      "osm_id": 776076196,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003944491887373485,
+      "cerrado": false
+    },
+    {
+      "glb_index": 356,
+      "glb_node": 1347,
+      "osm_id": 776076197,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003881874076562671,
+      "cerrado": false
+    },
+    {
+      "glb_index": 357,
+      "glb_node": 1348,
+      "osm_id": 795344711,
+      "tipo_osm": "path",
+      "nombre_osm": "Camino Real de Cruces",
+      "error_max_vertices": 0.028601293465199688,
+      "cerrado": false
+    },
+    {
+      "glb_index": 358,
+      "glb_node": 1349,
+      "osm_id": 795345750,
+      "tipo_osm": "path",
+      "nombre_osm": "Camino de Cruces (sección Clayton CSS)",
+      "error_max_vertices": 0.007392902412757083,
+      "cerrado": false
+    },
+    {
+      "glb_index": 359,
+      "glb_node": 1350,
+      "osm_id": 807924494,
+      "tipo_osm": "track",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01753277487371162,
+      "cerrado": false
+    },
+    {
+      "glb_index": 360,
+      "glb_node": 1351,
+      "osm_id": 834058364,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0019519740321387775,
+      "cerrado": false
+    },
+    {
+      "glb_index": 361,
+      "glb_node": 1352,
+      "osm_id": 837207297,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01417520553383877,
+      "cerrado": false
+    },
+    {
+      "glb_index": 362,
+      "glb_node": 1353,
+      "osm_id": 837207298,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005783505328195116,
+      "cerrado": false
+    },
+    {
+      "glb_index": 363,
+      "glb_node": 1354,
+      "osm_id": 837207299,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0061330299355116125,
+      "cerrado": false
+    },
+    {
+      "glb_index": 364,
+      "glb_node": 1355,
+      "osm_id": 837207300,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005969566451327189,
+      "cerrado": false
+    },
+    {
+      "glb_index": 365,
+      "glb_node": 1356,
+      "osm_id": 837207301,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007588769113965021,
+      "cerrado": false
+    },
+    {
+      "glb_index": 366,
+      "glb_node": 1357,
+      "osm_id": 837207302,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00935352834251861,
+      "cerrado": false
+    },
+    {
+      "glb_index": 367,
+      "glb_node": 1358,
+      "osm_id": 837207303,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009452106268359848,
+      "cerrado": false
+    },
+    {
+      "glb_index": 368,
+      "glb_node": 1359,
+      "osm_id": 839514979,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Bruja",
+      "error_max_vertices": 0.0053832853856121314,
+      "cerrado": false
+    },
+    {
+      "glb_index": 369,
+      "glb_node": 1360,
+      "osm_id": 839514980,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005376778121198205,
+      "cerrado": false
+    },
+    {
+      "glb_index": 370,
+      "glb_node": 1361,
+      "osm_id": 839514981,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Bruja",
+      "error_max_vertices": 0.0070244584361345225,
+      "cerrado": false
+    },
+    {
+      "glb_index": 371,
+      "glb_node": 1362,
+      "osm_id": 839514982,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0065424135338188,
+      "cerrado": false
+    },
+    {
+      "glb_index": 372,
+      "glb_node": 1363,
+      "osm_id": 839514983,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00525871255242361,
+      "cerrado": false
+    },
+    {
+      "glb_index": 373,
+      "glb_node": 1364,
+      "osm_id": 839515494,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004969159456465021,
+      "cerrado": false
+    },
+    {
+      "glb_index": 374,
+      "glb_node": 1365,
+      "osm_id": 839515495,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0038052955832701806,
+      "cerrado": false
+    },
+    {
+      "glb_index": 375,
+      "glb_node": 1366,
+      "osm_id": 839515496,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004376563251673145,
+      "cerrado": false
+    },
+    {
+      "glb_index": 376,
+      "glb_node": 1367,
+      "osm_id": 854648031,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Carretera Hospital",
+      "error_max_vertices": 0.0037677123393034724,
+      "cerrado": false
+    },
+    {
+      "glb_index": 377,
+      "glb_node": 1368,
+      "osm_id": 854648032,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jacinto Palacios",
+      "error_max_vertices": 0.003944697051300444,
+      "cerrado": false
+    },
+    {
+      "glb_index": 378,
+      "glb_node": 1369,
+      "osm_id": 854648033,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Ricardo Murgas",
+      "error_max_vertices": 0.006976226864777346,
+      "cerrado": false
+    },
+    {
+      "glb_index": 379,
+      "glb_node": 1370,
+      "osm_id": 854648034,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Ricardo Murgas",
+      "error_max_vertices": 0.006367867941898491,
+      "cerrado": false
+    },
+    {
+      "glb_index": 380,
+      "glb_node": 1371,
+      "osm_id": 854938920,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008461526359629896,
+      "cerrado": false
+    },
+    {
+      "glb_index": 381,
+      "glb_node": 1372,
+      "osm_id": 854938922,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006148676917533083,
+      "cerrado": false
+    },
+    {
+      "glb_index": 382,
+      "glb_node": 1373,
+      "osm_id": 854938923,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0056073828702860595,
+      "cerrado": false
+    },
+    {
+      "glb_index": 383,
+      "glb_node": 1374,
+      "osm_id": 854941235,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011083475235516322,
+      "cerrado": false
+    },
+    {
+      "glb_index": 384,
+      "glb_node": 1375,
+      "osm_id": 854941236,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011191303102455735,
+      "cerrado": false
+    },
+    {
+      "glb_index": 385,
+      "glb_node": 1376,
+      "osm_id": 854941237,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0116494031743253,
+      "cerrado": false
+    },
+    {
+      "glb_index": 386,
+      "glb_node": 1377,
+      "osm_id": 854941238,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011247878829910633,
+      "cerrado": false
+    },
+    {
+      "glb_index": 387,
+      "glb_node": 1378,
+      "osm_id": 854941239,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009962683518369323,
+      "cerrado": false
+    },
+    {
+      "glb_index": 388,
+      "glb_node": 1379,
+      "osm_id": 854941240,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008097452454402682,
+      "cerrado": false
+    },
+    {
+      "glb_index": 389,
+      "glb_node": 1380,
+      "osm_id": 854941241,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006990915621434558,
+      "cerrado": false
+    },
+    {
+      "glb_index": 390,
+      "glb_node": 1381,
+      "osm_id": 854941242,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0074283091842312025,
+      "cerrado": false
+    },
+    {
+      "glb_index": 391,
+      "glb_node": 1382,
+      "osm_id": 854941243,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011199353346127495,
+      "cerrado": false
+    },
+    {
+      "glb_index": 392,
+      "glb_node": 1383,
+      "osm_id": 860387776,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Carretera Hospital",
+      "error_max_vertices": 0.0035094974874635733,
+      "cerrado": false
+    },
+    {
+      "glb_index": 393,
+      "glb_node": 1384,
+      "osm_id": 860392891,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013264789859297478,
+      "cerrado": true
+    },
+    {
+      "glb_index": 394,
+      "glb_node": 1385,
+      "osm_id": 860392892,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008546919910602843,
+      "cerrado": false
+    },
+    {
+      "glb_index": 395,
+      "glb_node": 1386,
+      "osm_id": 860392893,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Los Senderos",
+      "error_max_vertices": 0.00750723074439848,
+      "cerrado": false
+    },
+    {
+      "glb_index": 396,
+      "glb_node": 1387,
+      "osm_id": 860392894,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009977812895745721,
+      "cerrado": false
+    },
+    {
+      "glb_index": 397,
+      "glb_node": 1388,
+      "osm_id": 860392895,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01185116673245107,
+      "cerrado": false
+    },
+    {
+      "glb_index": 399,
+      "glb_node": 1390,
+      "osm_id": 872327281,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0042362529722003274,
+      "cerrado": false
+    },
+    {
+      "glb_index": 400,
+      "glb_node": 1391,
+      "osm_id": 872327282,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004221406695301367,
+      "cerrado": false
+    },
+    {
+      "glb_index": 401,
+      "glb_node": 1392,
+      "osm_id": 872327283,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004334725686936671,
+      "cerrado": false
+    },
+    {
+      "glb_index": 402,
+      "glb_node": 1393,
+      "osm_id": 965220886,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Guanábano",
+      "error_max_vertices": 0.01117935153396191,
+      "cerrado": false
+    },
+    {
+      "glb_index": 403,
+      "glb_node": 1394,
+      "osm_id": 965220887,
+      "tipo_osm": "residential",
+      "nombre_osm": "Avenida Cárdenas",
+      "error_max_vertices": 0.00911613780569781,
+      "cerrado": false
+    },
+    {
+      "glb_index": 404,
+      "glb_node": 1395,
+      "osm_id": 965220888,
+      "tipo_osm": "residential",
+      "nombre_osm": "Avenida Cárdenas",
+      "error_max_vertices": 0.012409108191075125,
+      "cerrado": false
+    },
+    {
+      "glb_index": 405,
+      "glb_node": 1396,
+      "osm_id": 988287603,
+      "tipo_osm": "service",
+      "nombre_osm": "Calle Bruja",
+      "error_max_vertices": 0.005396471963721673,
+      "cerrado": false
+    },
+    {
+      "glb_index": 406,
+      "glb_node": 1397,
+      "osm_id": 1000597541,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0034997900322169943,
+      "cerrado": false
+    },
+    {
+      "glb_index": 407,
+      "glb_node": 1398,
+      "osm_id": 1000601267,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003447043208766301,
+      "cerrado": false
+    },
+    {
+      "glb_index": 408,
+      "glb_node": 1399,
+      "osm_id": 1000601268,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035409937855648914,
+      "cerrado": false
+    },
+    {
+      "glb_index": 409,
+      "glb_node": 1400,
+      "osm_id": 1000601270,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00447897190013799,
+      "cerrado": false
+    },
+    {
+      "glb_index": 410,
+      "glb_node": 1401,
+      "osm_id": 1000601271,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004558007707291453,
+      "cerrado": false
+    },
+    {
+      "glb_index": 411,
+      "glb_node": 1402,
+      "osm_id": 1000601272,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004676621814193737,
+      "cerrado": false
+    },
+    {
+      "glb_index": 412,
+      "glb_node": 1403,
+      "osm_id": 1000601273,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00447897190013799,
+      "cerrado": false
+    },
+    {
+      "glb_index": 413,
+      "glb_node": 1404,
+      "osm_id": 1000601274,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0058305042581448,
+      "cerrado": false
+    },
+    {
+      "glb_index": 414,
+      "glb_node": 1405,
+      "osm_id": 1000601275,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00460905180827379,
+      "cerrado": false
+    },
+    {
+      "glb_index": 415,
+      "glb_node": 1406,
+      "osm_id": 1000601276,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004615253348940799,
+      "cerrado": true
+    },
+    {
+      "glb_index": 416,
+      "glb_node": 1407,
+      "osm_id": 1000601277,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004728777055567232,
+      "cerrado": false
+    },
+    {
+      "glb_index": 417,
+      "glb_node": 1408,
+      "osm_id": 1000601278,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0037773381882342167,
+      "cerrado": false
+    },
+    {
+      "glb_index": 418,
+      "glb_node": 1409,
+      "osm_id": 1000601279,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0040925455664624815,
+      "cerrado": false
+    },
+    {
+      "glb_index": 419,
+      "glb_node": 1410,
+      "osm_id": 1000601280,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0039021115214389287,
+      "cerrado": false
+    },
+    {
+      "glb_index": 420,
+      "glb_node": 1411,
+      "osm_id": 1000601281,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004502984949389629,
+      "cerrado": false
+    },
+    {
+      "glb_index": 421,
+      "glb_node": 1412,
+      "osm_id": 1000601282,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004549001714769938,
+      "cerrado": false
+    },
+    {
+      "glb_index": 422,
+      "glb_node": 1413,
+      "osm_id": 1000601283,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004540507628927789,
+      "cerrado": false
+    },
+    {
+      "glb_index": 423,
+      "glb_node": 1414,
+      "osm_id": 1000601284,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0037129072056428097,
+      "cerrado": false
+    },
+    {
+      "glb_index": 437,
+      "glb_node": 1428,
+      "osm_id": 1029161040,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002793619554050138,
+      "cerrado": false
+    },
+    {
+      "glb_index": 438,
+      "glb_node": 1429,
+      "osm_id": 1029161546,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0027358860295795782,
+      "cerrado": false
+    },
+    {
+      "glb_index": 439,
+      "glb_node": 1430,
+      "osm_id": 1029161547,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025784228283513627,
+      "cerrado": false
+    },
+    {
+      "glb_index": 440,
+      "glb_node": 1431,
+      "osm_id": 1032405985,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0014576077871961456,
+      "cerrado": false
+    },
+    {
+      "glb_index": 441,
+      "glb_node": 1432,
+      "osm_id": 1032405986,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0014336366181969464,
+      "cerrado": false
+    },
+    {
+      "glb_index": 442,
+      "glb_node": 1433,
+      "osm_id": 1032405987,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0014576077871961456,
+      "cerrado": false
+    },
+    {
+      "glb_index": 443,
+      "glb_node": 1434,
+      "osm_id": 1032405988,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0014473809125005895,
+      "cerrado": false
+    },
+    {
+      "glb_index": 444,
+      "glb_node": 1435,
+      "osm_id": 1032405989,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00089691491743332,
+      "cerrado": false
+    },
+    {
+      "glb_index": 445,
+      "glb_node": 1436,
+      "osm_id": 1032405990,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0013904749066203492,
+      "cerrado": false
+    },
+    {
+      "glb_index": 446,
+      "glb_node": 1437,
+      "osm_id": 1032405991,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0028608692973488502,
+      "cerrado": false
+    },
+    {
+      "glb_index": 447,
+      "glb_node": 1438,
+      "osm_id": 1032405994,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0021225897161236953,
+      "cerrado": false
+    },
+    {
+      "glb_index": 448,
+      "glb_node": 1439,
+      "osm_id": 1032405995,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004652551149413393,
+      "cerrado": false
+    },
+    {
+      "glb_index": 449,
+      "glb_node": 1440,
+      "osm_id": 1032405996,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004306816056614697,
+      "cerrado": false
+    },
+    {
+      "glb_index": 450,
+      "glb_node": 1441,
+      "osm_id": 1032405997,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003955245691577369,
+      "cerrado": false
+    },
+    {
+      "glb_index": 451,
+      "glb_node": 1442,
+      "osm_id": 1032410468,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002873252258277917,
+      "cerrado": false
+    },
+    {
+      "glb_index": 452,
+      "glb_node": 1443,
+      "osm_id": 1032410469,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016458195988271057,
+      "cerrado": false
+    },
+    {
+      "glb_index": 453,
+      "glb_node": 1444,
+      "osm_id": 1032410470,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002450975585310238,
+      "cerrado": false
+    },
+    {
+      "glb_index": 454,
+      "glb_node": 1445,
+      "osm_id": 1032410471,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003154033459204983,
+      "cerrado": false
+    },
+    {
+      "glb_index": 455,
+      "glb_node": 1446,
+      "osm_id": 1032410472,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0034382148982682183,
+      "cerrado": false
+    },
+    {
+      "glb_index": 456,
+      "glb_node": 1447,
+      "osm_id": 1032410473,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025889501588080353,
+      "cerrado": false
+    },
+    {
+      "glb_index": 457,
+      "glb_node": 1448,
+      "osm_id": 1032410474,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0024419538439540947,
+      "cerrado": false
+    },
+    {
+      "glb_index": 458,
+      "glb_node": 1449,
+      "osm_id": 1032410475,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025248294228449493,
+      "cerrado": false
+    },
+    {
+      "glb_index": 459,
+      "glb_node": 1450,
+      "osm_id": 1032410476,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003448260001065777,
+      "cerrado": false
+    },
+    {
+      "glb_index": 460,
+      "glb_node": 1451,
+      "osm_id": 1032410477,
+      "tipo_osm": "steps",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003605895930950462,
+      "cerrado": false
+    },
+    {
+      "glb_index": 461,
+      "glb_node": 1452,
+      "osm_id": 1070090169,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012746001618722792,
+      "cerrado": false
+    },
+    {
+      "glb_index": 462,
+      "glb_node": 1453,
+      "osm_id": 1070090170,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013210363397369067,
+      "cerrado": false
+    },
+    {
+      "glb_index": 463,
+      "glb_node": 1454,
+      "osm_id": 1112115151,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002647976740580196,
+      "cerrado": false
+    },
+    {
+      "glb_index": 464,
+      "glb_node": 1455,
+      "osm_id": 1113404194,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007121140919838773,
+      "cerrado": false
+    },
+    {
+      "glb_index": 465,
+      "glb_node": 1456,
+      "osm_id": 1113404196,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006978447300355079,
+      "cerrado": false
+    },
+    {
+      "glb_index": 466,
+      "glb_node": 1457,
+      "osm_id": 1113407522,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004857134647413771,
+      "cerrado": false
+    },
+    {
+      "glb_index": 467,
+      "glb_node": 1458,
+      "osm_id": 1113428801,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005149720323376781,
+      "cerrado": false
+    },
+    {
+      "glb_index": 468,
+      "glb_node": 1459,
+      "osm_id": 1113428802,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006307005876370182,
+      "cerrado": false
+    },
+    {
+      "glb_index": 469,
+      "glb_node": 1460,
+      "osm_id": 1113428803,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006149936929629314,
+      "cerrado": false
+    },
+    {
+      "glb_index": 470,
+      "glb_node": 1461,
+      "osm_id": 1113428805,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005789002114403866,
+      "cerrado": false
+    },
+    {
+      "glb_index": 471,
+      "glb_node": 1462,
+      "osm_id": 1113708800,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007126096812632703,
+      "cerrado": false
+    },
+    {
+      "glb_index": 472,
+      "glb_node": 1463,
+      "osm_id": 1113747655,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.03258836628987274,
+      "cerrado": false
+    },
+    {
+      "glb_index": 473,
+      "glb_node": 1464,
+      "osm_id": 1202019313,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carlos Lara",
+      "error_max_vertices": 0.004556420486426311,
+      "cerrado": false
+    },
+    {
+      "glb_index": 474,
+      "glb_node": 1465,
+      "osm_id": 1203393929,
+      "tipo_osm": "elevator",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0036996706809525833,
+      "cerrado": true
+    },
+    {
+      "glb_index": 475,
+      "glb_node": 1466,
+      "osm_id": 1203395288,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0022389537192912643,
+      "cerrado": false
+    },
+    {
+      "glb_index": 476,
+      "glb_node": 1467,
+      "osm_id": 1203395289,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002472240669950027,
+      "cerrado": false
+    },
+    {
+      "glb_index": 477,
+      "glb_node": 1468,
+      "osm_id": 1203395290,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005657792205699195,
+      "cerrado": false
+    },
+    {
+      "glb_index": 478,
+      "glb_node": 1469,
+      "osm_id": 1203395291,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0023036712581769245,
+      "cerrado": false
+    },
+    {
+      "glb_index": 479,
+      "glb_node": 1470,
+      "osm_id": 1203395293,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0044771593478245865,
+      "cerrado": false
+    },
+    {
+      "glb_index": 480,
+      "glb_node": 1471,
+      "osm_id": 1203395295,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0022954282173722456,
+      "cerrado": false
+    },
+    {
+      "glb_index": 481,
+      "glb_node": 1472,
+      "osm_id": 1203395296,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005722768755646597,
+      "cerrado": false
+    },
+    {
+      "glb_index": 482,
+      "glb_node": 1473,
+      "osm_id": 1203395297,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005899967267912858,
+      "cerrado": false
+    },
+    {
+      "glb_index": 483,
+      "glb_node": 1474,
+      "osm_id": 1203395300,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025124424359423726,
+      "cerrado": false
+    },
+    {
+      "glb_index": 484,
+      "glb_node": 1475,
+      "osm_id": 1203395301,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002369720788835984,
+      "cerrado": false
+    },
+    {
+      "glb_index": 485,
+      "glb_node": 1476,
+      "osm_id": 1203395302,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0022954282173722456,
+      "cerrado": false
+    },
+    {
+      "glb_index": 486,
+      "glb_node": 1477,
+      "osm_id": 1203395303,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002373514328213455,
+      "cerrado": false
+    },
+    {
+      "glb_index": 487,
+      "glb_node": 1478,
+      "osm_id": 1203395304,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017408064140007158,
+      "cerrado": false
+    },
+    {
+      "glb_index": 488,
+      "glb_node": 1479,
+      "osm_id": 1203395305,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017777395422918607,
+      "cerrado": false
+    },
+    {
+      "glb_index": 489,
+      "glb_node": 1480,
+      "osm_id": 1203395306,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017408064140007158,
+      "cerrado": false
+    },
+    {
+      "glb_index": 490,
+      "glb_node": 1481,
+      "osm_id": 1203397153,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017265356682261716,
+      "cerrado": false
+    },
+    {
+      "glb_index": 491,
+      "glb_node": 1482,
+      "osm_id": 1203397154,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0015205247698204746,
+      "cerrado": false
+    },
+    {
+      "glb_index": 492,
+      "glb_node": 1483,
+      "osm_id": 1203397155,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0027045835528104263,
+      "cerrado": false
+    },
+    {
+      "glb_index": 493,
+      "glb_node": 1484,
+      "osm_id": 1203397156,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0015864270611036684,
+      "cerrado": false
+    },
+    {
+      "glb_index": 494,
+      "glb_node": 1485,
+      "osm_id": 1203397157,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001609220154391515,
+      "cerrado": false
+    },
+    {
+      "glb_index": 495,
+      "glb_node": 1486,
+      "osm_id": 1203397158,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017097510231583758,
+      "cerrado": false
+    },
+    {
+      "glb_index": 496,
+      "glb_node": 1487,
+      "osm_id": 1203397159,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001906004405692457,
+      "cerrado": false
+    },
+    {
+      "glb_index": 497,
+      "glb_node": 1488,
+      "osm_id": 1203397160,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0019409778721989157,
+      "cerrado": false
+    },
+    {
+      "glb_index": 498,
+      "glb_node": 1489,
+      "osm_id": 1203397161,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016841925538152057,
+      "cerrado": false
+    },
+    {
+      "glb_index": 499,
+      "glb_node": 1490,
+      "osm_id": 1203397162,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025109353099062696,
+      "cerrado": false
+    },
+    {
+      "glb_index": 500,
+      "glb_node": 1491,
+      "osm_id": 1203397163,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002018909800973906,
+      "cerrado": false
+    },
+    {
+      "glb_index": 501,
+      "glb_node": 1492,
+      "osm_id": 1203397164,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001965168182997034,
+      "cerrado": false
+    },
+    {
+      "glb_index": 502,
+      "glb_node": 1493,
+      "osm_id": 1203397165,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017523913363481814,
+      "cerrado": false
+    },
+    {
+      "glb_index": 503,
+      "glb_node": 1494,
+      "osm_id": 1203397166,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0015490764583782502,
+      "cerrado": false
+    },
+    {
+      "glb_index": 504,
+      "glb_node": 1495,
+      "osm_id": 1203397167,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017242029247520794,
+      "cerrado": false
+    },
+    {
+      "glb_index": 505,
+      "glb_node": 1496,
+      "osm_id": 1203397168,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0015961125414051583,
+      "cerrado": false
+    },
+    {
+      "glb_index": 506,
+      "glb_node": 1497,
+      "osm_id": 1203397169,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001577460244935495,
+      "cerrado": false
+    },
+    {
+      "glb_index": 507,
+      "glb_node": 1498,
+      "osm_id": 1203397170,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016814499571211154,
+      "cerrado": false
+    },
+    {
+      "glb_index": 508,
+      "glb_node": 1499,
+      "osm_id": 1203397171,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016814499571211154,
+      "cerrado": false
+    },
+    {
+      "glb_index": 509,
+      "glb_node": 1500,
+      "osm_id": 1203397172,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002525074168463553,
+      "cerrado": false
+    },
+    {
+      "glb_index": 510,
+      "glb_node": 1501,
+      "osm_id": 1203397173,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017930681817893783,
+      "cerrado": false
+    },
+    {
+      "glb_index": 511,
+      "glb_node": 1502,
+      "osm_id": 1203397174,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017930681817893783,
+      "cerrado": false
+    },
+    {
+      "glb_index": 512,
+      "glb_node": 1503,
+      "osm_id": 1203397175,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017892667219889093,
+      "cerrado": false
+    },
+    {
+      "glb_index": 513,
+      "glb_node": 1504,
+      "osm_id": 1203397176,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001972491137198402,
+      "cerrado": false
+    },
+    {
+      "glb_index": 514,
+      "glb_node": 1505,
+      "osm_id": 1203397177,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001876461732730145,
+      "cerrado": false
+    },
+    {
+      "glb_index": 515,
+      "glb_node": 1506,
+      "osm_id": 1203397178,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002043046691073635,
+      "cerrado": false
+    },
+    {
+      "glb_index": 516,
+      "glb_node": 1507,
+      "osm_id": 1203397179,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002054302161639745,
+      "cerrado": false
+    },
+    {
+      "glb_index": 517,
+      "glb_node": 1508,
+      "osm_id": 1203397180,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0020367002980424863,
+      "cerrado": false
+    },
+    {
+      "glb_index": 518,
+      "glb_node": 1509,
+      "osm_id": 1203397181,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002354109098139241,
+      "cerrado": false
+    },
+    {
+      "glb_index": 519,
+      "glb_node": 1510,
+      "osm_id": 1203397182,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0023611085300346427,
+      "cerrado": false
+    },
+    {
+      "glb_index": 520,
+      "glb_node": 1511,
+      "osm_id": 1203397183,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002562395180164524,
+      "cerrado": false
+    },
+    {
+      "glb_index": 521,
+      "glb_node": 1512,
+      "osm_id": 1203397184,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025155415654241364,
+      "cerrado": false
+    },
+    {
+      "glb_index": 522,
+      "glb_node": 1513,
+      "osm_id": 1203397185,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002562395180164524,
+      "cerrado": false
+    },
+    {
+      "glb_index": 523,
+      "glb_node": 1514,
+      "osm_id": 1203397186,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016650745294256055,
+      "cerrado": false
+    },
+    {
+      "glb_index": 524,
+      "glb_node": 1515,
+      "osm_id": 1206696778,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.0025709462575807117,
+      "cerrado": false
+    },
+    {
+      "glb_index": 525,
+      "glb_node": 1516,
+      "osm_id": 1223807381,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005140348028697988,
+      "cerrado": false
+    },
+    {
+      "glb_index": 529,
+      "glb_node": 1520,
+      "osm_id": 1226637904,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005879596898612932,
+      "cerrado": false
+    },
+    {
+      "glb_index": 530,
+      "glb_node": 1521,
+      "osm_id": 1226637905,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005246713809363446,
+      "cerrado": false
+    },
+    {
+      "glb_index": 531,
+      "glb_node": 1522,
+      "osm_id": 1226637906,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006419470551007075,
+      "cerrado": false
+    },
+    {
+      "glb_index": 532,
+      "glb_node": 1523,
+      "osm_id": 1226643470,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006268962730011652,
+      "cerrado": false
+    },
+    {
+      "glb_index": 533,
+      "glb_node": 1524,
+      "osm_id": 1226643471,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00657605704977072,
+      "cerrado": false
+    },
+    {
+      "glb_index": 534,
+      "glb_node": 1525,
+      "osm_id": 1226643472,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006461339406861502,
+      "cerrado": false
+    },
+    {
+      "glb_index": 535,
+      "glb_node": 1526,
+      "osm_id": 1226643473,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006461339406861502,
+      "cerrado": false
+    },
+    {
+      "glb_index": 536,
+      "glb_node": 1527,
+      "osm_id": 1226643474,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00347449979681978,
+      "cerrado": false
+    },
+    {
+      "glb_index": 537,
+      "glb_node": 1528,
+      "osm_id": 1226643475,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003437159542724216,
+      "cerrado": false
+    },
+    {
+      "glb_index": 538,
+      "glb_node": 1529,
+      "osm_id": 1226643476,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035593852094988596,
+      "cerrado": false
+    },
+    {
+      "glb_index": 539,
+      "glb_node": 1530,
+      "osm_id": 1226643477,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004426407384394662,
+      "cerrado": false
+    },
+    {
+      "glb_index": 540,
+      "glb_node": 1531,
+      "osm_id": 1226643478,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00467465047833566,
+      "cerrado": false
+    },
+    {
+      "glb_index": 543,
+      "glb_node": 1534,
+      "osm_id": 1229512019,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Teófilo De La Torre",
+      "error_max_vertices": 0.007157537326686528,
+      "cerrado": false
+    },
+    {
+      "glb_index": 544,
+      "glb_node": 1535,
+      "osm_id": 1229512020,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00673083567840805,
+      "cerrado": false
+    },
+    {
+      "glb_index": 545,
+      "glb_node": 1536,
+      "osm_id": 1229512021,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006906038605477178,
+      "cerrado": false
+    },
+    {
+      "glb_index": 546,
+      "glb_node": 1537,
+      "osm_id": 1229512022,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00697628136894776,
+      "cerrado": false
+    },
+    {
+      "glb_index": 547,
+      "glb_node": 1538,
+      "osm_id": 1229512023,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006699946963694241,
+      "cerrado": false
+    },
+    {
+      "glb_index": 548,
+      "glb_node": 1539,
+      "osm_id": 1229512024,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007377380836956948,
+      "cerrado": false
+    },
+    {
+      "glb_index": 549,
+      "glb_node": 1540,
+      "osm_id": 1229512025,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006906038605477178,
+      "cerrado": false
+    },
+    {
+      "glb_index": 550,
+      "glb_node": 1541,
+      "osm_id": 1229512026,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007006420880327413,
+      "cerrado": false
+    },
+    {
+      "glb_index": 551,
+      "glb_node": 1542,
+      "osm_id": 1229512027,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0072012711714007005,
+      "cerrado": false
+    },
+    {
+      "glb_index": 552,
+      "glb_node": 1543,
+      "osm_id": 1229512028,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007006420880327413,
+      "cerrado": false
+    },
+    {
+      "glb_index": 553,
+      "glb_node": 1544,
+      "osm_id": 1229512029,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00675677572936874,
+      "cerrado": false
+    },
+    {
+      "glb_index": 554,
+      "glb_node": 1545,
+      "osm_id": 1229728660,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010637497236961769,
+      "cerrado": false
+    },
+    {
+      "glb_index": 555,
+      "glb_node": 1546,
+      "osm_id": 1229728661,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011188423823112987,
+      "cerrado": false
+    },
+    {
+      "glb_index": 556,
+      "glb_node": 1547,
+      "osm_id": 1230362507,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009702335827160775,
+      "cerrado": false
+    },
+    {
+      "glb_index": 557,
+      "glb_node": 1548,
+      "osm_id": 1230362508,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01042897933148921,
+      "cerrado": false
+    },
+    {
+      "glb_index": 558,
+      "glb_node": 1549,
+      "osm_id": 1230362509,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01128777601303505,
+      "cerrado": false
+    },
+    {
+      "glb_index": 559,
+      "glb_node": 1550,
+      "osm_id": 1230362510,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010180973290468577,
+      "cerrado": false
+    },
+    {
+      "glb_index": 560,
+      "glb_node": 1551,
+      "osm_id": 1230362511,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009860310563135398,
+      "cerrado": false
+    },
+    {
+      "glb_index": 561,
+      "glb_node": 1552,
+      "osm_id": 1230362512,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009224723956626869,
+      "cerrado": false
+    },
+    {
+      "glb_index": 562,
+      "glb_node": 1553,
+      "osm_id": 1230362513,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Guanábano",
+      "error_max_vertices": 0.011149836805046002,
+      "cerrado": false
+    },
+    {
+      "glb_index": 563,
+      "glb_node": 1554,
+      "osm_id": 1230362514,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Guanábano",
+      "error_max_vertices": 0.009292647553076882,
+      "cerrado": false
+    },
+    {
+      "glb_index": 564,
+      "glb_node": 1555,
+      "osm_id": 1230362515,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Guanábano",
+      "error_max_vertices": 0.011330078287939438,
+      "cerrado": false
+    },
+    {
+      "glb_index": 565,
+      "glb_node": 1556,
+      "osm_id": 1230362516,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011609111729920992,
+      "cerrado": false
+    },
+    {
+      "glb_index": 566,
+      "glb_node": 1557,
+      "osm_id": 1230362517,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010708963288614771,
+      "cerrado": false
+    },
+    {
+      "glb_index": 567,
+      "glb_node": 1558,
+      "osm_id": 1230362518,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011141997865344313,
+      "cerrado": false
+    },
+    {
+      "glb_index": 568,
+      "glb_node": 1559,
+      "osm_id": 1230362519,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00772001556898441,
+      "cerrado": false
+    },
+    {
+      "glb_index": 569,
+      "glb_node": 1560,
+      "osm_id": 1230362520,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.007805071481567097,
+      "cerrado": false
+    },
+    {
+      "glb_index": 570,
+      "glb_node": 1561,
+      "osm_id": 1230362521,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hazel Wood",
+      "error_max_vertices": 0.004774347550626947,
+      "cerrado": false
+    },
+    {
+      "glb_index": 571,
+      "glb_node": 1562,
+      "osm_id": 1230362522,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Ash Wood",
+      "error_max_vertices": 0.005025674517322006,
+      "cerrado": false
+    },
+    {
+      "glb_index": 572,
+      "glb_node": 1563,
+      "osm_id": 1230362523,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Blossom Wood",
+      "error_max_vertices": 0.005016428079480202,
+      "cerrado": false
+    },
+    {
+      "glb_index": 573,
+      "glb_node": 1564,
+      "osm_id": 1230362524,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.005837957454099149,
+      "cerrado": false
+    },
+    {
+      "glb_index": 574,
+      "glb_node": 1565,
+      "osm_id": 1230362525,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.005825527337305113,
+      "cerrado": false
+    },
+    {
+      "glb_index": 575,
+      "glb_node": 1566,
+      "osm_id": 1230362526,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hill",
+      "error_max_vertices": 0.001883122960723722,
+      "cerrado": false
+    },
+    {
+      "glb_index": 576,
+      "glb_node": 1567,
+      "osm_id": 1230362527,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hill",
+      "error_max_vertices": 0.0021479416825547623,
+      "cerrado": false
+    },
+    {
+      "glb_index": 577,
+      "glb_node": 1568,
+      "osm_id": 1230362528,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Hill",
+      "error_max_vertices": 0.002119545094595898,
+      "cerrado": false
+    },
+    {
+      "glb_index": 578,
+      "glb_node": 1569,
+      "osm_id": 1230362529,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle McIntosh",
+      "error_max_vertices": 0.003496797812146434,
+      "cerrado": false
+    },
+    {
+      "glb_index": 579,
+      "glb_node": 1570,
+      "osm_id": 1234790789,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004232812562263611,
+      "cerrado": false
+    },
+    {
+      "glb_index": 580,
+      "glb_node": 1571,
+      "osm_id": 1234790790,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003922875088640895,
+      "cerrado": false
+    },
+    {
+      "glb_index": 581,
+      "glb_node": 1572,
+      "osm_id": 1234790791,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0037009812308717725,
+      "cerrado": false
+    },
+    {
+      "glb_index": 582,
+      "glb_node": 1573,
+      "osm_id": 1234790792,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003971984663368539,
+      "cerrado": true
+    },
+    {
+      "glb_index": 583,
+      "glb_node": 1574,
+      "osm_id": 1234790793,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0029705971706544634,
+      "cerrado": false
+    },
+    {
+      "glb_index": 584,
+      "glb_node": 1575,
+      "osm_id": 1241234521,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.011854529985763529,
+      "cerrado": false
+    },
+    {
+      "glb_index": 585,
+      "glb_node": 1576,
+      "osm_id": 1241234522,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012263941630327123,
+      "cerrado": true
+    },
+    {
+      "glb_index": 586,
+      "glb_node": 1577,
+      "osm_id": 1246960039,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0019543773511469776,
+      "cerrado": false
+    },
+    {
+      "glb_index": 587,
+      "glb_node": 1578,
+      "osm_id": 1246960040,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0027501100199659725,
+      "cerrado": false
+    },
+    {
+      "glb_index": 588,
+      "glb_node": 1579,
+      "osm_id": 1246960041,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002073857962181743,
+      "cerrado": false
+    },
+    {
+      "glb_index": 589,
+      "glb_node": 1580,
+      "osm_id": 1246960042,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002644354384250776,
+      "cerrado": false
+    },
+    {
+      "glb_index": 590,
+      "glb_node": 1581,
+      "osm_id": 1246960043,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0027110864492929138,
+      "cerrado": false
+    },
+    {
+      "glb_index": 591,
+      "glb_node": 1582,
+      "osm_id": 1247406984,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016150207714314023,
+      "cerrado": false
+    },
+    {
+      "glb_index": 592,
+      "glb_node": 1583,
+      "osm_id": 1250044814,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006285511631559585,
+      "cerrado": false
+    },
+    {
+      "glb_index": 593,
+      "glb_node": 1584,
+      "osm_id": 1250044815,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006436693221574792,
+      "cerrado": false
+    },
+    {
+      "glb_index": 594,
+      "glb_node": 1585,
+      "osm_id": 1250044816,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006293263476761189,
+      "cerrado": false
+    },
+    {
+      "glb_index": 595,
+      "glb_node": 1586,
+      "osm_id": 1250044817,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00607980492859034,
+      "cerrado": false
+    },
+    {
+      "glb_index": 596,
+      "glb_node": 1587,
+      "osm_id": 1250044818,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0062027002126147715,
+      "cerrado": false
+    },
+    {
+      "glb_index": 597,
+      "glb_node": 1588,
+      "osm_id": 1250044819,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006293263476761189,
+      "cerrado": false
+    },
+    {
+      "glb_index": 598,
+      "glb_node": 1589,
+      "osm_id": 1250053974,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005020359225694271,
+      "cerrado": false
+    },
+    {
+      "glb_index": 599,
+      "glb_node": 1590,
+      "osm_id": 1250059961,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0024864813738405545,
+      "cerrado": false
+    },
+    {
+      "glb_index": 600,
+      "glb_node": 1591,
+      "osm_id": 1250059962,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0022949738505549694,
+      "cerrado": false
+    },
+    {
+      "glb_index": 601,
+      "glb_node": 1592,
+      "osm_id": 1250059963,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025505843125257577,
+      "cerrado": false
+    },
+    {
+      "glb_index": 602,
+      "glb_node": 1593,
+      "osm_id": 1251012792,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0026107924791130698,
+      "cerrado": false
+    },
+    {
+      "glb_index": 603,
+      "glb_node": 1594,
+      "osm_id": 1251012793,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002655097157288024,
+      "cerrado": false
+    },
+    {
+      "glb_index": 604,
+      "glb_node": 1595,
+      "osm_id": 1251012794,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002680698165552279,
+      "cerrado": false
+    },
+    {
+      "glb_index": 605,
+      "glb_node": 1596,
+      "osm_id": 1251012795,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002750679614263667,
+      "cerrado": false
+    },
+    {
+      "glb_index": 606,
+      "glb_node": 1597,
+      "osm_id": 1251012796,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0028033270041899045,
+      "cerrado": false
+    },
+    {
+      "glb_index": 607,
+      "glb_node": 1598,
+      "osm_id": 1251012797,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0031437971785918104,
+      "cerrado": false
+    },
+    {
+      "glb_index": 608,
+      "glb_node": 1599,
+      "osm_id": 1251245285,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006507501276112657,
+      "cerrado": false
+    },
+    {
+      "glb_index": 609,
+      "glb_node": 1600,
+      "osm_id": 1251245286,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006509961553920941,
+      "cerrado": false
+    },
+    {
+      "glb_index": 610,
+      "glb_node": 1601,
+      "osm_id": 1251245287,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006099519068061104,
+      "cerrado": false
+    },
+    {
+      "glb_index": 611,
+      "glb_node": 1602,
+      "osm_id": 1251245288,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0062375632879929635,
+      "cerrado": false
+    },
+    {
+      "glb_index": 612,
+      "glb_node": 1603,
+      "osm_id": 1251245289,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005901777557963178,
+      "cerrado": false
+    },
+    {
+      "glb_index": 613,
+      "glb_node": 1604,
+      "osm_id": 1251245290,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006062570386930877,
+      "cerrado": false
+    },
+    {
+      "glb_index": 614,
+      "glb_node": 1605,
+      "osm_id": 1253684377,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0020367376096296955,
+      "cerrado": false
+    },
+    {
+      "glb_index": 615,
+      "glb_node": 1606,
+      "osm_id": 1253684378,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0020602208288405823,
+      "cerrado": false
+    },
+    {
+      "glb_index": 616,
+      "glb_node": 1607,
+      "osm_id": 1254987162,
+      "tipo_osm": "service",
+      "nombre_osm": "Avenida Foresta",
+      "error_max_vertices": 0.01690966597123025,
+      "cerrado": false
+    },
+    {
+      "glb_index": 617,
+      "glb_node": 1608,
+      "osm_id": 1254987163,
+      "tipo_osm": "service",
+      "nombre_osm": "Avenida Foresta",
+      "error_max_vertices": 0.020839664801242545,
+      "cerrado": false
+    },
+    {
+      "glb_index": 618,
+      "glb_node": 1609,
+      "osm_id": 1256153162,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00649412493498876,
+      "cerrado": false
+    },
+    {
+      "glb_index": 619,
+      "glb_node": 1610,
+      "osm_id": 1257973447,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Kohler Place",
+      "error_max_vertices": 0.003937644048999368,
+      "cerrado": false
+    },
+    {
+      "glb_index": 620,
+      "glb_node": 1611,
+      "osm_id": 1257973448,
+      "tipo_osm": "tertiary_link",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035605344543951905,
+      "cerrado": false
+    },
+    {
+      "glb_index": 621,
+      "glb_node": 1612,
+      "osm_id": 1257973449,
+      "tipo_osm": "tertiary_link",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035605344543951905,
+      "cerrado": false
+    },
+    {
+      "glb_index": 627,
+      "glb_node": 1618,
+      "osm_id": 1261934989,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Rufina Alfaro",
+      "error_max_vertices": 0.008826098117182353,
+      "cerrado": false
+    },
+    {
+      "glb_index": 628,
+      "glb_node": 1619,
+      "osm_id": 1261986906,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Aroldo Cano Arosemena",
+      "error_max_vertices": 0.005407611985626618,
+      "cerrado": false
+    },
+    {
+      "glb_index": 629,
+      "glb_node": 1620,
+      "osm_id": 1262668948,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0031714460264102287,
+      "cerrado": false
+    },
+    {
+      "glb_index": 630,
+      "glb_node": 1621,
+      "osm_id": 1280703668,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0048451854542974175,
+      "cerrado": false
+    },
+    {
+      "glb_index": 631,
+      "glb_node": 1622,
+      "osm_id": 1280703669,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0047879758407120155,
+      "cerrado": false
+    },
+    {
+      "glb_index": 632,
+      "glb_node": 1623,
+      "osm_id": 1280703670,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004896260977333645,
+      "cerrado": false
+    },
+    {
+      "glb_index": 633,
+      "glb_node": 1624,
+      "osm_id": 1280703671,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004843866335388122,
+      "cerrado": false
+    },
+    {
+      "glb_index": 634,
+      "glb_node": 1625,
+      "osm_id": 1280737167,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0037697811160105786,
+      "cerrado": false
+    },
+    {
+      "glb_index": 635,
+      "glb_node": 1626,
+      "osm_id": 1280737177,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017131650271082065,
+      "cerrado": false
+    },
+    {
+      "glb_index": 636,
+      "glb_node": 1627,
+      "osm_id": 1280737178,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0016881684175122055,
+      "cerrado": false
+    },
+    {
+      "glb_index": 637,
+      "glb_node": 1628,
+      "osm_id": 1280737182,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006675112742585426,
+      "cerrado": false
+    },
+    {
+      "glb_index": 638,
+      "glb_node": 1629,
+      "osm_id": 1280737183,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006577170815057028,
+      "cerrado": false
+    },
+    {
+      "glb_index": 639,
+      "glb_node": 1630,
+      "osm_id": 1280737184,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006868706496022227,
+      "cerrado": false
+    },
+    {
+      "glb_index": 640,
+      "glb_node": 1631,
+      "osm_id": 1280737185,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00640949577750131,
+      "cerrado": false
+    },
+    {
+      "glb_index": 641,
+      "glb_node": 1632,
+      "osm_id": 1280737186,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006213668884987699,
+      "cerrado": false
+    },
+    {
+      "glb_index": 642,
+      "glb_node": 1633,
+      "osm_id": 1280737187,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00630539587624266,
+      "cerrado": false
+    },
+    {
+      "glb_index": 643,
+      "glb_node": 1634,
+      "osm_id": 1280737188,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006174239983659775,
+      "cerrado": false
+    },
+    {
+      "glb_index": 644,
+      "glb_node": 1635,
+      "osm_id": 1280737189,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00612838922284479,
+      "cerrado": false
+    },
+    {
+      "glb_index": 645,
+      "glb_node": 1636,
+      "osm_id": 1280737190,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0059200552465994505,
+      "cerrado": false
+    },
+    {
+      "glb_index": 646,
+      "glb_node": 1637,
+      "osm_id": 1280737191,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0060180910505302065,
+      "cerrado": false
+    },
+    {
+      "glb_index": 647,
+      "glb_node": 1638,
+      "osm_id": 1280737192,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006655666839906666,
+      "cerrado": false
+    },
+    {
+      "glb_index": 648,
+      "glb_node": 1639,
+      "osm_id": 1280737193,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006689366557834659,
+      "cerrado": false
+    },
+    {
+      "glb_index": 665,
+      "glb_node": 1656,
+      "osm_id": 1291630826,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.013048310591332895,
+      "cerrado": false
+    },
+    {
+      "glb_index": 666,
+      "glb_node": 1657,
+      "osm_id": 1293780737,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00573670468652296,
+      "cerrado": false
+    },
+    {
+      "glb_index": 667,
+      "glb_node": 1658,
+      "osm_id": 1293780738,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005565717909461965,
+      "cerrado": false
+    },
+    {
+      "glb_index": 668,
+      "glb_node": 1659,
+      "osm_id": 1293780739,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005409268534520912,
+      "cerrado": true
+    },
+    {
+      "glb_index": 669,
+      "glb_node": 1660,
+      "osm_id": 1293780740,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005314169912005896,
+      "cerrado": false
+    },
+    {
+      "glb_index": 670,
+      "glb_node": 1661,
+      "osm_id": 1307793408,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jorge Gil",
+      "error_max_vertices": 0.0016043499049103237,
+      "cerrado": false
+    },
+    {
+      "glb_index": 671,
+      "glb_node": 1662,
+      "osm_id": 1307793409,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jorge Gil",
+      "error_max_vertices": 0.0032850908246590963,
+      "cerrado": false
+    },
+    {
+      "glb_index": 672,
+      "glb_node": 1663,
+      "osm_id": 1307971691,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004915558901617306,
+      "cerrado": false
+    },
+    {
+      "glb_index": 673,
+      "glb_node": 1664,
+      "osm_id": 1308328992,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Mandarina",
+      "error_max_vertices": 0.004379929547288617,
+      "cerrado": false
+    },
+    {
+      "glb_index": 674,
+      "glb_node": 1665,
+      "osm_id": 1308328993,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Bay Wood",
+      "error_max_vertices": 0.004512680170081051,
+      "cerrado": false
+    },
+    {
+      "glb_index": 675,
+      "glb_node": 1666,
+      "osm_id": 1314389014,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Alder Wood",
+      "error_max_vertices": 0.004660463182967458,
+      "cerrado": false
+    },
+    {
+      "glb_index": 676,
+      "glb_node": 1667,
+      "osm_id": 1314389015,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Bay Wood",
+      "error_max_vertices": 0.004530874500106229,
+      "cerrado": false
+    },
+    {
+      "glb_index": 677,
+      "glb_node": 1668,
+      "osm_id": 1314683868,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Stone Wood",
+      "error_max_vertices": 0.004408127415651379,
+      "cerrado": false
+    },
+    {
+      "glb_index": 678,
+      "glb_node": 1669,
+      "osm_id": 1314683869,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Bay Wood",
+      "error_max_vertices": 0.004346689532410682,
+      "cerrado": false
+    },
+    {
+      "glb_index": 679,
+      "glb_node": 1670,
+      "osm_id": 1315402156,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012172218761250872,
+      "cerrado": false
+    },
+    {
+      "glb_index": 680,
+      "glb_node": 1671,
+      "osm_id": 1315402157,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012258187603337273,
+      "cerrado": false
+    },
+    {
+      "glb_index": 681,
+      "glb_node": 1672,
+      "osm_id": 1315402198,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010867468455723723,
+      "cerrado": false
+    },
+    {
+      "glb_index": 682,
+      "glb_node": 1673,
+      "osm_id": 1315425467,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002209729126532814,
+      "cerrado": false
+    },
+    {
+      "glb_index": 683,
+      "glb_node": 1674,
+      "osm_id": 1315425771,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0032430316568688752,
+      "cerrado": false
+    },
+    {
+      "glb_index": 684,
+      "glb_node": 1675,
+      "osm_id": 1315425772,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0027930873706898435,
+      "cerrado": false
+    },
+    {
+      "glb_index": 699,
+      "glb_node": 1690,
+      "osm_id": 1348034075,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0018370938014697809,
+      "cerrado": false
+    },
+    {
+      "glb_index": 705,
+      "glb_node": 1696,
+      "osm_id": 1359157701,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Los Senderos",
+      "error_max_vertices": 0.009494875462022639,
+      "cerrado": false
+    },
+    {
+      "glb_index": 706,
+      "glb_node": 1697,
+      "osm_id": 1359157702,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009016758661389719,
+      "cerrado": false
+    },
+    {
+      "glb_index": 707,
+      "glb_node": 1698,
+      "osm_id": 1383773107,
+      "tipo_osm": "service",
+      "nombre_osm": "Avenida Foresta",
+      "error_max_vertices": 0.020221100066200638,
+      "cerrado": false
+    },
+    {
+      "glb_index": 708,
+      "glb_node": 1699,
+      "osm_id": 1387089681,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0022830986482462907,
+      "cerrado": false
+    },
+    {
+      "glb_index": 709,
+      "glb_node": 1700,
+      "osm_id": 1387339154,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035269859908089057,
+      "cerrado": false
+    },
+    {
+      "glb_index": 710,
+      "glb_node": 1701,
+      "osm_id": 1387430632,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.008731682914946743,
+      "cerrado": false
+    },
+    {
+      "glb_index": 711,
+      "glb_node": 1702,
+      "osm_id": 1387433443,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005694082187030944,
+      "cerrado": false
+    },
+    {
+      "glb_index": 712,
+      "glb_node": 1703,
+      "osm_id": 1387433446,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006319368801617294,
+      "cerrado": false
+    },
+    {
+      "glb_index": 713,
+      "glb_node": 1704,
+      "osm_id": 1387433450,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006766144727264951,
+      "cerrado": false
+    },
+    {
+      "glb_index": 714,
+      "glb_node": 1705,
+      "osm_id": 1387433451,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0067452283264211755,
+      "cerrado": false
+    },
+    {
+      "glb_index": 715,
+      "glb_node": 1706,
+      "osm_id": 1387433452,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006669782300601359,
+      "cerrado": false
+    },
+    {
+      "glb_index": 716,
+      "glb_node": 1707,
+      "osm_id": 1387433453,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0066888307820248075,
+      "cerrado": false
+    },
+    {
+      "glb_index": 717,
+      "glb_node": 1708,
+      "osm_id": 1387433454,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0069247852028329485,
+      "cerrado": false
+    },
+    {
+      "glb_index": 718,
+      "glb_node": 1709,
+      "osm_id": 1387433456,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.009034943269275288,
+      "cerrado": false
+    },
+    {
+      "glb_index": 719,
+      "glb_node": 1710,
+      "osm_id": 1387587462,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00816745157900882,
+      "cerrado": false
+    },
+    {
+      "glb_index": 720,
+      "glb_node": 1711,
+      "osm_id": 1387587463,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005328951465538008,
+      "cerrado": false
+    },
+    {
+      "glb_index": 721,
+      "glb_node": 1712,
+      "osm_id": 1387587464,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Carlos Lara",
+      "error_max_vertices": 0.005759925300884715,
+      "cerrado": false
+    },
+    {
+      "glb_index": 722,
+      "glb_node": 1713,
+      "osm_id": 1387587465,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006333148909324591,
+      "cerrado": false
+    },
+    {
+      "glb_index": 723,
+      "glb_node": 1714,
+      "osm_id": 1387587466,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006469716010192343,
+      "cerrado": false
+    },
+    {
+      "glb_index": 724,
+      "glb_node": 1715,
+      "osm_id": 1387587467,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006591776397752058,
+      "cerrado": false
+    },
+    {
+      "glb_index": 725,
+      "glb_node": 1716,
+      "osm_id": 1387587468,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0022256032369313526,
+      "cerrado": false
+    },
+    {
+      "glb_index": 726,
+      "glb_node": 1717,
+      "osm_id": 1387587469,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003319325006532364,
+      "cerrado": false
+    },
+    {
+      "glb_index": 727,
+      "glb_node": 1718,
+      "osm_id": 1387587470,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005239985267357455,
+      "cerrado": false
+    },
+    {
+      "glb_index": 728,
+      "glb_node": 1719,
+      "osm_id": 1387587471,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003366101702329481,
+      "cerrado": false
+    },
+    {
+      "glb_index": 729,
+      "glb_node": 1720,
+      "osm_id": 1387598084,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0014010314549395258,
+      "cerrado": false
+    },
+    {
+      "glb_index": 730,
+      "glb_node": 1721,
+      "osm_id": 1387598085,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0009413724438444751,
+      "cerrado": false
+    },
+    {
+      "glb_index": 731,
+      "glb_node": 1722,
+      "osm_id": 1387598086,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0006156680836595283,
+      "cerrado": false
+    },
+    {
+      "glb_index": 732,
+      "glb_node": 1723,
+      "osm_id": 1387598087,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0006520921227756116,
+      "cerrado": false
+    },
+    {
+      "glb_index": 733,
+      "glb_node": 1724,
+      "osm_id": 1387598096,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0031195185809197033,
+      "cerrado": false
+    },
+    {
+      "glb_index": 734,
+      "glb_node": 1725,
+      "osm_id": 1387598097,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005253151531526184,
+      "cerrado": false
+    },
+    {
+      "glb_index": 735,
+      "glb_node": 1726,
+      "osm_id": 1387598098,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005044657034665019,
+      "cerrado": false
+    },
+    {
+      "glb_index": 736,
+      "glb_node": 1727,
+      "osm_id": 1387598099,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004306816056614697,
+      "cerrado": false
+    },
+    {
+      "glb_index": 737,
+      "glb_node": 1728,
+      "osm_id": 1387598100,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.004663472558354009,
+      "cerrado": false
+    },
+    {
+      "glb_index": 738,
+      "glb_node": 1729,
+      "osm_id": 1387598101,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003904155844028277,
+      "cerrado": false
+    },
+    {
+      "glb_index": 739,
+      "glb_node": 1730,
+      "osm_id": 1387598105,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0015871581184468582,
+      "cerrado": true
+    },
+    {
+      "glb_index": 740,
+      "glb_node": 1731,
+      "osm_id": 1387876289,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0037118224921316666,
+      "cerrado": false
+    },
+    {
+      "glb_index": 741,
+      "glb_node": 1732,
+      "osm_id": 1387876290,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0036757890651218385,
+      "cerrado": false
+    },
+    {
+      "glb_index": 742,
+      "glb_node": 1733,
+      "osm_id": 1387876292,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0028396417098764796,
+      "cerrado": false
+    },
+    {
+      "glb_index": 743,
+      "glb_node": 1734,
+      "osm_id": 1387876293,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003258305560822406,
+      "cerrado": false
+    },
+    {
+      "glb_index": 744,
+      "glb_node": 1735,
+      "osm_id": 1387876295,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0035480390853250498,
+      "cerrado": false
+    },
+    {
+      "glb_index": 745,
+      "glb_node": 1736,
+      "osm_id": 1387876296,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017523913363481814,
+      "cerrado": false
+    },
+    {
+      "glb_index": 746,
+      "glb_node": 1737,
+      "osm_id": 1387876297,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0017523913363481814,
+      "cerrado": false
+    },
+    {
+      "glb_index": 747,
+      "glb_node": 1738,
+      "osm_id": 1387876299,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0044771593478245865,
+      "cerrado": false
+    },
+    {
+      "glb_index": 748,
+      "glb_node": 1739,
+      "osm_id": 1387881351,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0020207018065413825,
+      "cerrado": false
+    },
+    {
+      "glb_index": 749,
+      "glb_node": 1740,
+      "osm_id": 1387881352,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0026251434414559377,
+      "cerrado": false
+    },
+    {
+      "glb_index": 750,
+      "glb_node": 1741,
+      "osm_id": 1387881353,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002691836554722551,
+      "cerrado": false
+    },
+    {
+      "glb_index": 751,
+      "glb_node": 1742,
+      "osm_id": 1387881355,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002547490913677879,
+      "cerrado": false
+    },
+    {
+      "glb_index": 752,
+      "glb_node": 1743,
+      "osm_id": 1387881356,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0023342396112410874,
+      "cerrado": false
+    },
+    {
+      "glb_index": 753,
+      "glb_node": 1744,
+      "osm_id": 1387881357,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002351376822079833,
+      "cerrado": false
+    },
+    {
+      "glb_index": 754,
+      "glb_node": 1745,
+      "osm_id": 1387881358,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0021759393958583175,
+      "cerrado": false
+    },
+    {
+      "glb_index": 755,
+      "glb_node": 1746,
+      "osm_id": 1387883879,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002732712633792039,
+      "cerrado": false
+    },
+    {
+      "glb_index": 756,
+      "glb_node": 1747,
+      "osm_id": 1387883880,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002807147787143826,
+      "cerrado": false
+    },
+    {
+      "glb_index": 757,
+      "glb_node": 1748,
+      "osm_id": 1387883881,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002939722662182025,
+      "cerrado": false
+    },
+    {
+      "glb_index": 758,
+      "glb_node": 1749,
+      "osm_id": 1387883882,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0036258089779469043,
+      "cerrado": false
+    },
+    {
+      "glb_index": 759,
+      "glb_node": 1750,
+      "osm_id": 1387883883,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003815693019142731,
+      "cerrado": false
+    },
+    {
+      "glb_index": 760,
+      "glb_node": 1751,
+      "osm_id": 1387883884,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003939732362095467,
+      "cerrado": false
+    },
+    {
+      "glb_index": 761,
+      "glb_node": 1752,
+      "osm_id": 1387884318,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003922448271106414,
+      "cerrado": false
+    },
+    {
+      "glb_index": 762,
+      "glb_node": 1753,
+      "osm_id": 1388077061,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0006899532471219018,
+      "cerrado": false
+    },
+    {
+      "glb_index": 763,
+      "glb_node": 1754,
+      "osm_id": 1388077064,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0018539740579120903,
+      "cerrado": false
+    },
+    {
+      "glb_index": 764,
+      "glb_node": 1755,
+      "osm_id": 1388077065,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0018284405474744561,
+      "cerrado": false
+    },
+    {
+      "glb_index": 765,
+      "glb_node": 1756,
+      "osm_id": 1388077068,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0021388326195579278,
+      "cerrado": false
+    },
+    {
+      "glb_index": 766,
+      "glb_node": 1757,
+      "osm_id": 1388257055,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003472821308523708,
+      "cerrado": false
+    },
+    {
+      "glb_index": 767,
+      "glb_node": 1758,
+      "osm_id": 1388257062,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0023263338402247148,
+      "cerrado": false
+    },
+    {
+      "glb_index": 768,
+      "glb_node": 1759,
+      "osm_id": 1388257063,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002170363310433232,
+      "cerrado": false
+    },
+    {
+      "glb_index": 769,
+      "glb_node": 1760,
+      "osm_id": 1388257064,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002248139489301609,
+      "cerrado": false
+    },
+    {
+      "glb_index": 770,
+      "glb_node": 1761,
+      "osm_id": 1388257065,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002561078773824394,
+      "cerrado": false
+    },
+    {
+      "glb_index": 771,
+      "glb_node": 1762,
+      "osm_id": 1388257066,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002877567947830004,
+      "cerrado": false
+    },
+    {
+      "glb_index": 772,
+      "glb_node": 1763,
+      "osm_id": 1388257067,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0030493573096896536,
+      "cerrado": false
+    },
+    {
+      "glb_index": 773,
+      "glb_node": 1764,
+      "osm_id": 1388257068,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0026616821176049573,
+      "cerrado": false
+    },
+    {
+      "glb_index": 774,
+      "glb_node": 1765,
+      "osm_id": 1388260029,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0026420172546597325,
+      "cerrado": false
+    },
+    {
+      "glb_index": 775,
+      "glb_node": 1766,
+      "osm_id": 1416877818,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012449021707521539,
+      "cerrado": false
+    },
+    {
+      "glb_index": 776,
+      "glb_node": 1767,
+      "osm_id": 1420857924,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.002652803464191831,
+      "cerrado": false
+    },
+    {
+      "glb_index": 777,
+      "glb_node": 1768,
+      "osm_id": 1420857925,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Luis Bonilla",
+      "error_max_vertices": 0.002583955279158728,
+      "cerrado": false
+    },
+    {
+      "glb_index": 778,
+      "glb_node": 1769,
+      "osm_id": 1420857926,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002621221474636752,
+      "cerrado": false
+    },
+    {
+      "glb_index": 779,
+      "glb_node": 1770,
+      "osm_id": 1420857927,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Luis Bonilla",
+      "error_max_vertices": 0.002583955279158728,
+      "cerrado": false
+    },
+    {
+      "glb_index": 780,
+      "glb_node": 1771,
+      "osm_id": 1420857928,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Luis Bonilla",
+      "error_max_vertices": 0.003037234127066187,
+      "cerrado": false
+    },
+    {
+      "glb_index": 781,
+      "glb_node": 1772,
+      "osm_id": 1420857929,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.0026181996524294797,
+      "cerrado": false
+    },
+    {
+      "glb_index": 782,
+      "glb_node": 1773,
+      "osm_id": 1420857930,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Calle Alberto Oriol Tejada",
+      "error_max_vertices": 0.0035605344543951905,
+      "cerrado": false
+    },
+    {
+      "glb_index": 783,
+      "glb_node": 1774,
+      "osm_id": 1420857931,
+      "tipo_osm": "tertiary",
+      "nombre_osm": "Carretera Hospital",
+      "error_max_vertices": 0.0036577406893388764,
+      "cerrado": false
+    },
+    {
+      "glb_index": 784,
+      "glb_node": 1775,
+      "osm_id": 1429936293,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0025696731895376687,
+      "cerrado": false
+    },
+    {
+      "glb_index": 785,
+      "glb_node": 1776,
+      "osm_id": 1429936294,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0024207543658368337,
+      "cerrado": false
+    },
+    {
+      "glb_index": 786,
+      "glb_node": 1777,
+      "osm_id": 1445902534,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0013509097332779765,
+      "cerrado": false
+    },
+    {
+      "glb_index": 787,
+      "glb_node": 1778,
+      "osm_id": 1453550480,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005448821966175473,
+      "cerrado": false
+    },
+    {
+      "glb_index": 788,
+      "glb_node": 1779,
+      "osm_id": 1453550481,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005626638425115443,
+      "cerrado": false
+    },
+    {
+      "glb_index": 789,
+      "glb_node": 1780,
+      "osm_id": 1453550738,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005614127034287931,
+      "cerrado": false
+    },
+    {
+      "glb_index": 790,
+      "glb_node": 1781,
+      "osm_id": 1474003791,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.01717033553684871,
+      "cerrado": false
+    },
+    {
+      "glb_index": 791,
+      "glb_node": 1782,
+      "osm_id": 1474004501,
+      "tipo_osm": "path",
+      "nombre_osm": "",
+      "error_max_vertices": 0.012323327216548897,
+      "cerrado": false
+    },
+    {
+      "glb_index": 792,
+      "glb_node": 1783,
+      "osm_id": 1484797632,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.003468540555316846,
+      "cerrado": false
+    },
+    {
+      "glb_index": 793,
+      "glb_node": 1784,
+      "osm_id": 1484797633,
+      "tipo_osm": "residential",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0036780588053742886,
+      "cerrado": false
+    },
+    {
+      "glb_index": 796,
+      "glb_node": 1787,
+      "osm_id": 1491582521,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0056938394237488876,
+      "cerrado": false
+    },
+    {
+      "glb_index": 797,
+      "glb_node": 1788,
+      "osm_id": 1491582522,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.006340710245257139,
+      "cerrado": false
+    },
+    {
+      "glb_index": 798,
+      "glb_node": 1789,
+      "osm_id": 1491582524,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005422881568893993,
+      "cerrado": false
+    },
+    {
+      "glb_index": 800,
+      "glb_node": 1791,
+      "osm_id": 1493386303,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.00532193537173377,
+      "cerrado": true
+    },
+    {
+      "glb_index": 801,
+      "glb_node": 1792,
+      "osm_id": 1493390700,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005587245390429025,
+      "cerrado": false
+    },
+    {
+      "glb_index": 802,
+      "glb_node": 1793,
+      "osm_id": 1493445008,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002490154469405963,
+      "cerrado": false
+    },
+    {
+      "glb_index": 803,
+      "glb_node": 1794,
+      "osm_id": 1493445009,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.002021334443240957,
+      "cerrado": false
+    },
+    {
+      "glb_index": 804,
+      "glb_node": 1795,
+      "osm_id": 1493445010,
+      "tipo_osm": "service",
+      "nombre_osm": "",
+      "error_max_vertices": 0.0020610037612437517,
+      "cerrado": false
+    },
+    {
+      "glb_index": 805,
+      "glb_node": 1796,
+      "osm_id": 1506188303,
+      "tipo_osm": "path",
+      "nombre_osm": "Sendero El Pescador",
+      "error_max_vertices": 0.014145132251613412,
+      "cerrado": false
+    },
+    {
+      "glb_index": 806,
+      "glb_node": 1797,
+      "osm_id": 1512359349,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.005728026011980451,
+      "cerrado": false
+    },
+    {
+      "glb_index": 807,
+      "glb_node": 1798,
+      "osm_id": 1537891639,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.001123109953194732,
+      "cerrado": false
+    },
+    {
+      "glb_index": 808,
+      "glb_node": 1799,
+      "osm_id": 1537897321,
+      "tipo_osm": "footway",
+      "nombre_osm": "",
+      "error_max_vertices": 0.010073557112381292,
+      "cerrado": false
+    },
+    {
+      "glb_index": 809,
+      "glb_node": 1800,
+      "osm_id": 1539645715,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jorge Gil",
+      "error_max_vertices": 0.0014545176710750306,
+      "cerrado": false
+    },
+    {
+      "glb_index": 810,
+      "glb_node": 1801,
+      "osm_id": 1539645716,
+      "tipo_osm": "residential",
+      "nombre_osm": "Calle Jorge Gil",
+      "error_max_vertices": 0.0019372111830959124,
+      "cerrado": false
+    }
+  ],
+  "nodos_sin_correspondencia": [
+    995,
+    1056,
+    1094,
+    1116,
+    1144,
+    1145,
+    1146,
+    1147,
+    1148,
+    1149,
+    1150,
+    1151,
+    1152,
+    1154,
+    1155,
+    1157,
+    1158,
+    1161,
+    1162,
+    1163,
+    1164,
+    1165,
+    1169,
+    1170,
+    1178,
+    1179,
+    1180,
+    1182,
+    1183,
+    1184,
+    1185,
+    1186,
+    1187,
+    1188,
+    1189,
+    1190,
+    1191,
+    1192,
+    1193,
+    1194,
+    1195,
+    1196,
+    1198,
+    1201,
+    1205,
+    1209,
+    1211,
+    1218,
+    1219,
+    1223,
+    1224,
+    1225,
+    1226,
+    1227,
+    1232,
+    1262,
+    1263,
+    1266,
+    1267,
+    1268,
+    1269,
+    1270,
+    1271,
+    1272,
+    1273,
+    1274,
+    1275,
+    1276,
+    1277,
+    1278,
+    1279,
+    1280,
+    1281,
+    1282,
+    1283,
+    1284,
+    1285,
+    1286,
+    1287,
+    1288,
+    1305,
+    1306,
+    1321,
+    1337,
+    1338,
+    1339,
+    1340,
+    1341,
+    1342,
+    1389,
+    1415,
+    1416,
+    1417,
+    1418,
+    1419,
+    1420,
+    1421,
+    1422,
+    1423,
+    1424,
+    1425,
+    1426,
+    1427,
+    1517,
+    1518,
+    1519,
+    1532,
+    1533,
+    1613,
+    1614,
+    1615,
+    1616,
+    1617,
+    1640,
+    1641,
+    1642,
+    1643,
+    1644,
+    1645,
+    1646,
+    1647,
+    1648,
+    1649,
+    1650,
+    1651,
+    1652,
+    1653,
+    1654,
+    1655,
+    1676,
+    1677,
+    1678,
+    1679,
+    1680,
+    1681,
+    1682,
+    1683,
+    1684,
+    1685,
+    1686,
+    1687,
+    1688,
+    1689,
+    1691,
+    1692,
+    1693,
+    1694,
+    1695,
+    1785,
+    1786,
+    1790
+  ]
+}
