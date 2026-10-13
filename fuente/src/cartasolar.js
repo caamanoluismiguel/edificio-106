@@ -57,6 +57,7 @@ export function cartaSolar(clima, rumbo, cortes, ahora) {
   const [ax, ay] = xy(0, rumbo - 90), [bx, by] = xy(0, rumbo + 90);
   o.push(`<line x1="${f1(ax)}" y1="${f1(ay)}" x2="${f1(bx)}" y2="${f1(by)}" class="cs-muro"/>`);
   for (const [k, phi] of [['cs-c0', cortes.sol], ['cs-c1', cortes.sombra]]) {
+    if (phi <= 0) continue;                                        // con faldón no hay ángulo con todo el vidrio al sol: sin curva
     const pts = [];
     for (let g = -89; g <= 89; g += 2) pts.push(xy(Math.atan(Math.tan(phi * rad) * Math.cos(g * rad)) / rad, rumbo + g).map(f1).join(','));
     o.push(`<polyline points="${pts.join(' ')}" class="${k}"/>`);

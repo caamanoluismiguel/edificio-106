@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=4ffd4cfa6a" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=af5020395b" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: sol y lluvia</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -1243,6 +1243,10 @@
     <button type="button" data-largo="1.65" aria-pressed="true">≈1,65 m · el del modelo</button>
     <button type="button" data-largo="2.5" aria-pressed="false">2,50 m</button>
   </div>
+  <div class="vol-largos" role="group" aria-label="Borde del alero"><span>Borde del alero</span>
+    <button type="button" data-faldon="0" aria-pressed="true">sin faldón</button>
+    <button type="button" data-faldon="0.5" aria-pressed="false">faldón de 0,50 m</button>
+  </div>
   <svg id="vol-svg" viewBox="0 0 518 200" role="img" aria-label="Esquema del alero en voladizo: tracción arriba, compresión abajo y el esfuerzo máximo en la raíz, junto al muro"></svg>
   <div class="vol-datos">
     <div><span>Esfuerzo en la raíz</span><b id="vol-m">igual</b><small>que el alero real</small></div>
@@ -1251,6 +1255,7 @@
   </div>
   <p><b class="k2">La regla:</b> si el alero crece al doble, el esfuerzo en su raíz crece cuatro veces y la punta baja dieciséis veces más. Un alero más largo da más horas de sombra, pero pide ménsulas, una losa más gruesa o tensores.</p>
   <p class="vol-nota">Proporciones con la misma sección y la misma carga por metro, no el cálculo de este alero: no se conoce su estructura real. El ángulo de sombra (el del sol visto de perfil) sale de la geometría de las ventanas del modelo.</p>
+  <p class="vol-nota" id="vol-faldon-nota" hidden></p>
   <section id="corte" aria-labelledby="corte-t">
     <h3 id="corte-t">Corte del piso 2 con el sol de esta hora</h3>
     <div class="corte-fach" role="group" aria-label="Fachada del corte"><span>Fachada</span>
@@ -1270,7 +1275,7 @@
     <svg id="carta-solar" viewBox="0 0 272 272" role="img" aria-labelledby="carta-solar-desc"><desc id="carta-solar-desc"></desc></svg>
     <ul class="conf-ley cs-ley" id="cs-ley"><li><i class="cs-lleno"></i>el sol llega al vidrio</li><li><i class="cs-hueco"></i>el alero o el muro lo tapan</li><li><i class="cs-ahora"></i>el sol de esta hora</li></ul>
     <p id="cs-cifra"></p>
-    <p class="vol-nota">Cada punto es el sol del día 21 de cada mes, de hora en hora, con el color de la temperatura media de ese mes y esa hora en 2001–2025 (ERA5 ajustado a Albrook). El cenit va al centro y el horizonte al borde. La línea recta es el plano del muro; debajo de la curva de puntos el vidrio queda todo al sol y encima de la curva llena, todo a la sombra (ángulos de perfil del corte, Olgyay y Olgyay, 1957). Las horas de 30 °C o más salen de toda la serie, con el sol directo desde 120 W/m² (umbral de la OMM); ERA5 da algo más de sol que el medido en la grúa del STRI.</p>
+    <p class="vol-nota">Cada punto es el sol del día 21 de cada mes, de hora en hora, con el color de la temperatura media de ese mes y esa hora en 2001–2025 (ERA5 ajustado a Albrook). El cenit va al centro y el horizonte al borde. La línea recta es el plano del muro; debajo de la curva de puntos el vidrio queda todo al sol y encima de la curva llena, todo a la sombra (ángulos de perfil del corte, Olgyay y Olgyay, 1957).<span id="cs-faldon" hidden> Con el faldón no hay curva de puntos: a ninguna altura del sol queda todo el vidrio al sol.</span> Las horas de 30 °C o más salen de toda la serie, con el sol directo desde 120 W/m² (umbral de la OMM); ERA5 da algo más de sol que el medido en la grúa del STRI.</p>
     <p class="vol-nota">Esquema: alero continuo, sin retornos laterales ni ménsulas. Alturas y vidrio medidos en el modelo 3D (las ventanas de los pisos 2 y 3 son inferidas); el vidrio queda 10 cm hacia adentro del muro. El sol de perfil es el ángulo del sol visto de costado, en un plano perpendicular a la fachada. Mueve la hora o cambia la fecha y el rayo se mueve.</p>
   </section>
 </aside>
@@ -1614,8 +1619,8 @@
 
 <aside id="ir-a" hidden aria-labelledby="ir-a-t">
   <div class="ir-cab"><h2 id="ir-a-t">Momentos clave</h2><button class="boton" type="button" id="cerrar-ir">Cerrar</button></div>
-  <div class="ir-presets" role="group" aria-label="Momentos críticos">
-    <p class="eyebrow">Momentos críticos</p>
+  <div class="ir-presets" role="group" aria-label="Momentos de ejemplo">
+    <p class="eyebrow">Momentos de ejemplo</p>
     <ul class="presets-tiempo" id="presets-tiempo">
       <li><button type="button" class="preset-chip" data-preset="cenit" data-encuadre="cenit" aria-pressed="false" title="Cenit: 12 de abril de 2016, 12:19">Cenit (sin sombra) <small>12 abr 2016 · 12:19</small></button></li>
       <li><button type="button" class="preset-chip" data-preset="sol-se" data-fecha="2024-01-15" data-hora="07:30" data-vista="" data-fachada="se" data-capa="calor" data-modo="directa" aria-pressed="false" title="Sol bajo SE: 15 de enero de 2024, 07:30">Sol bajo SE <small>15 ene 2024 · 07:30</small></button></li>
@@ -1761,4 +1766,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=4ffd4cfa6a"></script></body></html>
+<script type="module" src="js/app.js?v=af5020395b"></script></body></html>

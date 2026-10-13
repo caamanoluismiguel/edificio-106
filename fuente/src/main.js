@@ -2503,6 +2503,7 @@ function prepararPartes() {
   $('#cerrar-voladizo').addEventListener('click', () => abrirVoladizo(false));
   $('#ley-corte').addEventListener('click', verCorte); $('#fachada-corte').addEventListener('click', verCorte);
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.addEventListener('click', () => { S.largo = +b.dataset.largo; pintarVoladizo(); }));
+  document.querySelectorAll('#voladizo [data-faldon]').forEach((b) => b.addEventListener('click', () => { S.faldon = +b.dataset.faldon; pintarVoladizo(); }));
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.addEventListener('click', () => { S.corteF = b.dataset.corte; pintarCorte(); }));
   pintarVoladizo();
 }
@@ -2642,7 +2643,7 @@ function verCorte() {
   if (document.documentElement.classList.contains('panel-lateral')) $('#dock').scrollTop = 0;   // con el panel, la regla vuelve a la vista
   if (S.lente !== 'partes') ponerLente('partes', false);
   elegirParte('alero');
-  S.largo = 1.65;                                                  // el alero real, aunque antes se haya probado otro largo
+  S.largo = 1.65; S.faldon = 0;                                    // el alero real, aunque antes se haya probado otro largo o el faldón
   abrirVoladizo(true); pintarVoladizo();
   // baja hasta el corte dentro del panel del voladizo, sin mover el panel lateral ni la hoja (la regla queda a mano)
   requestAnimationFrame(() => { const v = $('#voladizo'), c = $('#corte'); if (v && c) v.scrollTop += c.getBoundingClientRect().top - v.getBoundingClientRect().top - 12; });
@@ -2694,11 +2695,18 @@ function pintarVoladizo() {
     <text x="${xc.toFixed(0)}" y="${yc.toFixed(0)}" class="vt" fill="#7cc4ec">compresión: se aprieta</text>
     <text x="52" y="${yb - 7}" class="vt" fill="#f4b545">momento: máximo en la raíz</text>
     <text x="504" y="30" text-anchor="end" class="vt m">deformación exagerada</text>`;
-  const m = Math.pow(L / 1.65, 2), d = Math.pow(L / 1.65, 4), ang = Math.atan((CORTE.alero - CORTE.vidAbajo) / (L + CORTE.rehundido)) * 180 / Math.PI, real = Math.abs(L - 1.65) < 0.01;
-  $('#vol-m').textContent = real ? 'igual' : '×' + coma(m, m < 1 ? 2 : 1);
-  $('#vol-d').textContent = real ? 'igual' : '×' + coma(d, d < 1 ? 2 : 1);
+  const F = S.faldon ?? 0;
+  const m = Math.pow(L / 1.65, 2), d = Math.pow(L / 1.65, 4), ang = Math.atan((CORTE.alero - F - CORTE.vidAbajo) / (L + CORTE.rehundido)) * 180 / Math.PI, real = Math.abs(L - 1.65) < 0.01;
+  // con faldón no hay proporción honesta: su peso y su sujeción no se conocen, así que el esfuerzo y la flecha no se dan
+  $('#vol-m').textContent = F ? '–' : real ? 'igual' : '×' + coma(m, m < 1 ? 2 : 1);
+  $('#vol-d').textContent = F ? '–' : real ? 'igual' : '×' + coma(d, d < 1 ? 2 : 1);
+  document.querySelectorAll('.vol-datos small').forEach((s, i) => { if (i < 2) s.textContent = F ? 'depende del peso del faldón' : 'que el alero real'; });
   $('#vol-a').textContent = Math.round(ang) + '°';
+  const nota = $('#vol-faldon-nota'), franja = CORTE.vidArriba - (CORTE.alero - F);
+  nota.hidden = !F;
+  if (F) nota.textContent = `Faldón: una placa vertical de ${coma(F, 2)} m colgada bajo la tabla de borde de la punta, como prueba (el modelo no tiene esa placa). Su borde queda a ${coma(CORTE.alero - F, 2)} m, por debajo de lo alto del vidrio (${coma(CORTE.vidArriba, 2)} m): los ${Math.round(franja * 100)} cm de arriba del vidrio no reciben sol directo a ninguna altura del sol. Aquí solo cambia la sombra; el esfuerzo y la flecha dependen de su peso y de cómo se sujeta, que no se conocen.`;
   document.querySelectorAll('#voladizo [data-largo]').forEach((b) => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.largo - L) < 0.01)));
+  document.querySelectorAll('#voladizo [data-faldon]').forEach((b) => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.faldon - F) < 0.01)));
 }
 
 // Corte del alero con el rayo de sol: piso 2 de una fachada, esquema 2D. Alturas medidas en el modelo 3D: alero (su cara
@@ -2713,11 +2721,11 @@ function perfilSol(alt, az, rumbo) {
   if (alt <= 0 || c <= 0.01) return null;
   return Math.atan(Math.tan(alt * Math.PI / 180) / c) * 180 / Math.PI;
 }
-function estadoCorte(p, L, k) {
+function estadoCorte(p, L, k, F = 0) {
   const C = CORTE, pf = perfilSol(p.alt, p.az, FACHADAS['fachada-' + k].rumbo);
   if (pf == null) return { pf, motivo: p.alt <= 0 ? 'noche' : 'detras' };
   const t = Math.tan(pf * Math.PI / 180);
-  const dw = L * t, dg = (L + C.rehundido) * t;                   // cuánto baja la sombra en el muro y en el vidrio
+  const dw = F + L * t, dg = F + (L + C.rehundido) * t;           // cuánto baja la sombra en el muro y en el vidrio (el rayo roza el borde del faldón)
   const alto = C.vidArriba - C.vidAbajo, sup = C.alero - C.vidArriba;
   const frac = Math.min(1, Math.max(0, (dg - sup) / alto));       // parte del vidrio (desde arriba) a la sombra
   const vidrio = frac >= 0.97 ? 'sombra' : frac >= 0.75 ? 'casiSombra' : frac > 0.25 ? 'medias' : frac > 0.03 ? 'casiSol' : 'sol';
@@ -2727,18 +2735,19 @@ function pintarCorte(p, c) {
   const el = $('#corte-svg'); if (!el) return;
   p ??= S.solViaje ?? posicionSol({ ...S.fecha, h: 0, min: S.min });
   c ??= S.viaje ? null : climaEn(S.fecha, S.min);
-  const L = S.largo ?? 1.65, k = S.corteF ?? 'se';
-  const clave = [L, k, p.alt.toFixed(2), p.az.toFixed(2), Math.round((c?.dni ?? -10) / 10), Math.round(c?.nubes ?? -1), lluviaDibujada(c) ? 1 : 0].join('|');
+  const L = S.largo ?? 1.65, k = S.corteF ?? 'se', F = S.faldon ?? 0;
+  const clave = [L, F, k, p.alt.toFixed(2), p.az.toFixed(2), Math.round((c?.dni ?? -10) / 10), Math.round(c?.nubes ?? -1), lluviaDibujada(c) ? 1 : 0].join('|');
   if (clave === pintarCorte.f) return; pintarCorte.f = clave;
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
   $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
-  const C = CORTE, E = estadoCorte(p, L, k), coma = (v, n = 2) => num(v, n);
+  const C = CORTE, E = estadoCorte(p, L, k, F), coma = (v, n = 2) => num(v, n);
   const K = 58, XW = 64, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro
   const tip = X(L), fl = C.losa + C.esp, yv0 = Y(C.vidArriba), yv1 = Y(C.vidAbajo);
   const r = (x0, y0, x1, y1, extra) => `<rect x="${Math.min(x0, x1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.abs(x1 - x0).toFixed(1)}" height="${Math.abs(y1 - y0).toFixed(1)}" ${extra}></rect>`;
   let g = '';
   // losa de abajo (piso) y de arriba (alero), muro con el hueco de la ventana y el vidrio rehundido
   g += r(0, Y(C.losa), tip, Y(fl), 'fill="#56615f"') + r(0, Y(C.alero), tip, Y(C.alero + C.esp), 'fill="#56615f"');
+  if (F) g += r(tip - 5, Y(C.alero), tip, Y(C.alero - F), 'fill="#56615f"');   // el faldón: placa vertical en la punta (grueso solo de dibujo)
   g += r(X(-C.muro), Y(fl), XW, yv1, 'fill="#3a4448"') + r(X(-C.muro), yv0, XW, Y(C.alero), 'fill="#3a4448"');
   g += r(X(-C.rehundido) - 3, yv0, X(-C.rehundido), yv1, 'fill="#4aa8dc" fill-opacity="0.55"');
   // cara del muro y del vidrio: ámbar donde incide el sol, gris donde hay sombra
@@ -2754,17 +2763,18 @@ function pintarCorte(p, c) {
   g += `<text x="${(X(-C.muro) - 4).toFixed(1)}" y="${((yv1 + Y(fl)) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">muro</text>`;
   g += `<text x="${(X(-C.muro) - 4).toFixed(1)}" y="${((yv0 + yv1) / 2 + 4).toFixed(1)}" text-anchor="end" class="m">vidrio</text>`;
   g += `<text x="${((XW + tip) / 2).toFixed(1)}" y="${(Y(C.alero + C.esp) - 6).toFixed(1)}" text-anchor="middle">alero ${coma(L)} m</text>`;
+  if (F) g += `<text x="${(tip - 8).toFixed(1)}" y="${(Y(C.alero - F / 2) + 4).toFixed(1)}" text-anchor="end" class="m">faldón</text>`;   // a la izquierda: el rayo pasa por la derecha
   g += `<text x="4" y="16" class="m">esquema · alero continuo, sin retornos laterales</text>`;
   g += `<text x="396" y="${(Y(fl) - 8).toFixed(1)}" text-anchor="end" class="m">fachada ${SIGLA[k]} · exterior →</text>`;
   if (E.pf == null) {
     g += `<text x="${(tip + 12).toFixed(1)}" y="${(Y(6.4)).toFixed(1)}" class="s">${E.motivo === 'noche' ? 'El sol está bajo el horizonte' : 'El sol está detrás de esta fachada'}</text>`;
     g += `<text x="${(tip + 12).toFixed(1)}" y="${(Y(6.4) + 17).toFixed(1)}" class="m">sin rayo directo a esta hora</text>`;
   } else {
-    const a = E.pf * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a), ya = Y(C.alero);
-    // hasta dónde llega el rayo que roza la punta del alero
+    const a = E.pf * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a), ya = Y(C.alero - F), yAlero = Y(C.alero);
+    // hasta dónde llega el rayo que roza la punta del alero (con faldón, su borde de abajo)
     let hx = XW, hy = E.hSombra;
     if (E.hSombra < C.vidArriba && E.hSombra > C.vidAbajo) { const hg = C.alero - E.dg; if (hg >= C.vidAbajo) { hx = X(-C.rehundido); hy = hg; } }
-    if (hy < fl) { hy = fl; hx = tip - (C.alero - fl) / E.t * K; }
+    if (hy < fl) { hy = fl; hx = tip - (C.alero - F - fl) / E.t * K; }
     const rayo = (x1, y1) => {
       const R = Math.min((396 - x1) / ux, (y1 - 36) / uy);
       return { x0: x1 + ux * R, y0: y1 - uy * R };
@@ -2787,11 +2797,11 @@ function pintarCorte(p, c) {
     g += `<text x="${bx.toFixed(1)}" y="${by.toFixed(1)}" class="s">${Math.round(E.pf)}°</text>`;
     // cota de la sombra sobre el muro
     const hc = Math.max(fl, E.hSombra), xc = XW + 14;
-    g += `<path d="M${xc} ${ya.toFixed(1)} L${xc} ${Y(hc).toFixed(1)} M${xc - 4} ${ya.toFixed(1)} L${xc + 4} ${ya.toFixed(1)} M${xc - 4} ${Y(hc).toFixed(1)} L${xc + 4} ${Y(hc).toFixed(1)}" stroke="#b6bdb9" stroke-width="1.2"></path>`;
-    if (!E.pisoEntero && E.dw > 0.7) g += `<text x="${xc + 7}" y="${((ya + Y(hc)) / 2 + 4).toFixed(1)}" class="m">sombra ${coma(E.dw)} m</text>`;
+    g += `<path d="M${xc} ${yAlero.toFixed(1)} L${xc} ${Y(hc).toFixed(1)} M${xc - 4} ${yAlero.toFixed(1)} L${xc + 4} ${yAlero.toFixed(1)} M${xc - 4} ${Y(hc).toFixed(1)} L${xc + 4} ${Y(hc).toFixed(1)}" stroke="#b6bdb9" stroke-width="1.2"></path>`;
+    if (!E.pisoEntero && E.dw > 0.7) g += `<text x="${xc + 7}" y="${((yAlero + Y(hc)) / 2 + 4).toFixed(1)}" class="m">sombra ${coma(E.dw)} m</text>`;
   }
   const hora = hhmm(S.min), fach = `fachada ${SIGLA[k]}`;
-  let txt, desc = `Corte esquemático del piso 2, ${fach}, con un alero de ${coma(L)} m. `;
+  let txt, desc = `Corte esquemático del piso 2, ${fach}, con un alero de ${coma(L)} m${F ? ` y un faldón de ${coma(F)} m` : ''}. `;
   if (E.pf == null) {
     txt = E.motivo === 'noche' ? `A las ${hora} el sol está bajo el horizonte: no hay rayo directo en ninguna fachada.`
       : `A las ${hora} el sol está detrás de la ${fach}: esta cara está a la sombra con o sin alero. Prueba otra fachada o mueve la hora.`;
@@ -2814,22 +2824,24 @@ function pintarCorte(p, c) {
   }
   el.innerHTML = `<desc id="corte-desc">${desc}</desc>${g}`;
   $('#corte-txt').textContent = txt;
-  pintarCartaSolar(p, L, k);
+  pintarCartaSolar(p, L, k, F);
 }
 
 // Carta solar con la máscara del alero (src/cartasolar.js), debajo del corte: misma fachada, mismo largo de alero, sol de esta hora.
-function pintarCartaSolar(p, L, k) {
+function pintarCartaSolar(p, L, k, F = 0) {
   const el = $('#carta-solar'); if (!el) return;
-  if (!clima.horario) { pedirSerie().then((ok) => { if (ok) pintarCartaSolar(p, L, k); }); return; }
-  const rumbo = FACHADAS['fachada-' + k].rumbo, d = L + CORTE.rehundido;
-  const cortes = { sol: Math.atan((CORTE.alero - CORTE.vidArriba) / d) * 180 / Math.PI, sombra: Math.atan((CORTE.alero - CORTE.vidAbajo) / d) * 180 / Math.PI };
-  el.innerHTML = `<desc id="carta-solar-desc">Carta solar de la fachada ${SIGLA[k]} con la máscara de un alero de ${num(L, 2)} m: el vidrio del piso 2 queda todo a la sombra con el sol a más de ${Math.round(cortes.sombra)} grados de perfil y todo al sol por debajo de ${Math.round(cortes.sol)}.</desc>` + cartaSolar(clima, rumbo, cortes, p);
+  if (!clima.horario) { pedirSerie().then((ok) => { if (ok) pintarCartaSolar(p, L, k, F); }); return; }
+  const rumbo = FACHADAS['fachada-' + k].rumbo, d = L + CORTE.rehundido, borde = CORTE.alero - F;   // con faldón, el rayo roza su borde
+  const cortes = { sol: Math.atan((borde - CORTE.vidArriba) / d) * 180 / Math.PI, sombra: Math.atan((borde - CORTE.vidAbajo) / d) * 180 / Math.PI };
+  $('#cs-faldon').hidden = cortes.sol > 0;
+  const alSol = cortes.sol > 0 ? ` y todo al sol por debajo de ${Math.round(cortes.sol)}` : '; con el faldón, la parte de arriba del vidrio no recibe sol directo a ninguna altura';
+  el.innerHTML = `<desc id="carta-solar-desc">Carta solar de la fachada ${SIGLA[k]} con la máscara de un alero de ${num(L, 2)} m${F ? ` y un faldón de ${num(F, 2)} m` : ''}: el vidrio del piso 2 queda todo a la sombra con el sol a más de ${Math.round(cortes.sombra)} grados de perfil${alSol}.</desc>` + cartaSolar(clima, rumbo, cortes, p);
   if (!pintarCartaSolar.ley) { pintarCartaSolar.ley = 1; $('#cs-ley').insertAdjacentHTML('beforeend', VARIABLES.temp.pasos.map((q) => `<li><i style="background:${q[1]}"></i>${q[2]} °C</li>`).join('')); }
-  const ck = k + '|' + L;
+  const ck = k + '|' + L + '|' + F;
   if (pintarCartaSolar.k !== ck) {
     pintarCartaSolar.k = ck;
     const h = horasCalorVidrio(clima, rumbo, cortes);
-    $('#cs-cifra').textContent = `Con 30 °C o más, ERA5 ajustado a Albrook da unas ${miles(Math.round(h.calor / 10) * 10)} horas al año. En unas ${miles(Math.round(h.sol / 10) * 10)} de ellas (${100 * h.sol / h.calor < 0.5 ? 'menos del 1' : Math.round(100 * h.sol / h.calor)} %) el sol directo llega al vidrio del piso 2 de la fachada ${SIGLA[k]} con este alero.`;
+    $('#cs-cifra').textContent = `Con 30 °C o más, ERA5 ajustado a Albrook da unas ${miles(Math.round(h.calor / 10) * 10)} horas al año. En unas ${miles(Math.round(h.sol / 10) * 10)} de ellas (${100 * h.sol / h.calor < 0.5 ? 'menos del 1' : Math.round(100 * h.sol / h.calor)} %) el sol directo llega al vidrio del piso 2 de la fachada ${SIGLA[k]} con este alero${F ? ' y el faldón' : ''}.`;
   }
 }
 
