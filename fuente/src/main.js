@@ -209,7 +209,7 @@ async function arrancar() {
   controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.8; controls.minDistance = 12; controls.maxDistance = 800;   // desde lejos se ve Ciudad del Saber entera con el canal y las esclusas de Miraflores controls.minPolarAngle = 0.01;
   controls.target.set(...ESQUINA.tgt);
   controls.addEventListener('start', alTomar);
-  controls.addEventListener('end', () => { NAV.arrastra = false; });
+  controls.addEventListener('end', () => { NAV.arrastra = false; programarSyncHash(); });
   // navegación libre (src/navegar.js): el arrastre con dos dedos, el clic derecho, Mayús o la rueda apretada mueven el punto que se
   // mira sobre el suelo. Se enciende cuando llega el mapa de la ciudad (límite, suelo, huellas); hasta entonces, como siempre
   controls.screenSpacePanning = false; controls.mouseButtons.MIDDLE = THREE.MOUSE.PAN;
@@ -414,6 +414,39 @@ function cerrarOferta() { S.interactuo = true; $('#oferta-recorrido').hidden = t
  *  &cam=x,y,z,tx,ty,tz (posición y punto de mira de la cámara, en m) y &encuadre=<id> (encuadres.js; también #encuadre=<id>,
  *  con el momento del encuadre). Ej.: #m-20240325-1530&lente=sol&modo=total&vista=aerea.
  *  Los enlaces viejos, solo con la fecha y la hora, siguen valiendo. */
+function restaurarPanel(panel) {
+  if (panel === 'sirve') $('#abrir-sirve')?.click();
+  else if (panel === 'confort') $('#abrir-confort')?.click();
+  else if (panel === 'ir-a' || panel === 'ir') $('#abrir-ir')?.click();
+  else if (panel === 'capas') $('#abrir-capas')?.click();
+  else if (panel === 'voladizo') abrirVoladizo(true);
+}
+
+let syncHashTimer = null;
+function programarSyncHash() {
+  if (intro || S.viaje || S.reproduce || S.modo === 'ahora') return;
+  if (/^#(?:fachada-|encuadre=|depurar|webgl|webgpu|ultra)/.test(location.hash)) return;
+
+  clearTimeout(syncHashTimer);
+  syncHashTimer = setTimeout(() => {
+    if (intro || S.viaje || S.reproduce || S.modo === 'ahora') return;
+    if (/^#(?:fachada-|encuadre=|depurar|webgl|webgpu|ultra)/.test(location.hash)) return;
+
+    const u = enlaceMomento();
+    const hashIdx = u.indexOf('#');
+    if (hashIdx !== -1) {
+      const nuevoHash = u.slice(hashIdx);
+      if (location.hash !== nuevoHash) {
+        try {
+          history.replaceState(null, '', location.pathname + location.search + nuevoHash);
+        } catch (e) {
+          /* visor */
+        }
+      }
+    }
+  }, 300);
+}
+
 function irAMomentoHash() {
   const ligero = /[?&]ligero/.test(location.search);   // ?ligero no trae la ciudad ni el entorno: sin encuadres
   const re = /^#encuadre=([\w-]+)$/.exec(location.hash), solo = !ligero && re && ENCUADRES.find((x) => x.id === re[1]);
@@ -424,9 +457,14 @@ function irAMomentoHash() {
   const modo = lente && MODOS[lente]?.some(([k]) => k === q.get('modo')) ? q.get('modo') : undefined;
   const fachada = FACHADAS['fachada-' + q.get('fachada')] ? q.get('fachada') : undefined;
   const vista = !fachada && VISTAS[q.get('vista')] ? q.get('vista') : undefined;
+  const panel = q.get('panel');
   const cam = (q.get('cam') ?? '').split(',').map(Number), enc = !ligero && ENCUADRES.find((x) => x.id === q.get('encuadre'));
-  if (enc) { irAEncuadre(enc, { fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, cam: cam.length === 6 && cam.every(Number.isFinite) ? cam : null }); return true; }
-  viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, fachada, vista });
+  if (enc) {
+    irAEncuadre(enc, { fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, cam: cam.length === 6 && cam.every(Number.isFinite) ? cam : null });
+    if (panel) restaurarPanel(panel);
+    return true;
+  }
+  viajarA({ fecha: { y, m: mo, d }, min: hh * 60 + mi, lente, modo, fachada, vista, panel });
   if (lente === 'partes' && PARTES[q.get('parte')]) elegirParte(q.get('parte'));
   if (cam.length === 6 && cam.every(Number.isFinite)) volarA({ pos: cam.slice(0, 3), tgt: cam.slice(3) }, 1.4, vista ?? null, false);
   return true;
@@ -442,13 +480,20 @@ function enlaceMomento() {
   const c = escena.camera.position, t = controls.target, r1 = (x) => Math.round(x * 10) / 10;
   q.push('cam=' + [c.x, c.y, c.z, t.x, t.y, t.z].map(r1).join(','));
   if (S.encuadre) q.push('encuadre=' + S.encuadre.id);
+  let panel = null;
+  if (!$('#sirve')?.hidden) panel = 'sirve';
+  else if (!$('#confort')?.hidden) panel = 'confort';
+  else if (!$('#ir-a')?.hidden) panel = 'ir-a';
+  else if (!$('#capas')?.hidden) panel = 'capas';
+  else if (S.voladizo || !$('#voladizo')?.hidden) panel = 'voladizo';
+  if (panel) q.push('panel=' + panel);
   // con la ficha de un edificio abierta, el enlace la vuelve a abrir (?edificio=, ver abrirEdificio)
   const ed = NAV.tarjeta ? '?edificio=' + encodeURIComponent(idEnlace(NAV.tarjeta, NAV.fichas)) : '';
   return `${SITIO}${ed}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
 }
-async function copiarEnlace() {
-  const u = enlaceMomento(), est = $('#img-estado');
-  try { await navigator.clipboard.writeText(u); est.textContent = 'Enlace copiado: abre este mismo momento, con la misma forma de ver y el mismo encuadre.'; }
+async function copiarEnlace(arriba = false) {
+  const u = enlaceMomento(), t = 'Enlace copiado: abre este mismo momento, con la misma forma de ver y el mismo encuadre.';
+  try { await navigator.clipboard.writeText(u); if (arriba === true) aviso(t, 3500); else $('#img-estado').textContent = t; }
   catch (e) { prompt('Copia este enlace:', u); }
 }
 
@@ -523,6 +568,8 @@ function llegada(d) {
   const el = $('#viaje'); el.hidden = false; el.classList.add('llego');
   $('#viaje-barra').style.transform = 'scaleX(1)';
   clearTimeout(llegada.t); llegada.t = setTimeout(() => { el.hidden = true; el.classList.remove('llego'); }, 2600);
+  if (d?.panel) restaurarPanel(d.panel);
+  programarSyncHash();
 }
 
 // ---------------- Cámara ----------------
@@ -1884,23 +1931,34 @@ function prepararUI() {
     el.addEventListener('scroll', () => hayMas(el), { passive: true });
     const ro = new ResizeObserver(() => hayMasLuego(el)); ro.observe(el); for (const h of el.children) if (h !== aviso) ro.observe(h);
   }
-  ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); }));
+  // mover la hora o el día a mano deja de ser el momento del chip
+  const soltarChips = (b = null) => document.querySelectorAll('.preset-chip').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  ['#hora', '#dia-anio', '#mes-serie'].forEach((x) => $(x).addEventListener('input', () => { cerrarOferta(); silenciar(); soltarChips(); programarSyncHash(); }));
   // para qué sirve: hallazgos con un momento para verlos en la escena
   const abrirSirve = (abrir) => { $('#sirve').hidden = !abrir; $('#abrir-sirve').setAttribute('aria-expanded', String(abrir)); if (abrir) { cerrarOferta(); abrirVoladizo(false); soloUnPanel('sirve'); cargarConfort().catch((e) => anotar('aviso', 'confort: ' + e)); } };
   $('#abrir-sirve').addEventListener('click', () => abrirSirve($('#sirve').hidden));
   $('#cerrar-sirve').addEventListener('click', () => abrirSirve(false));
-  document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
-    const art = b.closest('.hallazgo'), d = art.dataset;
-    document.querySelectorAll('.hallazgo').forEach((x) => x.classList.toggle('activo', x === art));
+  // un momento de las preguntas («Verlo») o de los chips de «Momentos clave»: mismos data-* y misma llegada
+  const activarMomento = (d) => {
+    if (innerWidth <= 760) { abrirSirve(false); globalThis.__abrirIr?.(false); }   // en el teléfono el panel tapa la escena
+    if (d.encuadre) { const enc = ENCUADRES.find((x) => x.id === d.encuadre); if (enc) { irAEncuadre(enc); return; } }
     let fecha, min;
     if (d.momento === 'cero-0') { const y = ahoraPanama().y, z = diasCeroSombra(y)[0]; fecha = { y, m: z.m, d: z.d }; min = minMediodia(z); }   // el día sin sombra de este año
     else { const [hh, mi] = d.hora.split(':').map(Number); fecha = deISO(d.fecha); min = hh * 60 + mi; }
-    if (innerWidth <= 760) abrirSirve(false);
     viajarA({ fecha, min, vista: d.fachada ? null : d.vista || 'esquina', fachada: d.fachada || null, lente: d.capa === 'calor' ? 'sol' : d.capa || 'foto', modo: d.modo || null });
     if (d.ayudas === '1') { S.ayudas = true; $('#capa-ayudas').checked = true; }     // el arco del sol
     if (d.pestana) ponerPestana(d.pestana);                                          // después de viajarA, que pone Día
     if (d.abrir === 'confort') abrirConfort(true);
+  };
+  document.querySelectorAll('.hallazgo .ver').forEach((b) => b.addEventListener('click', () => {
+    const art = b.closest('.hallazgo');
+    document.querySelectorAll('.hallazgo').forEach((x) => x.classList.toggle('activo', x === art));
+    soltarChips();
+    activarMomento(art.dataset);
   }));
+  document.querySelectorAll('.preset-chip').forEach((b) => b.addEventListener('click', () => { soltarChips(b); activarMomento(b.dataset); }));
+  // el botón de la barra no tiene lámina abierta donde decirlo: avisa arriba
+  $('#copiar-vista').addEventListener('click', () => copiarEnlace(true));
   // ir a un momento exacto (p. ej. para comparar con una foto) o a una de las consultas
   const abrirIr = (abrir) => {
     $('#ir-a').hidden = !abrir; $('#elegir').setAttribute('aria-expanded', String(abrir)); $('#abrir-ir').setAttribute('aria-expanded', String(abrir));
@@ -2025,7 +2083,7 @@ function prepararUI() {
     if (S.paso != null && !S.viaje) recorrido(null);
     if (dentro && (dentro !== '#recorrido' || S.paso == null)) setTimeout(() => enfocar(abridor), 0);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarTarjeta(true); cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); } });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarTarjeta(true); cerrarQR(!$('#qr').hidden && $('#qr').contains(document.activeElement)); cerrarOferta(); abrirVoladizo(false); $('#sirve').hidden = true; $('#abrir-sirve').setAttribute('aria-expanded', 'false'); $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); $('#ir-a').hidden = true; $('#elegir').setAttribute('aria-expanded', 'false'); $('#abrir-ir').setAttribute('aria-expanded', 'false'); abrirConfort(false); programarSyncHash(); } });
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   pintarCeroSombra();
   const d = diasCeroSombra(hoy.y);
@@ -2052,6 +2110,7 @@ function soloUnPanel(k) {
   if (k !== 'confort' && !$('#confort').hidden) abrirConfort(false);
   if (k !== 'capas' && !$('#capas').hidden) { $('#capas').hidden = true; $('#abrir-capas').setAttribute('aria-expanded', 'false'); }
   if (k !== 'leyenda' && S.verLeyenda) { S.verLeyenda = false; lastLect = ''; }
+  programarSyncHash();
 }
 
 // El narrador («Ahora en Ciudad del Saber», un momento elegido…) es la primera fila del dock y va plegado a una frase;
