@@ -60,6 +60,20 @@ Cómo está hecho: MindAR solo reconoce el plano y three.js dibuja la escena en 
 - `fuente/` tiene el código (Vite, three.js con WebGPU y WebGL 2) y los scripts que preparan el modelo, el clima y la intro. `fuente/cuerpo.html` es la página; `fuente/armar-raiz.sh` compila y escribe `index.html`.
 - `ar/` es la realidad aumentada, con sus propias pruebas.
 
+### La lectura «Diseño industrial» (`datos/di/`)
+
+El conmutador «Arquitectura y clima | Diseño industrial» lee el mismo edificio de dos maneras. El contenido de «Diseño industrial» está en `datos/di/`: `fichas.json` (27 fichas por pieza), `etapas.json` (las 10 etapas de «Construir el 106») y `alternativas.json` (5 preguntas con sus alternativas). `cifras.py` recalcula cada cifra de clima desde `datos/clima_horario.bin.gz` y falla si no coincide con lo que ya publica el visor; `armar.py` escribe los tres JSON con esas cifras, así que ningún número de clima está escrito a mano. Las medidas salen del modelo y del inventario de piezas de [D.I.Visor](https://github.com/caamanoluismiguel/di-visor), el piloto de esta lectura, del mismo autor. Cómo se rehace y qué no tiene cita con página: [`datos/di/FUENTES.md`](datos/di/FUENTES.md).
+
+Cada ficha, cifra y mecanismo lleva un sello de certeza, que dice de dónde sale lo que se afirma del 106 (`CERTEZA` en `fuente/src/mecanismos/comun.js`). La ficha lleva la más débil de lo que afirma:
+
+- **Confirmado en foto del 106** (`foto`): se ve en una foto del edificio.
+- **Medido en el modelo** (`medido`): medido sobre el modelo 3D, no en obra.
+- **Del modelo, escala ±12 %** (`modelo`): leído en el modelo, cuya escala tiene un margen de ±12 %.
+- **Lo informa el equipo del proyecto, sin foto** (`equipo`): lo dice el equipo de este proyecto (el del visor, no el de la obra), que conoce el edificio, pero no hay foto ni medida que lo respalde. Así están el sentido en que abren las puertas y que la ventana de guillotina sube solo la hoja de abajo. Es un testimonio, no una observación documentada: si una foto lo contradice, manda la foto.
+- **Principio general del tipo** (`general`): vale para el tipo de pieza o de obra, no es un dato del 106.
+- **Calculado por el 106** (`calculo`): cifra calculada con los datos del visor.
+- **No se sabe** (`nosabe`): se dice que no se sabe y no se rellena.
+
 ### El entorno (`modelo/contexto.glb`)
 
 Lo genera `cd fuente && node contexto.mjs`, siempre igual a partir de los datos guardados en el repositorio (no lee el GLB anterior ni Blender):
@@ -159,7 +173,7 @@ Se puede reportar un dato o una fuente incorrecta, proponer una fuente mejor (so
 
 Caamaño, L. M. (2026). *Edificio 106 · Isthmus: visor de sol y clima* (versión del 1 de octubre de 2026) [software]. https://github.com/caamanoluismiguel/edificio-106
 
-Ver `CITATION.cff`.
+Ver `CITATION.cff`. Desde el primer DOI de Zenodo, las versiones van numeradas con etiqueta (`v1.0.0`…): ver [`docs/VERSIONES.md`](docs/VERSIONES.md). Qué entra en cada DOI: [`docs/doi/ALCANCE.md`](docs/doi/ALCANCE.md).
 
 ## Licencia
 

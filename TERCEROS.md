@@ -32,6 +32,17 @@ Las herramientas que solo se usan para armar y probar (Vite, glTF Transform, mes
 
 El modelo del 106 lo hizo el autor con ayuda de IA (Claude), a partir de fotos de Luis Miguel Caamaño y Raúl Alejandro González (autorización escrita de Raúl A. González, 6 oct 2026). El modelo es del autor y queda bajo el `LICENSE`; las fotos de Raúl Alejandro González son suyas. De ese conjunto, en el árbol actual del repositorio solo está la foto WA0014, dentro de la hoja `fuente/verificacion/entrada/comparativa-entrada.png`.
 
+## Contenido de «Diseño industrial» (`datos/di/`)
+
+Las fichas, las etapas y las alternativas son obra del autor y quedan bajo el `LICENSE`. Sus cifras de clima salen de la serie ERA5 de la fila de arriba y se recalculan con `datos/di/cifras.py`. Lo que citan y no se redistribuye:
+
+- el inventario de piezas de D.I.Visor (`docs/INVENTARIO.md` de https://github.com/caamanoluismiguel/di-visor), del mismo autor;
+- fotos del 106 del archivo del proyecto (de Luis Miguel Caamaño y de Raúl Alejandro González), que no están publicadas;
+- el orden de las etapas, que sigue el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio, sin copiar texto ni imágenes;
+- la lista de revisión de 2020 de la DOYC de la Alcaldía de Panamá, ítems 7.1 a 7.7 y 16.02, en una alternativa.
+
+Cada dato lleva su certeza («Confirmado en foto del 106», «Medido en el modelo», «Del modelo, escala ±12 %», «Lo informa el equipo del proyecto, sin foto», «Principio general del tipo»). «Lo informa el equipo del proyecto, sin foto» es el testimonio del equipo de este proyecto, sin foto ni medida: no es una fuente de terceros ni una observación documentada. Qué significa cada certeza: README, «La lectura Diseño industrial».
+
 ## Fuentes consultadas que no se redistribuyen
 
 Estas fuentes se miraron durante la investigación; ninguna imagen ni tesela suya está en el árbol actual del repositorio.
