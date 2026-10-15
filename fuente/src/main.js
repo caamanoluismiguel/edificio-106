@@ -13,8 +13,9 @@ import QRCode from 'qrcode';
 import { ENCUADRES } from './encuadres.js';
 import { epw } from './epw.js';
 import { VARIABLES, pintarAnual, diaHora } from './anual.js';
-import { cartaSolar, horasCalorVidrio } from './cartasolar.js';
+import { cartaSolar, horasCalorVidrio, perfil } from './cartasolar.js';
 import { Mapa, LEJOS, CERCA, BORDE_BLANDO, ficha, buscarEdificio, idEnlace } from './navegar.js';
+import { crearLecturaDI } from './lectura-di.js';
 
 const $ = (s) => document.querySelector(s);
 // la versión es la huella del armado (js/app.js?v=…, la escribe armar-raiz.sh); sin ella, el servidor de desarrollo
@@ -127,8 +128,8 @@ const VISTA_FACHADA = {
 const ROTULOS = [ // aparecen durante el armado, en el orden de los grupos
   { b: 0, t: 'Planta de 45,5 × 23 m' },       // aparece cuando los puntos ya formaron el edificio
   { b: 1.3, t: '3 pisos de 3,65 m' },
-  { b: 2.3, t: '116 aberturas' },
-  { b: 3.3, t: 'Teja de arcilla y 78 ménsulas' },
+  { b: 2.3, t: '118 aberturas' },
+  { b: 3.3, t: 'Teja curva y 78 ménsulas' },
   { b: 6.4, t: 'Ciudad del Saber · 8,9993° N, 79,5827° O' },
 ];
 
@@ -148,6 +149,8 @@ const S = {
   interactuo: false,             // el visitante ya tocó algo: la bienvenida no vuelve a salir
 };
 let consultas = null;
+let LEC = null;                  // las dos lecturas (lectura-di.js): se crea en prepararUI
+const DETALLE = { pose: null };  // fase 4a: con un mecanismo de cerca, la pose de la cámara del 106, que vuelve exacta al cerrar
 let escena, controls, clima = new Clima(), sonido = new Sonido(), intro = null;
 let lluviaSuave = 0, nubesSuave = 30;
 const cam = { anim: null };
@@ -352,7 +355,12 @@ function terminarIntro() {
   controls.enabled = true;
   irAAhora(false);
   // primera visita: tres pasos sobre los controles reales y después la oferta del recorrido (con ?prueba solo si se pide ?guia)
-  if (!visto && !location.hash && !EDIFICIO_Q) setTimeout(() => (/[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search) ? mostrarOferta() : guia(0, true)), 900);
+  const primeraGuia = () => (/[?&]prueba/.test(location.search) && !/[?&]guia/.test(location.search) ? mostrarOferta() : guia(0, true));
+  // fase 3: la entrada doble, una vez por navegador (también a quien ya tiene e106-visto, al final de la intro corta); un enlace
+  // (momento, fachada, ficha de un edificio o lectura) nunca pregunta. Con Arquitectura y clima sigue lo de siempre
+  if (!location.hash && !EDIFICIO_Q && LEC.debePreguntar()) setTimeout(() => LEC.preguntar((k) => { if (k === 'clima' && !visto) primeraGuia(); }), 900);
+  else if (!visto && !location.hash && !EDIFICIO_Q && !LEC.enLink) setTimeout(primeraGuia, 900);
+  LEC.alTerminarIntro();
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); }
   irAMomentoHash();
@@ -488,7 +496,8 @@ function enlaceMomento() {
   else if (S.voladizo || !$('#voladizo')?.hidden) panel = 'voladizo';
   if (panel) q.push('panel=' + panel);
   // con la ficha de un edificio abierta, el enlace la vuelve a abrir (?edificio=, ver abrirEdificio)
-  const ed = NAV.tarjeta ? '?edificio=' + encodeURIComponent(idEnlace(NAV.tarjeta, NAV.fichas)) : '';
+  const busq = [NAV.tarjeta ? 'edificio=' + encodeURIComponent(idEnlace(NAV.tarjeta, NAV.fichas)) : null, ...(LEC?.params() ?? [])].filter(Boolean);
+  const ed = busq.length ? '?' + busq.join('&') : '';   // la ficha de un edificio y, en Diseño industrial, la lectura (lectura-di.js)
   return `${SITIO}${ed}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
 }
 async function copiarEnlace(arriba = false) {
@@ -820,7 +829,7 @@ function volverAl106(clave = NAV.vista) {
 }
 /** Dos toques o doble clic en (x, y) de la pantalla: el edificio que se ve ahí (tarjeta y vuelo) o el punto del suelo (vuelo). */
 function elegirEn(x, y) {
-  const M = NAV.mapa; if (!M || intro) return null;
+  const M = NAV.mapa; if (!M || intro || LEC?.D.activa) return null;
   const r = escena.renderer.domElement.getBoundingClientRect();
   const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1), escena.camera);
   const h = M.rayo(ray.ray.origin, ray.ray.direction);
@@ -964,7 +973,7 @@ function prepararNavegar() {
   lienzo.addEventListener('pointerup', fin); lienzo.addEventListener('pointercancel', (e) => { toque.n = Math.max(0, toque.n - 1); toque.abajo = null; toque.t = 0; });
   // teclado: con el foco en la escena (no en un control); durante el recorrido, las flechas siguen pasando de paso
   addEventListener('keydown', (e) => {
-    if (!NAV.mapa || intro || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (!NAV.mapa || intro || DETALLE.pose || e.altKey || e.ctrlKey || e.metaKey) return;   // con un mecanismo de cerca, la cámara del 106 no se mueve
     // con el foco en la escena (#lienzo, que se enfoca al tocarla o con Tab) o en ningún control
     const a = document.activeElement; if (a && a !== document.body && a.id !== 'principal' && a.id !== 'lienzo') return;
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key, paso = (e.shiftKey ? 3 : 1) * 60;
@@ -1178,6 +1187,10 @@ function encuadreMovil(dt) {
     let abajo = H;
     const narr = altoNarrador();
     for (const q of PANELES_ABAJO) { const r = $(q)?.getBoundingClientRect(); if (r && r.height > 0 && r.top > H * 0.3) abajo = Math.min(abajo, r.top + (q === '#dock' || q === '#rotulo' ? narr : 0)); }
+    // fase 3, misma posición: Diseño industrial esconde la regla y las lecturas y su hoja es más baja. Para que el edificio no salte al
+    // cambiar de lectura, en Diseño industrial el borde de abajo no baja del que tenía Arquitectura y clima (sí sube si la ficha crece)
+    if (LEC?.D.activa) { if (ENC.abajoClima != null && ENC.W === W && ENC.H === H) abajo = Math.min(abajo, ENC.abajoClima); }
+    else ENC.abajoClima = abajo;
     if (abajo - arriba > 60) obj = (arriba + abajo) / 2 - H / 2;
   }
   // con el panel lateral de escritorio, lo que se mira va al centro del espacio que queda a su derecha
@@ -1566,6 +1579,7 @@ function rotulo(p, c, sp) {
   $('#rotulo-abrir').hidden = !!S.explica || !!S.viaje || corto === largo;
 }
 function rotuloTexto(p, c, sp) {
+  if (LEC?.D.activa) return LEC.narrador();
   const tipo = $('#rotulo-tipo'), txt = $('#rotulo-texto');
   const cerrar = $('#rotulo-cerrar');
   // de noche, dos atajos para ver el mismo día con luz
@@ -1899,6 +1913,8 @@ function prepararUI() {
     document.documentElement.classList.toggle('panel-lateral', panel);
     if (ANCHO_HOJA.matches || panel) for (const el of [$('.vistas'), $('.lentes'), $('#leyenda'), LAMINA]) $('#dock').appendChild(el);
     else { $('.hud-botones').append($('.vistas'), $('.lentes')); $('#hud').appendChild($('#leyenda')); $('#capas').insertBefore(LAMINA, $('.capas-pie')); }
+    // el conmutador de lecturas: arriba del panel lateral (área «lectura»); si no, primera fila del HUD (teléfono e intermedio)
+    if (panel) $('#dock').prepend($('#lecturas')); else $('#hud').prepend($('#lecturas'));
     ponerHoja(ANCHO_HOJA.matches ? 0 : undefined);
   };
   ANCHO_HOJA.addEventListener('change', acomodarHoja); ANCHO_PANEL.addEventListener('change', acomodarHoja); acomodarHoja();
@@ -2087,7 +2103,53 @@ function prepararUI() {
   // la primera interacción despierta el audio si el visitante ya pidió sonido
   pintarCeroSombra();
   const d = diasCeroSombra(hoy.y);
+  prepararLecturas();
   $('#cenit-txt').textContent = `A 9° N el sol pasa casi por el cenit dos veces al año: en ${hoy.y}, el ${d[0].d} de ${MESES[d[0].m - 1]} y el ${d[1].d} de ${MESES[d[1].m - 1]}, hacia las ${hhmm(minMediodia(d[0]))}. Ese mediodía, un poste casi no hace sombra.`;
+}
+
+/** Fase 3: las dos lecturas (src/lectura-di.js). Le da lo que necesita de aquí; al entrar a Diseño industrial se cierra lo que es
+ *  de la luz sin mover la cámara (el corte del alero se cierra sin volver a la vista de antes) y, lejos del 106, se vuelve a él. */
+function prepararLecturas() {
+  let confortAntes = false;                            // el corte del alero no vuelve: abrirlo mueve la cámara
+  LEC = crearLecturaDI({
+    $, S, BASE, reduce, hhmm, telefono: () => ANCHO_HOJA.matches, ponSello, hayMas, ponerHoja, soloUnPanel, plegarRecorrido, textoLeyenda,
+    escena: () => escena,
+    refrescar: () => { lastLect = ''; },
+    cerrarOferta: () => { $('#oferta-recorrido').hidden = true; clearTimeout(mostrarOferta.t); },
+    nombreLenteClima: () => LENTES[S.lente]?.t.split(':')[0] ?? 'Cómo se ve',
+    // al llegar, la barra de direcciones guarda la cámara nueva (como al soltar un arrastre)
+    volarA: (k) => volarA({ ...VISTAS[k], alLlegar: () => { VISTAS[k].alLlegar?.(); programarSyncHash(); } }, 1.6, k),
+    alEntrar: () => {
+      confortAntes = !$('#confort').hidden;            // Confort se cierra (nunca convive con el dibujo) y vuelve al volver
+      if (S.paso != null) recorrido(null);
+      if (GUIA.paso != null) guia(null);
+      if (S.reproduce) parar();
+      cerrarExplica(); soloUnPanel('leyenda');
+      S.vistaPrevia = null; abrirVoladizo(false);       // sin vuelo de vuelta: la cámara se queda donde está
+      cerrarQR(false); cerrarTarjeta(false);
+      if (NAV.lejos) volverAl106();
+    },
+    alSalir: () => { escena.sucio = true; S.firma = ''; if (confortAntes) { confortAntes = false; abrirConfort(true); } },
+    // fase 4a, los mecanismos de cerca: la hora del alero se cambia como con la regla (#hora); la lluvia de la teja es la que dibuja
+    // la escena, con su fuente; con el detalle abierto, los controles y el teclado de la cámara del 106 se apagan y su pose vuelve igual
+    ponerHora: (min) => { parar(); explorar(); S.momento = null; S.mesSerie = null; S.min = min; silenciar(); document.querySelectorAll('.preset-chip').forEach((x) => x.setAttribute('aria-pressed', 'false')); programarSyncHash(); },
+    lluviaAhora: () => {
+      const c = climaEn(S.fecha, S.min);
+      const fuente = S.aguacero ? 'aguacero' : c?.fuente === 'mes' ? 'mes' : c?.albrook && !c.albrook.auto ? 'albrook'
+        : c?.fuente === 'serie' ? 'era5' : c?.fuente === 'dia' || c?.fuente === 'vivo' ? 'pronostico' : null;
+      return { llueve: lluviaDibujada(c), fuente };
+    },
+    detalle: (on) => {
+      const c = escena.camera;
+      if (on && !DETALLE.pose) { pararGiro(); DETALLE.pose = { p: c.position.clone(), q: c.quaternion.clone(), fov: c.fov, zoom: c.zoom, t: controls.target.clone() }; controls.enabled = false; }
+      else if (!on && DETALLE.pose) {
+        const P = DETALLE.pose; DETALLE.pose = null;
+        c.position.copy(P.p); c.quaternion.copy(P.q); c.fov = P.fov; c.zoom = P.zoom; c.updateProjectionMatrix(); controls.target.copy(P.t);
+        controls.enabled = !intro && !cam.anim; escena.sucio = true;
+      }
+    },
+  });
+  if (window.__e106) window.__e106.lec = LEC;
 }
 
 /** Los días sin sombra del año en curso en «Para qué sirve»: solo los span[data-cero] (nunca el <article>), y la fecha y la hora
@@ -2344,13 +2406,14 @@ function ponerLente(k, mostrar = true) {
   if (!(k in LENTES)) k = 'foto';
   S.lente = k; if (mostrar) S.verLeyenda = true;
   document.querySelectorAll('.lentes [data-lente]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lente === k)));   // solo los botones: #leyenda y #ley-modos también llevan data-lente
-  $('#modo-activo-t').textContent = LENTES[k].t.split(':')[0];
+  if (!LEC?.D.activa) $('#modo-activo-t').textContent = LENTES[k].t.split(':')[0];
   aplicarPartes(); pintarPartes.f = '';
   document.documentElement.classList.toggle('en-partes', k === 'partes');
   lastLect = '';
 }
 function textoLeyenda(abierto) { const b = $('#ley-texto'); b.setAttribute('aria-expanded', String(abierto)); b.textContent = abierto ? 'Ver menos' : 'Leer más'; }
 function leyenda(c) {
+  if (LEC?.D.activa) return LEC.leyenda();              // la ficha de la pieza (lectura-di.js)
   const L = LENTES[S.lente], el = $('#leyenda');
   el.hidden = !S.verLeyenda; $('#lente-info').setAttribute('aria-expanded', String(!!S.verLeyenda));
   if (!S.verLeyenda) return;
@@ -2374,6 +2437,8 @@ function leyenda(c) {
       $('#lp-hace-k').textContent = P.hk ?? 'Qué hace:';
       $('#lp-tabla').hidden = S.parte !== 'escala';
       $('#lp-voladizo').hidden = S.parte !== 'alero';
+      const di = enlaceDivisor(S.parte), lk = $('#lp-divisor');
+      lk.hidden = !di; if (di) lk.href = di; else lk.removeAttribute('href');
     }
     $('#ley-leer').textContent = L.leer ?? ''; $('#ley-leer').hidden = !L.leer;
     $('#ley-prueba').textContent = textoViento(L.prueba); $('#ley-porque').textContent = textoViento(textoRad(L.porque)); $('#ley-ojo').textContent = L.ojo; $('#ley-tec').textContent = L.tec;
@@ -2450,7 +2515,7 @@ const LADO = { se: [0, 0, 1], no: [0, 0, -1], ne: [1, 0, 0], so: [-1, 0, 0] };
 const PARTES = {
   techo: { e: 'Techo a cuatro aguas', t: 'Techo a cuatro aguas', a: [[[3, 15.7, 0], null]],
     que: 'Un techo con cuatro lados inclinados que bajan hacia las cuatro fachadas.',
-    aqui: 'De teja de arcilla. En el modelo, la línea más alta del techo (la cumbrera) queda a unos 15,7 m del suelo y mide unos 29 m de largo.',
+    aqui: 'De teja curva roja, de canal y cobija, como se ve en las fotos; de qué está hecha (barro o concreto) no se ha comprobado. En el modelo, la línea más alta del techo (la cumbrera) queda a unos 15,7 m del suelo y mide unos 29 m de largo.',
     hace: 'La pendiente saca rápido el agua de lluvia (ERA5 da unos 2.000 mm al año), y los cuatro lados terminan en aleros que protegen todas las fachadas.' },
   alero: { e: 'Alero', t: 'Alero', a: [[[24.4, 7.4, -3], 'ne'], [[-13, 7.4, 13.15], 'se'], [[13, 7.4, -13.15], 'no'], [[-24.4, 7.4, 3], 'so']],
     que: 'La parte de la cubierta que sobresale del muro, como la visera de una gorra. Los dos niveles intermedios son tejaroces corridos, lo que el informe del Ejército llama mediagua.',
@@ -2470,7 +2535,7 @@ const PARTES = {
     hace: 'Es el apoyo típico de un voladizo: lleva parte de su peso hasta el muro.' },
   vano: { e: 'Abertura (vano)', t: 'Abertura (vano)', a: [[[-11.36, 6.3, 11.5], 'se'], [[9.78, 6.3, -11.5], 'no'], [[22.7, 6.3, 5.82], 'ne'], [[-22.7, 6.3, 5.9], 'so']],
     que: 'Cualquier hueco en un muro: una ventana o una puerta. En arquitectura se le llama vano.',
-    aqui: 'Unas 116 aberturas en el modelo: 112 ventanas (las de los pisos 2 y 3, inferidas) y 4 puertas. En los pisos 2 y 3 de la fachada principal, las ventanas van de dos en dos.',
+    aqui: 'En el modelo hay 118 aberturas: 113 ventanas (79 de ellas, las de los pisos 2 y 3, inferidas) y 5 vanos de puerta, el de la entrada principal y 4 con puerta parda, uno de ellos en la galería suroeste. En los pisos 2 y 3 de la fachada principal, las ventanas van de dos en dos.',
     hace: 'Deja entrar la luz y el aire. Su tamaño y su lugar deciden cuánto sol entra; por eso importa el alero que tiene encima.' },
   modulo: { e: 'Módulo', t: 'Módulo', a: [[[16.75, 5.6, 11.6], 'se']],
     que: 'Una medida o un tramo que se repite a lo largo del edificio.',
@@ -2485,6 +2550,14 @@ const PARTES = {
     aqui: 'Con «Alturas» se ven las medidas en la esquina. Cada fila compara una medida con personas de 1,70 m:',
     hace: 'Con aberturas arriba, el aire caliente que se junta bajo el techo puede salir (UN-Habitat, 2014, pp. 114 y 115). La misma fuente advierte que lo que pesa en el confort no es la altura del piso sino la temperatura de la superficie del techo (p. 114).' },
 };
+// Enlace de cada parte a D.I.Visor (fase 0 del plan de integración). Se manda la clave de la parte (pieza=alero…) y D.I.Visor
+// la traduce con su tabla ALIAS (js/divisor.js) a lección, sistema o familia: una sola tabla, la de D.I.Visor. Si el formato
+// final cambia (lección propia, familias de datos/familias.json), solo se toca esta función. escala (la persona) no es una pieza, y lateral (las caras cortas) no tiene lección en D.I.Visor.
+const DIVISOR = 'https://caamanoluismiguel.github.io/di-visor/';
+function enlaceDivisor(k) {
+  if (!PARTES[k] || k === 'escala' || k === 'lateral') return null;
+  return `${DIVISOR}?${new URLSearchParams({ pieza: k })}`;
+}
 // cotas de la regla de alturas (esquina noreste–sureste) y la cumbrera
 const COTAS = [[[22.75, 0.65, 11.5], '0,65 m · base'], [[22.75, 3.74, 11.5], '3,74 m · primer alero'], [[22.75, 7.4, 11.5], '7,40 m · segundo alero'],
   [[22.75, 11.1, 11.5], '11,10 m · tercer alero'], [[14.4, 15.73, 0], 'cumbrera · 15,7 m', 'der']];
@@ -2712,17 +2785,11 @@ function pintarVoladizo() {
 // Corte del alero con el rayo de sol: piso 2 de una fachada, esquema 2D. Alturas medidas en el modelo 3D: alero (su cara
 // de abajo) a 3,74 y 7,40 m; vidrio del piso 2 de 5,62 a 7,12 m, 10 cm hacia adentro del muro. Con el alero real de 1,65 m
 // sale el mismo corte del hallazgo: todo el vidrio al sol por debajo de ~9° de perfil y todo a la sombra por encima de ~45°.
-const CORTE = { alero: 7.4, losa: 3.74, esp: 0.2, vidAbajo: 5.62, vidArriba: 7.12, rehundido: 0.1, muro: 0.25 };
+const CORTE = { alero: 7.4, losa: 3.74, esp: 0.2, vidAbajo: 5.62, vidArriba: 7.12, rehundido: 0.1, muro: 0.3 };   // muro: grueso de los paños entre ventanas en el modelo (solo dibuja)
 const SIGLA = { se: 'SE', no: 'NO', ne: 'NE', so: 'SO' };
 const VIDRIO_TXT = { sombra: 'a la sombra', casiSombra: 'casi todo a la sombra', medias: 'a medias', casiSol: 'casi todo al sol', sol: 'al sol' };
-/** Ángulo de perfil (grados) del sol sobre una fachada vertical, o null si el sol está detrás o bajo el horizonte. */
-function perfilSol(alt, az, rumbo) {
-  const c = Math.cos((az - rumbo) * Math.PI / 180);
-  if (alt <= 0 || c <= 0.01) return null;
-  return Math.atan(Math.tan(alt * Math.PI / 180) / c) * 180 / Math.PI;
-}
 function estadoCorte(p, L, k, F = 0) {
-  const C = CORTE, pf = perfilSol(p.alt, p.az, FACHADAS['fachada-' + k].rumbo);
+  const C = CORTE, pf = perfil(p.alt, p.az, FACHADAS['fachada-' + k].rumbo);
   if (pf == null) return { pf, motivo: p.alt <= 0 ? 'noche' : 'detras' };
   const t = Math.tan(pf * Math.PI / 180);
   const dw = F + L * t, dg = F + (L + C.rehundido) * t;           // cuánto baja la sombra en el muro y en el vidrio (el rayo roza el borde del faldón)
@@ -2741,7 +2808,7 @@ function pintarCorte(p, c) {
   document.querySelectorAll('#corte [data-corte]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.corte === k)));
   $('#corte-t').textContent = `Corte del piso 2, fachada ${SIGLA[k]}, con el sol de esta hora`;
   const C = CORTE, E = estadoCorte(p, L, k, F), coma = (v, n = 2) => num(v, n);
-  const K = 58, XW = 64, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro
+  const K = 58, XW = 67, Y = (h) => 302 - (h - 3.3) * K, X = (m) => XW + m * K;   // m: metros hacia afuera desde la cara del muro (XW 67: con el muro de 0,30 los rótulos de la izquierda guardan su margen)
   const tip = X(L), fl = C.losa + C.esp, yv0 = Y(C.vidArriba), yv1 = Y(C.vidAbajo);
   const r = (x0, y0, x1, y1, extra) => `<rect x="${Math.min(x0, x1).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${Math.abs(x1 - x0).toFixed(1)}" height="${Math.abs(y1 - y0).toFixed(1)}" ${extra}></rect>`;
   let g = '';
@@ -3186,6 +3253,7 @@ function pintarAlivio() {
 // categorías de UTCI en calor, de «sin estrés» a «extremo»: pasos planos de color, sin degradado (índices de CATEGORIAS_UTCI)
 const UTCI_COL = { 4: '#8fa39b', 5: '#f2c46b', 6: '#e8913a', 7: '#cf5a2c', 8: '#9e2f1c', 9: '#5e1a12' };
 async function abrirConfort(abrir) {
+  if (abrir && LEC?.D.activa) return;                  // Confort es de la luz: nunca convive con el dibujo (DUDAS.md, punto 4)
   $('#confort').hidden = !abrir; $('#abrir-confort').setAttribute('aria-expanded', String(abrir));
   if (!abrir) return;
   pedirSerie();

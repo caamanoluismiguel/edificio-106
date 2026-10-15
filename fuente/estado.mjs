@@ -101,6 +101,16 @@ if (!process.argv.includes('--comprobar')) {
   const pa = antes.portico.join('\n'), pb = ahora.portico.join('\n');
   console.log(pa === pb ? '✓ pórtico: la medición es idéntica' : '✗ pórtico: la medición cambió');
   if (pa !== pb) cambios++;
+  // datos/familias.json (familias.mjs) nombra piezas por su clave: si una clave ya no está en la foto, su familia se perdió
+  // sin avisar. --familias=<ruta> comprueba otro archivo (el control que debe fallar usa una copia con una clave cambiada).
+  const rutaFam = process.argv.find((a) => a.startsWith('--familias='))?.slice('--familias='.length) ?? path.join(RAIZ, 'datos', 'familias.json');
+  if (!fs.existsSync(rutaFam)) { console.log(`✗ familias: no existe ${rutaFam}`); cambios++; } else {
+    const enFoto = new Set(Object.values(antes.archivos).flatMap((a) => a.piezas));
+    const faltan = Object.keys(JSON.parse(fs.readFileSync(rutaFam, 'utf8')).piezas).filter((k) => !enFoto.has(k));
+    console.log(faltan.length ? `✗ familias: ${faltan.length} clave(s) de familias.json ya no están en la foto` : '✓ familias: todas las claves de familias.json están en la foto');
+    faltan.slice(0, 40).forEach((x) => console.log(`    − ${x}`));
+    if (faltan.length) cambios++;
+  }
   console.log(cambios ? `RESULTADO: ${cambios} cambio(s): revisar que sean solo los esperados` : 'RESULTADO: todo igual a la foto');
   process.exit(cambios ? 1 : 0);
 }

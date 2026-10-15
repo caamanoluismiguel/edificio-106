@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mecanismos del 106 · prueba</title>
+<!-- Página aislada de prueba: carga cada mecanismo de src/mecanismos/ con su deslizador, sin tocar el visor.
+     Servir la carpeta fuente/ (p. ej. python3 -m http.server 4704) y abrir /mecanismos-prueba.html (?m=<clave> elige uno). -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --papel: #f7f6f2; --tarjeta: #ffffff; --tinta: #14181f; --tinta-2: #4a5160; --tenue: #7a8090; --linea-2: #d4d2ca;
+    --teja: #c9653f; --sol: #f4b545; --poche: #e3dccf;
+    --texto: "Atkinson Hyperlegible Next", system-ui, sans-serif; --datos: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  aside > * { flex-shrink: 0; }
+  html, body { margin: 0; background: var(--papel); color: var(--tinta); font: 400 14px/1.45 var(--texto); }
+  header { padding: 12px 16px; border-bottom: 1px solid var(--linea-2); display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { margin: 0; font: 600 16px var(--datos); }
+  header p { margin: 0; color: var(--tinta-2); font-size: 13px; }
+  .app { display: grid; grid-template-columns: 220px minmax(0, 1fr) 340px; height: calc(100vh - 50px); }
+  nav { border-right: 1px solid var(--linea-2); overflow: auto; padding: 8px 0; }
+  nav button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 8px 16px; font: 500 13px var(--datos); color: var(--tinta-2); cursor: pointer; }
+  nav button[aria-pressed="true"] { color: var(--tinta); background: var(--tarjeta); box-shadow: inset 3px 0 0 var(--teja); }
+  nav button span { color: var(--tenue); margin-right: 6px; }
+  #nav-sel { display: none; }
+  .lienzo { position: relative; min-height: 0; overflow: hidden; }
+  .lienzo canvas { display: block; width: 100%; height: 100%; }
+  .rotulo-3d { font: 600 11px var(--datos); color: var(--tinta); background: var(--tarjeta); border: 1px solid var(--tinta); padding: 2px 6px; white-space: nowrap; }
+  .rotulo-3d.enfasis { color: var(--teja); border-color: var(--teja); }
+  #sello { position: absolute; left: 12px; top: 12px; max-width: min(60%, 460px); font: 500 11px/1.4 var(--datos); background: var(--tarjeta); border: 1px dashed var(--tinta-2); padding: 6px 8px; color: var(--tinta-2); transition: border-color .2s, color .2s; }
+  #sello.vivo { border: 1px solid var(--teja); color: var(--tinta); }
+  #ubic { position: absolute; right: 12px; top: 12px; background: var(--tarjeta); border: 1px solid var(--linea-2); padding: 6px; border-radius: 8px; }
+  #ubic svg { display: block; }
+  #escala { position: absolute; left: 12px; bottom: 10px; font: 500 11px var(--datos); color: var(--tenue); }
+  aside { border-left: 1px solid var(--linea-2); overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  aside h2 { margin: 0; font: 600 18px var(--texto); }
+  .eyebrow { font: 600 11px var(--datos); letter-spacing: .04em; text-transform: uppercase; color: var(--tenue); margin: 0 0 4px; }
+  .control label { display: flex; justify-content: space-between; font: 500 12px var(--datos); margin-bottom: 4px; }
+  input[type=range] { width: 100%; accent-color: var(--tinta); }
+  select, input[type=date], input[type=time] { font: 400 13px var(--datos); padding: 6px 8px; border: 1px solid var(--linea-2); border-radius: 8px; background: var(--tarjeta); color: var(--tinta); width: 100%; }
+  .opciones { display: grid; gap: 8px; }
+  #lectura { font: 500 13px var(--datos); color: var(--tinta); min-height: 2.8em; }
+  #lectura div + div { color: var(--tinta-2); margin-top: 2px; }
+  table { border-collapse: collapse; width: 100%; font: 400 12px var(--datos); }
+  td { padding: 4px 0; border-bottom: 1px solid var(--linea-2); vertical-align: top; }
+  td.v { text-align: right; font-weight: 600; white-space: nowrap; padding-left: 8px; }
+  td small { display: block; color: var(--tenue); font-size: 11px; }
+  .texto { font-size: 14px; color: var(--tinta-2); margin: 0; }
+  ul.cert { margin: 0; padding: 0; list-style: none; font: 400 12px var(--datos); }
+  ul.cert li { padding: 3px 0; border-bottom: 1px solid var(--linea-2); display: flex; justify-content: space-between; gap: 8px; }
+  ul.cert li b { font-weight: 500; color: var(--tinta-2); text-align: right; }
+  .sol { border: 1px solid var(--linea-2); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+  .sol .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .chk { display: flex; gap: 8px; align-items: center; font: 500 12px var(--datos); }
+  @media (max-width: 900px) {
+    .app { display: block; height: auto; }
+    nav { display: none; }
+    #nav-sel { display: block; margin: 8px 16px 0; width: calc(100% - 32px); }
+    .lienzo { height: 62vh; }
+    aside { border-left: 0; padding: 16px; }
+    #ubic svg { width: 112px; height: auto; }
+    #sello { max-width: calc(100% - 150px); }
+    .rotulo-3d { white-space: normal; max-width: 128px; }
+    .rotulo-3d.secundario { display: none; }
+  }
+</style>
+</head>
+<body>
+<header><h1>Mecanismos del 106</h1><p>Página de prueba. No es el visor.</p></header>
+<select id="nav-sel" aria-label="Mecanismo"></select>
+<div class="app">
+  <nav id="nav" aria-label="Mecanismos"></nav>
+  <div class="lienzo" id="lienzo">
+    <div id="sello" role="status"></div>
+    <div id="ubic"></div>
+    <div id="escala"></div>
+  </div>
+  <aside>
+    <div><p class="eyebrow" id="numero"></p><h2 id="titulo"></h2></div>
+    <div class="control"><label for="m"><span id="etiqueta">Mecanismo</span></label><input id="m" type="range" min="0" max="1" step="0.005"></div>
+    <div class="control" id="c-desp" hidden><label for="desp"><span>Despiece</span></label><input id="desp" type="range" min="0" max="1" step="0.01" value="0"></div>
+    <div class="opciones" id="opciones"></div>
+    <div class="sol" id="sol" hidden>
+      <label class="chk"><input type="checkbox" id="sol-on" checked> Sol del 106 (fecha, hora y fachada)</label>
+      <div class="fila"><input type="date" id="sol-fecha" value="2026-10-13" aria-label="Fecha"><input type="time" id="sol-hora" value="09:30" step="60" aria-label="Hora de Panamá"></div>
+      <select id="sol-fachada" aria-label="Fachada"><option value="fachada-se">Fachada SE</option><option value="fachada-no">Fachada NO</option><option value="fachada-ne">Fachada NE</option><option value="fachada-so">Fachada SO</option></select>
+    </div>
+    <div class="sol" id="lluvia" hidden>
+      <select id="lluvia-fuente" aria-label="Fuente de la lluvia (prueba)"><option value="">Sin dato de fuente</option><option value="era5">ERA5</option><option value="albrook">Parte de Albrook</option><option value="pronostico">Pronóstico</option><option value="mes">Año típico</option><option value="aguacero">Capa «Aguacero»</option></select>
+      <label class="chk"><input type="checkbox" id="lluvia-si" checked> La escena dibuja lluvia a esta hora</label>
+    </div>
+    <div id="lectura" aria-live="polite"></div>
+    <div><p class="eyebrow">Cifras en el margen</p><table id="cifras"></table></div>
+    <div><p class="eyebrow">Decisión morfológica</p><p class="texto" id="morfologia"></p></div>
+    <div><p class="eyebrow">Qué se sabe</p><p class="texto" id="rotulo"></p></div>
+    <div><p class="eyebrow">Certeza</p><ul class="cert" id="certeza"></ul></div>
+  </aside>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { MECANISMOS, CERTEZA } from './src/mecanismos/indice.js';
+import { svgUbicacion } from './src/mecanismos/ubicacion.js';
+import { posicionSol, FACHADAS } from './src/sol.js';
+
+const $ = (id) => document.getElementById(id);
+const css = getComputedStyle(document.documentElement);
+const col = (v) => new THREE.Color(css.getPropertyValue(v).trim());
+const colores = { papel: col('--papel'), tinta: col('--tinta'), enfasis: col('--teja'), tenue: col('--tenue'), sol: col('--sol'), poche: col('--poche') };
+
+// ---------------------------------------------------------------- anfitrión: las cuatro funciones del contrato
+function linea(puntos, o = {}) {
+  const geo = new THREE.BufferGeometry().setFromPoints(puntos);
+  const color = o.sol ? colores.sol : o.enfasis ? colores.enfasis : colores.tinta;
+  const mat = o.discontinua
+    ? new THREE.LineDashedMaterial({ color, dashSize: o.guion || 0.3, gapSize: (o.guion || 0.3) * 0.6, transparent: true, opacity: o.opacidad ?? 1 })
+    : new THREE.LineBasicMaterial({ color, transparent: true, opacity: o.opacidad ?? 1 });
+  const l = new (o.segmentos ? THREE.LineSegments : o.cerrada ? THREE.LineLoop : THREE.Line)(geo, mat);
+  if (o.discontinua) l.computeLineDistances();
+  return l;
+}
+function dibujar(geo, o = {}) {
+  const relleno = new THREE.MeshBasicMaterial({ color: o.poche ? colores.poche : colores.papel, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, transparent: true });
+  if (o.vidrio) { relleno.opacity = 0.18; relleno.depthWrite = false; }
+  if (o.discontinua) { relleno.opacity = 0; relleno.depthWrite = false; }
+  const m = new THREE.Mesh(geo, relleno);
+  if (o.papel) return m;
+  const color = o.enfasis ? colores.enfasis : colores.tinta;
+  const aristas = new THREE.EdgesGeometry(geo, o.umbral || 20);
+  const lm = o.discontinua ? new THREE.LineDashedMaterial({ color, dashSize: 0.012, gapSize: 0.008 }) : new THREE.LineBasicMaterial({ color });
+  const ls = new THREE.LineSegments(aristas, lm);
+  if (o.discontinua) ls.computeLineDistances();
+  m.add(ls);
+  return m;
+}
+function rotulo(texto, pos, enfasis = false) {
+  const el = document.createElement('span');
+  el.className = 'rotulo-3d' + (enfasis ? ' enfasis' : '');
+  el.textContent = texto;
+  const ob = new CSS2DObject(el);
+  ob.position.set(...pos);
+  return ob;
+}
+
+// ---------------------------------------------------------------- escena
+const lienzo = $('lienzo');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(colores.papel, 1);
+lienzo.prepend(renderer.domElement);
+const r2 = new CSS2DRenderer();
+Object.assign(r2.domElement.style, { position: 'absolute', inset: '0', pointerEvents: 'none' });
+lienzo.appendChild(r2.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 800);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// ---------------------------------------------------------------- el sol del 106 para el alero (el anfitrión calcula, el módulo no)
+function perfilDel106() {
+  if (!$('sol-on').checked) return undefined;
+  const [y, mo, d] = $('sol-fecha').value.split('-').map(Number);
+  const [h, mi] = $('sol-hora').value.split(':').map(Number);
+  const f = $('sol-fachada').value;
+  const p = posicionSol({ y, m: mo, d, h, min: mi });
+  // perfil() de cartasolar.js: misma fórmula (cartasolar.js importa anual.js y clima.js, que necesitan el armado de Vite)
+  const c = Math.cos(((p.az - FACHADAS[f].rumbo) * Math.PI) / 180);
+  const sigla = f.slice(8).toUpperCase();
+  const rot = `${sigla} · ${String(d).padStart(2, '0')}/${String(mo).padStart(2, '0')} ${$('sol-hora').value}`;
+  if (p.alt <= 0) return { grados: null, rotulo: rot, motivo: 'el sol está bajo el horizonte' };
+  if (c <= 0.01) return { grados: null, rotulo: rot, motivo: `el sol está detrás de la fachada ${sigla}` };
+  return { grados: (Math.atan(Math.tan((p.alt * Math.PI) / 180) / c) * 180) / Math.PI, rotulo: rot };
+}
+
+// ---------------------------------------------------------------- carga de un mecanismo
+// lluvia de prueba para la teja: el anfitrión real la toma de lluviaDibujada de main.js
+const llueve = () => ({ llueve: $('lluvia-fuente').value === 'aguacero' || $('lluvia-si').checked, fuente: $('lluvia-fuente').value || null });
+const ctx = { THREE, linea, dibujar, rotulo, colores, perfil: perfilDel106, llueve };
+// datos/familias.json (recorridos de la guillotina, hojas de las puertas), que ya está en el repo. ?familias=<ruta> lo toma de
+// otra carpeta; si no llega, los módulos usan su respaldo y lo dicen en el margen.
+try {
+  const r = await fetch(new URLSearchParams(location.search).get('familias') ?? '../datos/familias.json');
+  if (r.ok) ctx.familias = await r.json();
+} catch { /* sin familias.json */ }
+let actual = null, clave = null, ultimoMov = 0;
+const raiz = new THREE.Group();
+scene.add(raiz);
+
+function encuadrar(d) {
+  const caja = d.caja ? new THREE.Box3(new THREE.Vector3(...d.caja[0]), new THREE.Vector3(...d.caja[1])) : new THREE.Box3().setFromObject(d.objeto);
+  const centro = caja.getCenter(new THREE.Vector3());
+  const radio = caja.getSize(new THREE.Vector3()).length() / 2;
+  const dir = new THREE.Vector3(...d.camara.pos).sub(new THREE.Vector3(...d.camara.obj)).normalize();
+  const fov = (camera.fov * Math.PI) / 180;
+  const fovH = 2 * Math.atan(Math.tan(fov / 2) * camera.aspect);
+  const dist = radio / Math.sin(Math.min(fov, fovH) / 2) * (camera.aspect < 0.9 ? 1.3 : 1.02);   // en teléfono, aire para los rótulos
+  camera.position.copy(centro).addScaledVector(dir, dist);
+  controls.target.copy(centro);
+  camera.near = dist / 100; camera.far = dist * 20; camera.updateProjectionMatrix();
+  controls.update();
+}
+
+function cargar(c) {
+  const ent = MECANISMOS[c] ? c : Object.keys(MECANISMOS)[0];
+  clave = ent;
+  raiz.clear();
+  r2.domElement.replaceChildren();
+  const mod = MECANISMOS[ent];
+  actual = mod.crear(ctx);
+  raiz.add(actual.objeto);
+  document.querySelectorAll('#nav button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.c === ent)));
+  $('nav-sel').value = ent;
+  $('numero').textContent = `Catálogo ${mod.meta.n ? '§4 · ' + String(mod.meta.n).padStart(2, '0') : '· escena de D.I.Visor'}`;
+  $('titulo').textContent = mod.meta.titulo;
+  $('m').value = actual.inicial ?? 0.5;
+  $('c-desp').hidden = !actual.despiece;
+  $('desp').value = 0;
+  $('sol').hidden = ent !== 'alero';
+  $('lluvia').hidden = ent !== 'teja';
+  $('escala').textContent = `DETALLE · ${actual.escala || 'SIN ESCALA'}`;
+  $('morfologia').textContent = actual.morfologia || '';
+  $('rotulo').textContent = actual.rotulo || '';
+  $('opciones').innerHTML = '';
+  for (const op of actual.opciones || []) {
+    const s = document.createElement('select');
+    s.setAttribute('aria-label', op.nombre);
+    s.innerHTML = op.valores.map((v) => `<option value="${v.id}"${v.id === op.inicial ? ' selected' : ''}>${op.nombre}: ${v.nombre}</option>`).join('');
+    s.addEventListener('change', () => { actual.elegir(op.id, s.value); refrescar(true); pintarUbicacion(); encuadrar(actual); });
+    $('opciones').append(s);
+  }
+  pintarUbicacion();
+  const q = new URLSearchParams(location.search); q.set('m', ent);
+  history.replaceState(null, '', '?' + q.toString().replace('prueba=&', 'prueba&').replace(/prueba=$/, 'prueba'));
+  refrescar(false);
+  encuadrar(actual);
+}
+function pintarUbicacion() {
+  const u = actual.ubicacion;
+  $('ubic').innerHTML = u ? svgUbicacion({ pieza: u.pieza, texto: u.texto, ancho: matchMedia('(max-width: 900px)').matches ? 112 : 150 }) : '';
+  $('ubic').hidden = !u;
+}
+function refrescar(movido, dt = 0) {
+  $('m').disabled = clave === 'alero' && $('sol-on').checked;
+  if (actual.despiece) actual.despiece(+$('desp').value);
+  const t = actual.actualizar(+$('m').value, dt);
+  $('lectura').innerHTML = (Array.isArray(t) ? t : [t]).map((x) => `<div>${x}</div>`).join('');
+  $('etiqueta').textContent = actual.etiqueta || 'Mecanismo';
+  $('sello').textContent = actual.sello || '';
+  $('certeza').innerHTML = (actual.certeza || []).map((x) => `<li><span>${x.que}</span><b>${CERTEZA[x.nivel] ?? x.nivel}${x.nota ? ' · ' + x.nota : ''}</b></li>`).join('');
+  $('cifras').innerHTML = (actual.cifras?.() || []).map((c) => `<tr><td>${c.clave}<small>${CERTEZA[c.certeza] ?? c.certeza} · ${c.fuente}</small></td><td class="v">${c.valor}</td></tr>`).join('') || '<tr><td>Sin cifras del 106 para este mecanismo.</td></tr>';
+  if (movido) ultimoMov = performance.now();
+}
+for (const id of ['m', 'desp']) $(id).addEventListener('input', () => refrescar(true));
+for (const id of ['sol-on', 'sol-fecha', 'sol-hora', 'sol-fachada', 'lluvia-fuente', 'lluvia-si']) $(id).addEventListener('input', () => refrescar(true));
+
+// navegación
+for (const [c, mod] of Object.entries(MECANISMOS)) {
+  const b = document.createElement('button');
+  b.dataset.c = c;
+  b.innerHTML = `<span>${mod.meta.n ? String(mod.meta.n).padStart(2, '0') : '··'}</span>${mod.meta.titulo}`;
+  b.addEventListener('click', () => cargar(c));
+  $('nav').append(b);
+  $('nav-sel').insertAdjacentHTML('beforeend', `<option value="${c}">${mod.meta.n ? String(mod.meta.n).padStart(2, '0') + ' · ' : ''}${mod.meta.titulo}</option>`);
+}
+$('nav-sel').addEventListener('change', (e) => cargar(e.target.value));
+
+// tamaño y bucle
+function tam() {
+  const w = lienzo.clientWidth, h = lienzo.clientHeight;
+  renderer.setSize(w, h, false);
+  r2.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(() => { tam(); if (actual) pintarUbicacion(); }).observe(lienzo);
+tam();
+let antes = performance.now();
+function bucle(t) {
+  const dt = Math.min(0.1, (t - antes) / 1000); antes = t;
+  if (actual?.animado) refrescar(false, dt);
+  $('sello').classList.toggle('vivo', t - ultimoMov < 1500);
+  controls.update();
+  renderer.render(scene, camera);
+  r2.render(scene, camera);
+  requestAnimationFrame(bucle);
+}
+cargar(new URLSearchParams(location.search).get('m'));
+requestAnimationFrame(bucle);
+if (location.search.includes('prueba')) window.__mec = { cargar, MECANISMOS, get actual() { return actual; }, refrescar, get clave() { return clave; } };
+</script>
+</body>
+</html>

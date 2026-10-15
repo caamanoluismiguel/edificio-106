@@ -1,4 +1,4 @@
-<title>Edificio 106: sol y lluvia</title>
+<title>Edificio 106: arquitectura, clima y diseño industrial</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
 <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png">
@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_PA">
 <meta property="og:url" content="https://caamanoluismiguel.github.io/edificio-106/">
-<meta property="og:title" content="Edificio 106: sol y lluvia">
+<meta property="og:title" content="Edificio 106: arquitectura, clima y diseño industrial">
 <meta property="og:description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <meta property="og:image" content="https://caamanoluismiguel.github.io/edificio-106/img/og.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -359,8 +359,9 @@
   .saltar-a:focus { transform: none; }
   #principal:focus { outline: none; }
   html:not(.listo) #titulo-app { display: none; }
-  .lp-link { justify-self: start; border: 0; background: none; padding: 2px 0; cursor: pointer; font: 600 13px/1.3 var(--texto); color: var(--sol); text-align: left; }
+  .lp-link { justify-self: start; border: 0; background: none; padding: 2px 0; cursor: pointer; font: 600 13px/1.3 var(--texto); color: var(--sol); text-align: left; text-decoration: none; }
   .lp-link:hover { color: var(--sol-2); text-decoration: underline; }
+  .lp-link { position: relative; } .lp-link::after { content: ''; position: absolute; inset: -2px 0 -1px; }   /* área de toque de 24 px (WCAG 2.5.8) sin mover la ficha */
   .lp-mostrar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border-top: 1px solid var(--linea); padding-top: 7px; }
   .lp-mostrar span { font: 500 12px/1 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--cal-2); }
   .lp-mostrar button, .vol-largos button { font: 600 12px/1 var(--texto); color: var(--cal); background: transparent; border: 1px solid var(--linea-2); border-radius: 999px; padding: 7px 11px; cursor: pointer; }
@@ -996,11 +997,12 @@
     html.panel-lateral { --dock-h: 0px !important; }
     html.panel-lateral #dock { left: 0; right: auto; top: calc(env(safe-area-inset-top, 0px) + 64px); bottom: 0; width: var(--panel-w); border-radius: 0; border-width: 0 1px 0 0; box-shadow: none;
       padding: 8px 20px 24px; overflow-y: auto; overscroll-behavior: contain; align-content: start; align-items: center;
-      grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; grid-template-rows: repeat(13, max-content);   /* con alto fijo, las filas auto no crecían con la tarjeta del modo */
-      grid-template-areas: "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "dley dley dley" "tabs tabs tabs" "momentos momentos momentos" "vistas vistas vistas"
+      grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 0; column-gap: 8px; grid-template-rows: repeat(14, max-content);   /* con alto fijo, las filas auto no crecían con la tarjeta del modo */
+      grid-template-areas: "lectura lectura lectura" "narr narr narr" "hora . play" "fecha . play" "regla regla regla" "dley dley dley" "tabs tabs tabs" "momentos momentos momentos" "vistas vistas vistas"
         "modos modos modos" "ley ley ley" "ir confort capas" "lect lect lect" "lamina lamina lamina"; }
     html.panel-lateral #dock > * { margin-top: 12px; }
-    html.panel-lateral #rotulo { margin-top: 0; }
+    html.panel-lateral #rotulo { margin-top: 12px; }
+    html.panel-lateral #lecturas { grid-area: lectura; width: auto; margin-top: 4px; }
     html.panel-lateral :is(.dock-hora, .dock-centro, .dock-botones) { display: contents; }
     html.panel-lateral #l-hora { grid-area: hora; font-size: 46px; }
     html.panel-lateral #elegir { grid-area: fecha; justify-self: start; margin-top: 4px; }
@@ -1060,6 +1062,144 @@
     .lentes .info { min-height: 44px !important; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+  /* ---------- dos lecturas del mismo rango (fase 3 de la integración de D.I.Visor) ----------
+     «Arquitectura y clima | Diseño industrial»: un solo nodo, #lecturas. Vive en el HUD (primera fila: en el teléfono a todo el
+     ancho, en el diseño intermedio sobre los modos) y acomodarHoja() lo lleva al panel lateral, área «lectura», bajo la marca.
+     Dos mitades iguales, dos líneas a 600 y 15 px con 18 de interlínea (56 px de alto); la elegida en crema, como todo lo
+     seleccionado. En Diseño industrial se ocultan los controles de la luz: la luz del dato y el dibujo nunca están en la misma vista */
+  :root { --lect-h: 0px; }
+  .lecturas { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; width: min(19.5rem, calc(100vw - 2 * var(--gutter))); box-sizing: border-box;
+    background: var(--panel); border: 1px solid var(--linea); border-radius: 18px; backdrop-filter: blur(10px); }
+  .lecturas button { display: grid; align-content: center; justify-items: start; min-height: 56px; box-sizing: border-box; padding: 10px 12px; border: 0; border-radius: 12px;
+    background: none; cursor: pointer; font: 600 15px/18px var(--texto); color: var(--cal-2); text-align: left; transition: background .2s, color .2s, transform .08s cubic-bezier(.2, 0, 0, 1); }
+  .lecturas button span { display: block; white-space: nowrap; }
+  .lecturas button:hover { color: var(--cal); background: rgba(239,233,222,.08); }
+  .lecturas button:active { transform: scale(.97); }
+  .lecturas button[aria-pressed="true"] { color: #0b1216; background: var(--cal); }
+  @media (max-width: 760px) {
+    :root { --lect-h: 72px; }                                       /* la fila del conmutador (64 px) y su hueco: lo de debajo baja eso */
+    .lecturas { grid-column: 1 / -1; grid-row: 1; width: auto; }
+    #brujula, #lejos, .vistas { grid-row: 2; } .lentes { grid-row: 3; } #leyenda { grid-row: 4; }
+    #qr { top: calc(env(safe-area-inset-top, 0px) + 118px + var(--lect-h)); }
+    #pista-navegar { top: calc(env(safe-area-inset-top, 0px) + 124px + var(--lect-h)); }
+    #viaje { top: calc(env(safe-area-inset-top, 0px) + 58px + var(--lect-h)); }
+  }
+  @media (max-height: 500px) and (min-width: 761px) {
+    .lecturas { grid-column: 1; grid-row: 1; justify-self: start; width: 17rem; }
+    .hud-botones { grid-column: 1 / -1; grid-row: 2; } #leyenda { grid-row: 3; }
+  }
+  /* lo que es de la luz no está en Diseño industrial (Confort incluido: nunca convive con el dibujo) */
+  html.lectura-di :is(#l-hora, #elegir, .pestanas, .regla, #dia-ley-caja, #momentos-caja, #lect-resumen, .dock-lect, #l-fuente, #reproducir, #abrir-ir, #abrir-capas,
+    #abrir-confort, #ahora, #rotulo-noche, #confort, #capas, #ir-a, #partes-capa, #panel-fachada, #voladizo, #guardar-img, #aviso-noche, #tarjeta-edificio, #qr,
+    #pista-navegar, #lejos, .lentes [data-lente], #para-la-clase > details, #para-la-clase > p:has(#clase-gnomon), #viaje, #brujula-sol) { display: none !important; }
+  html:not(.lectura-di) :is(.lentes [data-lente-di], #di-hora, #ley-di) { display: none !important; }
+  html.lectura-di #leyenda :is(#ley-parte, #ley-rampa, #ley-escala, #ley-fachadas, #ley-corte, #ley-modos, #ley-leer, #ley-mas) { display: none !important; }
+  html.lectura-di #ley-sello:not(:empty) { display: block; }       /* en Diseño industrial el sello es la certeza de la pieza: siempre a la vista */
+  /* la hora de la escena, en una línea del narrador; tocarla vuelve a la luz */
+  #di-hora { grid-area: noche; justify-self: start; min-height: 36px; padding: 7px 12px; font: 500 12px/1.3 var(--datos); color: var(--cal-2); white-space: normal; text-align: left; }
+  html.lectura-di.hoja-0 #dock:has(#leyenda:not([hidden])) #rotulo > #di-hora { display: inline-flex; }
+  /* la ficha de la pieza, en la tarjeta de la lente */
+  #ley-di { display: grid; gap: 8px; }
+  #ley-di[hidden], #ley-di [hidden] { display: none; }
+  .di-seg { display: grid; gap: 5px; }
+  .di-seg > span { font: 500 12px/1 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--cal-2); }
+  #ley-di .segmento button { min-height: 32px; padding: 6px 4px; }
+  #ley-di .segmento button[aria-pressed="true"] { background: rgba(239,233,222,.14); color: var(--cal); }
+  #ley-di dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; margin: 0; font-size: 12px; line-height: 1.35; }
+  #ley-di dt { color: var(--cal-2); } #ley-di dd { margin: 0; font: 500 12px/1.35 var(--datos); color: var(--cal); text-align: right; }
+  #di-fachada { display: grid; gap: 6px; border-top: 1px solid var(--linea); padding-top: 8px; }
+  #di-fachada h3 { margin: 0; font: 500 12px/1.2 var(--datos); color: var(--sol); letter-spacing: .12em; text-transform: uppercase; }
+  #di-fachada p { margin: 0; font-size: 12px; line-height: 1.42; color: var(--cal); text-wrap: pretty; }
+  #di-fachada dl { grid-template-columns: minmax(0, 1fr); } #di-fachada dd { text-align: left; }
+  #di-mas { border-top: 1px solid var(--linea); padding-top: 7px; }
+  #di-mas p, #di-certezas { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
+  #di-mas p b { color: var(--cal); font-weight: 600; } #di-mas .tec { font-size: 11px; }
+  #di-certezas { padding-left: 16px; } #di-certezas b { color: var(--cal); font-weight: 600; }
+  /* fase 4a: el deslizador del corte y los mecanismos de cerca. El deslizador: carril en --linea-2 sin relleno de color, pulgar
+     en crema, 44 px de toque y foco en crema (el ámbar es del sol). El detalle usa la misma tarjeta; el mapa de ubicación toma
+     el lugar de la brújula y es el botón «Volver al edificio» */
+  #di-ficha { display: grid; gap: 8px; }
+  .di-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; }
+  .di-cab label { font: 500 12px/1 var(--datos); letter-spacing: .08em; text-transform: uppercase; color: var(--cal-2); }
+  #di-corte-val { font: 500 12px/1.3 var(--datos); color: var(--cal); }
+  .di-rango { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 44px; margin: 0; padding: 0; background: none; cursor: pointer; touch-action: pan-y; }
+  .di-rango[hidden] { display: none; }
+  .di-rango::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: var(--linea-2); }
+  .di-rango::-moz-range-track { height: 4px; border-radius: 999px; background: var(--linea-2); }
+  .di-rango::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; margin-top: -9px; border: 0; border-radius: 999px; background: var(--cal); }
+  .di-rango::-moz-range-thumb { width: 22px; height: 22px; border: 0; border-radius: 999px; background: var(--cal); }
+  .di-rango:focus-visible { outline: 2px solid var(--cal); outline-offset: 2px; border-radius: 8px; }
+  .di-pos { display: grid; }
+  .di-pos label { font: 500 12px/1.3 var(--datos); color: var(--cal-2); }
+  #di-cerca, #di-meca-volver { justify-self: start; min-height: 44px; }
+  #di-meca { display: grid; gap: 8px; }
+  #di-meca-frase { margin: 0; display: grid; gap: 2px; font: 500 13px/1.4 var(--datos); color: var(--cal); text-wrap: pretty; }
+  #di-meca-frase span + span { color: var(--cal-2); font-weight: 400; }
+  #di-meca-ops { display: grid; gap: 8px; }
+  #di-meca-ops .segmento { flex-wrap: wrap; border-radius: 12px; }
+  #di-meca-ops .segmento button { flex: 1 1 auto; min-height: 36px; padding: 6px 8px; border-radius: 8px; line-height: 1.25; white-space: normal; }
+  #di-meca-ops .segmento button[aria-pressed="true"] { background: rgba(239,233,222,.14); color: var(--cal); }
+  #di-meca-cifras dt small { display: block; margin-top: 1px; font: 400 11px/1.35 var(--datos); color: var(--cal-2); }
+  #di-meca-mas p, #di-meca-cert { margin: 6px 0 0; font-size: 12px; line-height: 1.42; color: var(--cal-2); text-wrap: pretty; }
+  #di-meca-mas p b, #di-meca-cert b { color: var(--cal); font-weight: 600; } #di-meca-cert { padding-left: 16px; }
+  #di-meca-lista { list-style: none; margin: 0; padding: 0; display: grid; }
+  #di-meca-lista button { display: block; width: 100%; min-height: 44px; padding: 10px 2px; border: 0; border-bottom: 1px solid var(--linea); background: none; cursor: pointer;
+    font: 600 14px/1.3 var(--texto); color: var(--cal); text-align: left; }
+  #di-meca-lista button:hover { color: var(--cal); background: rgba(239,233,222,.06); }
+  #rec-cerca .boton { min-height: 44px; }   /* «Ver de cerca» de la etapa: la misma caja de toque que la lista */
+  html.lectura-di #ley-sello.vivo { color: var(--cal); }
+  #di-mapa { padding: 6px; background: var(--cal); border: 1px solid var(--linea-2); border-radius: 12px; cursor: pointer; line-height: 0; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+  #di-mapa svg { display: block; }
+  html.en-detalle :is(#brujula, .vistas, #mirando) { display: none !important; }
+  .rot-3d { position: absolute; left: 0; top: 0; font: 600 11px/1.3 var(--datos); color: var(--noche); background: var(--cal); border: 1px solid var(--cal-3); border-radius: 8px; padding: 2px 6px; white-space: nowrap; }
+  .rot-3d.enfasis { border-color: var(--teja); }
+  .di-escala { position: absolute; left: 0; top: 0; font: 600 12px/1.3 var(--datos); color: var(--noche); background: var(--cal); border: 1px solid var(--cal-3); border-radius: 8px; padding: 5px 8px; letter-spacing: .04em; }
+  @media (max-width: 760px) {
+    .rot-3d { white-space: normal; max-width: 128px; font-weight: 500; } .rot-3d.secundario { display: none; }
+    .di-escala { font: 500 11px/1.3 var(--datos); padding: 4px 6px; }
+    #di-mapa { grid-column: 2; grid-row: 2; justify-self: end; }
+    #leyenda[data-lente^="di-meca"]:not(.texto) :is(#di-meca-ops, #di-meca-cifras, #di-meca-mas, #di-meca-desp-caja) { display: none; }
+    #di-meca-ops .segmento button { min-height: 44px; }
+    /* con un mecanismo de cerca, la hoja compacta deja solo la tarjeta: el narrador y el modo vuelven al cerrar */
+    html.en-detalle.hoja-0 #dock :is(#rotulo, #modo-activo) { display: none !important; }
+  }
+  @media (max-width: 760px) {
+    #leyenda[data-lente^="di"]:not(.texto) :is(#di-datos, #di-fachada, #di-mas) { display: none; }
+    html.hoja-0 #dock #leyenda .di-seg { display: none; }
+  }
+  /* la entrada doble: al terminar la intro, una vez por navegador (clave e106-lecturas); el mismo componente que la guía */
+  #entrada { position: fixed; z-index: 12; left: 0; right: 0; margin: 0 auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); width: min(30rem, calc(100vw - 2 * var(--gutter)));
+    box-sizing: border-box; display: grid; gap: 10px; padding: 16px 18px; background: var(--solido); border: 1px solid var(--linea-2); border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35); animation: sube .3s var(--ease); }
+  #entrada[hidden] { display: none; } #entrada:focus { outline: none; }
+  #entrada h2 { margin: 0; font: 700 22px/1.2 var(--display); } #entrada p { margin: 0; }
+  #entrada-nota { font-size: 13px; line-height: 1.4; color: var(--cal-2); }
+  .entrada-op { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .entrada-op button { display: grid; align-content: center; justify-items: start; gap: 4px; min-height: 72px; box-sizing: border-box; padding: 12px 14px; text-align: left; cursor: pointer;
+    font: 600 16px/1.25 var(--texto); color: var(--cal); background: rgba(239,233,222,.04); border: 1px solid var(--linea-2); border-radius: 12px; transition: border-color .2s, background .2s; }
+  .entrada-op button:hover, .entrada-op button:focus-visible { border-color: var(--cal); background: rgba(239,233,222,.08); }
+  .entrada-op .apoyo { font: 400 13px/1.3 var(--texto); color: var(--cal-2); }
+  html.panel-lateral #entrada { left: var(--panel-w); bottom: auto; top: 50%; margin-top: -110px; width: min(30rem, calc(100vw - var(--panel-w) - 2 * var(--gutter))); }
+  @media (max-width: 760px) { #entrada { left: 8px; right: 8px; width: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 14px); } .entrada-op { grid-template-columns: 1fr; } .entrada-op button { min-height: 64px; } }
+  /* el recorrido «Construir el 106»: la misma tarjeta, con reproducir y pausa y los puntos para saltar de etapa */
+  #rec-play { width: 44px; height: 44px; justify-content: center; padding: 0; background: var(--sol); color: #1d1405; border-color: var(--sol); }
+  #rec-play[hidden] { display: none; }
+  #rec-play::before { content: ""; width: 0; height: 0; border-left: 11px solid currentColor; border-top: 7px solid transparent; border-bottom: 7px solid transparent; margin-left: 3px; }
+  #rec-play[aria-pressed="true"]::before { width: 11px; height: 14px; border: 0; border-left: 4px solid currentColor; border-right: 4px solid currentColor; box-sizing: border-box; margin: 0; }
+  #recorrido.di .rec-pie { flex-wrap: wrap; }
+  #recorrido.di #rec-puntos { flex-basis: 100%; gap: 2px; margin: 0 0 2px -9px; }
+  #rec-puntos button { width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; border-radius: 8px; }
+  #rec-puntos button::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--linea-2); }
+  #rec-puntos button.ya::before { background: var(--cal-3); } #rec-puntos button.hoy::before { background: var(--cal); width: 16px; border-radius: 999px; }
+  #rec-puntos button:hover::before { background: var(--cal-2); }
+  #rec-sello { margin: 0; } .rec-dis[hidden], #rec-sello[hidden] { display: none; }
+  .rec-fuente { font-size: 11px; } .rec-fuente b { color: var(--cal-2); }
+  /* el cruce de la luz a la línea (400 ms): el lienzo se funde a la mitad y vuelve con la otra lectura; con movimiento reducido, corte seco */
+  #lienzo canvas { transition: opacity .2s linear; }
+  html.cruzando #lienzo canvas { opacity: 0; }
+  html.lectura-di #lienzo { background: var(--cal); }
+  @media (prefers-reduced-motion: reduce) { #lienzo canvas { transition: none; } }
 </style>
 
 <a id="saltar-a" class="saltar-a" href="#principal">Saltar a los controles</a>
@@ -1074,6 +1214,7 @@
   <div id="menu-lista" hidden>
     <button class="boton" id="abrir-guia" type="button">Cómo se usa (3 pasos)</button>
     <button class="boton" id="abrir-recorrido" type="button">Recorrido guiado · 5 min</button>
+    <button class="boton" id="abrir-construir" type="button">Construir el 106 · 5 min</button>
     <button class="boton" id="abrir-sirve" type="button" aria-expanded="false" aria-controls="sirve">Para qué sirve</button>
     <button class="boton" id="info" type="button" aria-haspopup="dialog">Fuentes y método</button>
   </div>
@@ -1094,7 +1235,7 @@
     <ol id="intro-rotulos" aria-live="polite">
       <li>Planta de <b>45,5 × 23 m</b></li>
       <li><b>3</b> pisos sobre una base de <b>0,65 m</b></li>
-      <li><b>116</b> aberturas en el modelo (las de los pisos 2 y 3, inferidas)</li>
+      <li><b>118</b> aberturas en el modelo (las de los pisos 2 y 3, inferidas)</li>
       <li>Aleros de <b>1,65 m</b> en 3 niveles · <b>78</b> ménsulas</li>
       <li>Clayton, Panamá · eje largo a <b>56°</b> del norte</li>
     </ol>
@@ -1107,7 +1248,7 @@
 </section>
 
 <main id="principal" tabindex="-1">
-<h1 id="titulo-app" class="sr">Edificio 106: sol y lluvia</h1>
+<h1 id="titulo-app" class="sr">Edificio 106: arquitectura, clima y diseño industrial</h1>
 <p id="aviso-noche" class="tras-intro solo-noche" hidden></p>
 <div id="partes-capa" hidden aria-label="Partes del edificio"></div>
 
@@ -1121,10 +1262,15 @@
   </div>
   <div id="rec-respuesta">
     <p id="rec-txt" tabindex="-1"></p>
-    <p class="rec-dis"><b>Para el diseño:</b> <span id="rec-dis"></span></p>
+    <p class="rec-dis"><b id="rec-dis-k">Para el diseño:</b> <span id="rec-dis"></span></p>
+    <p class="rec-dis" id="rec-tapa-p" hidden><b>Tapa:</b> <span id="rec-tapa"></span></p>
+    <p class="rec-dis" id="rec-pensar-p" hidden><b>Para pensar:</b> <span id="rec-pensar"></span></p>
+    <p class="rec-dis rec-fuente" id="rec-fuente-p" hidden><b>Fuente:</b> <span id="rec-fuente"></span></p>
+    <p class="rec-dis" id="rec-cerca-p" hidden><b>Ver de cerca:</b> <span id="rec-cerca"></span></p>
   </div>
   </div>
-  <div class="rec-pie"><div id="rec-puntos" aria-hidden="true"></div><button type="button" id="rec-prev" class="boton">Anterior</button><button type="button" id="rec-sig" class="boton primario">Siguiente</button></div>
+  <p id="rec-sello" class="conf-sello" hidden></p>
+  <div class="rec-pie"><div id="rec-puntos" aria-hidden="true"></div><button type="button" id="rec-play" class="boton" hidden aria-pressed="false" aria-label="Reproducir"></button><button type="button" id="rec-prev" class="boton">Anterior</button><button type="button" id="rec-sig" class="boton primario">Siguiente</button></div>
 </aside>
 
 <div id="guia" hidden role="dialog" aria-labelledby="guia-t" aria-describedby="guia-txt">
@@ -1134,12 +1280,28 @@
   <div><button type="button" id="guia-saltar" class="boton">Saltar</button><button type="button" id="guia-sig" class="boton primario">Siguiente</button></div>
 </div>
 
+<div id="entrada" hidden role="dialog" tabindex="-1" aria-labelledby="entrada-t" aria-describedby="entrada-nota">
+  <p class="eyebrow">Dos lecturas del 106</p>
+  <h2 id="entrada-t">¿Qué quieres ver?</h2>
+  <div class="entrada-op">
+    <button type="button" data-entrada="clima">Cómo le afecta el clima<small class="apoyo">Sol, lluvia y viento, 25 años de datos</small></button>
+    <button type="button" data-entrada="di">Cómo está hecho<small class="apoyo">Piezas, uniones y mecanismos en línea</small></button>
+  </div>
+  <p id="entrada-nota">Puedes cambiar cuando quieras con el selector de las dos lecturas.</p>
+</div>
+
 <div id="oferta-recorrido" hidden role="region" aria-label="Bienvenida">
-  <p><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo inciden el sol, la lluvia y el viento sobre el Edificio 106. En 5 minutos, el recorrido guiado te enseña a usarla.</p>
+  <p id="oferta-txt"><b>¿Primera vez aquí?</b> Esta maqueta muestra cómo inciden el sol, la lluvia y el viento sobre el Edificio 106. En 5 minutos, el recorrido guiado te enseña a usarla.</p>
+  <p id="oferta-txt-di" hidden><b>¿Primera vez en Diseño industrial?</b> «Construir el 106» recorre en 10 etapas el orden lógico de una obra de este tipo, de la base a las instalaciones.</p>
   <div><button type="button" id="oferta-si" class="boton primario">Empezar el recorrido</button><button type="button" id="oferta-sirve" class="boton">¿Para qué sirve?</button><button type="button" id="oferta-no" class="boton">Ahora no</button></div>
 </div>
 
 <aside id="hud" class="tras-intro" aria-label="Orientación">
+  <!-- las dos lecturas del mismo rango (fase 3 de la integración de D.I.Visor): mismo edificio, misma cámara, misma hora -->
+  <div id="lecturas" class="lecturas" role="group" aria-label="Lectura del edificio">
+    <button type="button" data-lectura="clima" aria-pressed="true"><span>Arquitectura</span> <span>y clima</span></button>
+    <button type="button" data-lectura="di" aria-pressed="false"><span>Diseño</span> <span>industrial</span></button>
+  </div>
   <button id="brujula" type="button" aria-label="Brújula. Pulsa para ver el edificio en planta, con el norte arriba.">
     <svg viewBox="-52 -52 104 104" aria-hidden="true">
       <circle class="fondo" r="50"></circle>
@@ -1158,6 +1320,7 @@
       <path class="indice" d="M0 -52 L-4.5 -58 L4.5 -58 Z"></path>
     </svg>
   </button>
+  <button id="di-mapa" type="button" hidden aria-label="Volver al edificio"></button>
   <p id="mirando">Miras hacia el suroeste</p>
   <!-- navegación libre: lejos del 106 (src/navegar.js, LEJOS), el botón para volver y la nota de que la ciudad es aproximada -->
   <div id="lejos" hidden>
@@ -1177,6 +1340,9 @@
     <button type="button" data-lente="viento" aria-pressed="false" title="De dónde llega el aire">Viento<small class="apoyo">De dónde llega el aire</small></button>
     <button type="button" data-lente="sombras" aria-pressed="false" title="La sombra hora por hora">Sombras del día<small class="apoyo">La sombra hora por hora</small></button>
     <button type="button" data-lente="partes" aria-pressed="false" title="Nombres, alturas y escala">Partes y medidas<small class="apoyo">Nombres, alturas y escala</small></button>
+    <button type="button" data-lente-di="piezas" aria-pressed="true" title="Qué es cada pieza y cómo se sabe">Piezas<small class="apoyo">Qué es cada pieza y cómo se sabe</small></button>
+    <button type="button" data-lente-di="construir" aria-pressed="false" title="El orden lógico de una obra de este tipo">Construir el 106<small class="apoyo">El orden lógico de una obra de este tipo</small></button>
+    <button type="button" data-lente-di="mecanismos" aria-pressed="false" title="Cómo trabaja cada pieza, de cerca">Mecanismos<small class="apoyo">Cómo trabaja cada pieza, de cerca</small></button>
     <button type="button" id="lente-info" class="info" aria-expanded="false" aria-controls="leyenda" title="Qué estás viendo y cómo leerlo">?</button>
   </div>
   </div>
@@ -1196,6 +1362,7 @@
       </table>
       <p><b class="k2" id="lp-hace-k">Qué hace:</b> <span id="lp-hace"></span></p>
       <button type="button" id="lp-voladizo" class="lp-link" hidden>El alero como voladizo: cómo trabaja →</button>
+      <a id="lp-divisor" class="lp-link" href="https://caamanoluismiguel.github.io/di-visor/" target="_blank" rel="noopener" hidden>Ver la pieza en línea →</a>
       <div class="lp-mostrar" role="group" aria-label="Mostrar en la escena"><span>Mostrar</span>
         <button type="button" data-mostrar="persona" aria-pressed="true">Persona de 1,70 m</button>
         <button type="button" data-mostrar="alturas" aria-pressed="false">Alturas</button>
@@ -1205,6 +1372,44 @@
     <div id="ley-escala"></div>
     <ul id="ley-fachadas"></ul>
     <p id="ley-sello" class="conf-sello"></p>
+    <div id="ley-di">
+      <div id="di-ficha">
+      <div class="di-seg" role="group" aria-label="Corte"><div class="di-cab"><label for="di-corte-pos">Corte</label><span id="di-corte-val" class="num"></span></div><div class="segmento" id="di-corte">
+        <button type="button" data-corte-di="" aria-pressed="true">Ninguno</button><button type="button" data-corte-di="planta" aria-pressed="false">Planta</button><button type="button" data-corte-di="longitudinal" aria-pressed="false">Longitudinal</button><button type="button" data-corte-di="transversal" aria-pressed="false">Transversal</button>
+      </div><input type="range" id="di-corte-pos" class="di-rango" min="0" max="1" step="0.1" hidden><p id="di-corte-vivo" class="sr" aria-live="polite"></p></div>
+      <div class="di-seg" id="di-contexto-caja" role="group" aria-label="El resto del edificio" hidden><div class="segmento" id="di-contexto">
+        <button type="button" data-contexto="fantasma" aria-pressed="true">Fantasma</button><button type="button" data-contexto="solido" aria-pressed="false">Sólido</button>
+      </div></div>
+      <button type="button" id="di-cerca" class="boton" hidden>Ver de cerca</button>
+      <dl id="di-datos" hidden></dl>
+      <section id="di-fachada" hidden aria-labelledby="di-fachada-t"><h3 id="di-fachada-t"></h3><p id="di-fachada-txt"></p><dl id="di-fachada-datos"></dl><p id="di-fachada-fuente" class="conf-sello"></p></section>
+      <details id="di-mas" class="pliegue" hidden>
+        <summary>Cómo se sabe y cómo se hace</summary>
+        <ul id="di-certezas"></ul>
+        <p id="di-decision-p"><b>Qué resuelve:</b> <span id="di-decision"></span></p>
+        <p id="di-del106-p"><b>En el 106:</b> <span id="di-del106"></span></p>
+        <p id="di-tipico-p"><b>En piezas de este tipo:</b> <span id="di-tipico"></span></p>
+        <p id="di-principio-p"><b>El principio:</b> <span id="di-principio"></span></p>
+        <p id="di-foto-p"><b>La foto que lo resolvería:</b> <span id="di-foto"></span></p>
+        <p id="di-fuente-p" class="tec"><b>Fuente:</b> <span id="di-fuente"></span></p>
+      </details>
+      </div>
+      <ol id="di-meca-lista" hidden></ol>
+      <div id="di-meca" hidden>
+        <div class="di-pos"><label for="di-meca-m" id="di-meca-etq"></label><input type="range" id="di-meca-m" class="di-rango" min="0" max="1" step="0.005"></div>
+        <div class="di-pos" id="di-meca-desp-caja" hidden><label for="di-meca-desp">Despiece</label><input type="range" id="di-meca-desp" class="di-rango" min="0" max="1" step="0.01" value="0"></div>
+        <p id="di-meca-frase"></p>
+        <div id="di-meca-ops"></div>
+        <dl id="di-meca-cifras"></dl>
+        <details id="di-meca-mas" class="pliegue">
+          <summary>Cómo se sabe y cómo se hace</summary>
+          <p><b>Qué resuelve:</b> <span id="di-meca-morf"></span></p>
+          <p><b>Qué se sabe:</b> <span id="di-meca-sabe"></span></p>
+          <ul id="di-meca-cert"></ul>
+        </details>
+        <button type="button" id="di-meca-volver" class="boton">Volver al edificio</button>
+      </div>
+    </div>
     <button type="button" id="ley-corte" class="boton" hidden>Ver el corte del alero</button>
     <div id="ley-modos" class="segmento" hidden></div>
     <p id="ley-leer"></p>
@@ -1301,6 +1506,7 @@
     <button type="button" id="rotulo-abrir" class="boton" aria-expanded="false" aria-controls="rotulo-texto">Leer más</button>
     <div id="rotulo-noche" hidden><button type="button" class="boton" id="noche-dia">Hoy a las 9:00</button><button type="button" class="boton" id="noche-atardecer">Atardecer</button></div>
     <button type="button" id="rotulo-cerrar" class="boton" hidden>Entendido</button>
+    <button type="button" id="di-hora" class="boton"></button>
   </div>
   <div class="dock-hora">
     <span id="l-hora" class="num" data-explica="hora" role="button" tabindex="0" aria-pressed="false" title="Qué significa">--:--</span>
@@ -1538,7 +1744,7 @@
         <span class="usar">Para dimensionar vidrios y protecciones: simulación de radiación, por ejemplo con <a href="https://www.ladybug.tools/" target="_blank" rel="noopener">Ladybug Tools</a> (Radiance).</span></li>
       <li><b>Temperatura interior y confort.</b> No calcula cuánto calor entra, cómo lo guarda y lo suelta la masa del concreto ni si adentro se está cómodo. El panel «Confort» solo compara el clima de afuera con zonas de confort.
         <span class="usar">Para eso: <a href="https://energyplus.net/" target="_blank" rel="noopener">EnergyPlus</a> (o Honeybee, de Ladybug Tools, que lo usa) con el archivo de clima típico (EPW) de la estación de Albrook, 2011–2025, en <a href="https://climate.onebuilding.org/WMO_Region_4_North_and_Central_America/PAN_Panama/index.html" target="_blank" rel="noopener">OneBuilding</a>.</span></li>
-      <li><b>Ventilación natural.</b> La forma de ver «Viento» dice de dónde viene el viento y qué fachada lo recibe de frente, pero no cómo entra y sale el aire por las 116 aberturas.
+      <li><b>Ventilación natural.</b> La forma de ver «Viento» dice de dónde viene el viento y qué fachada lo recibe de frente, pero no cómo entra y sale el aire por las 118 aberturas.
         <span class="usar">Para eso: simulación de fluidos (CFD) o, en una primera etapa, cálculos de ventilación cruzada con el viento de la rosa.</span></li>
       <li><b>Microclima y aguaceros.</b> ERA5 es una celda de ~28 km: no ve los árboles, la topografía de Clayton ni los edificios vecinos, y suaviza los aguaceros.
         <span class="usar">Para canales y bajantes: curvas de intensidad-duración-frecuencia (IDF) de una estación cercana. Para el clima del lugar: mediciones en sitio o estaciones cercanas, como Albrook.</span></li>

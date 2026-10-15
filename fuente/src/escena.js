@@ -21,6 +21,7 @@ import { binario, conVersion, VER } from './datos.js';
 import { NIVEL, NIVELES, VIGIA, Vigia, bajar, capacidad, nivelEstatico, nivelSondeo } from './ciudad-nivel.js';
 import { Barcos } from './barcos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
+import { Dibujo, LECTURA_DI } from './dibujo.js';   // lectura «Diseño industrial», solo con ?lectura=di
 
 export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'vegetacion', 'contexto', 'arboles'];   // arboles: las copas de Ciudad del Saber (arboles-cds.mjs), al final para no mover el índice de los demás
 // Reparto de partículas por grupo (fracción del total)
@@ -304,6 +305,7 @@ export class Escena {
     this.setSol(-8, 90);
     // el cielo, el suelo, la lluvia y las ayudas, en tramos mientras llegan los puntos de la intro (el primer cuadro los compilaba juntos)
     this.precompilar().catch(() => {});
+    if (LECTURA_DI) this.di = new Dibujo(this);   // ?lectura=di: escena aparte en línea (dibujo.js); sin el parámetro, nada cambia
     return this;
   }
 
@@ -1731,9 +1733,19 @@ export class Escena {
     this.scene.add(splash); this.salpicaduras = splash;
   }
 
+  /** Fase 3, el conmutador de lecturas: enciende o apaga el dibujo en línea (dibujo.js). La primera vez lo crea y arma sus
+   *  aristas en ratos libres; después solo lo pausa o lo reanuda. Al volver a la luz, la sombra del sol se rehace (mientras se
+   *  dibujaba en línea no se actualizó). */
+  ponerLecturaDI(on) {
+    if (on) { if (!this.di) this.di = new Dibujo(this); else this.di.reanudar(); }
+    else if (this.di?.activo) { this.di.pausar(); if (this.sun?.shadow) this.sun.shadow.needsUpdate = true; this._gruesaSucia = true; }
+    this.sucio = true;
+  }
+
   /** Con la cámara más lejos que 360 m (el alcance de antes), la neblina se corre en proporción: desde lejos se sigue viendo
    *  el entorno (el canal, a 1,5 a 2 km de la cámara). Hasta 360 m la neblina queda igual que siempre. */
   setAlejamiento(dist) {
+    this.distMira = dist;   // distancia al punto de mira (main.js la da cada cuadro); la usa dibujo.js con ?lectura=di
     const k = Math.max(1, dist / 360); if (Math.abs(k - (this.alejamiento ?? 1)) < 0.01) return;
     this.alejamiento = k;
     if (this._niebla) { this.scene.fog.near = this._niebla[0] * k; this.scene.fog.far = this._niebla[1] * k; }
@@ -1744,6 +1756,7 @@ export class Escena {
     // el visor de claude.ai precarga la página oculta y sin tamaño: con 0 × 0 px WebGPU rechaza el búfer de profundidad
     if (window.innerWidth < 2 || window.innerHeight < 2) return 0;
     if (this._w !== window.innerWidth || this._h !== window.innerHeight) this.resize();
+    if (this.di?.activo) { const t0 = performance.now(); this._dibujo = t0; this.di.render(); this.sucio = false; return t0; }   // lectura «Diseño industrial»: el dibujo en vez del postproceso
     U.cam.value.copy(this.camera.position);
     const llueve = U.lluvia.value > 0.01;
     if (this.lluviaSpr) this.lluviaSpr.visible = this.aleros.visible = this.salpicaduras.visible = llueve;

@@ -1,0 +1,182 @@
+[
+ {
+  "id": "base",
+  "n": 1,
+  "titulo": "La base",
+  "familias": [
+   "zocalo",
+   "bloque_calado"
+  ],
+  "texto": "En una obra de este tipo, lo primero que se ve sobre el suelo es la base. En el modelo es un zócalo macizo de 0,65 m en todo el perímetro, con franjas de bloques calados en la SE y la NO. La cimentación no está en el modelo y no se sabe de qué tipo es.",
+  "se_apoya_en": "el suelo y la cimentación, que no se conocen",
+  "tapa_a": "nada todavía; los muros la taparán por arriba",
+  "para_pensar": "¿Qué tendría que estar listo bajo el zócalo antes de seguir, si los bloques calados ventilan un espacio?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "cuerpo",
+  "n": 2,
+  "titulo": "Losas y muros, piso por piso",
+  "familias": [
+   "losa",
+   "muro"
+  ],
+  "texto": "El cuerpo sube en tres plantas de 3,65 m. No se sabe si el 106 tiene un marco de concreto con muros de relleno o muros que cargan: en el primer tipo, columnas y losas van antes que los muros; en el segundo, cada muro sube y la losa se apoya en él. El modelo solo da las losas a 0,65, 4,30 y 7,95 m y un muro de 0,30 m hasta 11,60 m.",
+  "se_apoya_en": "la base",
+  "tapa_a": "las instalaciones que vayan dentro del muro, si las hay",
+  "para_pensar": "¿Qué cambia en el orden de la obra si los muros cargan o si solo cierran?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "mensulas",
+  "n": 3,
+  "titulo": "Las ménsulas",
+  "familias": [
+   "mensula"
+  ],
+  "texto": "Bajo cada alero van ménsulas en escuadra, 26 por alero en el modelo. En una obra, una pieza anclada al muro va antes que lo que se apoya o se arrima a ella. Si las ménsulas del 106 cargan el alero o son decorativas no se sabe, y eso cambia si tienen que estar antes del alero o pueden ir después.",
+  "se_apoya_en": "el muro",
+  "tapa_a": "nada; quedan a la vista bajo el alero",
+  "para_pensar": "¿En qué etapa irían si fueran decorativas?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "aleros",
+  "n": 4,
+  "titulo": "Cabios y aleros",
+  "familias": [
+   "cabio",
+   "tabla_frente"
+  ],
+  "texto": "Los tres aleros corridos vuelan 1,65 m. En el modelo, 624 cabios cada 0,65 m recibirán el plano inclinado bajo la teja, y una pieza oscura, el frente del alero, remata el borde.",
+  "se_apoya_en": "el muro y, si cargan, las ménsulas",
+  "tapa_a": "la cabeza del muro",
+  "para_pensar": "¿Qué pieza del alero se cambiaría primero, y qué habría que quitar para llegar a ella?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "techo",
+  "n": 5,
+  "titulo": "El techo y el sofito",
+  "familias": [
+   "tablero_alero",
+   "gablete"
+  ],
+  "texto": "Sobre el último piso va el techo a cuatro aguas, con un gablete en cada extremo corto. En el modelo la pendiente es de 17,8°, la cumbrera llega a unos 15,64 m, y cuatro limas bajan desde las esquinas de la base de cada gablete hasta las esquinas del alero. Bajo la teja, el modelo tiene un plano inclinado oscuro que en los aleros se ve desde abajo como sofito; de qué es no se sabe.",
+  "se_apoya_en": "los cabios y el remate de los muros",
+  "tapa_a": "el interior, que queda bajo cubierta",
+  "para_pensar": "¿Por qué conviene cerrar el techo antes de trabajar en las ventanas?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "teja",
+  "n": 6,
+  "titulo": "La teja",
+  "familias": [
+   "teja",
+   "faja_mediagua"
+  ],
+  "texto": "Sobre ese plano van las tejas, canal y cobija, de abajo hacia arriba para que cada fila se monte sobre la anterior. En el modelo son unas 48.000, con filas que se solapan unos 6 cm. Si son de barro o de concreto y cómo se fijan no se sabe. En las dos mediaguas, una faja oscura cubre el encuentro de la teja con el muro.",
+  "se_apoya_en": "el plano inclinado bajo la teja",
+  "tapa_a": "ese plano y el encuentro de la teja de la mediagua con el muro",
+  "para_pensar": "¿Por qué la primera fila es la de abajo y no la de la cumbrera?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "ventanas",
+  "n": 7,
+  "titulo": "Ventanas y alféizares",
+  "familias": [
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio",
+   "hoja_guillotina",
+   "alfeizar",
+   "moldura"
+  ],
+  "texto": "Los vanos se cierran con ventanas de aluminio; según el equipo del proyecto, se abren hacia arriba, deslizándose. En el modelo son 113, cada una con su alféizar, y una moldura corre bajo los alféizares de cada piso. En obras de este tipo la carpintería suele llegar cuando el vano y el techo están listos.",
+  "se_apoya_en": "el vano del muro",
+  "tapa_a": "el borde del vano",
+  "para_pensar": "¿Qué tiene que estar resuelto en el vano antes de colocar un marco?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "celosias",
+  "n": 8,
+  "titulo": "Celosías de lamas",
+  "familias": [
+   "lama_celosia"
+  ],
+  "texto": "En algunas ventanas hay paneles de lamas que tapan media ventana: 38 en el modelo. No se sabe si van por fuera o por dentro del vidrio, y eso decide si llegan antes o después del marco.",
+  "se_apoya_en": "el marco o el vano",
+  "tapa_a": "la mitad de la ventana",
+  "para_pensar": "¿Qué mitad de la ventana tapa cada panel en tu fachada, y qué mitad queda para abrir?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "accesos",
+  "n": 9,
+  "titulo": "Accesos",
+  "familias": [
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio",
+   "rampa",
+   "baranda_entrada",
+   "galeria",
+   "baranda_parda",
+   "columna_portico",
+   "vigas_portico",
+   "puerta_parda",
+   "tirador",
+   "puerta_principal",
+   "fondo_puerta"
+  ],
+  "texto": "Escaleras, rampa, galería y pórtico se arriman al cuerpo ya cerrado. En el modelo, la rampa sube 0,48 m en cada tramo de 5,90 m y el pórtico tiene tres columnas. Según el equipo del proyecto, la puerta principal abre hacia adentro y las pardas hacia afuera.",
+  "se_apoya_en": "el suelo y la base",
+  "tapa_a": "el pie de la fachada en la entrada y en el extremo oeste",
+  "para_pensar": "¿Qué pasaría si la rampa se construyera antes que la fachada a la que se adosa?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ },
+ {
+  "id": "instalaciones",
+  "n": 10,
+  "titulo": "Instalaciones a la vista",
+  "familias": [
+   "condensadora",
+   "cubretubos",
+   "tubo_vertical",
+   "abrazadera",
+   "gabinete",
+   "letrero"
+  ],
+  "texto": "Por fuera del muro quedan condensadoras, tubos con abrazaderas, un gabinete verde y el letrero. En el modelo son 15 condensadoras y 12 tubos con 48 abrazaderas; las fotos muestran más unidades. Que estas piezas se fijen por fuera permite verlas y cambiarlas sin tocar el muro. Cuándo se pusieron en el 106 no se sabe.",
+  "se_apoya_en": "el muro y el suelo",
+  "tapa_a": "nada; quedan a la vista",
+  "para_pensar": "¿Qué pieza de esta etapa se cambiará más veces en la vida del edificio?",
+  "sello": "Orden lógico del tipo de obra",
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor (piezas y cotas del modelo); orden por qué se apoya en qué y qué tapa a qué, el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio general"
+ }
+]

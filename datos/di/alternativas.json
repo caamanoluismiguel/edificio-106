@@ -1,0 +1,218 @@
+[
+ {
+  "id": "techo",
+  "pregunta": "¿Con qué se cubre el techo?",
+  "familias": [
+   "teja",
+   "tablero_alero"
+  ],
+  "decidido_por": "La lluvia, el sol sobre el techo, la pendiente y el mantenimiento.",
+  "datos_del_106": [
+   [
+    "Sol sobre el techo, kWh/m² al año",
+    "1.770 en total, 1.058 directo"
+   ],
+   [
+    "Lluvia media de ERA5",
+    "2.042 mm al año"
+   ]
+  ],
+  "opciones": [
+   {
+    "nombre": "Teja canal y cobija",
+    "eligela_cuando": "el techo tiene pendiente suficiente para que el agua baje entre piezas solapadas y quieres poder cambiar una pieza sola.",
+    "lo_que_cuesta": "muchas piezas que colocar y revisar una por una, y un tablero o una estructura que aguante su peso.",
+    "asi_en_el_106": "Es la del 106, confirmada en fotos: teja curva roja. Barro o concreto no se sabe."
+   },
+   {
+    "nombre": "Lámina metálica",
+    "eligela_cuando": "buscas una cubierta liviana, rápida de montar y con pocas juntas.",
+    "lo_que_cuesta": "una lámina delgada casi no guarda calor y lo deja pasar pronto hacia abajo, así que depende de lo que se ponga debajo; además suena con la lluvia.",
+    "asi_en_el_106": "No está en el 106."
+   },
+   {
+    "nombre": "Losa plana con impermeabilizante",
+    "eligela_cuando": "quieres usar el techo o necesitas una losa por estructura.",
+    "lo_que_cuesta": "una superficie plana depende de que la impermeabilización no falle, y hay que revisarla.",
+    "asi_en_el_106": "No está en el 106."
+   }
+  ],
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §2, §4.1; ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); propiedades de los materiales como principio general"
+ },
+ {
+  "id": "sol_ventana",
+  "pregunta": "¿Cómo se protege la ventana del sol?",
+  "familias": [
+   "tablero_alero",
+   "lama_celosia",
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio"
+  ],
+  "decidido_por": "El ángulo de perfil del sol en cada fachada y si la protección tiene que dejar pasar el aire.",
+  "datos_del_106": [
+   [
+    "Sol directo con perfil sobre 45,5° (el alero del piso 2 tapa todo el vidrio)",
+    "NO 66 % · SE 61 % · NE 52 % · SO 47 %"
+   ],
+   [
+    "Con perfil entre 9,1° y 45,5° (tapa una parte)",
+    "SO 50 % · NE 42 % · SE 38 % · NO 33 %"
+   ]
+  ],
+  "opciones": [
+   {
+    "nombre": "Alero corrido",
+    "eligela_cuando": "el sol de la fachada llega sobre todo alto en el perfil: un voladizo fijo lo corta sin piezas móviles y además aleja la lluvia.",
+    "lo_que_cuesta": "no corta el sol bajo, y un vuelo más largo pesa más en la raíz del voladizo.",
+    "asi_en_el_106": "El 106 tiene tres aleros corridos de 1,65 m en las cuatro caras."
+   },
+   {
+    "nombre": "Celosía de lamas",
+    "eligela_cuando": "necesitas cortar el sol que el alero no alcanza y dejar pasar el aire.",
+    "lo_que_cuesta": "muchas piezas pequeñas que limpiar, y si giran, un mecanismo que mantener.",
+    "asi_en_el_106": "Hay 38 paneles de lamas en el modelo, que tapan media ventana. Si giran no se sabe."
+   },
+   {
+    "nombre": "Parasol vertical",
+    "eligela_cuando": "el sol llega por un costado de la ventana, muy oblicuo a la fachada.",
+    "lo_que_cuesta": "casi no corta el sol que llega de frente, y tapa la vista de lado.",
+    "asi_en_el_106": "No está en el 106."
+   }
+  ],
+  "certeza": "general",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.13, §4.16; bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+ },
+ {
+  "id": "ventana_abre",
+  "pregunta": "¿Cómo abre la ventana?",
+  "familias": [
+   "hoja_guillotina",
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio",
+   "lama_celosia"
+  ],
+  "decidido_por": "Lo que hay delante y detrás de la ventana, el viento y qué parte del vano quieres abrir.",
+  "datos_del_106": [
+   [
+    "Viento de frente, horas al año",
+    "NO 5.880 · NE 1.445 · SO 1.235 · SE 1.104"
+   ]
+  ],
+  "opciones": [
+   {
+    "nombre": "Guillotina",
+    "eligela_cuando": "delante hay un alero, lamas o paso de gente, porque la hoja corre en su plano y no sale del vano.",
+    "lo_que_cuesta": "abre como mucho la mitad del vano, y la hoja necesita algo que la sostenga abierta: fricción, resorte o contrapeso.",
+    "asi_en_el_106": "Según el equipo del proyecto, en las ventanas del 106 sube una sola hoja, la de abajo, y la de arriba queda fija: abre por abajo. En las ventanas de dos columnas, cada columna tendría su hoja, como supuesto del tipo. Qué la sostiene no se sabe."
+   },
+   {
+    "nombre": "Abatible",
+    "eligela_cuando": "quieres abrir el vano entero y cerrar apretando contra un burlete.",
+    "lo_que_cuesta": "la hoja abierta ocupa espacio hacia adentro o hacia afuera, y el viento la puede golpear.",
+    "asi_en_el_106": "No es la que informa el equipo del proyecto para el 106."
+   },
+   {
+    "nombre": "Corrediza horizontal",
+    "eligela_cuando": "el vano es más ancho que alto.",
+    "lo_que_cuesta": "abre como mucho la mitad y el riel de abajo junta agua y suciedad.",
+    "asi_en_el_106": "No es la que informa el equipo del proyecto para el 106."
+   }
+  ],
+  "certeza": "general",
+  "fuente": "lo informa el equipo del proyecto, sin foto (13 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.12; ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+ },
+ {
+  "id": "subir_entrada",
+  "pregunta": "¿Cómo se sube a la entrada?",
+  "familias": [
+   "rampa",
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio",
+   "baranda_entrada"
+  ],
+  "decidido_por": "La altura que hay que subir, el espacio delante de la fachada y quién tiene que poder subir.",
+  "datos_del_106": [
+   [
+    "Altura que se sube en el modelo",
+    "0,96 m (de 0,16 a 1,12 m)"
+   ],
+   [
+    "Rampa",
+    "2 tramos de 5,90 m al 8,1 %"
+   ],
+   [
+    "Escalera de la entrada",
+    "7 peldaños"
+   ]
+  ],
+  "opciones": [
+   {
+    "nombre": "Escalera",
+    "eligela_cuando": "el espacio es corto: sube la misma altura en mucho menos largo.",
+    "lo_que_cuesta": "no la puede usar quien va en silla de ruedas o con un coche.",
+    "asi_en_el_106": "La entrada tiene una escalera de 7 peldaños, contados en una foto."
+   },
+   {
+    "nombre": "Rampa",
+    "eligela_cuando": "todos tienen que poder entrar por el mismo lugar.",
+    "lo_que_cuesta": "mucho largo: para subir 0,96 m, el modelo necesita dos tramos de 5,90 m y un descanso, unos 14,6 m de recorrido.",
+    "asi_en_el_106": "Hay una rampa de dos tramos con giro, adosada a la fachada, confirmada en foto."
+   },
+   {
+    "nombre": "Escalera y rampa juntas",
+    "eligela_cuando": "quieres el camino corto para quien puede y el accesible para todos.",
+    "lo_que_cuesta": "ocupa más fachada y lleva dos barandas.",
+    "asi_en_el_106": "Es lo que se ve en el 106: escalera bajo el pórtico y rampa a su derecha. Con escala de ±12 % no se puede decir si cumplen la lista de la Alcaldía."
+   }
+  ],
+  "certeza": "modelo",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.22, §4.24; Alcaldía de Panamá, DOYC, lista de revisión de 2020, ítems 7.1 a 7.7 y 16.02"
+ },
+ {
+  "id": "puerta_abre",
+  "pregunta": "¿Hacia dónde abre la puerta?",
+  "familias": [
+   "puerta_parda",
+   "tirador",
+   "puerta_principal",
+   "fondo_puerta"
+  ],
+  "decidido_por": "Lo que hay afuera de la puerta, la lluvia que llega a esa cara y por dónde se sale en una emergencia.",
+  "datos_del_106": [
+   [
+    "Lluvia con viento (ISO 15927-3), L/m² al año",
+    "NO 497 · SO 356 · SE 281 · NE 96"
+   ]
+  ],
+  "opciones": [
+   {
+    "nombre": "Hacia adentro",
+    "eligela_cuando": "afuera hay poco espacio, una galería o una escalera que la hoja invadiría.",
+    "lo_que_cuesta": "el umbral tiene que frenar el agua que empuja el viento desde afuera, y la hoja ocupa espacio adentro.",
+    "asi_en_el_106": "Según el equipo del proyecto, así abre la puerta principal de vidrio."
+   },
+   {
+    "nombre": "Hacia afuera",
+    "eligela_cuando": "la puerta da salida a mucha gente y tiene que abrir en el sentido en que se sale.",
+    "lo_que_cuesta": "la hoja abierta invade el paso de afuera y queda a la lluvia.",
+    "asi_en_el_106": "Según el equipo del proyecto, así abren las puertas pardas."
+   },
+   {
+    "nombre": "Corrediza",
+    "eligela_cuando": "no hay espacio para el giro de la hoja en ningún lado.",
+    "lo_que_cuesta": "el riel junta suciedad y cuesta más que cierre apretado.",
+    "asi_en_el_106": "No es la que informa el equipo del proyecto para ninguna puerta del 106."
+   }
+  ],
+  "certeza": "general",
+  "fuente": "lo informa el equipo del proyecto, sin foto (14 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.21; ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+ }
+]

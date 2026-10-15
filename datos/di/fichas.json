@@ -1,0 +1,2410 @@
+{
+ "zocalo": {
+  "ficha": "zocalo",
+  "familias": [
+   "zocalo"
+  ],
+  "titulo": "Zócalo",
+  "sistema": "base",
+  "texto": "El cuerpo del 106 arranca sobre una base más alta que el terreno, confirmada en fotos. En el modelo es un bloque macizo de 45,50 × 23,00 m y 0,65 m de alto en todo el perímetro, con marcas de salpicadura en el extremo SO puestas según las fotos.",
+  "decision": "Un escalón corrido entre el suelo y el muro: lo que salpica el agua al caer del alero pega primero en la base.",
+  "proceso": {
+   "del_106": "No se sabe de qué está hecho ni cómo se construyó. El modelo solo da su caja.",
+   "tipico": "Una base de este tipo suele ser de concreto o de mampostería con repello, construida sobre la cimentación antes que los muros."
+  },
+  "datos": [
+   [
+    "Planta",
+    "45,50 × 23,00 m"
+   ],
+   [
+    "Alto",
+    "0,65 m"
+   ],
+   [
+    "Escala del modelo",
+    "±12 %"
+   ]
+  ],
+  "principio": "Una base alta suele separar el cuerpo de un edificio del suelo húmedo y de la salpicadura.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "La base de la NO es la que más lluvia con viento recibe, unas 5,2 veces la de la NE. ¿Se ve la base de la NO más manchada que la de la NE? Es una pregunta para mirar en sitio. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Base más alta que el terreno",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Material y altura real",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Un tramo del zócalo de la NO con una cinta métrica apoyada en el suelo.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §1, §4.7; fotos del 106 (archivo del proyecto, no publicado); PARTES › zócalo en fuente/src/main.js"
+ },
+ "bloque_calado": {
+  "ficha": "bloque_calado",
+  "familias": [
+   "bloque_calado"
+  ],
+  "titulo": "Bloque calado",
+  "sistema": "base",
+  "texto": "Al pie de las caras SE y NO, la base tiene franjas de bloques calados, confirmadas en fotos. En el modelo son 77, uno cada 0,36 m: 50 en la SE y 27 en la NO. Cada uno es un hueco de 0,32 × 0,28 m con cuatro cuadros claros delante.",
+  "decision": "Una pieza modular con huecos que, repetida, hace una pared que deja pasar el aire sin piezas móviles.",
+  "proceso": {
+   "del_106": "No se sabe de qué material son ni el dibujo real del calado.",
+   "tipico": "El bloque calado de concreto suele hacerse en molde, prensado y vibrado; el de barro, moldeado y cocido."
+  },
+  "datos": [
+   [
+    "Bloques",
+    "77 (50 SE, 27 NO)"
+   ],
+   [
+    "Paso",
+    "0,36 m"
+   ],
+   [
+    "Hueco",
+    "0,32 × 0,28 m"
+   ]
+  ],
+  "principio": "Una pieza modular con huecos convierte un muro en filtro de aire sin piezas móviles.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no"
+   ],
+   "texto": "Las dos caras con bloques son opuestas. La NO recibe el viento de frente unas 5.880 horas al año y la SE, 1.104. Qué pasa con el aire detrás del bloque no se sabe: el visor no modela el interior ni hace CFD.",
+   "datos": [
+    [
+     "Viento de frente, horas al año",
+     "NO 5.880 · NE 1.445 · SO 1.235 · SE 1.104"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Bloques en la base",
+    "foto"
+   ],
+   [
+    "Cantidad y medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Si ventila un espacio bajo el piso",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Un bloque de frente con flash, para ver si tiene malla y si detrás hay un vacío.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.8; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "losa": {
+  "ficha": "losa",
+  "familias": [
+   "losa"
+  ],
+  "titulo": "Losa de entrepiso",
+  "sistema": "estructura",
+  "texto": "El modelo tiene tres plantas de 3,65 m, con la cara de arriba de las losas a 0,65, 4,30 y 7,95 m. Los aleros siguen ese paso. Las ventanas y las molduras suben 3,80 m del piso 1 al 2, porque el antepecho del piso 1 es de 1,17 m y el de los pisos 2 y 3 de 1,32.",
+  "decision": "Un plano horizontal repetido con el mismo paso: fija la altura de todo lo que se repite por piso.",
+  "proceso": {
+   "del_106": "No se sabe de qué son las losas ni su grueso real. El interior del modelo es un volumen de fondo.",
+   "tipico": "En una obra de este tipo, la losa suele ser de concreto armado vaciado en sitio sobre encofrado."
+  },
+  "datos": [
+   [
+    "Plantas",
+    "3, de 3,65 m"
+   ],
+   [
+    "Losas",
+    "0,65 · 4,30 · 7,95 m"
+   ],
+   [
+    "Antepecho",
+    "1,17 m (piso 1) y 1,32 m (pisos 2 y 3)"
+   ]
+  ],
+  "principio": "Un paso repetido ordena la fachada: lo que depende de él se dibuja una vez y se copia.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Tres plantas",
+    "foto"
+   ],
+   [
+    "Cotas",
+    "medido en el modelo"
+   ],
+   [
+    "Material y grueso",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Ninguna desde afuera; una cinta desde el piso de la galería SO hasta el alféizar de la ventana más cercana.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §1, §4.11, §4.12; docs/ciudad/espiga/kit-medidas.json"
+ },
+ "mensula": {
+  "ficha": "mensula",
+  "familias": [
+   "mensula"
+  ],
+  "titulo": "Ménsula",
+  "sistema": "estructura",
+  "texto": "Bajo cada alero hay ménsulas blancas en escuadra, confirmadas en fotos; en las esquinas van dos, formando una V. El modelo tiene 78, 26 por alero, de 0,26 m de ancho, 0,82 de alto y 1,50 de vuelo. En la SE, las seis del centro van cada 6,70 m sobre el muro angosto entre las dos ventanas de un par; las de las puntas, a 0,30 m de la esquina.",
+  "decision": "El triángulo es la forma mínima indeformable para sostener un voladizo desde un plano vertical: si la ménsula cargara, llevaría la carga del borde hacia el muro por la diagonal.",
+  "proceso": {
+   "del_106": "No se sabe de qué es, cómo se une al muro y al alero, ni si carga o es decorativa.",
+   "tipico": "Una ménsula de este tamaño suele ser de concreto vaciado en molde o de madera ensamblada, anclada al muro."
+  },
+  "datos": [
+   [
+    "Cantidad",
+    "78 (26 por alero)"
+   ],
+   [
+    "Ancho × alto",
+    "0,26 × 0,82 m"
+   ],
+   [
+    "Vuelo",
+    "1,50 m"
+   ],
+   [
+    "Paso en la SE",
+    "6,70 m (las seis centrales)"
+   ]
+  ],
+  "principio": "Si una pieza solo tuviera que parecer un apoyo, su forma podría cambiar: esa es la pregunta de clase.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "La ménsula vive bajo el alero, pero su punta queda cerca del borde. La lluvia con viento cambia mucho de una cara a otra: la NO recibe unas 5,2 veces lo de la NE. Una pieza igual en las cuatro caras tiene que aguantar la peor. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Ménsulas en escuadra",
+    "foto"
+   ],
+   [
+    "Cantidad y medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Material, unión y si carga",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Desde abajo, bajo el alero bajo de la SE: la unión de la ménsula con el muro y con el alero.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.15; fotos del 106 (archivo del proyecto, no publicado); PARTES › ménsula en fuente/src/main.js"
+ },
+ "muro": {
+  "ficha": "muro",
+  "familias": [
+   "muro"
+  ],
+  "titulo": "Muro con repello",
+  "sistema": "muros",
+  "texto": "Los muros del 106 son blancos en todas las fotos. En el modelo miden 0,30 m de grueso y suben de 0,65 a 11,60 m. De qué están hechos (bloque, concreto o ladrillo) no lo dice ninguna fuente del 106.",
+  "decision": "Un plano continuo y liso que recibe todo lo demás: ventanas, molduras, ménsulas, tubos.",
+  "proceso": {
+   "del_106": "No se sabe el material ni el acabado real. El nombre del material del modelo es solo apariencia.",
+   "tipico": "Un muro de este tipo suele ser de bloque de concreto, de concreto o de ladrillo, con repello de mortero; eso es del tipo y no dice nada del 106."
+  },
+  "datos": [
+   [
+    "Grueso",
+    "0,30 m"
+   ],
+   [
+    "Alto",
+    "0,65 a 11,60 m"
+   ],
+   [
+    "Color",
+    "blanco neutro, medido en fotos"
+   ]
+  ],
+  "principio": "Una superficie que se repinta es la capa que más rápido cambia de un muro; conviene que sea la de afuera.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "El mismo muro tiene cuatro exigencias distintas. La SE recibe 2,6 veces el sol directo de la NO, y la NO recibe la mayor lluvia con viento. El sol es el de una pared sin alero: bajo el alero llega menos. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Sol directo en pared sin alero, kWh/m² al año",
+     "SE 374 · SO 362 · NE 302 · NO 144"
+    ],
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Muros blancos",
+    "foto"
+   ],
+   [
+    "Grueso y alto",
+    "medido en el modelo"
+   ],
+   [
+    "Material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Un borde roto o una perforación donde se vea qué hay bajo el repello.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §1, §4.4; fotos del 106 (archivo del proyecto, no publicado); docs/HISTORIA.md (commit 225645c)"
+ },
+ "moldura": {
+  "ficha": "moldura",
+  "familias": [
+   "moldura"
+  ],
+  "titulo": "Moldura bajo las ventanas",
+  "sistema": "muros",
+  "texto": "Una línea fina recorre el muro bajo los alféizares de cada piso. En el modelo son 11 molduras de 5 × 6 cm, a 1,66, 5,46 y 9,11 m.",
+  "decision": "Un listón saliente que marca cada piso con una línea de sombra.",
+  "proceso": {
+   "del_106": "No se sabe de qué es ni si tapa una junta.",
+   "tipico": "Una moldura de este tipo suele correrse en mortero con una plantilla o colocarse como pieza prefabricada."
+  },
+  "datos": [
+   [
+    "Molduras",
+    "11"
+   ],
+   [
+    "Sección",
+    "5 × 6 cm"
+   ],
+   [
+    "Alturas",
+    "1,66 · 5,46 · 9,11 m"
+   ]
+  ],
+  "principio": "Un borde saliente da al acabado un lugar donde terminar sin que se note el corte.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Línea bajo las ventanas",
+    "foto"
+   ],
+   [
+    "Sección y cotas",
+    "medido en el modelo"
+   ],
+   [
+    "Perfil y material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "La moldura de planta baja, de perfil, con una regla al lado.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.5; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "faja_mediagua": {
+  "ficha": "faja_mediagua",
+  "familias": [
+   "faja_mediagua"
+  ],
+  "titulo": "Faja sobre la mediagua",
+  "sistema": "muros",
+  "texto": "Sobre el arranque de cada mediagua se ve una banda parda oscura en todas las fotos. En el modelo son 8 fajas de 0,27 m de alto y 0,03 de grueso, a 4,27 y 7,91 m. El alero del techo principal no la tiene.",
+  "decision": "Una banda que cubre la línea donde la teja de la mediagua se encuentra con el muro.",
+  "proceso": {
+   "del_106": "No se sabe si es madera o pintura.",
+   "tipico": "En una unión de techo con muro es habitual una pieza o un remate que tape el encuentro."
+  },
+  "datos": [
+   [
+    "Fajas",
+    "8 (4 por mediagua)"
+   ],
+   [
+    "Alto",
+    "0,27 m"
+   ],
+   [
+    "Cotas",
+    "4,27 y 7,91 m"
+   ]
+  ],
+  "principio": "Donde dos sistemas se encuentran, una pieza propia cubre el encuentro.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Banda parda",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "La faja de la mediagua baja, de cerca, desde la galería.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.3; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "jamba": {
+  "ficha": "marco_ventana",
+  "familias": [
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio"
+  ],
+  "titulo": "Marco de la ventana",
+  "sistema": "ventanas",
+  "texto": "Las fotos muestran ventanas de aluminio claro, en pares en las fachadas largas, divididas en paños. En el modelo hay 113; 111 tienen tres travesaños y las 2 altas de la NE, en el piso 1, no tienen el del medio. La típica de la SE mide 2,28 × 1,63 m, con un parteluz y un travesaño que hacen 4 paños de 1,08 × 0,74 m y perfiles de 4 × 9 cm. El vidrio va 9 a 10 cm hacia adentro del muro. Según el equipo del proyecto, el paño de arriba queda fijo y solo sube la hoja de abajo; en las ventanas de dos columnas, cada columna tendría su hoja, como supuesto del tipo. Las 2 ventanas altas de la NE, de 0,57 m, no tienen hoja en el modelo y no se sabe si abren. Las de los pisos 2 y 3 son inferidas.",
+  "decision": "Una retícula de perfiles iguales, cortados a la medida de cada vano.",
+  "proceso": {
+   "del_106": "Aluminio, confirmado en foto. La unión de las esquinas (a inglete o a tope) no se sabe.",
+   "tipico": "El aluminio de carpintería se fabrica por extrusión: un perfil de sección constante que se corta a medida y se une en las esquinas."
+  },
+  "datos": [
+   [
+    "Ventanas",
+    "113"
+   ],
+   [
+    "Alto del vano",
+    "79 de 1,58 m (pisos 2 y 3), 25 de 1,63 m (piso 1), 7 de 1,40 m (planta baja SO), 2 de 0,57 m (altas de la NE)"
+   ],
+   [
+    "Típica SE, piso 1",
+    "2,28 × 1,63 m, paños de 1,08 × 0,74 m"
+   ],
+   [
+    "Perfil",
+    "4 × 9 cm"
+   ]
+  ],
+  "principio": "Con perfiles extruidos de sección constante, la variedad de tamaños sale del corte y no del molde.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "El vidrio está bajo un alero de 1,65 m. De todo el sol directo que recibiría la pared, en la NO, la SE y la NE más de la mitad llega con el sol alto en el perfil, cuando el alero del piso 2 deja el vidrio entero a la sombra; en la SO, el 47 %. El sol bajo, que entra hasta el vidrio, es poco en las cuatro caras. El sol es el de una pared sin alero: bajo el alero llega menos.",
+   "datos": [
+    [
+     "Sol directo en pared sin alero, kWh/m² al año",
+     "SE 374 · SO 362 · NE 302 · NO 144"
+    ],
+    [
+     "Sol directo con perfil sobre 45,5° (el alero del piso 2 tapa todo el vidrio)",
+     "NO 66 % · SE 61 % · NE 52 % · SO 47 %"
+    ],
+    [
+     "Con perfil bajo 9,1° (no tapa el vidrio)",
+     "NE 6 % · SO 3 % · SE 2 % · NO 1 %"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Aluminio y paños",
+    "foto"
+   ],
+   [
+    "Medidas del piso 1",
+    "medido en el modelo"
+   ],
+   [
+    "Pisos 2 y 3",
+    "inferidas en el modelo"
+   ],
+   [
+    "Paño de arriba fijo",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Si abren las 2 ventanas altas de la NE",
+    "no se sabe"
+   ],
+   [
+    "Unión de las esquinas",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una esquina del marco de planta baja, de cerca.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.12; fotos del 106 (archivo del proyecto, no publicado); README.md (pisos 2 y 3 inferidos); recuento por alto de vano del verificador del plan (13 de octubre de 2026)"
+ },
+ "travesano": {
+  "ficha": "marco_ventana",
+  "familias": [
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio"
+  ],
+  "titulo": "Marco de la ventana",
+  "sistema": "ventanas",
+  "texto": "Las fotos muestran ventanas de aluminio claro, en pares en las fachadas largas, divididas en paños. En el modelo hay 113; 111 tienen tres travesaños y las 2 altas de la NE, en el piso 1, no tienen el del medio. La típica de la SE mide 2,28 × 1,63 m, con un parteluz y un travesaño que hacen 4 paños de 1,08 × 0,74 m y perfiles de 4 × 9 cm. El vidrio va 9 a 10 cm hacia adentro del muro. Según el equipo del proyecto, el paño de arriba queda fijo y solo sube la hoja de abajo; en las ventanas de dos columnas, cada columna tendría su hoja, como supuesto del tipo. Las 2 ventanas altas de la NE, de 0,57 m, no tienen hoja en el modelo y no se sabe si abren. Las de los pisos 2 y 3 son inferidas.",
+  "decision": "Una retícula de perfiles iguales, cortados a la medida de cada vano.",
+  "proceso": {
+   "del_106": "Aluminio, confirmado en foto. La unión de las esquinas (a inglete o a tope) no se sabe.",
+   "tipico": "El aluminio de carpintería se fabrica por extrusión: un perfil de sección constante que se corta a medida y se une en las esquinas."
+  },
+  "datos": [
+   [
+    "Ventanas",
+    "113"
+   ],
+   [
+    "Alto del vano",
+    "79 de 1,58 m (pisos 2 y 3), 25 de 1,63 m (piso 1), 7 de 1,40 m (planta baja SO), 2 de 0,57 m (altas de la NE)"
+   ],
+   [
+    "Típica SE, piso 1",
+    "2,28 × 1,63 m, paños de 1,08 × 0,74 m"
+   ],
+   [
+    "Perfil",
+    "4 × 9 cm"
+   ]
+  ],
+  "principio": "Con perfiles extruidos de sección constante, la variedad de tamaños sale del corte y no del molde.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "El vidrio está bajo un alero de 1,65 m. De todo el sol directo que recibiría la pared, en la NO, la SE y la NE más de la mitad llega con el sol alto en el perfil, cuando el alero del piso 2 deja el vidrio entero a la sombra; en la SO, el 47 %. El sol bajo, que entra hasta el vidrio, es poco en las cuatro caras. El sol es el de una pared sin alero: bajo el alero llega menos.",
+   "datos": [
+    [
+     "Sol directo en pared sin alero, kWh/m² al año",
+     "SE 374 · SO 362 · NE 302 · NO 144"
+    ],
+    [
+     "Sol directo con perfil sobre 45,5° (el alero del piso 2 tapa todo el vidrio)",
+     "NO 66 % · SE 61 % · NE 52 % · SO 47 %"
+    ],
+    [
+     "Con perfil bajo 9,1° (no tapa el vidrio)",
+     "NE 6 % · SO 3 % · SE 2 % · NO 1 %"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Aluminio y paños",
+    "foto"
+   ],
+   [
+    "Medidas del piso 1",
+    "medido en el modelo"
+   ],
+   [
+    "Pisos 2 y 3",
+    "inferidas en el modelo"
+   ],
+   [
+    "Paño de arriba fijo",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Si abren las 2 ventanas altas de la NE",
+    "no se sabe"
+   ],
+   [
+    "Unión de las esquinas",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una esquina del marco de planta baja, de cerca.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.12; fotos del 106 (archivo del proyecto, no publicado); README.md (pisos 2 y 3 inferidos); recuento por alto de vano del verificador del plan (13 de octubre de 2026)"
+ },
+ "parteluz": {
+  "ficha": "marco_ventana",
+  "familias": [
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio"
+  ],
+  "titulo": "Marco de la ventana",
+  "sistema": "ventanas",
+  "texto": "Las fotos muestran ventanas de aluminio claro, en pares en las fachadas largas, divididas en paños. En el modelo hay 113; 111 tienen tres travesaños y las 2 altas de la NE, en el piso 1, no tienen el del medio. La típica de la SE mide 2,28 × 1,63 m, con un parteluz y un travesaño que hacen 4 paños de 1,08 × 0,74 m y perfiles de 4 × 9 cm. El vidrio va 9 a 10 cm hacia adentro del muro. Según el equipo del proyecto, el paño de arriba queda fijo y solo sube la hoja de abajo; en las ventanas de dos columnas, cada columna tendría su hoja, como supuesto del tipo. Las 2 ventanas altas de la NE, de 0,57 m, no tienen hoja en el modelo y no se sabe si abren. Las de los pisos 2 y 3 son inferidas.",
+  "decision": "Una retícula de perfiles iguales, cortados a la medida de cada vano.",
+  "proceso": {
+   "del_106": "Aluminio, confirmado en foto. La unión de las esquinas (a inglete o a tope) no se sabe.",
+   "tipico": "El aluminio de carpintería se fabrica por extrusión: un perfil de sección constante que se corta a medida y se une en las esquinas."
+  },
+  "datos": [
+   [
+    "Ventanas",
+    "113"
+   ],
+   [
+    "Alto del vano",
+    "79 de 1,58 m (pisos 2 y 3), 25 de 1,63 m (piso 1), 7 de 1,40 m (planta baja SO), 2 de 0,57 m (altas de la NE)"
+   ],
+   [
+    "Típica SE, piso 1",
+    "2,28 × 1,63 m, paños de 1,08 × 0,74 m"
+   ],
+   [
+    "Perfil",
+    "4 × 9 cm"
+   ]
+  ],
+  "principio": "Con perfiles extruidos de sección constante, la variedad de tamaños sale del corte y no del molde.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "El vidrio está bajo un alero de 1,65 m. De todo el sol directo que recibiría la pared, en la NO, la SE y la NE más de la mitad llega con el sol alto en el perfil, cuando el alero del piso 2 deja el vidrio entero a la sombra; en la SO, el 47 %. El sol bajo, que entra hasta el vidrio, es poco en las cuatro caras. El sol es el de una pared sin alero: bajo el alero llega menos.",
+   "datos": [
+    [
+     "Sol directo en pared sin alero, kWh/m² al año",
+     "SE 374 · SO 362 · NE 302 · NO 144"
+    ],
+    [
+     "Sol directo con perfil sobre 45,5° (el alero del piso 2 tapa todo el vidrio)",
+     "NO 66 % · SE 61 % · NE 52 % · SO 47 %"
+    ],
+    [
+     "Con perfil bajo 9,1° (no tapa el vidrio)",
+     "NE 6 % · SO 3 % · SE 2 % · NO 1 %"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Aluminio y paños",
+    "foto"
+   ],
+   [
+    "Medidas del piso 1",
+    "medido en el modelo"
+   ],
+   [
+    "Pisos 2 y 3",
+    "inferidas en el modelo"
+   ],
+   [
+    "Paño de arriba fijo",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Si abren las 2 ventanas altas de la NE",
+    "no se sabe"
+   ],
+   [
+    "Unión de las esquinas",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una esquina del marco de planta baja, de cerca.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.12; fotos del 106 (archivo del proyecto, no publicado); README.md (pisos 2 y 3 inferidos); recuento por alto de vano del verificador del plan (13 de octubre de 2026)"
+ },
+ "vidrio": {
+  "ficha": "marco_ventana",
+  "familias": [
+   "jamba",
+   "travesano",
+   "parteluz",
+   "vidrio"
+  ],
+  "titulo": "Marco de la ventana",
+  "sistema": "ventanas",
+  "texto": "Las fotos muestran ventanas de aluminio claro, en pares en las fachadas largas, divididas en paños. En el modelo hay 113; 111 tienen tres travesaños y las 2 altas de la NE, en el piso 1, no tienen el del medio. La típica de la SE mide 2,28 × 1,63 m, con un parteluz y un travesaño que hacen 4 paños de 1,08 × 0,74 m y perfiles de 4 × 9 cm. El vidrio va 9 a 10 cm hacia adentro del muro. Según el equipo del proyecto, el paño de arriba queda fijo y solo sube la hoja de abajo; en las ventanas de dos columnas, cada columna tendría su hoja, como supuesto del tipo. Las 2 ventanas altas de la NE, de 0,57 m, no tienen hoja en el modelo y no se sabe si abren. Las de los pisos 2 y 3 son inferidas.",
+  "decision": "Una retícula de perfiles iguales, cortados a la medida de cada vano.",
+  "proceso": {
+   "del_106": "Aluminio, confirmado en foto. La unión de las esquinas (a inglete o a tope) no se sabe.",
+   "tipico": "El aluminio de carpintería se fabrica por extrusión: un perfil de sección constante que se corta a medida y se une en las esquinas."
+  },
+  "datos": [
+   [
+    "Ventanas",
+    "113"
+   ],
+   [
+    "Alto del vano",
+    "79 de 1,58 m (pisos 2 y 3), 25 de 1,63 m (piso 1), 7 de 1,40 m (planta baja SO), 2 de 0,57 m (altas de la NE)"
+   ],
+   [
+    "Típica SE, piso 1",
+    "2,28 × 1,63 m, paños de 1,08 × 0,74 m"
+   ],
+   [
+    "Perfil",
+    "4 × 9 cm"
+   ]
+  ],
+  "principio": "Con perfiles extruidos de sección constante, la variedad de tamaños sale del corte y no del molde.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "El vidrio está bajo un alero de 1,65 m. De todo el sol directo que recibiría la pared, en la NO, la SE y la NE más de la mitad llega con el sol alto en el perfil, cuando el alero del piso 2 deja el vidrio entero a la sombra; en la SO, el 47 %. El sol bajo, que entra hasta el vidrio, es poco en las cuatro caras. El sol es el de una pared sin alero: bajo el alero llega menos.",
+   "datos": [
+    [
+     "Sol directo en pared sin alero, kWh/m² al año",
+     "SE 374 · SO 362 · NE 302 · NO 144"
+    ],
+    [
+     "Sol directo con perfil sobre 45,5° (el alero del piso 2 tapa todo el vidrio)",
+     "NO 66 % · SE 61 % · NE 52 % · SO 47 %"
+    ],
+    [
+     "Con perfil bajo 9,1° (no tapa el vidrio)",
+     "NE 6 % · SO 3 % · SE 2 % · NO 1 %"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Aluminio y paños",
+    "foto"
+   ],
+   [
+    "Medidas del piso 1",
+    "medido en el modelo"
+   ],
+   [
+    "Pisos 2 y 3",
+    "inferidas en el modelo"
+   ],
+   [
+    "Paño de arriba fijo",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Si abren las 2 ventanas altas de la NE",
+    "no se sabe"
+   ],
+   [
+    "Unión de las esquinas",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una esquina del marco de planta baja, de cerca.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.12; fotos del 106 (archivo del proyecto, no publicado); README.md (pisos 2 y 3 inferidos); recuento por alto de vano del verificador del plan (13 de octubre de 2026)"
+ },
+ "hoja_guillotina": {
+  "ficha": "hoja_guillotina",
+  "familias": [
+   "hoja_guillotina"
+  ],
+  "titulo": "Hoja de guillotina",
+  "sistema": "ventanas",
+  "texto": "Según el equipo del proyecto, las ventanas del 106 se abren hacia arriba, deslizándose: son de guillotina. Sube una sola hoja, la de abajo, y la de arriba queda fija: la ventana abre por abajo. En el modelo la hoja es el paño de abajo con su travesaño, y sube hasta el travesaño de arriba. En las ventanas de dos columnas, cada columna tendría su hoja y el travesaño del medio se partiría en el parteluz: el parteluz va de arriba abajo sin cortarse, y así se ve en una foto. Es el supuesto del tipo, dos guillotinas unidas por el parteluz. Qué sostiene abierta cada hoja no se sabe. Las 2 ventanas altas de la NE, de 0,57 m, no tienen hoja en el modelo y no se sabe si abren.",
+  "decision": "La hoja que se desliza en su plano no ocupa espacio hacia adentro ni hacia afuera del vano.",
+  "proceso": {
+   "del_106": "Hoja de aluminio en un marco de aluminio, por la foto. Riel, equilibrio, seguro y sellos: no se sabe.",
+   "tipico": "Una hoja de guillotina se sostiene donde la dejas por una de tres vías: fricción del riel o de un burlete, un resorte dentro de la jamba, o un contrapeso con cuerda y polea."
+  },
+  "datos": [
+   [
+    "Cómo abre",
+    "sube la hoja de abajo; la de arriba es fija (equipo)"
+   ],
+   [
+    "Recorrido en planta baja",
+    "0,77 m en los 25 vanos de 1,63 m (SE, NO y NE) y 0,66 m en los 7 de 1,40 m (SO), del modelo, escala ±12 %"
+   ],
+   [
+    "Recorrido en pisos 2 y 3",
+    "0,75 m en los 79 vanos de 1,58 m, ventanas inferidas, escala ±12 %"
+   ],
+   [
+    "Hojas en el modelo",
+    "199: dos en cada una de las 88 ventanas de dos columnas y una en las 23 de una columna"
+   ],
+   [
+    "Sin travesaño del medio",
+    "2 ventanas altas de la NE, piso 1"
+   ]
+  ],
+  "principio": "Equilibrar el peso de la hoja es lo que hace que una ventana de guillotina se quede abierta.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "Abrir es dejar entrar el viento. La NO lo recibe de frente unas 4,1 veces las horas de la cara que le sigue, y en la seca 92 de cada 100 horas; la SE y la SO casi nunca en la seca. Es el viento de afuera a 10 m de altura, en una celda de ~28 km: no dice cuánto aire entra por la ventana.",
+   "datos": [
+    [
+     "Viento de frente, horas al año",
+     "NO 5.880 · NE 1.445 · SO 1.235 · SE 1.104"
+    ],
+    [
+     "Viento de frente en la seca (diciembre a marzo), horas",
+     "NO 2.681 · NE 1.009 · SO 45 · SE 38"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Aluminio",
+    "foto"
+   ],
+   [
+    "Que sube deslizándose",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Sube solo la hoja de abajo; la de arriba es fija",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Una hoja por columna en las ventanas de dos columnas",
+    "supuesto del tipo; el parteluz continuo se ve en una foto"
+   ],
+   [
+    "Medidas de la hoja",
+    "modelo; pisos 2 y 3 inferidos"
+   ],
+   [
+    "Herraje, equilibrio y sellos",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una ventana de planta baja de la SE con la hoja subida: el canto de la hoja, la jamba, el riel y el cierre.",
+  "fuente": "lo informa el equipo del proyecto, sin foto (13 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.12; fotos del 106 (archivo del proyecto, no publicado); recorridos por alto de vano medidos en la geometría de los GLB de main (datos/familias.json, hoja_guillotina, y verificador del plan, 13 de octubre de 2026)"
+ },
+ "alfeizar": {
+  "ficha": "alfeizar",
+  "familias": [
+   "alfeizar"
+  ],
+  "titulo": "Alféizar",
+  "sistema": "ventanas",
+  "texto": "Bajo cada una de las 113 ventanas del modelo hay un alféizar claro de 5 cm de alto y 34 de fondo, de 2 a 4 cm más ancho que su ventana. Sale 0,19 m del muro, y el vidrio va 9 a 10 cm hacia adentro.",
+  "decision": "Sobresale del muro para que el agua que escurre por el vidrio caiga delante del plano del muro.",
+  "proceso": {
+   "del_106": "No se sabe su material ni su perfil real.",
+   "tipico": "En piezas de este tipo es habitual una leve pendiente hacia afuera y un goterón por debajo, una ranura que corta la gota."
+  },
+  "datos": [
+   [
+    "Cantidad",
+    "113"
+   ],
+   [
+    "Alto × fondo",
+    "5 × 34 cm"
+   ],
+   [
+    "Sobrancho",
+    "2 a 4 cm"
+   ],
+   [
+    "Vuelo sobre el muro",
+    "0,19 m"
+   ]
+  ],
+  "principio": "Una pieza que sobresale y corta la gota decide dónde cae el agua y protege la superficie de abajo.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "El alféizar es la pieza que recibe la lluvia que baja por la ventana. La de la NO recibe la mayor lluvia con viento, unas 5,2 veces la de la NE: es la cara donde un goterón tiene más trabajo. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Alféizar",
+    "modelo"
+   ],
+   [
+    "Pendiente y goterón",
+    "principio general"
+   ],
+   [
+    "Material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Un alféizar de planta baja, de perfil y desde abajo.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.6, §4.12"
+ },
+ "lama_celosia": {
+  "ficha": "lama_celosia",
+  "familias": [
+   "lama_celosia"
+  ],
+  "titulo": "Celosía de lamas",
+  "sistema": "ventanas",
+  "texto": "En algunas ventanas hay paños de lamas horizontales, visibles en fotos. En el modelo son 38 paneles con 301 lamas de 9 a 10 cm de alto y 7 de fondo, una cada 9,3 cm, que tapan la mitad de arriba o la de abajo de la ventana. Por fachada: SE 7, NO 9, NE 12 y SO 7, más 3 en la planta baja SO.",
+  "decision": "Lamas angostas y repetidas que filtran la luz y dejan pasar el aire.",
+  "proceso": {
+   "del_106": "No se sabe si son de vidrio o de aluminio, si van por fuera o por dentro del vidrio, ni si giran.",
+   "tipico": "En una celosía de lamas operables cada lama pivota sobre su eje largo y una varilla las une por un brazo, formando un paralelogramo que las gira a la vez."
+  },
+  "datos": [
+   [
+    "Paneles",
+    "38"
+   ],
+   [
+    "Lamas",
+    "301"
+   ],
+   [
+    "Lama",
+    "9 a 10 × 7 cm"
+   ],
+   [
+    "Paso",
+    "9,3 cm"
+   ]
+  ],
+  "principio": "Un paralelogramo articulado convierte un solo movimiento lineal en el giro igual de muchas piezas.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "Unas lamas horizontales cortan el sol según el mismo ángulo de perfil que el alero: son un alero en pequeño. Lo que el alero del piso 2 no tapa entero es el sol con perfil entre 9,1° y 45,5°, y ahí la SO es la que más recibe: la mitad de su sol directo. Que las lamas giren no está confirmado. El sol es el de una pared sin alero: bajo el alero llega menos.",
+   "datos": [
+    [
+     "Con perfil entre 9,1° y 45,5° (tapa una parte)",
+     "SO 50 % · NE 42 % · SE 38 % · NO 33 %"
+    ],
+    [
+     "Con perfil bajo 9,1° (no tapa el vidrio)",
+     "NE 6 % · SO 3 % · SE 2 % · NO 1 %"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+  },
+  "certeza": "general",
+  "certezas": [
+   [
+    "Paños con lamas",
+    "foto"
+   ],
+   [
+    "Cantidad y medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Que giren",
+    "principio general, no confirmado"
+   ]
+  ],
+  "foto_que_falta": "Un paño de lamas de la entrada: el extremo de una lama y, por dentro, si hay manivela.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.13 y §5; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "teja": {
+  "ficha": "teja",
+  "familias": [
+   "teja"
+  ],
+  "titulo": "Teja canal y cobija",
+  "sistema": "cubierta",
+  "texto": "La cubierta del 106 es de teja curva roja tipo canal y cobija, confirmada en fotos. En el modelo, el canal mide 23 a 24 cm de ancho y la cobija 13 a 14, las dos de 39 cm de largo en planta, con un paso de 23,5 cm y filas que se solapan unos 6 cm en la mediagua SE, de 17,9°. Son unas 48.000 en el modelo.",
+  "decision": "Dos piezas con una sola tarea cada una: el canal recoge el agua y la cobija tapa el encuentro de dos canales.",
+  "proceso": {
+   "del_106": "No se sabe si es de barro o de concreto, ni su tamaño real ni cómo se fija.",
+   "tipico": "La teja de barro se moldea o prensa y se cuece; la de concreto se moldea y fragua. La fijación habitual va con clavo, gancho o mortero."
+  },
+  "datos": [
+   [
+    "Canal",
+    "23 a 24 × 39 cm"
+   ],
+   [
+    "Cobija",
+    "13 a 14 × 39 cm"
+   ],
+   [
+    "Solape",
+    "~6 cm"
+   ],
+   [
+    "Tejas en el modelo",
+    "~48.000"
+   ]
+  ],
+  "principio": "Separar funciones entre dos piezas permite que cada una tenga la forma más simple para su tarea.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "techo"
+   ],
+   "texto": "El techo recibe mucho más sol que cualquier pared: 1.058 kWh/m² al año de sol directo, contra 374 en la pared SE, la que más recibe. Las horas de 10 mm o más son pocas al año. Es la lluvia de una celda de ~28 km, no la de este techo.",
+   "datos": [
+    [
+     "Sol sobre el techo, kWh/m² al año",
+     "1.770 en total, 1.058 directo"
+    ],
+    [
+     "Lluvia media de ERA5",
+     "2.042 mm al año"
+    ],
+    [
+     "Horas con lluvia desde el umbral del visor",
+     "388 al año"
+    ],
+    [
+     "Horas con 10 mm o más (clase fuerte de la OMM)",
+     "2,4 al año; la mayor, 19,0 mm (1 de julio de 2023, de 14 a 15 h)"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Canal y cobija, rojas",
+    "foto"
+   ],
+   [
+    "Medidas y número",
+    "medido en el modelo"
+   ],
+   [
+    "Barro o concreto, fijación",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una teja rota en el suelo (la fractura dice barro o concreto) y el borde del alero bajo de la SE, de canto.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §2, §4.1; fotos del 106 (archivo del proyecto, no publicado); clase «fuerte» de 10 mm/h o más: OMM, WMO-No. 8, 2023, vol. I, p. 484"
+ },
+ "cabio": {
+  "ficha": "cabio",
+  "familias": [
+   "cabio"
+  ],
+  "titulo": "Cabio del alero",
+  "sistema": "cubierta",
+  "texto": "Bajo los tres aleros asoman maderos oscuros, visibles en fotos. El modelo los dibuja como 624 viguetas de 7 × 11 cm y 1,65 m de largo, una cada 0,65 m: 70 en cada cara larga y 34 en cada cara corta por alero.",
+  "decision": "Una pieza corta, más alta que ancha, repetida con un paso fijo.",
+  "proceso": {
+   "del_106": "Maderos oscuros, por la foto. Su número, paso, sección y especie no están medidos.",
+   "tipico": "Un cabio de madera se asierra a sección y se corta a largo; en exterior es habitual protegerlo con un tratamiento o una pintura."
+  },
+  "datos": [
+   [
+    "Cantidad",
+    "624 (208 por alero)"
+   ],
+   [
+    "Sección",
+    "7 × 11 cm"
+   ],
+   [
+    "Largo",
+    "1,65 m"
+   ],
+   [
+    "Paso",
+    "0,65 m"
+   ]
+  ],
+  "principio": "En una pieza a flexión, la altura de la sección rinde más que el ancho: su módulo resistente crece con el cuadrado del canto.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Maderos oscuros",
+    "foto"
+   ],
+   [
+    "Cantidad, sección y paso",
+    "medido en el modelo"
+   ],
+   [
+    "Especie y tratamiento",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Desde abajo, la testa de un cabio del alero bajo de la SE.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.2; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "tablero_alero": {
+  "ficha": "tablero_alero",
+  "familias": [
+   "tablero_alero"
+  ],
+  "titulo": "Alero y su sofito",
+  "sistema": "cubierta",
+  "texto": "Los tres aleros corridos vuelan 1,65 m en las cuatro caras. Cada uno reúne cinco piezas en el modelo: la ménsula, los cabios, el plano inclinado bajo la teja, cuya cara de abajo es el sofito, el frente del alero y las tejas; en los dos de abajo se suma una faja contra el muro. El sofito está a 3,734, 7,386 y 11,035 m.",
+  "decision": "Un voladizo fijo que sombrea con el sol alto y aleja el agua del muro.",
+  "proceso": {
+   "del_106": "El sofito y el frente son oscuros en el modelo; su material real no está confirmado.",
+   "tipico": "En un alero de este tipo, el plano bajo la teja suele ser de tablas o de placas clavadas sobre los cabios."
+  },
+  "datos": [
+   [
+    "Vuelo",
+    "1,65 m"
+   ],
+   [
+    "Sofitos",
+    "3,734 · 7,386 · 11,035 m"
+   ],
+   [
+    "Pendiente",
+    "17,9° en las mediaguas, 17,8° en el techo principal"
+   ],
+   [
+    "Corte del piso 2",
+    "todo el vidrio al sol bajo 9,1°, todo a la sombra sobre 45,5°, con las cotas redondeadas del visor (alero a 7,40 m)"
+   ]
+  ],
+  "principio": "El mismo alero, repetido en cada piso, sombrea y aleja el agua de la fachada de abajo.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "Un alero se dimensiona contra el sol de su cara. De todo el sol directo que recibiría la pared, la NO, la SE y la NE reciben más de la mitad por encima de 45,5° de perfil, cuando el alero del piso 2 tapa el vidrio entero. La SO es la que más sol recibe en la franja intermedia, donde solo tapa una parte. El sol es el de una pared sin alero: bajo el alero llega menos.",
+   "datos": [
+    [
+     "Sol directo en pared sin alero, kWh/m² al año",
+     "SE 374 · SO 362 · NE 302 · NO 144"
+    ],
+    [
+     "Sol directo con perfil sobre 45,5° (el alero del piso 2 tapa todo el vidrio)",
+     "NO 66 % · SE 61 % · NE 52 % · SO 47 %"
+    ],
+    [
+     "Con perfil entre 9,1° y 45,5° (tapa una parte)",
+     "SO 50 % · NE 42 % · SE 38 % · NO 33 %"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente); bandas del perfil con el CORTE de fuente/src/main.js (piso 2: alero 7,40 m, vidrio de 5,62 a 7,12 m, 0,10 m hacia adentro, vuelo 1,65 m), datos/di/cifras.py"
+  },
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Tres aleros corridos",
+    "foto"
+   ],
+   [
+    "Vuelo y cotas",
+    "medido en el modelo"
+   ],
+   [
+    "Ángulos del corte",
+    "cálculo sobre el modelo"
+   ],
+   [
+    "Material del sofito",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Ninguna; una cinta métrica desde el muro hasta el borde del alero bajo daría el vuelo real.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §2, §4.16; docs/ciudad/espiga/kit-medidas.json; CORTE de fuente/src/main.js"
+ },
+ "tabla_frente": {
+  "ficha": "tabla_frente",
+  "familias": [
+   "tabla_frente"
+  ],
+  "titulo": "Frente del alero",
+  "sistema": "cubierta",
+  "texto": "En el modelo, el borde de cada alero es una pieza oscura: son 4 por alero, 12 en total, de 0,14 m de alto y 0,10 de grueso.",
+  "decision": "Una pieza que remata el borde y da una línea recta al canto de la teja.",
+  "proceso": {
+   "del_106": "No se sabe su material real.",
+   "tipico": "En un alero de madera de este tipo, el frente suele ser una tabla clavada a la punta de los cabios."
+  },
+  "datos": [
+   [
+    "Piezas",
+    "12 (4 por alero)"
+   ],
+   [
+    "Alto × grueso",
+    "0,14 × 0,10 m"
+   ]
+  ],
+  "principio": "El borde de una pieza es lo que más se ve y lo que primero se golpea: suele llevar una pieza propia.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "ne",
+    "so"
+   ],
+   "texto": "Es la pieza más expuesta del alero, en su borde. La lluvia con viento de la NO es unas 5,2 veces la de la NE. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Borde oscuro",
+    "modelo"
+   ],
+   [
+    "Medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "El canto del alero bajo de la SE, de lado.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §2, §4.3; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "gablete": {
+  "ficha": "gablete",
+  "familias": [
+   "gablete"
+  ],
+  "titulo": "Gablete del ático",
+  "sistema": "cubierta",
+  "texto": "En lo alto de cada extremo corto hay un remate triangular oscuro con un montante y un travesaño oscuros, confirmado en una foto del testero NE; el del SO está extrapolado. Cada uno es un triángulo de unos 6,2 m de base y 1,0 m de alto, unos 3,1 m².",
+  "decision": "Una abertura alta y protegida de la lluvia por el propio techo.",
+  "proceso": {
+   "del_106": "No se sabe si el hueco tiene malla o lamas.",
+   "tipico": "Una abertura de ático suele cerrarse con malla contra animales e insectos, o con lamas fijas."
+  },
+  "datos": [
+   [
+    "Gabletes",
+    "2 (NE en foto, SO extrapolado)"
+   ],
+   [
+    "Triángulo",
+    "6,20 × 0,99 m, unos 3,1 m²"
+   ],
+   [
+    "Altura",
+    "14,61 a 15,60 m"
+   ]
+  ],
+  "principio": "Montante y travesaño dividen el hueco en partes más pequeñas.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "ne",
+    "so"
+   ],
+   "texto": "Los gabletes miran al NE y al SO. En la seca, la NE recibe el viento de frente unas 1.009 horas y la SO unas 45. Por dónde entraría el aire al ático no se calcula: el visor no hace CFD y el viento es el de afuera, a 10 m.",
+   "datos": [
+    [
+     "Viento de frente en la seca (diciembre a marzo), horas",
+     "NO 2.681 · NE 1.009 · SO 45 · SE 38"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Gablete NE",
+    "foto"
+   ],
+   [
+    "Gablete SO",
+    "extrapolado en el modelo"
+   ],
+   [
+    "Malla o lamas",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "El gablete NE con zoom.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.18; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "puerta_parda": {
+  "ficha": "puerta_parda",
+  "familias": [
+   "puerta_parda",
+   "tirador"
+  ],
+  "titulo": "Puerta parda",
+  "sistema": "accesos",
+  "texto": "Las fotos muestran puertas pardas en las fachadas SE y NO, y otra en la galería SO. En el modelo, las tres de servicio miden 2,54 m de alto, tienen tres listones verticales y de ancho 1,50, 1,70 y 1,80 m; la de la galería SO mide 1,26 × 2,07 m, con la manija 0,94 m sobre la galería. En la foto, la de la SE es de una hoja, con la manija del lado NE, y se ve más angosta que el 1,50 m del modelo: su ancho real no se sabe. Las dos de la NO serían de dos hojas, como sugiere el listón del centro del modelo. La de la galería SO es de una hoja en el modelo. Según el equipo del proyecto, las puertas pardas abren hacia afuera; cuántas hojas tiene cada una no lo ha confirmado.",
+  "decision": "Una hoja plana con listones, que la rigidizarían contra el alabeo.",
+  "proceso": {
+   "del_106": "No se sabe de qué son las hojas, qué bisagra ni qué cerradura llevan.",
+   "tipico": "Una puerta que abre hacia afuera deja los nudillos de la bisagra del lado de afuera, y abierta ocupa el paso de afuera y queda a la lluvia."
+  },
+  "datos": [
+   [
+    "Puertas de servicio",
+    "3: SE de 1,50 m en el modelo, más angosta y de una hoja en la foto; NO de 1,70 y 1,80 m, de dos hojas en el modelo"
+   ],
+   [
+    "Alto de hoja",
+    "2,54 m"
+   ],
+   [
+    "Puerta de la galería SO",
+    "1,26 × 2,07 m"
+   ],
+   [
+    "Abre",
+    "hacia afuera (equipo)"
+   ]
+  ],
+  "principio": "En una hoja plana, listones así suelen servir para rigidizarla contra el alabeo.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "so"
+   ],
+   "texto": "Una puerta que abre hacia afuera queda a la lluvia mientras está abierta. Las puertas pardas están en las caras con más lluvia con viento: la NO, la SO y la SE. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Puertas pardas",
+    "foto"
+   ],
+   [
+    "Abren hacia afuera",
+    "lo informa el equipo del proyecto, sin foto; cuántas hojas tiene cada una no lo informa"
+   ],
+   [
+    "SE: una hoja, manija del lado NE",
+    "foto; el equipo no lo ha confirmado"
+   ],
+   [
+    "Ancho de la SE",
+    "no se sabe; la foto la muestra más angosta que el 1,50 m del modelo"
+   ],
+   [
+    "NO: dos hojas",
+    "modelo; una foto lejana lo apoya, no lo confirma; el equipo no lo ha confirmado"
+   ],
+   [
+    "SO: una hoja",
+    "modelo"
+   ],
+   [
+    "Medidas",
+    "modelo"
+   ],
+   [
+    "Material, bisagra y cerradura",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "La puerta de la galería SO abierta, vista desde afuera: bisagras, lado de giro, cerradura y umbral. Repetir en una parda de la NO y contar sus hojas.",
+  "fuente": "lo informa el equipo del proyecto, sin foto (14 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.21 b y c; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "tirador": {
+  "ficha": "puerta_parda",
+  "familias": [
+   "puerta_parda",
+   "tirador"
+  ],
+  "titulo": "Puerta parda",
+  "sistema": "accesos",
+  "texto": "Las fotos muestran puertas pardas en las fachadas SE y NO, y otra en la galería SO. En el modelo, las tres de servicio miden 2,54 m de alto, tienen tres listones verticales y de ancho 1,50, 1,70 y 1,80 m; la de la galería SO mide 1,26 × 2,07 m, con la manija 0,94 m sobre la galería. En la foto, la de la SE es de una hoja, con la manija del lado NE, y se ve más angosta que el 1,50 m del modelo: su ancho real no se sabe. Las dos de la NO serían de dos hojas, como sugiere el listón del centro del modelo. La de la galería SO es de una hoja en el modelo. Según el equipo del proyecto, las puertas pardas abren hacia afuera; cuántas hojas tiene cada una no lo ha confirmado.",
+  "decision": "Una hoja plana con listones, que la rigidizarían contra el alabeo.",
+  "proceso": {
+   "del_106": "No se sabe de qué son las hojas, qué bisagra ni qué cerradura llevan.",
+   "tipico": "Una puerta que abre hacia afuera deja los nudillos de la bisagra del lado de afuera, y abierta ocupa el paso de afuera y queda a la lluvia."
+  },
+  "datos": [
+   [
+    "Puertas de servicio",
+    "3: SE de 1,50 m en el modelo, más angosta y de una hoja en la foto; NO de 1,70 y 1,80 m, de dos hojas en el modelo"
+   ],
+   [
+    "Alto de hoja",
+    "2,54 m"
+   ],
+   [
+    "Puerta de la galería SO",
+    "1,26 × 2,07 m"
+   ],
+   [
+    "Abre",
+    "hacia afuera (equipo)"
+   ]
+  ],
+  "principio": "En una hoja plana, listones así suelen servir para rigidizarla contra el alabeo.",
+  "fachada": {
+   "titulo": "Lo que le pide su fachada",
+   "caras": [
+    "se",
+    "no",
+    "so"
+   ],
+   "texto": "Una puerta que abre hacia afuera queda a la lluvia mientras está abierta. Las puertas pardas están en las caras con más lluvia con viento: la NO, la SO y la SE. El índice de lluvia ordena caras en campo abierto; no mide el agua que llega al muro.",
+   "datos": [
+    [
+     "Lluvia con viento (ISO 15927-3), L/m² al año",
+     "NO 497 · SO 356 · SE 281 · NE 96"
+    ]
+   ],
+   "fuente": "ERA5 2001 a 2025, celda de ~28 km (datos/clima_horario.bin.gz), recalculado con datos/di/cifras.py; coincide con datos/consultas.json (radiacion.fachadas, lluviaViento, viento.*.frente)"
+  },
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Puertas pardas",
+    "foto"
+   ],
+   [
+    "Abren hacia afuera",
+    "lo informa el equipo del proyecto, sin foto; cuántas hojas tiene cada una no lo informa"
+   ],
+   [
+    "SE: una hoja, manija del lado NE",
+    "foto; el equipo no lo ha confirmado"
+   ],
+   [
+    "Ancho de la SE",
+    "no se sabe; la foto la muestra más angosta que el 1,50 m del modelo"
+   ],
+   [
+    "NO: dos hojas",
+    "modelo; una foto lejana lo apoya, no lo confirma; el equipo no lo ha confirmado"
+   ],
+   [
+    "SO: una hoja",
+    "modelo"
+   ],
+   [
+    "Medidas",
+    "modelo"
+   ],
+   [
+    "Material, bisagra y cerradura",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "La puerta de la galería SO abierta, vista desde afuera: bisagras, lado de giro, cerradura y umbral. Repetir en una parda de la NO y contar sus hojas.",
+  "fuente": "lo informa el equipo del proyecto, sin foto (14 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.21 b y c; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "puerta_principal": {
+  "ficha": "puerta_principal",
+  "familias": [
+   "puerta_principal",
+   "fondo_puerta"
+  ],
+  "titulo": "Puerta principal de vidrio",
+  "sistema": "accesos",
+  "texto": "Tras el pórtico hay una entrada de vidrio, confirmada en foto. En el modelo son dos hojas de 0,94 × 2,00 m con dos tiradores verticales de 0,46 m. Según el equipo del proyecto, abre hacia adentro. Las dos hojas girarían en abanico, desde las jambas y con los tiradores al centro, que es lo habitual en una puerta doble de entrada: es un supuesto del tipo. En el modelo, el tirador de la hoja este queda junto a la jamba, pero es una copia del de la oeste sin reflejar, así que no dice hacia qué lado gira.",
+  "decision": "Tiradores verticales largos: se toman a distintas alturas.",
+  "proceso": {
+   "del_106": "No se sabe si las hojas giran sobre bisagras o sobre un pivote en el piso, ni qué cerradura llevan.",
+   "tipico": "Una puerta de vidrio de este tipo suele llevar bisagras o un pivote de piso con cierrapuertas."
+  },
+  "datos": [
+   [
+    "Hojas",
+    "2, de 0,94 × 2,00 m"
+   ],
+   [
+    "Tiradores",
+    "0,46 m, verticales"
+   ],
+   [
+    "Abre",
+    "hacia adentro (equipo)"
+   ],
+   [
+    "Giro",
+    "las dos hojas, en abanico desde las jambas (supuesto del tipo)"
+   ]
+  ],
+  "principio": "Un tirador vertical se toma bien a alturas distintas.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Entrada de vidrio",
+    "foto"
+   ],
+   [
+    "Abre hacia adentro",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Dos hojas",
+    "modelo"
+   ],
+   [
+    "Que giren las dos, en abanico desde las jambas",
+    "supuesto del tipo; el tirador de la hoja este del modelo es una copia sin reflejar y no dice hacia qué lado gira"
+   ],
+   [
+    "Medidas",
+    "modelo"
+   ],
+   [
+    "Bisagra o pivote",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Desde adentro, la parte de arriba y la de abajo de una hoja: bisagras o pivote.",
+  "fuente": "lo informa el equipo del proyecto, sin foto (13 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.21 a; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "fondo_puerta": {
+  "ficha": "puerta_principal",
+  "familias": [
+   "puerta_principal",
+   "fondo_puerta"
+  ],
+  "titulo": "Puerta principal de vidrio",
+  "sistema": "accesos",
+  "texto": "Tras el pórtico hay una entrada de vidrio, confirmada en foto. En el modelo son dos hojas de 0,94 × 2,00 m con dos tiradores verticales de 0,46 m. Según el equipo del proyecto, abre hacia adentro. Las dos hojas girarían en abanico, desde las jambas y con los tiradores al centro, que es lo habitual en una puerta doble de entrada: es un supuesto del tipo. En el modelo, el tirador de la hoja este queda junto a la jamba, pero es una copia del de la oeste sin reflejar, así que no dice hacia qué lado gira.",
+  "decision": "Tiradores verticales largos: se toman a distintas alturas.",
+  "proceso": {
+   "del_106": "No se sabe si las hojas giran sobre bisagras o sobre un pivote en el piso, ni qué cerradura llevan.",
+   "tipico": "Una puerta de vidrio de este tipo suele llevar bisagras o un pivote de piso con cierrapuertas."
+  },
+  "datos": [
+   [
+    "Hojas",
+    "2, de 0,94 × 2,00 m"
+   ],
+   [
+    "Tiradores",
+    "0,46 m, verticales"
+   ],
+   [
+    "Abre",
+    "hacia adentro (equipo)"
+   ],
+   [
+    "Giro",
+    "las dos hojas, en abanico desde las jambas (supuesto del tipo)"
+   ]
+  ],
+  "principio": "Un tirador vertical se toma bien a alturas distintas.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Entrada de vidrio",
+    "foto"
+   ],
+   [
+    "Abre hacia adentro",
+    "lo informa el equipo del proyecto, sin foto"
+   ],
+   [
+    "Dos hojas",
+    "modelo"
+   ],
+   [
+    "Que giren las dos, en abanico desde las jambas",
+    "supuesto del tipo; el tirador de la hoja este del modelo es una copia sin reflejar y no dice hacia qué lado gira"
+   ],
+   [
+    "Medidas",
+    "modelo"
+   ],
+   [
+    "Bisagra o pivote",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Desde adentro, la parte de arriba y la de abajo de una hoja: bisagras o pivote.",
+  "fuente": "lo informa el equipo del proyecto, sin foto (13 de octubre de 2026); docs/INVENTARIO.md de D.I.Visor §4.21 a; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "escalera_entrada": {
+  "ficha": "escalera",
+  "familias": [
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio"
+  ],
+  "titulo": "Escaleras",
+  "sistema": "accesos",
+  "texto": "El modelo tiene cuatro escaleras y dos escalones pardos de servicio de 0,80 m de alto, frente a una puerta de la SE y otra de la NO. La de la entrada tiene 7 peldaños, contados en una foto, de 0,137 m; la trasera NO y la SO perpendicular, 8 peldaños de 0,16 × 0,30 m. La lista de revisión que la Alcaldía de Panamá publicó en 2020 pide huellas de 0,20 a 0,30 m y contrahuellas de 0,15 a 0,17 m.",
+  "decision": "Peldaños iguales: el pie repite el mismo gesto en toda la escalera.",
+  "proceso": {
+   "del_106": "No se sabe de qué están hechas. Salvo los 7 peldaños de la entrada, el número y las cotas son inferidos.",
+   "tipico": "Una escalera exterior de este tipo suele ser de concreto vaciado sobre encofrado escalonado."
+  },
+  "datos": [
+   [
+    "Escaleras",
+    "4 en el modelo, más 2 escalones de servicio"
+   ],
+   [
+    "Entrada",
+    "7 peldaños de 0,137 m"
+   ],
+   [
+    "NO y SO perpendicular",
+    "8 de 0,16 × 0,30 m"
+   ]
+  ],
+  "principio": "Peldaños iguales en un mismo tramo.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Siete peldaños de la entrada",
+    "foto"
+   ],
+   [
+    "Demás cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Si cumplen la lista",
+    "no se puede decir con escala de ±12 %"
+   ]
+  ],
+  "foto_que_falta": "Una cinta en un peldaño de la escalera NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.22; fotos del 106 (archivo del proyecto, no publicado); Alcaldía de Panamá, DOYC, lista de revisión de 2020 (Acuerdo 281 de 2016), ítem 16.02, https://doyc.mupa.gob.pa/wp-content/uploads/2020/06/ACC_281_.pdf"
+ },
+ "escalera_trasera": {
+  "ficha": "escalera",
+  "familias": [
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio"
+  ],
+  "titulo": "Escaleras",
+  "sistema": "accesos",
+  "texto": "El modelo tiene cuatro escaleras y dos escalones pardos de servicio de 0,80 m de alto, frente a una puerta de la SE y otra de la NO. La de la entrada tiene 7 peldaños, contados en una foto, de 0,137 m; la trasera NO y la SO perpendicular, 8 peldaños de 0,16 × 0,30 m. La lista de revisión que la Alcaldía de Panamá publicó en 2020 pide huellas de 0,20 a 0,30 m y contrahuellas de 0,15 a 0,17 m.",
+  "decision": "Peldaños iguales: el pie repite el mismo gesto en toda la escalera.",
+  "proceso": {
+   "del_106": "No se sabe de qué están hechas. Salvo los 7 peldaños de la entrada, el número y las cotas son inferidos.",
+   "tipico": "Una escalera exterior de este tipo suele ser de concreto vaciado sobre encofrado escalonado."
+  },
+  "datos": [
+   [
+    "Escaleras",
+    "4 en el modelo, más 2 escalones de servicio"
+   ],
+   [
+    "Entrada",
+    "7 peldaños de 0,137 m"
+   ],
+   [
+    "NO y SO perpendicular",
+    "8 de 0,16 × 0,30 m"
+   ]
+  ],
+  "principio": "Peldaños iguales en un mismo tramo.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Siete peldaños de la entrada",
+    "foto"
+   ],
+   [
+    "Demás cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Si cumplen la lista",
+    "no se puede decir con escala de ±12 %"
+   ]
+  ],
+  "foto_que_falta": "Una cinta en un peldaño de la escalera NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.22; fotos del 106 (archivo del proyecto, no publicado); Alcaldía de Panamá, DOYC, lista de revisión de 2020 (Acuerdo 281 de 2016), ítem 16.02, https://doyc.mupa.gob.pa/wp-content/uploads/2020/06/ACC_281_.pdf"
+ },
+ "escalera_so": {
+  "ficha": "escalera",
+  "familias": [
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio"
+  ],
+  "titulo": "Escaleras",
+  "sistema": "accesos",
+  "texto": "El modelo tiene cuatro escaleras y dos escalones pardos de servicio de 0,80 m de alto, frente a una puerta de la SE y otra de la NO. La de la entrada tiene 7 peldaños, contados en una foto, de 0,137 m; la trasera NO y la SO perpendicular, 8 peldaños de 0,16 × 0,30 m. La lista de revisión que la Alcaldía de Panamá publicó en 2020 pide huellas de 0,20 a 0,30 m y contrahuellas de 0,15 a 0,17 m.",
+  "decision": "Peldaños iguales: el pie repite el mismo gesto en toda la escalera.",
+  "proceso": {
+   "del_106": "No se sabe de qué están hechas. Salvo los 7 peldaños de la entrada, el número y las cotas son inferidos.",
+   "tipico": "Una escalera exterior de este tipo suele ser de concreto vaciado sobre encofrado escalonado."
+  },
+  "datos": [
+   [
+    "Escaleras",
+    "4 en el modelo, más 2 escalones de servicio"
+   ],
+   [
+    "Entrada",
+    "7 peldaños de 0,137 m"
+   ],
+   [
+    "NO y SO perpendicular",
+    "8 de 0,16 × 0,30 m"
+   ]
+  ],
+  "principio": "Peldaños iguales en un mismo tramo.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Siete peldaños de la entrada",
+    "foto"
+   ],
+   [
+    "Demás cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Si cumplen la lista",
+    "no se puede decir con escala de ±12 %"
+   ]
+  ],
+  "foto_que_falta": "Una cinta en un peldaño de la escalera NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.22; fotos del 106 (archivo del proyecto, no publicado); Alcaldía de Panamá, DOYC, lista de revisión de 2020 (Acuerdo 281 de 2016), ítem 16.02, https://doyc.mupa.gob.pa/wp-content/uploads/2020/06/ACC_281_.pdf"
+ },
+ "escalera_puerta_so": {
+  "ficha": "escalera",
+  "familias": [
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio"
+  ],
+  "titulo": "Escaleras",
+  "sistema": "accesos",
+  "texto": "El modelo tiene cuatro escaleras y dos escalones pardos de servicio de 0,80 m de alto, frente a una puerta de la SE y otra de la NO. La de la entrada tiene 7 peldaños, contados en una foto, de 0,137 m; la trasera NO y la SO perpendicular, 8 peldaños de 0,16 × 0,30 m. La lista de revisión que la Alcaldía de Panamá publicó en 2020 pide huellas de 0,20 a 0,30 m y contrahuellas de 0,15 a 0,17 m.",
+  "decision": "Peldaños iguales: el pie repite el mismo gesto en toda la escalera.",
+  "proceso": {
+   "del_106": "No se sabe de qué están hechas. Salvo los 7 peldaños de la entrada, el número y las cotas son inferidos.",
+   "tipico": "Una escalera exterior de este tipo suele ser de concreto vaciado sobre encofrado escalonado."
+  },
+  "datos": [
+   [
+    "Escaleras",
+    "4 en el modelo, más 2 escalones de servicio"
+   ],
+   [
+    "Entrada",
+    "7 peldaños de 0,137 m"
+   ],
+   [
+    "NO y SO perpendicular",
+    "8 de 0,16 × 0,30 m"
+   ]
+  ],
+  "principio": "Peldaños iguales en un mismo tramo.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Siete peldaños de la entrada",
+    "foto"
+   ],
+   [
+    "Demás cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Si cumplen la lista",
+    "no se puede decir con escala de ±12 %"
+   ]
+  ],
+  "foto_que_falta": "Una cinta en un peldaño de la escalera NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.22; fotos del 106 (archivo del proyecto, no publicado); Alcaldía de Panamá, DOYC, lista de revisión de 2020 (Acuerdo 281 de 2016), ítem 16.02, https://doyc.mupa.gob.pa/wp-content/uploads/2020/06/ACC_281_.pdf"
+ },
+ "escalon_servicio": {
+  "ficha": "escalera",
+  "familias": [
+   "escalera_entrada",
+   "escalera_trasera",
+   "escalera_so",
+   "escalera_puerta_so",
+   "escalon_servicio"
+  ],
+  "titulo": "Escaleras",
+  "sistema": "accesos",
+  "texto": "El modelo tiene cuatro escaleras y dos escalones pardos de servicio de 0,80 m de alto, frente a una puerta de la SE y otra de la NO. La de la entrada tiene 7 peldaños, contados en una foto, de 0,137 m; la trasera NO y la SO perpendicular, 8 peldaños de 0,16 × 0,30 m. La lista de revisión que la Alcaldía de Panamá publicó en 2020 pide huellas de 0,20 a 0,30 m y contrahuellas de 0,15 a 0,17 m.",
+  "decision": "Peldaños iguales: el pie repite el mismo gesto en toda la escalera.",
+  "proceso": {
+   "del_106": "No se sabe de qué están hechas. Salvo los 7 peldaños de la entrada, el número y las cotas son inferidos.",
+   "tipico": "Una escalera exterior de este tipo suele ser de concreto vaciado sobre encofrado escalonado."
+  },
+  "datos": [
+   [
+    "Escaleras",
+    "4 en el modelo, más 2 escalones de servicio"
+   ],
+   [
+    "Entrada",
+    "7 peldaños de 0,137 m"
+   ],
+   [
+    "NO y SO perpendicular",
+    "8 de 0,16 × 0,30 m"
+   ]
+  ],
+  "principio": "Peldaños iguales en un mismo tramo.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Siete peldaños de la entrada",
+    "foto"
+   ],
+   [
+    "Demás cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Si cumplen la lista",
+    "no se puede decir con escala de ±12 %"
+   ]
+  ],
+  "foto_que_falta": "Una cinta en un peldaño de la escalera NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.22; fotos del 106 (archivo del proyecto, no publicado); Alcaldía de Panamá, DOYC, lista de revisión de 2020 (Acuerdo 281 de 2016), ítem 16.02, https://doyc.mupa.gob.pa/wp-content/uploads/2020/06/ACC_281_.pdf"
+ },
+ "rampa": {
+  "ficha": "rampa",
+  "familias": [
+   "rampa"
+  ],
+  "titulo": "Rampa",
+  "sistema": "accesos",
+  "texto": "A la derecha del pórtico, una rampa de dos tramos con giro sube adosada a la fachada; está confirmada en foto. En el modelo cada tramo mide 5,90 m y sube 0,48 m, con una pendiente de 8,1 %, y un descanso de 1,40 × 2,74 m une los dos; por la línea central, el recorrido es de unos 14,6 m.",
+  "decision": "Cambia altura por largo, y dobla sobre sí misma para caber junto a la fachada.",
+  "proceso": {
+   "del_106": "No se sabe de qué es ni cómo se construyó. Las cotas son inferidas.",
+   "tipico": "Una rampa de este tipo suele ser una losa de concreto vaciada sobre relleno o sobre muretes."
+  },
+  "datos": [
+   [
+    "Pendiente",
+    "8,1 %"
+   ],
+   [
+    "Tramo",
+    "5,90 m, sube 0,48 m"
+   ],
+   [
+    "Descanso",
+    "1,40 × 2,74 m"
+   ],
+   [
+    "Recorrido",
+    "unos 14,6 m"
+   ]
+  ],
+  "principio": "La rampa cambia altura por largo; el descanso y el pasamanos continuo hacen ese largo usable.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Rampa de dos tramos",
+    "foto"
+   ],
+   [
+    "Cotas y pendiente",
+    "inferidas en el modelo"
+   ],
+   [
+    "Si cumple la lista de la Alcaldía",
+    "no se puede decir"
+   ]
+  ],
+  "foto_que_falta": "Una cinta y un nivel sobre un tramo de la rampa.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.24; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "baranda_entrada": {
+  "ficha": "baranda_rampa",
+  "familias": [
+   "baranda_entrada"
+  ],
+  "titulo": "Baranda de la rampa",
+  "sistema": "accesos",
+  "texto": "La baranda de la rampa se ve metálica y clara en la foto. En el modelo tiene postes cada 0,98 m, un pasamanos de 5,4 cm de diámetro y dos travesaños de 3,6 cm. La lista de la Alcaldía de 2020 pide pasamanos de 0,04 a 0,05 m; con cotas del modelo y escala de ±12 %, no se puede decir si cumple.",
+  "decision": "El pasamanos redondo, que la mano cierra.",
+  "proceso": {
+   "del_106": "No se sabe de qué metal es ni cómo se anclan los postes.",
+   "tipico": "Una baranda de tubo suele soldarse o unirse con piezas y anclarse con placa y pernos o empotrada."
+  },
+  "datos": [
+   [
+    "Postes",
+    "cada 0,98 m"
+   ],
+   [
+    "Pasamanos",
+    "Ø 5,4 cm"
+   ],
+   [
+    "Travesaños",
+    "Ø 3,6 cm"
+   ]
+  ],
+  "principio": "Un pasamanos que la mano puede cerrar se agarra mejor que uno plano.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Baranda metálica",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Metal y anclaje",
+    "no se sabe"
+   ],
+   [
+    "Si cumple la lista de la Alcaldía",
+    "no se puede decir"
+   ]
+  ],
+  "foto_que_falta": "La base de un poste de la rampa y la unión con el pasamanos.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.24; fuente/barandas.mjs; Alcaldía de Panamá, DOYC, lista de revisión de 2020, ítem 7.7 a"
+ },
+ "galeria": {
+  "ficha": "galeria",
+  "familias": [
+   "galeria",
+   "baranda_parda"
+  ],
+  "titulo": "Galería elevada",
+  "sistema": "accesos",
+  "texto": "En el extremo oeste, una galería elevada con barandas pardas rodea la esquina, confirmada en fotos. En el modelo el piso está a 1,24 a 1,28 m; el tramo NO mide 1,30 × 22,45 m sobre una base maciza y el tramo SO 1,70 × 20,0 m, con un frente de tres rejillas y un hueco abierto entre pilares cerca de la esquina.",
+  "decision": "Una plataforma corrida que reúne accesos en un solo nivel.",
+  "proceso": {
+   "del_106": "No se sabe de qué está hecha. La cota de 1,28 m es inferida.",
+   "tipico": "Una galería de este tipo suele ser una losa sobre muretes o pilares."
+  },
+  "datos": [
+   [
+    "Piso",
+    "1,24 a 1,28 m"
+   ],
+   [
+    "Tramo NO",
+    "1,30 × 22,45 m"
+   ],
+   [
+    "Tramo SO",
+    "1,70 × 20,0 m"
+   ]
+  ],
+  "principio": "Una plataforma corrida reúne varios accesos en un solo nivel.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Galería con barandas",
+    "foto"
+   ],
+   [
+    "Cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una cinta desde el piso de la galería al suelo, en la esquina oeste.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §3, §4.23; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "baranda_parda": {
+  "ficha": "galeria",
+  "familias": [
+   "galeria",
+   "baranda_parda"
+  ],
+  "titulo": "Galería elevada",
+  "sistema": "accesos",
+  "texto": "En el extremo oeste, una galería elevada con barandas pardas rodea la esquina, confirmada en fotos. En el modelo el piso está a 1,24 a 1,28 m; el tramo NO mide 1,30 × 22,45 m sobre una base maciza y el tramo SO 1,70 × 20,0 m, con un frente de tres rejillas y un hueco abierto entre pilares cerca de la esquina.",
+  "decision": "Una plataforma corrida que reúne accesos en un solo nivel.",
+  "proceso": {
+   "del_106": "No se sabe de qué está hecha. La cota de 1,28 m es inferida.",
+   "tipico": "Una galería de este tipo suele ser una losa sobre muretes o pilares."
+  },
+  "datos": [
+   [
+    "Piso",
+    "1,24 a 1,28 m"
+   ],
+   [
+    "Tramo NO",
+    "1,30 × 22,45 m"
+   ],
+   [
+    "Tramo SO",
+    "1,70 × 20,0 m"
+   ]
+  ],
+  "principio": "Una plataforma corrida reúne varios accesos en un solo nivel.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Galería con barandas",
+    "foto"
+   ],
+   [
+    "Cotas",
+    "inferidas en el modelo"
+   ],
+   [
+    "Material",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una cinta desde el piso de la galería al suelo, en la esquina oeste.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §3, §4.23; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "columna_portico": {
+  "ficha": "portico",
+  "familias": [
+   "columna_portico",
+   "vigas_portico"
+  ],
+  "titulo": "Pórtico de entrada",
+  "sistema": "accesos",
+  "texto": "Delante de la puerta principal hay un pórtico angosto y bajo, con columnas blancas cuadradas y una banda oscura, confirmado en foto. En el modelo tiene tres columnas, dos al frente a 2,20 m entre ejes, con capitel a 2,40 m, una viga, dos zapatas y cinco cabios de 8 × 10 cm. Las medidas son proporciones calibradas sobre la foto: la calibración dio de 2,10 a 2,16 m entre ejes y se adoptó 2,20.",
+  "decision": "Un techo pequeño sobre columnas que marca la entrada y la cubre.",
+  "proceso": {
+   "del_106": "No se sabe de qué son las columnas ni la viga.",
+   "tipico": "Como principio del tipo, la carga de un techo así baja por la viga a las columnas y de ahí al suelo."
+  },
+  "datos": [
+   [
+    "Columnas",
+    "3; 2,20 m entre ejes al frente"
+   ],
+   [
+    "Capitel",
+    "hasta 2,40 m"
+   ],
+   [
+    "Cabios",
+    "5, de 8 × 10 cm"
+   ]
+  ],
+  "principio": "Un techo sobre la puerta deja esperar bajo cubierta.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Pórtico y columnas blancas",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "calibradas sobre una foto"
+   ],
+   [
+    "Materiales",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Las columnas del pórtico con una cinta, de base a capitel.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.25; fuente/portico.mjs; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "vigas_portico": {
+  "ficha": "portico",
+  "familias": [
+   "columna_portico",
+   "vigas_portico"
+  ],
+  "titulo": "Pórtico de entrada",
+  "sistema": "accesos",
+  "texto": "Delante de la puerta principal hay un pórtico angosto y bajo, con columnas blancas cuadradas y una banda oscura, confirmado en foto. En el modelo tiene tres columnas, dos al frente a 2,20 m entre ejes, con capitel a 2,40 m, una viga, dos zapatas y cinco cabios de 8 × 10 cm. Las medidas son proporciones calibradas sobre la foto: la calibración dio de 2,10 a 2,16 m entre ejes y se adoptó 2,20.",
+  "decision": "Un techo pequeño sobre columnas que marca la entrada y la cubre.",
+  "proceso": {
+   "del_106": "No se sabe de qué son las columnas ni la viga.",
+   "tipico": "Como principio del tipo, la carga de un techo así baja por la viga a las columnas y de ahí al suelo."
+  },
+  "datos": [
+   [
+    "Columnas",
+    "3; 2,20 m entre ejes al frente"
+   ],
+   [
+    "Capitel",
+    "hasta 2,40 m"
+   ],
+   [
+    "Cabios",
+    "5, de 8 × 10 cm"
+   ]
+  ],
+  "principio": "Un techo sobre la puerta deja esperar bajo cubierta.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Pórtico y columnas blancas",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "calibradas sobre una foto"
+   ],
+   [
+    "Materiales",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Las columnas del pórtico con una cinta, de base a capitel.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.25; fuente/portico.mjs; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "condensadora": {
+  "ficha": "condensadora",
+  "familias": [
+   "condensadora",
+   "cubretubos"
+  ],
+  "titulo": "Condensadora",
+  "sistema": "servicios",
+  "texto": "Al pie de los muros hay condensadoras de aire acondicionado tipo split, confirmadas en varias fotos. Es el único mecanismo confirmado en foto: un ventilador gira detrás de la rejilla redonda. El modelo tiene 15 cajas de 0,91 × 0,62 × 0,44 m, con la rejilla y una celosía en el frente; las fotos muestran más unidades, de varios tamaños.",
+  "decision": "Una rejilla redonda delante de un ventilador axial.",
+  "proceso": {
+   "del_106": "No se sabe la marca, el modelo ni cómo se apoya cada unidad.",
+   "tipico": "En una unidad de este tipo, el compresor eleva la presión del refrigerante y el serpentín de aletas lo enfría con el aire que mueve el ventilador; el líquido vuelve por tubería a la unidad interior."
+  },
+  "datos": [
+   [
+    "Unidades en el modelo",
+    "15 (4 SE, 7 NO, 4 NE)"
+   ],
+   [
+    "Caja",
+    "0,91 × 0,62 × 0,44 m"
+   ],
+   [
+    "Hueco del ventilador",
+    "0,50 × 0,50 m"
+   ]
+  ],
+  "principio": "Lo que se fija por fuera queda a la vista y se puede mantener sin abrir el muro.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Condensadoras con ventilador",
+    "foto"
+   ],
+   [
+    "Número y posición",
+    "modelo; no coinciden con las fotos"
+   ],
+   [
+    "Ciclo de refrigeración",
+    "principio general"
+   ]
+  ],
+  "foto_que_falta": "El pie y la placa de datos de una condensadora de la NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.27 y §5; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "cubretubos": {
+  "ficha": "condensadora",
+  "familias": [
+   "condensadora",
+   "cubretubos"
+  ],
+  "titulo": "Condensadora",
+  "sistema": "servicios",
+  "texto": "Al pie de los muros hay condensadoras de aire acondicionado tipo split, confirmadas en varias fotos. Es el único mecanismo confirmado en foto: un ventilador gira detrás de la rejilla redonda. El modelo tiene 15 cajas de 0,91 × 0,62 × 0,44 m, con la rejilla y una celosía en el frente; las fotos muestran más unidades, de varios tamaños.",
+  "decision": "Una rejilla redonda delante de un ventilador axial.",
+  "proceso": {
+   "del_106": "No se sabe la marca, el modelo ni cómo se apoya cada unidad.",
+   "tipico": "En una unidad de este tipo, el compresor eleva la presión del refrigerante y el serpentín de aletas lo enfría con el aire que mueve el ventilador; el líquido vuelve por tubería a la unidad interior."
+  },
+  "datos": [
+   [
+    "Unidades en el modelo",
+    "15 (4 SE, 7 NO, 4 NE)"
+   ],
+   [
+    "Caja",
+    "0,91 × 0,62 × 0,44 m"
+   ],
+   [
+    "Hueco del ventilador",
+    "0,50 × 0,50 m"
+   ]
+  ],
+  "principio": "Lo que se fija por fuera queda a la vista y se puede mantener sin abrir el muro.",
+  "certeza": "modelo",
+  "certezas": [
+   [
+    "Condensadoras con ventilador",
+    "foto"
+   ],
+   [
+    "Número y posición",
+    "modelo; no coinciden con las fotos"
+   ],
+   [
+    "Ciclo de refrigeración",
+    "principio general"
+   ]
+  ],
+  "foto_que_falta": "El pie y la placa de datos de una condensadora de la NO.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.27 y §5; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "tubo_vertical": {
+  "ficha": "tubo_abrazadera",
+  "familias": [
+   "tubo_vertical",
+   "abrazadera"
+  ],
+  "titulo": "Tubo y abrazadera",
+  "sistema": "servicios",
+  "texto": "Sobre las fachadas SE, NO y NE corren tubos verticales; en el centro de la NO una foto muestra tubos de servicio a la vista. En el modelo son 12 tubos de 10,68 m, cada uno con 4 abrazaderas a 0,80, 2,60, 5,50 y 9,20 m: 48 abrazaderas.",
+  "decision": "El tubo va sujeto por cuatro abrazaderas separadas a lo largo de su altura.",
+  "proceso": {
+   "del_106": "No se sabe si son bajantes, desagües o ductos de servicio, ni de qué son.",
+   "tipico": "Como regla general, un tubo se sujeta en puntos para que pueda dilatarse con el calor sin romper el muro ni pandearse."
+  },
+  "datos": [
+   [
+    "Tubos",
+    "12, de 10,68 m"
+   ],
+   [
+    "Abrazaderas",
+    "48 (4 por tubo)"
+   ]
+  ],
+  "principio": "Una sujeción por puntos deja que la pieza se mueva sin cargar el muro.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Tubos a la vista en la NO",
+    "foto"
+   ],
+   [
+    "Número y cotas",
+    "medido en el modelo"
+   ],
+   [
+    "Función",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una abrazadera de la NO a la altura de la mano y el pie del tubo.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.19; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "abrazadera": {
+  "ficha": "tubo_abrazadera",
+  "familias": [
+   "tubo_vertical",
+   "abrazadera"
+  ],
+  "titulo": "Tubo y abrazadera",
+  "sistema": "servicios",
+  "texto": "Sobre las fachadas SE, NO y NE corren tubos verticales; en el centro de la NO una foto muestra tubos de servicio a la vista. En el modelo son 12 tubos de 10,68 m, cada uno con 4 abrazaderas a 0,80, 2,60, 5,50 y 9,20 m: 48 abrazaderas.",
+  "decision": "El tubo va sujeto por cuatro abrazaderas separadas a lo largo de su altura.",
+  "proceso": {
+   "del_106": "No se sabe si son bajantes, desagües o ductos de servicio, ni de qué son.",
+   "tipico": "Como regla general, un tubo se sujeta en puntos para que pueda dilatarse con el calor sin romper el muro ni pandearse."
+  },
+  "datos": [
+   [
+    "Tubos",
+    "12, de 10,68 m"
+   ],
+   [
+    "Abrazaderas",
+    "48 (4 por tubo)"
+   ]
+  ],
+  "principio": "Una sujeción por puntos deja que la pieza se mueva sin cargar el muro.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Tubos a la vista en la NO",
+    "foto"
+   ],
+   [
+    "Número y cotas",
+    "medido en el modelo"
+   ],
+   [
+    "Función",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "Una abrazadera de la NO a la altura de la mano y el pie del tubo.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.19; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "gabinete": {
+  "ficha": "gabinete_verde",
+  "familias": [
+   "gabinete"
+  ],
+  "titulo": "Gabinete verde",
+  "sistema": "servicios",
+  "texto": "Delante de la fachada NO hay un gabinete verde grande con aletas en un costado, confirmado en fotos. En el modelo mide 1,54 × 1,70 × 1,10 m, con una tapa que vuela y 17 aletas verticales de 1,26 m, una cada 7,5 cm. Qué es y qué tiene dentro no está confirmado.",
+  "decision": "Aletas que multiplican la superficie sin agrandar la caja, y una tapa que vuela sobre los bordes del cuerpo.",
+  "proceso": {
+   "del_106": "No se sabe qué aparato es ni de qué está hecho.",
+   "tipico": "Un gabinete de exterior de este tipo suele ser de chapa de acero doblada y pintada."
+  },
+  "datos": [
+   [
+    "Cuerpo",
+    "1,54 × 1,70 × 1,10 m"
+   ],
+   [
+    "Aletas",
+    "17, de 1,26 m, cada 7,5 cm"
+   ]
+  ],
+  "principio": "Con el mismo material y la misma diferencia de temperatura, una superficie más grande cede más calor.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Gabinete con aletas",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "medido en el modelo"
+   ],
+   [
+    "Qué es",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "El frente del gabinete con sus bisagras y la placa, si la hay.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.28; fotos del 106 (archivo del proyecto, no publicado)"
+ },
+ "letrero": {
+  "ficha": "letrero",
+  "familias": [
+   "letrero"
+  ],
+  "titulo": "Letrero 106",
+  "sistema": "accesos",
+  "texto": "Junto a la rampa hay un tótem curvo gris con la parte de arriba azul que dice «106», confirmado en fotos. En el modelo, casi plano, mide 1,64 m de ancho y llega a 2,79 m, con la franja azul en la cara que mira al SE. En el jardín NE hay otro tótem gris y azul, visto en una foto; en el modelo mide 1,02 m de ancho, llega a 3,20 m y su posición es inferida.",
+  "decision": "La franja de color arriba, a la altura de la vista de quien llega.",
+  "proceso": {
+   "del_106": "No se sabe de qué es ni cómo se ancla.",
+   "tipico": "Un tótem de este tipo suele tener una estructura interna y paneles fijados, anclada a una base."
+  },
+  "datos": [
+   [
+    "Tótem de la entrada",
+    "1,64 m de ancho, hasta 2,79 m"
+   ],
+   [
+    "Tótem del jardín NE",
+    "1,02 m de ancho, hasta 3,20 m, posición inferida"
+   ]
+  ],
+  "principio": "Una señal de entrada se lee mejor cuando su cara mira hacia quien llega.",
+  "certeza": "medido",
+  "certezas": [
+   [
+    "Tótem curvo gris y azul",
+    "foto"
+   ],
+   [
+    "Medidas",
+    "medido en el modelo, que lo hace casi plano"
+   ],
+   [
+    "Anclaje",
+    "no se sabe"
+   ]
+  ],
+  "foto_que_falta": "La base y el canto del letrero.",
+  "fuente": "docs/INVENTARIO.md de D.I.Visor §4.26 a; fotos del 106 (archivo del proyecto, no publicado)"
+ }
+}
