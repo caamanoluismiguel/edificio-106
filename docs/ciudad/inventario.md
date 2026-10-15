@@ -1,6 +1,6 @@
 # Inventario de edificios de Ciudad del Saber
 
-Generado por `fuente/inventario-ciudad.mjs` (no editar a mano: se rehace con `cd fuente && node inventario-ciudad.mjs`). Datos completos por edificio en `inventario.json`. OpenStreetMap con base del 2026-10-01 (© colaboradores de OpenStreetMap, ODbL 1.0); alturas de Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0), estimadas desde satélite.
+Generado por `fuente/inventario-ciudad.mjs` (no editar a mano: se rehace con `cd fuente && node inventario-ciudad.mjs`). Datos completos por edificio en `inventario.json`. OpenStreetMap con base del 2026-10-01 (© colaboradores de OpenStreetMap, ODbL 1.0); alturas de Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL), estimadas desde satélite.
 
 ## El límite usado
 

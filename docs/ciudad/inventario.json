@@ -3,7 +3,7 @@
  "osm_base": "2026-10-01T17:04:21Z",
  "fuentes": {
   "osm": "fuente/osm-amplio.json, © colaboradores de OpenStreetMap, ODbL 1.0",
-  "open_buildings": "fuente/alturas_ob.json, Google Open Buildings 2.5D Temporal v1 (2023), CC BY 4.0; estimada desde satélite, ~1,5 m de error publicado",
+  "open_buildings": "fuente/alturas_ob.json, Google Open Buildings 2.5D Temporal v1 (2023), CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL; estimada desde satélite, ~1,5 m de error publicado",
   "escena": "aEscena + registro de contexto-osm.mjs (OSM girado y trasladado al 106 del modelo); +X al rumbo 56°, +Z al 146°",
   "tipologia": "conjetura por forma; referencia de cuartel: Enscore et al. 2000, ERDC/CERL, DTIC ADA388262, PDF p. 96 (61 x 141 ft)"
  },

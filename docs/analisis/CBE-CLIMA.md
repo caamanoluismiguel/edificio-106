@@ -53,7 +53,7 @@ La revisión local de horas, unidades y cierre de año ya se ejecutó; los resul
 
 Método: ejecutar los módulos reales `Clima` y `epw` con el binario horario y el ajuste local, regenerar 2024 y compararlo byte por byte con Descargas. Comprobar por separado el calendario y el índice de fin de intervalo. La reconstrucción de GHI reutiliza la función solar del visor: verifica la exportación, no valida independientemente el modelo solar.
 
-- Script: [`epw/auditar.mjs`](epw/auditar.mjs), Node 22.16.0, sin paquetes adicionales. Ejecutar desde la raíz: `node docs/analisis/epw/auditar.mjs ~/Downloads/edificio106_era5_ajustado-albrook_2024.epw` (o la ruta donde quedó el EPW).
+- Script: [`epw/auditar.mjs`](epw/auditar.mjs), Node 22.16.0, sin paquetes adicionales. Ejecutar desde la raíz: `node docs/analisis/epw/auditar.mjs <ruta>/edificio106_era5_ajustado-albrook_2024.epw` (el EPW exportado por el visor).
 - Evidencia: [`epw/resultado.json`](epw/resultado.json), con hashes de las fuentes, datos y EPW, estadísticas y cuatro registros de frontera. SHA-256 del EPW: `0e3fb4d0f4f2c04724f0e09d3f6e1616c68c320194b3a581c0f842f737b46d89`.
 - Calendario: 8.760 fechas únicas y ordenadas; horas 1–24, minuto 60, UTC−5. No hay 29 de febrero. El salto de 25 horas entre las marcas de fin de intervalo de 28/02 h24 y 01/03 h1 corresponde a las 24 horas omitidas; no representa una serie continua del año bisiesto real.
 - Unidades y redondeo: temperatura ±0,05 °C; humedad ±0,5 puntos porcentuales; viento dividido entre 3,6 y redondeado a 0,1 m/s; GHI ±0,5 Wh/m² por intervalo horario. DNI, DHI y lluvia coinciden con los valores de origen. Cero incumplimientos de los rangos primarios comprobados y ningún punto de rocío superior a la temperatura seca.

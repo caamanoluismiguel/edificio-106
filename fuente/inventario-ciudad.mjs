@@ -10,7 +10,7 @@
 //   docs/ciudad/limite-propuesto.geojson   el límite de Ciudad del Saber que se usó (propuesto, ver abajo)
 //
 // Datos: fuente/osm-amplio.json (Overpass, base del 1 oct 2026; © colaboradores de OpenStreetMap, ODbL 1.0), fuente/osm.json
-// (los vecinos que modela contexto.mjs), fuente/alturas_ob.json (Google Open Buildings 2.5D Temporal v1, 2023, CC BY 4.0).
+// (los vecinos que modela contexto.mjs), fuente/alturas_ob.json (Google Open Buildings 2.5D Temporal v1, 2023, CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL).
 // Coordenadas de la escena: las mismas que contexto.mjs y entorno-osm.mjs (aEscena + el registro de OSM al 106 que calcula
 // contexto-osm.mjs). Cómo se modela hoy cada edificio: se leen las constantes de contexto.mjs (no se copian a mano).
 //
@@ -314,7 +314,7 @@ fs.writeFileSync(path.join(DOCS, 'inventario.json'), JSON.stringify({
   osm_base: base,
   fuentes: {
     osm: 'fuente/osm-amplio.json, © colaboradores de OpenStreetMap, ODbL 1.0',
-    open_buildings: 'fuente/alturas_ob.json, Google Open Buildings 2.5D Temporal v1 (2023), CC BY 4.0; estimada desde satélite, ~1,5 m de error publicado',
+    open_buildings: 'fuente/alturas_ob.json, Google Open Buildings 2.5D Temporal v1 (2023), CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL; estimada desde satélite, ~1,5 m de error publicado',
     escena: 'aEscena + registro de contexto-osm.mjs (OSM girado y trasladado al 106 del modelo); +X al rumbo 56°, +Z al 146°',
     tipologia: 'conjetura por forma; referencia de cuartel: Enscore et al. 2000, ERDC/CERL, DTIC ADA388262, PDF p. 96 (61 x 141 ft)',
   },
@@ -344,7 +344,7 @@ const fila = (r) => `| ${esc(r.numero_cds ?? '')} | ${esc(r.nombre ?? '')} | ${r
 const cabeza = '| N.º | Nombre | Límite | Área m² | Caja m | Rumbo | Niveles OSM | OB p90 m (cubre) | Modelado en main | Tipología (conjetura por forma) | A 106 m | OSM |\n|---|---|---|---:|---|---:|---:|---|---|---|---:|---|';
 const md = `# Inventario de edificios de Ciudad del Saber
 
-Generado por \`fuente/inventario-ciudad.mjs\` (no editar a mano: se rehace con \`cd fuente && node inventario-ciudad.mjs\`). Datos completos por edificio en \`inventario.json\`. OpenStreetMap con base del ${base?.slice(0, 10)} (© colaboradores de OpenStreetMap, ODbL 1.0); alturas de Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0), estimadas desde satélite.
+Generado por \`fuente/inventario-ciudad.mjs\` (no editar a mano: se rehace con \`cd fuente && node inventario-ciudad.mjs\`). Datos completos por edificio en \`inventario.json\`. OpenStreetMap con base del ${base?.slice(0, 10)} (© colaboradores de OpenStreetMap, ODbL 1.0); alturas de Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL), estimadas desde satélite.
 
 ## El límite usado
 

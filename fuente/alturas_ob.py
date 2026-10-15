@@ -1,7 +1,7 @@
 """Alturas de los vecinos del 106 según Google Open Buildings 2.5D Temporal (2023), una por huella de osm.json.
   cd fuente && uv run --with rasterio --with numpy --with pyproj --with shapely python alturas_ob.py   escribe alturas_ob.json
 Lee las huellas de osm.json (los vecinos) y de osm-amplio.json (Ciudad del Saber entera, la avenida y el canal).
-Fuente: Google Research, Open Buildings 2.5D Temporal v1 (CC BY 4.0), estimación desde Sentinel-2, 4 m efectivos, ráster a
+Fuente: Google Research, Open Buildings 2.5D Temporal v1 (CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL), estimación desde Sentinel-2, 4 m efectivos, ráster a
 0,5 m. Bucket público, sin clave: gs://open-buildings-temporal-data/v1. La pieza que cubre Clayton (UTM 17N, celda S2 8facc):
   https://storage.googleapis.com/open-buildings-temporal-data/v1/geotiffs/8facc_2023_06_30/tile_W-7AFfiNcwo.tif
   (manifiesto v1/manifests/8f_EPSG_32617_2023_06_30.json; origen 649040 E, 996600 N; bandas: conteo, altura, presencia)
@@ -47,7 +47,7 @@ for e, p in huellas:
     p50, p90, p99 = (round(float(x), 1) for x in np.percentile(v, [50, 90, 99]))
     salida[str(e['id'])] = {'num': e['tags'].get('addr:housenumber', ''), 'p50': p50, 'p90': p90, 'p99': p99,
                             'cubre': round(float((presencia[m] > 0.5).mean()), 2)}
-json.dump({'fuente': 'Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0)', 'edificios': salida},
+json.dump({'fuente': 'Google Open Buildings 2.5D Temporal v1, 2023 (CC BY 4.0 u ODbL 1.0, a elección; aquí se usa con ODbL)', 'edificios': salida},
           open(os.path.join(AQUI, 'alturas_ob.json'), 'w'), ensure_ascii=False, indent=1)
 print(len(salida), 'huellas ->', 'alturas_ob.json')
 for k, x in sorted(salida.items(), key=lambda kv: kv[1]['num'])[:40]: print(f"{x['num']:>8} OSM {k}: p90 {x['p90']} m, p99 {x['p99']} m, cubre {x['cubre']}")
