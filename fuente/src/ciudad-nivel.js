@@ -1,8 +1,7 @@
-// Nivel de la ciudad según lo que el equipo puede (CIUDAD-PLAN §27: encendida para todos, sin castigar a los equipos débiles).
-// No se decide por «tiene WebGPU» ni por «es teléfono»: primero lo que el navegador dice del equipo (la GPU que informa el
-// adaptador de WebGPU o WebGL, navigator.deviceMemory, los núcleos) y después un sondeo corto del cuadro (el 106 ya armado,
-// dibujado y esperado hasta que la GPU termina). Mientras se usa, si el cuadro se queda lento, la ciudad baja sola un
-// escalón: primero el detalle, después su sombra y al final se esconde. El 106 no se toca nunca.
+// Niveles de la ciudad (CIUDAD-PLAN §27: encendida para todos). Desde la regla de LM del 14 oct 2026 («Calidad en el teléfono»)
+// la ciudad arranca completa en todo equipo y solo pasa a medio si el usuario acepta simplificar sombras y efectos (escena.js,
+// simplificar). Lo que el navegador dice del equipo (capacidad) queda para el diagnóstico; el sondeo corto del cuadro y el
+// vigía que la bajaba sola un escalón quedan solo para medir (?sondeo, ?vigia). El 106 no se toca nunca.
 //   completo: ciudad.glb y ciudad_alto.glb (detalle alto cerca) y sombra propia de la ciudad con un mapa de 4.096 px
 //   medio:    solo ciudad.glb y la sombra de la ciudad con 2.048 px (la «liviana»)
 //   liviano:  solo ciudad.glb, sin sombra propia (los edificios del kit sí proyectan en el mapa fino del 106, ±70 m)
@@ -50,15 +49,6 @@ export async function capacidad(renderer, backend) {
   c.debil = c.software || GPU_DEBIL.test(txt) || ARQ_DEBIL.test(c.arquitectura) || (c.memoria != null && c.memoria <= 4) || (c.nucleos != null && c.nucleos <= 4);
   c.fuerte = !c.debil && (GPU_FUERTE.test(txt) || c.vendedor === 'apple' || c.vendedor === 'nvidia' || c.vendedor === 'amd');
   return c;
-}
-
-/** Nivel antes del sondeo: computador sin señales de gama baja, completo; teléfono o equipo débil, medio; GPU por
- *  software, liviano. */
-export function nivelEstatico(c) {
-  if (c.software) return { nivel: 'liviano', motivo: 'GPU por software' };
-  if (c.telefono) return { nivel: 'medio', motivo: 'teléfono' };
-  if (c.debil) return { nivel: 'medio', motivo: 'equipo de gama baja' };
-  return { nivel: 'completo', motivo: 'computador' };
 }
 
 /** Ajuste por el sondeo (ms del cuadro del 106 solo). Con holgura sube a completo (un teléfono, solo con 6 GB o más si el

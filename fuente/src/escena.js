@@ -17,8 +17,8 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
 import { vectorSol, FACHADAS, posicionSol, saleYPone } from './sol.js';
-import { binario, conVersion, VER } from './datos.js';
-import { NIVEL, NIVELES, VIGIA, Vigia, bajar, capacidad, nivelEstatico, nivelSondeo } from './ciudad-nivel.js';
+import { binario, conVersion } from './datos.js';
+import { NIVEL, NIVELES, VIGIA, Vigia, bajar, capacidad, nivelSondeo } from './ciudad-nivel.js';
 import { Barcos } from './barcos.js';
 import { luzInterior, encendida, semillaFachada, conCuarto, K as K_INTERIOR } from './interiores.js';
 import { Dibujo, LECTURA_DI } from './dibujo.js';   // lectura «Diseño industrial», solo con ?lectura=di
@@ -144,9 +144,11 @@ function promedioInverso(img) {
 // el equipo aguanta (ciudad-nivel.js). La sombra por defecto es la «doble»: el mapa fino de siempre (±70 m, el mismo texel del 106)
 // y un mapa grueso aparte para la ciudad (SombraGruesa). Opciones para medir: ?sombra=actual|sunlight|csm|ajustada|doble,
 // &sombramapa=1024|2048|4096 y ?ciudadnivel=completo|medio|liviano|oculta (fija el nivel: sin sondeo ni vigía).
-// con ?prueba no hay sondeo ni vigía (las capturas deben repetirse); ?sondeo y ?vigia los vuelven a poner para probarlos
+// Regla de LM (14 oct 2026, «Calidad en el teléfono»): la ciudad arranca completa en todo equipo y solo cambia si el usuario
+// acepta simplificar (Escena.simplificar). El sondeo del arranque (que en plena carga daba completo unas veces y medio otras) y
+// el vigía que la bajaba sola quedan solo para medir: ?sondeo y ?vigia. Lo que bajan no se guarda para la visita siguiente.
 const PRUEBA = typeof location !== 'undefined' && /[?&]prueba/.test(location.search);
-const SONDEA = !PRUEBA || /[?&]sondeo/.test(location.search), VIGILA = !PRUEBA || /[?&]vigia/.test(location.search);
+const SONDEA = typeof location !== 'undefined' && /[?&]sondeo/.test(location.search), VIGILA = typeof location !== 'undefined' && /[?&]vigia/.test(location.search);
 const CIUDAD = (() => {
   if (typeof location === 'undefined') return null;
   const q = new URLSearchParams(location.search), c = q.get('ciudad'), pedida = c === '1' || c === 'espiga';
@@ -305,6 +307,7 @@ export class Escena {
     this.setSol(-8, 90);
     // el cielo, el suelo, la lluvia y las ayudas, en tramos mientras llegan los puntos de la intro (el primer cuadro los compilaba juntos)
     this.precompilar().catch(() => {});
+    if (this.calidad.simple) this.simplificar(true);   // lo eligió el usuario en una visita anterior («e106-simplificar»)
     if (LECTURA_DI) this.di = new Dibujo(this);   // ?lectura=di: escena aparte en línea (dibujo.js); sin el parámetro, nada cambia
     return this;
   }
@@ -340,7 +343,7 @@ export class Escena {
   }
 
   /** Baja al nivel 'bajo' sin recompilar los materiales: mapa de sombras de 1.024, sin FXAA y la resolución del teléfono.
-   *  Lo pide main.js (vigilarNivel) si en WebGL 2 los primeros cuadros no llegan a 30 por segundo. */
+   *  Ya no lo pide la app (la regla del 14 oct 2026 deja bajar sola solo la resolución); queda para medir (ciudad-medir.mjs). */
   bajarNivel() {
     const q = this.calidad;
     if (q.nivel === 'bajo') return false;
@@ -352,7 +355,32 @@ export class Escena {
     return true;
   }
 
-  /** Si WebGPU falla en este equipo, la misma escena pasa a WebGL 2 sin recargar la página. */
+  /** Sombras y efectos simplificados, SOLO si el usuario lo acepta (main.js, «¿Simplificar sombras y efectos?» o la casilla de
+   *  Capas): el mapa de sombras a la mitad (4.096 → 2.048; 2.048 → 1.024 en WebGL 2), sin bloom ni FXAA, y la ciudad en el nivel
+   *  medio (sin el detalle de cerca, su sombra con 2.048). La hora del sol, su dirección y la luz del dato no cambian: las sombras
+   *  caen en el mismo sitio con el borde menos fino. Sin recompilar materiales; se deshace con simplificar(false). */
+  simplificar(si) {
+    this.simplificado = !!si;
+    const m = si ? Math.max(1024, this.calidad.sombras / 2) : this.calidad.sombras;
+    if (!this.ciudadOpc?.mapa) this.sun.shadow.mapSize.set(m, m);   // ciudad: un &sombramapa= pedido se respeta
+    this.sun.shadow.needsUpdate = true;
+    this.restaurarSalida();
+    const o = this.ciudadOpc;
+    if (o && !o.nivelPedido && !o.manual && (o.nivel === 'completo' || o.nivel === 'medio')) {
+      const n = si ? 'medio' : 'completo';
+      if (this.ciudad) this.fijarNivelCiudad(n); else o.nivel = n;
+      o.motivo = si ? 'sombras y efectos simplificados' : 'calidad completa';
+    }
+    this.sucio = true;
+  }
+  /** La salida del postproceso que toca: con bloom si el nivel lo lleva y no está simplificado; sin FXAA si está simplificado. */
+  restaurarSalida() {
+    this.bloomOn = !!this.calidad.bloom && !this.simplificado;
+    this.setSalida(this.simplificado ? 'sinAA' : this.bloomOn ? 'conBloom' : 'sinBloom');
+  }
+
+  /** Si WebGPU falla en este equipo, la misma escena pasa a WebGL 2 sin recargar la página. También rehace un contexto de
+   *  WebGL 2 perdido (main.js, perdidaGL): lienzo nuevo, la misma escena. */
   async pasarAWebGL() {
     const viejo = this.renderer;
     await this.#crearRenderer(true);
@@ -364,6 +392,7 @@ export class Escena {
     this._envRT = null; this.scene.environment = null; this._envClave = null; this._envT = 0;
     this.#pipeline();
     this.sun.shadow.needsUpdate = true; this.sucio = true;
+    if (this.simplificado) this.simplificar(true);   // la elección del usuario sigue en el renderer nuevo
     this.setSol(this.alt, this.az);
   }
 
@@ -746,15 +775,17 @@ export class Escena {
   }
 
   // ---------- LA CIUDAD (encendida por defecto): edificios del kit, su nivel y su sombra ----------
-  /** Nivel antes de cargar nada (ciudad-nivel.js): lo que el navegador dice del equipo. Si el vigía ya la bajó en este equipo con
-   *  esta versión del sitio, se empieza ahí. Decide también si se arma la sombra gruesa (solo si el nivel de partida la usa). */
+  /** Nivel antes de cargar nada: completo en todo equipo (regla de LM, 14 oct 2026), medio si el usuario eligió simplificar, o
+   *  el de ?ciudadnivel=. Lo que el navegador dice del equipo (ciudad-nivel.js, capacidad) queda solo para el diagnóstico.
+   *  Antes, un teléfono o un equipo de gama baja empezaban en medio, y una bajada del vigía se guardaba («e106-ciudad-nivel») y
+   *  hacía arrancar baja la visita siguiente: ya no, y lo que quedó guardado se borra. Decide también si se arma la sombra
+   *  gruesa (solo si el nivel de partida la usa). */
   async #nivelCiudadInicial() {
     const o = this.ciudadOpc;
     o.cap = await capacidad(this.renderer, this.backend).catch(() => ({ telefono: false, debil: false, software: false }));
-    let r = o.nivelPedido ? { nivel: o.nivelPedido, motivo: 'pedido en la URL' } : nivelEstatico(o.cap);
-    let antes = null; try { antes = localStorage.getItem('e106-ciudad-nivel'); } catch (e) { /* sin almacenamiento */ }
-    const [na, va] = (antes ?? '').split('|');
-    if (!o.nivelPedido && !PRUEBA && va === VER && NIVELES.indexOf(na) > NIVELES.indexOf(r.nivel)) { r = { nivel: na, motivo: r.motivo + ', ya bajó antes en este equipo' }; o.piso = na; }
+    try { localStorage.removeItem('e106-ciudad-nivel'); } catch (e) { /* sin almacenamiento */ }
+    const r = o.nivelPedido ? { nivel: o.nivelPedido, motivo: 'pedido en la URL' }
+      : this.calidad.simple ? { nivel: 'medio', motivo: 'sombras y efectos simplificados' } : { nivel: 'completo', motivo: 'calidad completa' };
     o.nivel = r.nivel; o.motivo = r.motivo; o.estatico = r.nivel;
     o.gpu = [o.cap.vendedor, o.cap.arquitectura, o.cap.gpu].filter(Boolean).join(' · '); o.telefono = o.cap.telefono;
     if (!o.sombra) { o.sombra = NIVEL[o.nivel].sombra ? 'doble' : 'actual'; o.porDefecto = true; }
@@ -847,9 +878,9 @@ export class Escena {
     this.sun.shadow.needsUpdate = true; this.sucio = true;
     this.alCambiarCiudad?.();
   }
-  /** Vigía (main.js le pasa el intervalo de cada cuadro dibujado seguido, sin intro, viaje ni carga). Si la mediana de unos 3 s
-   *  pasa de VIGIA.lento ms y un sondeo confirma que el cuadro cuesta (no es una pantalla a 30 Hz), baja un escalón y lo anota
-   *  (localStorage «e106-ciudad-nivel», para la próxima visita con esta versión). Con ?prueba o ?ciudadnivel= no actúa. */
+  /** Vigía, solo con ?vigia (para medir; la regla de LM deja que baje sola únicamente la resolución). main.js le pasa el
+   *  intervalo de cada cuadro dibujado seguido, sin intro, viaje ni carga. Si la mediana de unos 3 s pasa de VIGIA.lento ms y un
+   *  sondeo confirma que el cuadro cuesta (no es una pantalla a 30 Hz), baja un escalón. No se guarda. Con ?ciudadnivel= no actúa. */
   cuadroCiudad(iv) {
     const o = this.ciudadOpc;
     if (!o || !this.ciudadLista || !VIGILA || o.nivelPedido || o.manual || this._vigiaOcupado || this.ciudadEncendida === false || o.nivel === 'oculta') return;
@@ -861,7 +892,6 @@ export class Escena {
       if (ms != null && ms < VIGIA.confirma) return;
       (o.caidas ??= []).push({ s: Math.round(performance.now() / 100) / 10, de: o.nivel, a: sig, medianaMs: Math.round(med * 10) / 10, cuadroMs: ms == null ? null : Math.round(ms * 10) / 10 });
       o.motivo = `bajó sola de ${o.nivel} a ${sig}`;
-      try { localStorage.setItem('e106-ciudad-nivel', sig + '|' + VER); } catch (e) { /* sin almacenamiento */ }
       this.fijarNivelCiudad(sig);
     }).finally(() => { this._vigiaOcupado = false; this._vigia.reiniciar(); });
   }

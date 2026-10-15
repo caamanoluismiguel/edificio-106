@@ -112,6 +112,19 @@
     max-width: min(520px, calc(100vw - 32px)); font: 600 14px/1.4 var(--texto); color: var(--cal); background: var(--panel-2); border: 1px solid var(--linea-2);
     border-radius: 12px; padding: 10px 14px; backdrop-filter: blur(12px); transition: opacity .3s, transform .3s var(--ease); text-align: center; }
   #aviso.ver { opacity: 1; transform: translate(-50%, 0); }
+  /* aviso de calidad (main.js, avisoCalidad): abajo, sobre la hoja o el dock, sin bloquear la escena (solo sus botones reciben toques) */
+  #aviso-calidad { position: fixed; z-index: 25; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h, 0px) + 28px); transform: translate(-50%, 8px); opacity: 0;
+    max-width: min(520px, calc(100vw - 32px)); box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px;
+    font: 600 14px/1.4 var(--texto); color: var(--cal); background: var(--panel-2); border: 1px solid var(--linea-2); border-radius: 12px; padding: 6px 8px 6px 14px;
+    backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,.3); visibility: hidden; transition: opacity .3s, transform .3s var(--ease), visibility 0s .3s; pointer-events: none; }
+  #aviso-calidad.ver { opacity: 1; transform: translate(-50%, 0); visibility: visible; transition-delay: 0s; pointer-events: auto; }
+  #aviso-calidad p { margin: 0; padding: 6px 0; }
+  #aviso-calidad .aq-botones { display: flex; gap: 6px; align-items: center; }
+  #aviso-calidad .boton { min-height: 44px; padding: 10px 14px; }
+  #aviso-calidad #aq-sep { color: var(--cal-3); }
+  #aviso-calidad #aq-si { border-color: var(--cal); }
+  @media (max-width: 760px) { #aviso-calidad { left: 8px; right: 8px; max-width: none; transform: translateY(8px); } #aviso-calidad.ver { transform: none; } }
+  html.panel-lateral #aviso-calidad { left: calc(var(--panel-w) + (100vw - var(--panel-w)) / 2); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); max-width: min(520px, calc(100vw - var(--panel-w) - 32px)); }
 
   /* ---------- barra superior ---------- */
   .barra { position: fixed; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -1208,6 +1221,7 @@
 
 <a id="saltar-a" class="saltar-a" href="#principal">Saltar a los controles</a>
 <div id="lienzo" tabindex="0" role="region" aria-label="Escena 3D. Con el teclado: flechas o W, A, S y D para recorrer la ciudad, Q y E para girar, más y menos para acercarte o alejarte, Inicio para volver al 106."></div>
+<div id="aviso-calidad" role="status" aria-live="polite"><p id="aq-texto"></p><span id="aq-sep" aria-hidden="true">·</span><div class="aq-botones"><button type="button" class="boton" id="aq-max">Volver a máxima</button><button type="button" class="boton" id="aq-si" hidden>Simplificar</button><button type="button" class="boton" id="aq-no" hidden>Dejar así</button></div></div>
 
 <header class="barra">
   <div class="menu-ayuda">
@@ -1864,6 +1878,7 @@
       <label><input type="checkbox" id="capa-ayudas" checked><b>Rosa y arco del sol</b><small>El norte en el suelo y el recorrido del sol ese día; se ven desde arriba.</small></label>
       <label><input type="checkbox" id="capa-ciudad" checked><b>Ciudad del Saber (aproximada)</b><small>228 edificios armados con un kit de piezas sobre las huellas de OpenStreetMap; los demás son copias del 106 o volúmenes simples. La forma, los pisos y los techos son aproximados: solo el 106 está medido. Cada edificio lleva una clase de certeza según qué tan bien se vio en las fotos: I, pisos, techo, muros y mediaguas vistos con confianza alta o media (156); II, se ve el tipo, pero falta algo de lo de la clase I o la vista deja dudas (140); III, casi nada se ve (26). Con dos toques o doble clic sobre un edificio se abre su ficha. Si la desmarcas, en lugar del kit quedan copias del 106 y volúmenes simples, y la página descarga menos la próxima vez que la abras. <span id="ciudad-estado"></span></small></label>
       <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez</b><small>La escena empieza siempre a la resolución más alta de tu equipo. Si el movimiento va lento durante varios segundos seguidos, la baja un poco, y la vuelve a subir cuando el equipo se recupera. Márcala para que no la baje nunca. <span id="res-actual"></span></small></label>
+      <label hidden><input type="checkbox" id="capa-simple"><b>Sombras y efectos simplificados</b><small>Para un equipo que va lento aun con la resolución más baja: el mapa de sombras a la mitad, sin destello de lente ni suavizado de bordes, y la ciudad sin su detalle de cerca. La hora y la dirección del sol y la luz del dato no cambian: las sombras caen en el mismo sitio, con el borde menos fino. Desmárcala para volver a la calidad completa.</small></label>
       <label class="solo-noche"><input type="checkbox" id="capa-larga"><b>Exposición larga</b><small>Aclara la noche como una foto de 20 segundos en trípode. No agrega luz: todo sube lo mismo, así que lo claro y lo oscuro siguen en su lugar.</small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Simular aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>
     </div>

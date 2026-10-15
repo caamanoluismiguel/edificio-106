@@ -750,7 +750,7 @@ export class Dibujo {
     D.pastilla.style.transform = `translate(${Math.round(L.x0 + 16)}px, ${Math.round(L.y1 - 16 - ph)}px)`;
     // con los controles en movimiento (inercia, giro) o un módulo animado, el cuadro siguiente también se dibuja: escena.render() lo
     // lee al volver. Antes se pedía con un requestAnimationFrame que llegaba después del bucle de main.js, y el detalle se dibujaba
-    // un cuadro sí y otro no (30 por segundo en una pantalla de 60, medido el 14 oct 2026)
+    // a veces a 30 por segundo en una pantalla de 60 (entre 30 y 60 según la corrida, medido el 14 oct 2026)
     this._seguir = !!(mueve || D.paso);
   }
 

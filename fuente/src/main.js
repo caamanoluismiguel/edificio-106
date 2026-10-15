@@ -92,18 +92,28 @@ const deISO = (t) => { const [y, m, d] = t.split('-').map(Number); return { y, m
 const fechaCorta = (f) => `${f.d} ${MES3[f.m - 1]} ${f.y}`;
 
 // ---------------- Calidad según el equipo ----------------
+// Regla de LM (14 oct 2026, «Calidad en el teléfono»): todo equipo arranca con la calidad completa. El teléfono ya no tiene un
+// perfil liviano elegido por el tipo de equipo (antes: sombras de 2.048, sin bloom ni FXAA, tejas y árboles livianos). Del
+// teléfono queda solo el ORDEN de carga, que no quita nada: la vegetación, el entorno y los árboles llegan después de armar el
+// edificio, en un rato libre (la intro no los espera), y la serie horaria, solo si hace falta (pedirSerie). Con lentitud
+// sostenida baja solo la resolución (RES, más abajo); simplificar sombras y efectos se ofrece y solo pasa si el usuario lo
+// acepta («e106-simplificar» = '1', que aquí se respeta desde el arranque porque lo eligió el usuario).
 function calidad() {
   const q = new URLSearchParams(location.search);
   if (q.has('ligero')) return { nivel: 'bajo', dpr: 1, px: 1.2e6, sombras: 1024, particulas: 20000, bloom: false, grupos: ['sitio', 'arquitectura', 'ventanas', 'entrada'] };
   const movil = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820;
-  // teléfono: las tejas livianas (cubiertas_movil.glb, 1,0 MB en vez de 1,4 MB por la red) y la vegetación y el entorno
-  // después de armar el edificio, en un rato libre (la intro no los espera); la serie horaria, solo si hace falta (pedirSerie)
-  if (movil) return { nivel: 'bajo', dpr: 1.5, px: 1.6e6, sombras: 2048, particulas: 40000, bloom: false, tejasLivianas: true,
-    grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto' && g !== 'arboles'), diferidos: ['vegetacion', 'contexto', 'arboles'], serieAlPedir: true };
-  if (!navigator.gpu) return { nivel: 'medio', dpr: 1.25, px: 2.4e6, sombras: 2048, particulas: 60000, bloom: false };
+  const simple = PREF_SIMPLE === '1' && !/[?&]prueba/.test(location.search);
+  // sin WebGPU, WebGL 2 no aguanta el nivel alto (escena.js, #nivelWebGL: 28 cuadros por segundo al girar, medido por el jurado):
+  // su máximo es el nivel medio, en cualquier equipo
+  if (!navigator.gpu) return { nivel: 'medio', dpr: 1.25, px: 2.4e6, sombras: 2048, particulas: 60000, bloom: false, simple,
+    ...(movil ? { grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto' && g !== 'arboles'), diferidos: ['vegetacion', 'contexto', 'arboles'], serieAlPedir: true } : {}) };
   const ultra = location.hash === '#ultra';
-  return { nivel: 'alto', dpr: ultra ? 2 : 1.5, px: ultra ? 6e6 : 3.7e6, sombras: 4096, particulas: ultra ? 120000 : 90000, bloom: true, ao: ultra };
+  const completo = { nivel: 'alto', dpr: ultra ? 2 : 1.5, px: ultra ? 6e6 : 3.7e6, sombras: 4096, particulas: ultra ? 120000 : 90000, bloom: true, ao: ultra, simple };
+  if (movil) return { ...completo, grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto' && g !== 'arboles'), diferidos: ['vegetacion', 'contexto', 'arboles'], serieAlPedir: true };
+  return completo;
 }
+// lo que el usuario respondió a «¿Simplificar sombras y efectos?»: '1' simplificar, '0' dejar así, null sin responder
+let PREF_SIMPLE = null; try { PREF_SIMPLE = localStorage.getItem('e106-simplificar'); } catch (e) { /* sin almacenamiento */ }
 
 // ---------------- Vistas (coordenadas de la escena, metros; +X = noreste, +Z = sureste) ----------------
 // pasado el poste y a 1,4 m: la arista de la esquina al centro y las dos fachadas fugando (el poste es real; se mueve la cámara, no el poste)
@@ -1232,29 +1242,30 @@ function altoNarrador() {
 //     máximo); si ni en el piso mejora (pantalla limitada a 30 por segundo, ahorro de batería), vuelve al máximo y no lo intenta
 //     de nuevo en 60 s (el doble cada vez, hasta 10 min).
 // Con ?prueba no actúa (las capturas deben repetirse): queda fija al máximo, salvo con ?resdin para probar este vigía.
-// «Máxima nitidez» en Capas la fija al máximo siempre.
+// «Máxima nitidez» en Capas la fija al máximo siempre. Vale igual en WebGPU y en WebGL 2: antes, en WebGL 2, un solo segundo
+// lento al principio bajaba para siempre al nivel 'bajo' (vigilarNivel); ya no, arranca en su máximo y sigue esta regla.
+// Avisos («Calidad en el teléfono», LM, 14 oct 2026), abajo y sin bloquear (avisoCalidad): al dejar el máximo, «Bajé la
+// nitidez para que vaya fluido · Volver a máxima»; si en el piso sigue lento de forma sostenida, se OFRECE simplificar sombras
+// y efectos, que solo pasa si el usuario lo acepta. Lo que el vigía hace solo no se guarda; lo que el usuario elige, sí.
+const PRUEBA_URL = /[?&]prueba/.test(location.search);
 const RES = { iv: [], suma: 0, lentas: 0, rapidas: 0, techo: 0, espera: 15000, tTecho: -1e9, prueba: null, bloqueo: -1e9, fallos: 0, fija: false,
-  BAJA: 25, SUBE: 18, PASO: 0.85, PISO: 0.6 };
+  BAJA: 25, SUBE: 18, PASO: 0.85, PISO: 0.6, avisoT: -1e9, ofrecida: false };
 try { RES.fija = localStorage.getItem('e106-nitidez') === '1'; } catch (e) { RES.fija = false; }
-if (/[?&]prueba/.test(location.search) && !/[?&]resdin/.test(location.search)) RES.fija = true;
+if (PRUEBA_URL && !/[?&]resdin/.test(location.search)) RES.fija = true;
 function reiniciarRes() { RES.iv = []; RES.suma = 0; RES.lentas = 0; RES.rapidas = 0; RES.prueba = null; }
-// En WebGL 2 (nivel 'medio'), si el primer segundo de cuadros seguidos, ya sin intro, carga ni compilación, promedia más de
-// 33 ms (menos de 30 por segundo), se baja una sola vez al nivel 'bajo' (Escena.bajarNivel). «Máxima nitidez» sigue mandando
-// dentro del nivel: fija la resolución en el máximo del nivel nuevo. Con ?prueba no se baja nunca (las capturas deben repetirse).
-const NIVEL = { suma: 0, n: 0, hecho: /[?&]prueba/.test(location.search) };
-function vigilarNivel(iv, previo) {
-  if (NIVEL.hecho || escena.backend !== 'WebGL 2' || escena.calidad.nivel === 'bajo') return;
-  if (!previo || intro || S.viaje || !escena.cargado || escena.compilando || iv > 250 || document.visibilityState !== 'visible') return;
-  NIVEL.suma += iv; NIVEL.n++;
-  if (NIVEL.suma < 1000) return;
-  NIVEL.hecho = true;
-  const media = NIVEL.suma / NIVEL.n;
-  if (media > 33 && escena.bajarNivel()) { anotar('aviso', `WebGL 2 a ${f1(media)} ms por cuadro: paso al nivel bajo`); reiniciarRes(); RES.techo = 0; pintarResolucion(); }
+/** Baja un paso la resolución; si salía del máximo, avisa (como mucho una vez cada 5 min). */
+function bajarRes(d, max, piso) {
+  escena.fijarResolucion(Math.max(piso, d * RES.PASO)); pintarResolucion();
+  if (d >= max - 0.005 && performance.now() - RES.avisoT > 300000) { RES.avisoT = performance.now(); avisoCalidad('nitidez'); }
+}
+/** En el piso de la resolución y todavía lento: se ofrece simplificar, una vez por visita y solo si nunca se respondió. */
+function ofrecerSimplificar() {
+  if (RES.ofrecida || PREF_SIMPLE !== null || escena.simplificado) return;
+  RES.ofrecida = true; avisoCalidad('simplificar');
 }
 function medirCuadro(now, dtReal) {
   const iv = dtReal * 1000, previo = S.dibujoPrevio; S.dibujoPrevio = true;
-  vigilarNivel(iv, previo);
-  // vigía de la ciudad: los mismos cuadros que mira vigilarNivel (seguidos, sin intro, viaje, carga ni página oculta)
+  // vigía de la ciudad (solo con ?vigia, para medir: escena.js): cuadros seguidos, sin intro, viaje, carga ni página oculta
   if (previo && !intro && !S.viaje && escena.cargado && !escena.compilando && document.visibilityState === 'visible') escena.cuadroCiudad(iv);
   const d = escena.renderer.getPixelRatio(), max = escena.dprMax();
   if (RES.fija) { if (Math.abs(d - max) > 0.01) { escena.fijarResolucion(max); pintarResolucion(); } return; }
@@ -1270,12 +1281,13 @@ function medirCuadro(now, dtReal) {
     if (++p.n < 2) return;
     p.n = 0;
     if (med < p.med * 0.92) { RES.prueba = null; RES.lentas = RES.rapidas = 0; RES.fallos = 0; return; }        // sirvió: se queda
-    if (med > RES.BAJA && d > piso + 0.005) { RES.techo = d; RES.tTecho = now; escena.fijarResolucion(Math.max(piso, d * RES.PASO)); pintarResolucion(); return; }   // otro paso (este nivel también pesó)
+    if (med > RES.BAJA && d > piso + 0.005) { RES.techo = d; RES.tTecho = now; bajarRes(d, max, piso); return; }   // otro paso (este nivel también pesó)
     RES.prueba = null; RES.lentas = RES.rapidas = 0;
     if (med > RES.BAJA) {                    // en el piso y sin mejora: la pantalla o el ahorro de batería limitan, no la resolución
       RES.fallos = (RES.fallos ?? 0) + 1; RES.bloqueo = now + Math.min(600000, 60000 * 2 ** (RES.fallos - 1)); RES.techo = 0;
       escena.fijarResolucion(p.de); pintarResolucion();
-      anotar('aviso', `bajar la resolución no ayudó (${f1(p.med)} → ${f1(med)} ms): vuelve a ${f1(p.de, 2)}×`); return;
+      anotar('aviso', `bajar la resolución no ayudó (${f1(p.med)} → ${f1(med)} ms): vuelve a ${f1(p.de, 2)}×`);
+      ofrecerSimplificar(); return;          // la resolución no era el problema: se ofrece el paso fuerte (nunca se aplica solo)
     }
     return;                                  // ya no va lento: se queda donde está y el ascenso sigue la regla de siempre
   }
@@ -1285,7 +1297,9 @@ function medirCuadro(now, dtReal) {
     RES.espera = d >= RES.techo - 0.005 && now - RES.tTecho < 60000 ? Math.min(60000, RES.espera * 2) : 15000;
     RES.techo = d; RES.tTecho = now; RES.lentas = RES.rapidas = 0;
     RES.prueba = { de: d, med, n: 0 };   // med: la mediana lenta de antes del primer paso
-    escena.fijarResolucion(Math.max(piso, d * RES.PASO)); pintarResolucion();
+    bajarRes(d, max, piso);
+  } else if (RES.lentas >= 2 && d <= piso + 0.005) {
+    ofrecerSimplificar();                    // en el piso y todavía lento de forma sostenida (bajar sí ayudó, pero no basta)
   } else if (RES.rapidas >= 3 && d < max - 0.005) {
     const sig = Math.min(max, d / RES.PASO);
     if (sig >= RES.techo - 0.005 && now - RES.tTecho < RES.espera) return;   // no volver en seguida al nivel que ya pesó
@@ -1299,7 +1313,7 @@ function pintarCiudad() {
   const o = escena.ciudadOpc, oculta = !o || o.nivel === 'oculta' || escena.ciudadEncendida === false;
   c.checked = !oculta;
   nota.textContent = !o || escena.ciudadEncendida === false ? '' : o.nivel === 'oculta' ? (o.caidas?.length || o.piso === 'oculta' ? 'Se apagó sola porque el equipo iba lento.' : '')
-    : !escena.ciudadLista ? 'Llega después del edificio.' : o.nivel === 'medio' ? 'En este equipo va sin el detalle de cerca.'
+    : !escena.ciudadLista ? 'Llega después del edificio.' : o.nivel === 'medio' ? (escena.simplificado ? 'Va sin el detalle de cerca porque elegiste simplificar sombras y efectos.' : 'En este equipo va sin el detalle de cerca.')
       : o.nivel === 'liviano' ? 'En este equipo va sin el detalle de cerca y sin su sombra lejos del 106.' : '';
   pintarEncuadres();
 }
@@ -1310,14 +1324,38 @@ function pintarResolucion() {
 }
 
 // ---------------- GPU: errores, pérdida del dispositivo y paso automático a WebGL ----------------
+// Con la calidad completa también en el teléfono (sombras de 4.096, la ciudad completa), un equipo con poca memoria de GPU puede
+// perder el dispositivo. No se arranca más bajo por si acaso: se reacciona cuando pasa. WebGPU perdido pasa a WebGL 2 (rescatar);
+// un contexto de WebGL 2 perdido se rehace con un lienzo nuevo (perdidaGL) y, si se pierde otra vez, se ofrece simplificar.
 function vigilarGPU() {
-  const dev = escena.renderer.backend?.device; if (!dev) return;
+  const r = escena.renderer;
+  if (escena.backend === 'WebGL 2') {
+    const base = r.onDeviceLost;                       // la de three.js marca el renderer como perdido (deja de dibujar)
+    r.onDeviceLost = (i) => { base.call(r, i); perdidaGL(i); };
+    return;
+  }
+  const dev = r.backend?.device; if (!dev) return;
   dev.addEventListener('uncapturederror', (e) => {
     if (innerWidth < 2 || innerHeight < 2 || document.visibilityState === 'hidden') { anotar('aviso', 'GPU con la página oculta: ' + (e.error?.message ?? '')); return; }
     DIAG.gpu++; anotar('GPU', e.error?.message ?? e.error);
     if (DIAG.gpu >= 3) rescatar('la tarjeta gráfica rechazó cuadros');
   });
   dev.lost.then((i) => { if (i.reason === 'destroyed' && rescatando) return; anotar('GPU perdida', `${i.reason ?? ''} ${i.message ?? ''}`); rescatar('se perdió la tarjeta gráfica'); });
+}
+let perdidasGL = 0;
+async function perdidaGL(i) {
+  if (rescatando) return;
+  perdidasGL++; anotar('GPU perdida', `WebGL 2 (${perdidasGL}): ${i?.message ?? ''}`);
+  if (perdidasGL > 3) { aviso('Se perdió la tarjeta gráfica varias veces. Recarga la página para seguir.', 12000); return; }
+  rescatando = true; S.pausa = true;
+  try {
+    await escena.pasarAWebGL();                        // lienzo y contexto nuevos, la misma escena y la misma calidad
+    controls.disconnect(); controls.connect(escena.renderer.domElement);
+    S.firma = ''; escena.sucio = true; vigilarGPU();
+    aviso('Se perdió la tarjeta gráfica y la escena se volvió a armar.');
+    if (perdidasGL >= 2) { RES.ofrecida = false; if (PREF_SIMPLE !== '1') { PREF_SIMPLE = null; ofrecerSimplificar(); } }
+  } catch (e) { anotar('rescate', e); }
+  S.pausa = false; rescatando = false; pintarDiag();
 }
 let rescatando = false;
 async function rescatar(motivo) {
@@ -1329,7 +1367,7 @@ async function rescatar(motivo) {
     await escena.pasarAWebGL();
     controls.disconnect(); controls.connect(escena.renderer.domElement);
     document.documentElement.dataset.backend = escena.backend; $('#motor').textContent = escena.backend;
-    S.firma = ''; escena.sucio = true;
+    S.firma = ''; escena.sucio = true; vigilarGPU();
     aviso('WebGPU falló en este equipo. La escena sigue en modo compatible (WebGL 2).');
   } catch (e) { anotar('rescate', e); try { location.reload(); } catch (e2) { /* nada */ } }
   S.pausa = false; rescatando = false; pintarDiag();
@@ -1337,6 +1375,47 @@ async function rescatar(motivo) {
 function aviso(t, ms = 6000) {
   let el = $('#aviso'); if (!el) { el = document.createElement('div'); el.id = 'aviso'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
   el.textContent = t; el.classList.add('ver'); clearTimeout(aviso.t); aviso.t = setTimeout(() => el.classList.remove('ver'), ms);
+}
+/** Aviso de calidad, abajo y sin bloquear (role="status" en cuerpo.html; no toma el foco). 'nitidez': la resolución bajó sola,
+ *  con «Volver a máxima», y se va a los 7 s. 'simplificar': en el piso de la resolución sigue lento; ofrece [Simplificar] y
+ *  [Dejar así] durante 20 s, y si nadie responde no se guarda nada. Con el foco o el puntero encima no se va. Nunca con ?prueba. */
+function avisoCalidad(tipo) {
+  if (PRUEBA_URL) return;
+  const el = $('#aviso-calidad'); if (!el) return;
+  const nit = tipo === 'nitidez';
+  $('#aq-max').hidden = $('#aq-sep').hidden = !nit; $('#aq-si').hidden = $('#aq-no').hidden = nit;
+  el.dataset.tipo = tipo; el.classList.add('ver'); $('#aq-texto').textContent = '';
+  // el texto entra un cuadro después de hacerse visible, para que el lector de pantalla lo anuncie (la región ya existe)
+  requestAnimationFrame(() => { $('#aq-texto').textContent = nit ? 'Bajé la nitidez para que vaya fluido' : 'Va lento en este equipo. ¿Simplificar sombras y efectos?'; });
+  const ms = nit ? 7000 : 20000;
+  clearTimeout(avisoCalidad.t);
+  const esperar = () => { avisoCalidad.t = setTimeout(() => (el.matches(':hover, :focus-within') ? esperar() : cerrarAvisoCalidad()), ms); };
+  esperar();
+}
+function cerrarAvisoCalidad() {
+  const el = $('#aviso-calidad'); if (!el) return;
+  clearTimeout(avisoCalidad.t); el.classList.remove('ver');
+  setTimeout(() => { if (!el.classList.contains('ver')) $('#aq-texto').textContent = ''; }, 320);
+}
+/** Fija la máxima nitidez (la casilla de Capas) y la recuerda. */
+function fijarNitidez(si) {
+  RES.fija = !!si; reiniciarRes(); RES.techo = 0;
+  if (!PRUEBA_URL) try { localStorage.setItem('e106-nitidez', RES.fija ? '1' : '0'); } catch (x) { /* nada */ }
+  $('#capa-nitidez').checked = RES.fija;
+  if (RES.fija) escena.fijarResolucion(escena.dprMax());
+  escena.sucio = true; pintarResolucion();
+}
+/** Respuesta a «¿Simplificar sombras y efectos?» (o la casilla de Capas, para deshacerla): se aplica y se recuerda. */
+function elegirSimplificar(si) {
+  PREF_SIMPLE = si ? '1' : '0';
+  if (!PRUEBA_URL) try { localStorage.setItem('e106-simplificar', PREF_SIMPLE); } catch (x) { /* nada */ }
+  escena.simplificar(si);
+  pintarSimplificar(); pintarCiudad();
+}
+function pintarSimplificar() {
+  const c = $('#capa-simple'); if (!c) return;
+  c.closest('label').hidden = PREF_SIMPLE === null && !escena?.simplificado;
+  c.checked = !!escena?.simplificado;
 }
 
 // ---------------- Calor en fachadas ----------------
@@ -1588,6 +1667,9 @@ function ponerHoja(n) {
   // oculta: lo que no se ve tampoco se alcanza con Tab (solo el asa)
   for (const el of $('#dock').children) if (el.id !== 'hoja-cab') el.inert = n === 'oculta';
   if (n !== 2) $('#dock').scrollTop = 0;
+  // Diseño industrial con un eje de corte: en la media, el deslizador puede quedar bajo el borde de la pantalla (pasaba al volver
+  // a la media con el asa, después de la completa y la cerrada): se trae a la vista
+  if (n === 1 && h.classList.contains('lectura-di')) requestAnimationFrame(() => { const c = $('#di-corte-pos'); if (S.hoja === 1 && c?.getClientRects().length) c.scrollIntoView({ block: 'nearest' }); });
 }
 const primeraFrase = (t) => (t.match(/^.+?[.!?](?=\s|$)/) ?? [t])[0];
 /** El narrador del dock: escribe el texto entero y su primera frase, que es lo que se ve plegado. Mientras la escena
@@ -1924,7 +2006,14 @@ function prepararUI() {
   $('#rec-ver').addEventListener('click', verRespuesta);
   // nitidez
   $('#capa-nitidez').checked = RES.fija;
-  $('#capa-nitidez').addEventListener('change', (e) => { RES.fija = e.target.checked; reiniciarRes(); RES.techo = 0; try { localStorage.setItem('e106-nitidez', RES.fija ? '1' : '0'); } catch (x) { /* nada */ } escena.sucio = true; pintarResolucion(); });
+  $('#capa-nitidez').addEventListener('change', (e) => fijarNitidez(e.target.checked));
+  // sombras y efectos simplificados: aparece en Capas cuando el usuario ya respondió a la oferta, para deshacerla
+  pintarSimplificar();
+  $('#capa-simple').addEventListener('change', (e) => elegirSimplificar(e.target.checked));
+  // el aviso de calidad (avisoCalidad)
+  $('#aq-max').addEventListener('click', () => { fijarNitidez(true); cerrarAvisoCalidad(); });
+  $('#aq-si').addEventListener('click', () => { elegirSimplificar(true); cerrarAvisoCalidad(); });
+  $('#aq-no').addEventListener('click', () => { elegirSimplificar(false); cerrarAvisoCalidad(); });
   $('#hora').addEventListener('input', (e) => { parar(); explorar(); S.momento = null; S.mesSerie = null; S.min = +e.target.value; });
   $('#dia-anio').addEventListener('input', (e) => { parar(); explorar(); S.momento = null; S.fecha = fechaDeDia(S.fecha.y, +e.target.value); });
   $('#mes-serie').addEventListener('input', (e) => {
@@ -3525,7 +3614,7 @@ async function medir() {
     caja.textContent = cab + filas.join('\n');
   }
   S.muevesol = false; S.aguacero = false; irAAhora();
-  r.info.autoReset = true; vis('contexto', true); r.setPixelRatio(d0); escena.setSalida(escena.bloomOn ? 'conBloom' : 'sinBloom'); controls.enabled = true;
+  r.info.autoReset = true; vis('contexto', true); r.setPixelRatio(d0); escena.restaurarSalida(); controls.enabled = true;
   caja.textContent = cab + filas.join('\n') + '\nLISTO';
 }
 

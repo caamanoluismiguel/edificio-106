@@ -1,5 +1,5 @@
-// Prueba de carga: abre el sitio armado de esta carpeta como teléfono (perfil de calidad «bajo», tejas y árboles livianos,
-// grupos diferidos) y como computador, con y sin ?arboles=0, y comprueba que llegan TODOS los grupos de GRUPOS (escena.js),
+// Prueba de carga: abre el sitio armado de esta carpeta como teléfono (desde el 14 oct 2026 con la calidad completa, igual que
+// el computador: nivel alto, tejas y árboles completos y la ciudad completa; solo cambia el orden, con grupos diferidos) y como computador, con y sin ?arboles=0, y comprueba que llegan TODOS los grupos de GRUPOS (escena.js),
 // sin errores de consola ni de página ni peticiones locales fallidas. El guardia y verificar.mjs miran solo el perfil de
 // computador: el 4 de octubre de 2026 un cambio dejó el teléfono sin vegetación, contexto ni árboles y ninguno lo vio.
 // La ciudad (encendida por defecto) también: montada en cada caso que la pide, con ciudad_alto.glb solo en el nivel completo,
@@ -27,9 +27,9 @@ const nav = await chromium.launch({ headless: true, args: ['--enable-unsafe-webg
 // ciudad: 'completo' (con ciudad_alto.glb), 'medio' (sin él), false (no se pide ciudad.glb)
 const PC = { viewport: { width: 1600, height: 1000 } };
 const CASOS = [
-  { nombre: 'teléfono', disp: devices['Pixel 7'], q: '', esperados: GRUPOS, archivos: ['cubiertas_movil.glb', 'arboles_movil.glb'], ciudad: 'medio' },
-  { nombre: 'teléfono ?arboles=0', disp: devices['Pixel 7'], q: '&arboles=0', esperados: GRUPOS.filter((g) => g !== 'arboles'), ciudad: 'medio' },
-  { nombre: 'teléfono ?ciudad=0', disp: devices['Pixel 7'], q: '&ciudad=0', esperados: GRUPOS, ciudad: false },
+  { nombre: 'teléfono', disp: devices['Pixel 7'], q: '', esperados: GRUPOS, archivos: ['cubiertas.glb', 'arboles.glb'], sinPedir: ['cubiertas_movil.glb', 'arboles_movil.glb'], pc: true, ciudad: 'completo' },
+  { nombre: 'teléfono ?arboles=0', disp: devices['Pixel 7'], q: '&arboles=0', esperados: GRUPOS.filter((g) => g !== 'arboles'), ciudad: 'completo' },
+  { nombre: 'teléfono ?ciudad=0', disp: devices['Pixel 7'], q: '&ciudad=0', esperados: GRUPOS, pc: true, ciudad: false },
   { nombre: 'computador', disp: PC, q: '', esperados: GRUPOS, archivos: ['cubiertas.glb', 'arboles.glb'], pc: true, ciudad: 'completo' },
   { nombre: 'computador ?arboles=0', disp: PC, q: '&arboles=0', esperados: GRUPOS.filter((g) => g !== 'arboles'), ciudad: 'completo' },
   { nombre: 'computador ?ciudad=0', disp: PC, q: '&ciudad=0', esperados: GRUPOS, pc: true, ciudad: false },
@@ -61,14 +61,16 @@ for (const c of CASOS) {
   } catch (e) { errores.push('no cargó: ' + String(e).slice(0, 200)); r = { grupos: [] }; }
   const faltan = c.esperados.filter((g) => !r.grupos.includes(g)), sobran = r.grupos.filter((g) => !c.esperados.includes(g));
   const sinArchivo = (c.archivos ?? []).filter((f) => !pedidos.includes(f));
+  for (const f of c.sinPedir ?? []) if (pedidos.includes(f)) errores.push(`se pidió ${f} (el perfil liviano del teléfono ya no existe)`);
   // la ciudad: montada y en el nivel esperado, con la capa marcada; o, si no se pide, ni el archivo
   const pideCiudad = pedidos.includes('ciudad.glb'), pideAlto = pedidos.includes('ciudad_alto.glb');
   if (c.ciudad === false && (pideCiudad || r.ciudad?.lista)) errores.push('ciudad: se pidió o se montó sin que tocara');
   if (c.ciudad && !(r.ciudad?.lista && pideCiudad)) errores.push(`ciudad: no llegó (${JSON.stringify(r.ciudad)})`);
   if (c.ciudad && r.ciudad?.lista && (r.ciudad.nivel !== c.ciudad || pideAlto !== (c.ciudad === 'completo') || r.ciudad.marcada !== true)) errores.push(`ciudad: nivel ${r.ciudad.nivel}, detalle alto pedido ${pideAlto}, capa marcada ${r.ciudad.marcada} (se espera ${c.ciudad})`);
-  // profundidad de campo armada y encendida en todos los casos (LM la quiere siempre); en computador, además, WebGPU y nivel alto
+  // profundidad de campo armada y encendida en todos los casos (LM la quiere siempre); en computador y teléfono, además, WebGPU y
+  // nivel alto (calidad completa en todo equipo, regla de LM del 14 oct 2026)
   if (!r.conDof || !(r.dof > 0.9)) errores.push(`profundidad de campo: armada ${r.conDof} · ${r.dof?.toFixed?.(2) ?? r.dof} (se espera armada y 1)`);
-  if (c.pc && (r.backend !== 'WebGPU' || r.nivel !== 'alto')) errores.push(`computador: ${r.backend} · nivel ${r.nivel} (se espera WebGPU y alto)`);
+  if (c.pc && (r.backend !== 'WebGPU' || r.nivel !== 'alto')) errores.push(`${c.nombre}: ${r.backend} · nivel ${r.nivel} (se espera WebGPU y alto)`);
   const mal = faltan.length || sobran.length || sinArchivo.length || errores.length;
   if (mal) falla = true;
   console.log(`${mal ? '✗' : '✓'} ${c.nombre} (${r.backend ?? '?'}, nivel ${r.nivel ?? '?'}${`, profundidad de campo ${r.conDof ? (r.dof?.toFixed?.(2)) : 'no'}`}, ciudad ${r.ciudad?.lista ? r.ciudad.nivel : 'no'}): ${r.grupos.length} grupos` + (faltan.length ? ` · FALTAN ${faltan.join(', ')}` : '') + (sobran.length ? ` · SOBRAN ${sobran.join(', ')}` : '')
