@@ -5,16 +5,31 @@ type: software
 authors:
   - family-names: "Caamaño"
     given-names: "Luis Miguel"
-version: "2026-10-01"
-date-released: "2026-10-01"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  (pendiente: ponerlo aquí y en .zenodo.json si existe)
+# Versión candidata al primer DOI (v1.0.0). Cómo se numera y cómo se hace una versión: docs/VERSIONES.md.
+version: "1.0.0-rc.1"
+date-released: "2026-10-15"
 repository-code: "https://github.com/caamanoluismiguel/edificio-106"
 url: "https://caamanoluismiguel.github.io/edificio-106/"
+license-url: "https://github.com/caamanoluismiguel/edificio-106/blob/main/LICENSE"
 abstract: >-
   Maqueta digital del Edificio 106 (Ciudad del Saber, Panamá) para ver cómo inciden el sol,
-  la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025).
-  Proyecto académico experimental, no oficial de Isthmus ni de Ciudad del Saber.
-keywords: [arquitectura bioclimática, trópico húmedo, ERA5, radiación solar, lluvia batiente, confort térmico, Panamá]
+  la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025) ajustado
+  a la estación de Albrook. Tiene dos lecturas del mismo edificio: «Arquitectura y clima» y
+  «Diseño industrial» (fichas por pieza, etapas de construcción, alternativas y mecanismos,
+  cada dato con su nivel de certeza). El modelo del 106 lo hizo el autor con ayuda de IA a partir
+  de fotos de Luis Miguel Caamaño y de Raúl Alejandro González (autorización escrita del 6 de
+  octubre de 2026). Todos los derechos reservados, con los permisos de LICENSE; las partes de
+  terceros conservan su licencia (TERCEROS.md). Proyecto académico experimental, no oficial de
+  Isthmus ni de Ciudad del Saber.
+keywords: [arquitectura bioclimática, trópico húmedo, ERA5, radiación solar, lluvia batiente, confort térmico, diseño industrial, Ciudad del Saber, Panamá]
 references:
+  - type: data
+    authors: [{family-names: "Hersbach", given-names: "Hans"}]
+    title: "ERA5 hourly data on single levels from 1940 to present"
+    publisher: {name: "Copernicus Climate Change Service (C3S) Climate Data Store"}
+    year: 2023
+    doi: "10.24381/cds.adbb2d47"
   - type: article
     authors: [{family-names: "Hersbach", given-names: "Hans"}]
     title: "The ERA5 global reanalysis"
@@ -26,3 +41,104 @@ references:
     title: "Open-Meteo.com Weather API"
     year: 2024
     doi: "10.5281/zenodo.7970649"
+  - type: data
+    authors: [{name: "Physical Monitoring Program, Smithsonian Tropical Research Institute"}]
+    title: "Parque Metropolitano Crane, Top_Solar Radiation, Pyranometer"
+    doi: "10.60635/C3791K"
+  - type: article
+    authors: [{family-names: "Tolan", given-names: "Jamie"}]
+    title: "Very high resolution canopy height maps from RGB imagery using self-supervised vision transformer and convolutional decoder trained on aerial lidar"
+    journal: "Remote Sensing of Environment"
+    volume: 300
+    start: 113888
+    year: 2024
+    doi: "10.1016/j.rse.2023.113888"
+  - type: article
+    authors: [{family-names: "Sirko", given-names: "W."}]
+    title: "High-Resolution Building and Road Detection from Sentinel-2"
+    year: 2023
+    identifiers: [{type: other, value: "arXiv:2310.11622"}]
+  - type: article
+    authors: [{family-names: "Peel", given-names: "M. C."}, {family-names: "Finlayson", given-names: "B. L."}, {family-names: "McMahon", given-names: "T. A."}]
+    title: "Updated world map of the Köppen-Geiger climate classification"
+    journal: "Hydrology and Earth System Sciences"
+    year: 2007
+    doi: "10.5194/hess-11-1633-2007"
+  - type: article
+    authors: [{family-names: "Lavers", given-names: "David A."}]
+    title: "An evaluation of ERA5 precipitation for climate monitoring"
+    journal: "Quarterly Journal of the Royal Meteorological Society"
+    year: 2022
+    doi: "10.1002/qj.4351"
+  - type: article
+    authors: [{family-names: "Watters", given-names: "Daniel"}, {family-names: "Battaglia", given-names: "Alessandro"}, {family-names: "Allan", given-names: "Richard P."}]
+    title: "The Diurnal Cycle of Precipitation according to Multiple Decades of Global Satellite Observations, Three CMIP6 Models, and the ECMWF Reanalysis"
+    journal: "Journal of Climate"
+    year: 2021
+    doi: "10.1175/JCLI-D-20-0966.1"
+  - type: article
+    authors: [{family-names: "Michalsky", given-names: "Joseph J."}]
+    title: "The Astronomical Almanac's algorithm for approximate solar position (1950–2050)"
+    journal: "Solar Energy"
+    year: 1988
+    doi: "10.1016/0038-092X(88)90045-X"
+  - type: article
+    authors: [{family-names: "Reda", given-names: "Ibrahim"}, {family-names: "Andreas", given-names: "Afshin"}]
+    title: "Solar position algorithm for solar radiation applications"
+    journal: "Solar Energy"
+    year: 2004
+    doi: "10.1016/j.solener.2003.12.003"
+  - type: article
+    authors: [{family-names: "Perez", given-names: "R."}, {family-names: "Seals", given-names: "R."}, {family-names: "Michalsky", given-names: "J."}]
+    title: "All-weather model for sky luminance distribution: preliminary configuration and validation"
+    journal: "Solar Energy"
+    year: 1993
+    doi: "10.1016/0038-092X(93)90017-I"
+  - type: article
+    authors: [{family-names: "Blocken", given-names: "Bert"}, {family-names: "Carmeliet", given-names: "Jan"}]
+    title: "A review of wind-driven rain research in building science"
+    journal: "Journal of Wind Engineering and Industrial Aerodynamics"
+    year: 2004
+    doi: "10.1016/j.jweia.2004.06.003"
+  - type: article
+    authors: [{family-names: "Givoni", given-names: "Baruch"}]
+    title: "Comfort, climate analysis and building design guidelines"
+    journal: "Energy and Buildings"
+    year: 1992
+    doi: "10.1016/0378-7788(92)90047-K"
+  - type: article
+    authors: [{family-names: "de Dear", given-names: "Richard J."}, {family-names: "Brager", given-names: "Gail S."}]
+    title: "Thermal comfort in naturally ventilated buildings: revisions to ASHRAE Standard 55"
+    journal: "Energy and Buildings"
+    year: 2002
+    doi: "10.1016/S0378-7788(02)00005-1"
+  - type: article
+    authors: [{family-names: "Bröde", given-names: "Peter"}]
+    title: "Deriving the operational procedure for the Universal Thermal Climate Index (UTCI)"
+    journal: "International Journal of Biometeorology"
+    year: 2012
+    doi: "10.1007/s00484-011-0454-1"
+  - type: article
+    authors: [{family-names: "Arens", given-names: "Edward"}]
+    title: "Modeling the comfort effects of short-wave solar radiation indoors"
+    journal: "Building and Environment"
+    year: 2015
+    doi: "10.1016/j.buildenv.2014.09.004"
+  - type: article
+    authors: [{family-names: "Tartarini", given-names: "Federico"}, {family-names: "Schiavon", given-names: "Stefano"}]
+    title: "pythermalcomfort: A Python package for thermal comfort research"
+    journal: "SoftwareX"
+    year: 2020
+    doi: "10.1016/j.softx.2020.100578"
+  - type: article
+    authors: [{family-names: "Cook", given-names: "Robert L."}, {family-names: "Halstead", given-names: "John"}, {family-names: "Planck", given-names: "Maxwell"}, {family-names: "Ryu", given-names: "David"}]
+    title: "Stochastic simplification of aggregate detail"
+    journal: "ACM Transactions on Graphics"
+    year: 2007
+    doi: "10.1145/1276377.1276476"
+  - type: report
+    authors: [{family-names: "Enscore", given-names: "S. I."}, {family-names: "Johnson", given-names: "S. P."}, {family-names: "Webster", given-names: "J. L."}, {family-names: "Cohen", given-names: "G. L."}]
+    title: "Guarding the Gates: The Story of Fort Clayton"
+    institution: {name: "U.S. Army Construction Engineering Research Laboratory (CERL)"}
+    year: 2000
+    url: "https://archive.org/details/DTIC_ADA388262"

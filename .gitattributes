@@ -1,0 +1,30 @@
+# Qué queda fuera del zip de cada release (git archive), y por eso fuera del DOI 1 de Zenodo.
+# Los archivos siguen en el repositorio y en el sitio; solo no entran al zip. Ver docs/doi/ALCANCE.md.
+
+# Instrucciones de trabajo de los agentes (nombran rutas de la máquina del autor).
+.claude export-ignore
+# Huellas md5 de los GLB y de los .blend con sus rutas en la máquina del autor (las usa ar/verificar-huellas.sh solo en esa máquina).
+ar/HUELLAS.txt export-ignore
+
+# Hoja de comparación con la foto WA0014 (pendiente de reemplazo por una foto propia).
+fuente/verificacion/entrada/comparativa-entrada.png export-ignore
+
+# La ciudad: va en el DOI 2, cuando se vuelva a observar en sitio. Lleva observaciones de Street View o sale de ellas.
+docs/ciudad export-ignore
+datos/ciudad_mapa.json export-ignore
+datos/ciudad_fichas.json export-ignore
+modelo/ciudad.glb export-ignore
+modelo/ciudad_alto.glb export-ignore
+fuente/ciudad-observado.json export-ignore
+fuente/ciudad-ajustes.json export-ignore
+fuente/arboles_reales.json export-ignore
+fuente/arboles_excluidos.json export-ignore
+# Los scripts que arman la ciudad (ciudad-datos.mjs e inventario-ciudad.mjs guardan lecturas de Street View; los demás solo sirven con los datos de arriba).
+fuente/ciudad-datos.mjs export-ignore
+fuente/ciudad-fichas.mjs export-ignore
+fuente/ciudad-kit.mjs export-ignore
+fuente/ciudad-luz.mjs export-ignore
+fuente/ciudad-mapa.mjs export-ignore
+fuente/ciudad-medir.mjs export-ignore
+fuente/ciudad.mjs export-ignore
+fuente/inventario-ciudad.mjs export-ignore

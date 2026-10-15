@@ -1,0 +1,70 @@
+{
+  "title": "Ciudad del Saber · Isthmus: inventario de edificios, árboles y entorno del Edificio 106 (datos)",
+  "upload_type": "dataset",
+  "creators": [
+    {
+      "name": "Caamaño, Luis Miguel"
+    }
+  ],
+  "description": "<p>Bases de datos de Ciudad del Saber (Panamá) con que el visor del Edificio 106 arma la ciudad: huella, número, tipo, pisos, techo, altura y clase de certeza de cada edificio, el mapa de navegación, las copas de los árboles y el entorno (calles, agua y relieve). Derivadas de OpenStreetMap, Google Open Buildings 2.5D, el mapa de altura de copa de Meta y WRI y el Copernicus DEM, y completadas con un levantamiento en sitio.</p><p>Cada campo dice de dónde sale. Lo que solo se había leído en Google Street View y no se volvió a observar en sitio no está en este paquete; el archivo LEEME del paquete lista qué se quitó.</p><p>El código y los modelos 3D que se arman con estas bases están en el registro del visor (software), con la licencia del autor.</p><p>Proyecto académico experimental, no oficial de Isthmus ni de Ciudad del Saber.</p>",
+  "access_right": "open",
+  "license": "odbl-1.0",
+  "notes": "Open Database License 1.0: es una base derivada de OpenStreetMap (© colaboradores de OpenStreetMap) y de Open Buildings 2.5D Temporal v1 (Google Research, usado con ODbL). Copas: Meta y WRI, CC BY 4.0; Source imagery for CHM © 2016 Maxar. Relieve: produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. Contains modified Copernicus Sentinel data 2019, 2026.",
+  "keywords": [
+    "Ciudad del Saber",
+    "Fort Clayton",
+    "inventario de edificios",
+    "OpenStreetMap",
+    "Open Buildings",
+    "altura de copa",
+    "Panamá"
+  ],
+  "language": "spa",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/caamanoluismiguel/edificio-106",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/caamanoluismiguel/edificio-106",
+      "relation": "isCompiledBy",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://www.openstreetmap.org/copyright",
+      "relation": "isDerivedFrom",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://sites.research.google/gr/open-buildings/temporal/",
+      "relation": "isDerivedFrom",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://registry.opendata.aws/dataforgood-fb-forests/",
+      "relation": "isDerivedFrom",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://registry.opendata.aws/copernicus-dem",
+      "relation": "isDerivedFrom",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "arXiv:2310.11622",
+      "relation": "references",
+      "resource_type": "publication-preprint"
+    },
+    {
+      "identifier": "10.1016/j.rse.2023.113888",
+      "relation": "references",
+      "resource_type": "publication-article"
+    },
+    {
+      "identifier": "https://archive.org/details/DTIC_ADA388262",
+      "relation": "references",
+      "resource_type": "publication-report"
+    }
+  ]
+}
