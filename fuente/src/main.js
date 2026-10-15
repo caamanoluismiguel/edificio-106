@@ -1222,12 +1222,22 @@ function altoNarrador() {
 }
 
 // ---------------- Resolución adaptable ----------------
-// Mira el intervalo entre cuadros dibujados seguidos. Baja la resolución si el equipo no alcanza la frecuencia de la
-// pantalla y la vuelve a subir cuando va fluido. No cuenta la intro, los viajes, la página oculta ni los tirones de carga.
-// (Antes solo subía por debajo de 12 ms por cuadro, algo imposible a 60 Hz: una vez que bajaba, se quedaba baja.)
-const RES = { iv: [], minIv: 16.7, techo: 0, tTecho: -1e9, fija: false };
-// máxima nitidez por defecto (pedido de LM): solo se apaga si alguien la desmarca en Capas
-try { RES.fija = localStorage.getItem('e106-nitidez') !== '0'; } catch (e) { RES.fija = true; }
+// Regla de LM (14 oct 2026, pendiente 9): la escena SIEMPRE arranca a la resolución más alta del equipo (dprMax) y solo la
+// baja si mide cuadros lentos sostenidos; la vuelve a subir cuando el equipo se recupera. Nunca empieza baja por precaución
+// ni por el tipo de equipo. Mira el intervalo entre cuadros dibujados seguidos, sin la intro, los viajes, la carga, la
+// compilación ni la página oculta, en ventanas de 1 s (su mediana: un pico no la mueve).
+//   · baja un paso (×0,85) con 2 ventanas seguidas de mediana > 25 ms (menos de 40 cuadros por segundo);
+//   · sube un paso con 3 ventanas seguidas de mediana < 18 ms; volver al nivel que ya pesó espera 15 s (30, 60 si pesa otra vez);
+//   · mientras no mejore la mediana al menos un 8 %, sigue bajando de a un paso (cada 2 s) hasta el piso (0,6× o la mitad del
+//     máximo); si ni en el piso mejora (pantalla limitada a 30 por segundo, ahorro de batería), vuelve al máximo y no lo intenta
+//     de nuevo en 60 s (el doble cada vez, hasta 10 min).
+// Con ?prueba no actúa (las capturas deben repetirse): queda fija al máximo, salvo con ?resdin para probar este vigía.
+// «Máxima nitidez» en Capas la fija al máximo siempre.
+const RES = { iv: [], suma: 0, lentas: 0, rapidas: 0, techo: 0, espera: 15000, tTecho: -1e9, prueba: null, bloqueo: -1e9, fallos: 0, fija: false,
+  BAJA: 25, SUBE: 18, PASO: 0.85, PISO: 0.6 };
+try { RES.fija = localStorage.getItem('e106-nitidez') === '1'; } catch (e) { RES.fija = false; }
+if (/[?&]prueba/.test(location.search) && !/[?&]resdin/.test(location.search)) RES.fija = true;
+function reiniciarRes() { RES.iv = []; RES.suma = 0; RES.lentas = 0; RES.rapidas = 0; RES.prueba = null; }
 // En WebGL 2 (nivel 'medio'), si el primer segundo de cuadros seguidos, ya sin intro, carga ni compilación, promedia más de
 // 33 ms (menos de 30 por segundo), se baja una sola vez al nivel 'bajo' (Escena.bajarNivel). «Máxima nitidez» sigue mandando
 // dentro del nivel: fija la resolución en el máximo del nivel nuevo. Con ?prueba no se baja nunca (las capturas deben repetirse).
@@ -1239,23 +1249,47 @@ function vigilarNivel(iv, previo) {
   if (NIVEL.suma < 1000) return;
   NIVEL.hecho = true;
   const media = NIVEL.suma / NIVEL.n;
-  if (media > 33 && escena.bajarNivel()) { anotar('aviso', `WebGL 2 a ${f1(media)} ms por cuadro: paso al nivel bajo`); RES.iv = []; RES.techo = 0; pintarResolucion(); }
+  if (media > 33 && escena.bajarNivel()) { anotar('aviso', `WebGL 2 a ${f1(media)} ms por cuadro: paso al nivel bajo`); reiniciarRes(); RES.techo = 0; pintarResolucion(); }
 }
 function medirCuadro(now, dtReal) {
   const iv = dtReal * 1000, previo = S.dibujoPrevio; S.dibujoPrevio = true;
   vigilarNivel(iv, previo);
   // vigía de la ciudad: los mismos cuadros que mira vigilarNivel (seguidos, sin intro, viaje, carga ni página oculta)
   if (previo && !intro && !S.viaje && escena.cargado && !escena.compilando && document.visibilityState === 'visible') escena.cuadroCiudad(iv);
-  if (RES.fija) { if (Math.abs(escena.renderer.getPixelRatio() - escena.dprMax()) > 0.01) { escena.fijarResolucion(escena.dprMax()); pintarResolucion(); } return; }
-  if (!previo || intro || S.viaje || iv > 90 || document.visibilityState !== 'visible') return;
-  RES.iv.push(iv); if (RES.iv.length < 50) return;
-  const a = RES.iv.sort((x, y) => x - y), med = a[a.length >> 1], p10 = a[Math.floor(a.length * 0.1)]; RES.iv = [];
-  RES.minIv = Math.max(6, Math.min(RES.minIv, p10));             // la frecuencia de la pantalla (16,7 ms a 60 Hz, 8,3 a 120 Hz)
   const d = escena.renderer.getPixelRatio(), max = escena.dprMax();
-  if (med > RES.minIv * 1.5 && d > 0.6) { RES.techo = d; RES.tTecho = now; escena.fijarResolucion(d - 0.1); pintarResolucion(); }
-  else if (med < RES.minIv * 1.15 && d < max - 0.005) {
-    if (d + 0.1 >= RES.techo - 0.001 && now - RES.tTecho < 30000) return;    // no volver en seguida al nivel que ya pesó
-    escena.fijarResolucion(Math.min(max, d + 0.1)); pintarResolucion();
+  if (RES.fija) { if (Math.abs(d - max) > 0.01) { escena.fijarResolucion(max); pintarResolucion(); } return; }
+  if (d > max + 0.01) { escena.fijarResolucion(max); pintarResolucion(); }       // la ventana cambió de tamaño
+  // la carga no cuenta: ni la del modelo, ni la diferida del teléfono (vegetación, entorno, árboles), ni la de la ciudad, y 2 s más
+  if (RES.cargando === undefined && escena.cargado) { RES.cargando = true; Promise.allSettled([escena.cargaDiferida, escena.cargaCiudad]).then(() => setTimeout(() => { RES.cargando = false; }, 2000)); }
+  if (!previo || intro || S.viaje || !escena.cargado || RES.cargando !== false || escena.compilando || iv > 100 || document.visibilityState !== 'visible') return;
+  RES.iv.push(iv); RES.suma += iv; if (RES.suma < 1000) return;
+  const a = RES.iv.sort((x, y) => x - y), med = a[a.length >> 1]; RES.iv = []; RES.suma = 0;
+  const piso = Math.max(RES.PISO, max * 0.5);
+  if (RES.prueba) {                          // ¿sirvió bajar? Los cuadros van al ritmo de la pantalla (16,7 o 33,3 ms a 60 Hz): un
+    const p = RES.prueba;                    // paso puede no notarse y el siguiente sí. Se juzga una ventana después de cada paso
+    if (++p.n < 2) return;
+    p.n = 0;
+    if (med < p.med * 0.92) { RES.prueba = null; RES.lentas = RES.rapidas = 0; RES.fallos = 0; return; }        // sirvió: se queda
+    if (med > RES.BAJA && d > piso + 0.005) { RES.techo = d; RES.tTecho = now; escena.fijarResolucion(Math.max(piso, d * RES.PASO)); pintarResolucion(); return; }   // otro paso (este nivel también pesó)
+    RES.prueba = null; RES.lentas = RES.rapidas = 0;
+    if (med > RES.BAJA) {                    // en el piso y sin mejora: la pantalla o el ahorro de batería limitan, no la resolución
+      RES.fallos = (RES.fallos ?? 0) + 1; RES.bloqueo = now + Math.min(600000, 60000 * 2 ** (RES.fallos - 1)); RES.techo = 0;
+      escena.fijarResolucion(p.de); pintarResolucion();
+      anotar('aviso', `bajar la resolución no ayudó (${f1(p.med)} → ${f1(med)} ms): vuelve a ${f1(p.de, 2)}×`); return;
+    }
+    return;                                  // ya no va lento: se queda donde está y el ascenso sigue la regla de siempre
+  }
+  RES.lentas = med > RES.BAJA ? RES.lentas + 1 : 0;
+  RES.rapidas = med < RES.SUBE ? RES.rapidas + 1 : 0;
+  if (RES.lentas >= 2 && d > piso + 0.005 && now > RES.bloqueo) {
+    RES.espera = d >= RES.techo - 0.005 && now - RES.tTecho < 60000 ? Math.min(60000, RES.espera * 2) : 15000;
+    RES.techo = d; RES.tTecho = now; RES.lentas = RES.rapidas = 0;
+    RES.prueba = { de: d, med, n: 0 };   // med: la mediana lenta de antes del primer paso
+    escena.fijarResolucion(Math.max(piso, d * RES.PASO)); pintarResolucion();
+  } else if (RES.rapidas >= 3 && d < max - 0.005) {
+    const sig = Math.min(max, d / RES.PASO);
+    if (sig >= RES.techo - 0.005 && now - RES.tTecho < RES.espera) return;   // no volver en seguida al nivel que ya pesó
+    RES.rapidas = 0; escena.fijarResolucion(sig); pintarResolucion();
   }
 }
 /** La capa «Ciudad del Saber (aproximada)»: marcada si se ve, y una nota corta si el equipo la lleva con menos. */
@@ -1890,7 +1924,7 @@ function prepararUI() {
   $('#rec-ver').addEventListener('click', verRespuesta);
   // nitidez
   $('#capa-nitidez').checked = RES.fija;
-  $('#capa-nitidez').addEventListener('change', (e) => { RES.fija = e.target.checked; RES.iv = []; RES.techo = 0; try { localStorage.setItem('e106-nitidez', RES.fija ? '1' : '0'); } catch (x) { /* nada */ } escena.sucio = true; pintarResolucion(); });
+  $('#capa-nitidez').addEventListener('change', (e) => { RES.fija = e.target.checked; reiniciarRes(); RES.techo = 0; try { localStorage.setItem('e106-nitidez', RES.fija ? '1' : '0'); } catch (x) { /* nada */ } escena.sucio = true; pintarResolucion(); });
   $('#hora').addEventListener('input', (e) => { parar(); explorar(); S.momento = null; S.mesSerie = null; S.min = +e.target.value; });
   $('#dia-anio').addEventListener('input', (e) => { parar(); explorar(); S.momento = null; S.fecha = fechaDeDia(S.fecha.y, +e.target.value); });
   $('#mes-serie').addEventListener('input', (e) => {

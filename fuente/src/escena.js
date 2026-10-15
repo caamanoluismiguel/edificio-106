@@ -1756,7 +1756,7 @@ export class Escena {
     // el visor de claude.ai precarga la página oculta y sin tamaño: con 0 × 0 px WebGPU rechaza el búfer de profundidad
     if (window.innerWidth < 2 || window.innerHeight < 2) return 0;
     if (this._w !== window.innerWidth || this._h !== window.innerHeight) this.resize();
-    if (this.di?.activo) { const t0 = performance.now(); this._dibujo = t0; this.di.render(); this.sucio = false; return t0; }   // lectura «Diseño industrial»: el dibujo en vez del postproceso
+    if (this.di?.activo) { const t0 = performance.now(); this._dibujo = t0; this.di.render(); this.sucio = !!this.di._seguir; this.di._seguir = false; return t0; }   // lectura «Diseño industrial»: el dibujo en vez del postproceso
     U.cam.value.copy(this.camera.position);
     const llueve = U.lluvia.value > 0.01;
     if (this.lluviaSpr) this.lluviaSpr.visible = this.aleros.visible = this.salpicaduras.visible = llueve;
