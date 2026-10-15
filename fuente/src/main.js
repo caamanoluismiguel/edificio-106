@@ -102,18 +102,32 @@ function calidad() {
   const q = new URLSearchParams(location.search);
   if (q.has('ligero')) return { nivel: 'bajo', dpr: 1, px: 1.2e6, sombras: 1024, particulas: 20000, bloom: false, grupos: ['sitio', 'arquitectura', 'ventanas', 'entrada'] };
   const movil = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820;
-  const simple = PREF_SIMPLE === '1' && !/[?&]prueba/.test(location.search);
+  const simple = PREF_SIMPLE === '1' && !/[?&]prueba/.test(location.search), capacidad = CAP.escalon;
   // sin WebGPU, WebGL 2 no aguanta el nivel alto (escena.js, #nivelWebGL: 28 cuadros por segundo al girar, medido por el jurado):
   // su máximo es el nivel medio, en cualquier equipo
-  if (!navigator.gpu) return { nivel: 'medio', dpr: 1.25, px: 2.4e6, sombras: 2048, particulas: 60000, bloom: false, simple,
+  if (!navigator.gpu) return { nivel: 'medio', dpr: 1.25, px: 2.4e6, sombras: 2048, particulas: 60000, bloom: false, simple, capacidad,
     ...(movil ? { grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto' && g !== 'arboles'), diferidos: ['vegetacion', 'contexto', 'arboles'], serieAlPedir: true } : {}) };
   const ultra = location.hash === '#ultra';
-  const completo = { nivel: 'alto', dpr: ultra ? 2 : 1.5, px: ultra ? 6e6 : 3.7e6, sombras: 4096, particulas: ultra ? 120000 : 90000, bloom: true, ao: ultra, simple };
+  const completo = { nivel: 'alto', dpr: ultra ? 2 : 1.5, px: ultra ? 6e6 : 3.7e6, sombras: 4096, particulas: ultra ? 120000 : 90000, bloom: true, ao: ultra, simple, capacidad };
   if (movil) return { ...completo, grupos: GRUPOS.filter((g) => g !== 'vegetacion' && g !== 'contexto' && g !== 'arboles'), diferidos: ['vegetacion', 'contexto', 'arboles'], serieAlPedir: true };
   return completo;
 }
 // lo que el usuario respondió a «¿Simplificar sombras y efectos?»: '1' simplificar, '0' dejar así, null sin responder
 let PREF_SIMPLE = null; try { PREF_SIMPLE = localStorage.getItem('e106-simplificar'); } catch (e) { /* sin almacenamiento */ }
+// Capacidad real del equipo (H1; matiz de LM del 14 oct 2026: «si un teléfono viejo no arranca en máximo, que arranque acorde a
+// su capacidad»). Se intenta SIEMPRE el máximo; solo una pérdida REPETIDA del contexto de la GPU (perdidaGL) baja un escalón
+// (Escena, #ajustarNivel: 1 simplificado, 2 bajo, 3 mínimo), y eso se recuerda para este equipo y se avisa. Nunca por lentitud
+// (eso es la resolución y la oferta de simplificar), ni por ser teléfono, ni por el user agent.
+// «e106-capacidad» = 'versión|escalón|reintento'. La versión es la del formato de la clave (no la del armado: una versión nueva
+// del sitio no hace que el teléfono viejo se vuelva a caer dos veces); cambiarla invalida lo guardado. `reintento` es el escalón
+// que aguantó antes de pulsar «Volver a máxima»: si con la máxima se pierde otra vez, vuelve directo a él, sin bucle.
+const CAP_CLAVE = 'e106-capacidad', CAP_VER = '1', CAP_MAX = 3;
+const CAP = { escalon: 0, reintento: 0, esperas: 0 };
+try {
+  const [v, e, r] = (localStorage.getItem(CAP_CLAVE) ?? '').split('|'), esc = (x) => Math.max(0, Math.min(CAP_MAX, Math.floor(+x) || 0));
+  if (v === CAP_VER) { CAP.escalon = esc(e); CAP.reintento = esc(r); } else if (v) localStorage.removeItem(CAP_CLAVE);
+} catch (e) { /* sin almacenamiento */ }
+if (/[?&]prueba/.test(location.search)) { CAP.escalon = 0; CAP.reintento = 0; }   // las capturas siempre en el máximo
 
 // ---------------- Vistas (coordenadas de la escena, metros; +X = noreste, +Z = sureste) ----------------
 // pasado el poste y a 1,4 m: la arista de la esquina al centro y las dos fachadas fugando (el poste es real; se mueve la cámara, no el poste)
@@ -371,6 +385,8 @@ function terminarIntro() {
   if (!location.hash && !EDIFICIO_Q && LEC.debePreguntar()) setTimeout(() => LEC.preguntar((k) => { if (k === 'clima' && !visto) primeraGuia(); }), 900);
   else if (!visto && !location.hash && !EDIFICIO_Q && !LEC.enLink) setTimeout(primeraGuia, 900);
   LEC.alTerminarIntro();
+  // arrancó ajustada a lo que este equipo aguanta (H1): se avisa en cada visita, con «Volver a máxima»
+  if (escena.capacidad) setTimeout(() => avisoCalidad('capacidad'), 1500);
   const h = location.hash.replace('#', '');
   if (FACHADAS[h]) { irAFachada(h); mostrarQR(h); }
   irAMomentoHash();
@@ -1260,7 +1276,7 @@ function bajarRes(d, max, piso) {
 }
 /** En el piso de la resolución y todavía lento: se ofrece simplificar, una vez por visita y solo si nunca se respondió. */
 function ofrecerSimplificar() {
-  if (RES.ofrecida || PREF_SIMPLE !== null || escena.simplificado) return;
+  if (RES.ofrecida || PREF_SIMPLE !== null || escena.simplificadoEfectivo) return;
   RES.ofrecida = true; avisoCalidad('simplificar');
 }
 function medirCuadro(now, dtReal) {
@@ -1312,9 +1328,10 @@ function pintarCiudad() {
   c.closest('label').hidden = /[?&]ligero/.test(location.search);       // ?ligero no trae ni el entorno
   const o = escena.ciudadOpc, oculta = !o || o.nivel === 'oculta' || escena.ciudadEncendida === false;
   c.checked = !oculta;
-  nota.textContent = !o || escena.ciudadEncendida === false ? '' : o.nivel === 'oculta' ? (o.caidas?.length || o.piso === 'oculta' ? 'Se apagó sola porque el equipo iba lento.' : '')
-    : !escena.ciudadLista ? 'Llega después del edificio.' : o.nivel === 'medio' ? (escena.simplificado ? 'Va sin el detalle de cerca porque elegiste simplificar sombras y efectos.' : 'En este equipo va sin el detalle de cerca.')
-      : o.nivel === 'liviano' ? 'En este equipo va sin el detalle de cerca y sin su sombra lejos del 106.' : '';
+  const porCap = escena.capacidad > 0 && !o?.manual ? ' porque este equipo no pudo con la calidad máxima' : '';
+  nota.textContent = !o || escena.ciudadEncendida === false ? '' : o.nivel === 'oculta' ? (porCap ? `No se muestra${porCap}.` : o.caidas?.length || o.piso === 'oculta' ? 'Se apagó sola porque el equipo iba lento.' : '')
+    : !escena.ciudadLista ? 'Llega después del edificio.' : o.nivel === 'medio' ? (escena.simplificado ? 'Va sin el detalle de cerca porque elegiste simplificar sombras y efectos.' : porCap ? `Va sin el detalle de cerca${porCap}.` : 'En este equipo va sin el detalle de cerca.')
+      : o.nivel === 'liviano' ? (porCap ? `Va sin el detalle de cerca y sin su sombra lejos del 106${porCap}.` : 'En este equipo va sin el detalle de cerca y sin su sombra lejos del 106.') : '';
   pintarEncuadres();
 }
 function pintarResolucion() {
@@ -1326,7 +1343,7 @@ function pintarResolucion() {
 // ---------------- GPU: errores, pérdida del dispositivo y paso automático a WebGL ----------------
 // Con la calidad completa también en el teléfono (sombras de 4.096, la ciudad completa), un equipo con poca memoria de GPU puede
 // perder el dispositivo. No se arranca más bajo por si acaso: se reacciona cuando pasa. WebGPU perdido pasa a WebGL 2 (rescatar);
-// un contexto de WebGL 2 perdido se rehace con un lienzo nuevo (perdidaGL) y, si se pierde otra vez, se ofrece simplificar.
+// un contexto de WebGL 2 perdido se rehace con un lienzo nuevo (perdidaGL) y, si se pierde otra vez, baja un escalón real (CAP).
 function vigilarGPU() {
   const r = escena.renderer;
   if (escena.backend === 'WebGL 2') {
@@ -1342,20 +1359,69 @@ function vigilarGPU() {
   });
   dev.lost.then((i) => { if (i.reason === 'destroyed' && rescatando) return; anotar('GPU perdida', `${i.reason ?? ''} ${i.message ?? ''}`); rescatar('se perdió la tarjeta gráfica'); });
 }
-let perdidasGL = 0;
+// Pérdida del contexto de WebGL 2 (H1). La 1.ª de la pestaña se rehace igual (puede ser pasajera: otra app, un reinicio del
+// controlador). Desde la 2.ª, el equipo de verdad no puede: se rehace un escalón más abajo (1 simplificado, 2 bajo, 3 mínimo), se
+// guarda para este equipo y se avisa. Tras «Volver a máxima», la 1.ª pérdida ya vuelve al escalón que aguantó (sin ofrecer otra
+// vez volver: no hay bucle; el usuario puede intentarlo de nuevo desde Capas). En el mínimo se sigue rehaciendo, con una espera
+// que crece (1, 2, 4… hasta 30 s): la pantalla no queda negra para siempre. Esto no es lentitud: no mira «Dejar así» ni la
+// oferta de simplificar (M6), que siguen siendo del vigía de la resolución.
+// las pérdidas se cuentan en la pestaña (sessionStorage), no solo en la visita: si alguien recarga después de la 1.ª, la 2.ª ya baja
+let perdidasGL = 0, fallosGL = 0;
+try { perdidasGL = PRUEBA_URL ? 0 : +sessionStorage.getItem('e106-perdidas-gl') || 0; } catch (e) { /* sin almacenamiento */ }
 async function perdidaGL(i) {
   if (rescatando) return;
-  perdidasGL++; anotar('GPU perdida', `WebGL 2 (${perdidasGL}): ${i?.message ?? ''}`);
-  if (perdidasGL > 3) { aviso('Se perdió la tarjeta gráfica varias veces. Recarga la página para seguir.', 12000); return; }
+  perdidasGL++; if (!PRUEBA_URL) try { sessionStorage.setItem('e106-perdidas-gl', String(perdidasGL)); } catch (e) { /* nada */ }
+  anotar('GPU perdida', `WebGL 2 (${perdidasGL}): ${i?.message ?? ''}`);
+  const antes = escena.capacidad, reintento = CAP.reintento > antes;
+  const n = reintento ? CAP.reintento : perdidasGL >= 2 ? Math.min(CAP_MAX, antes + 1) : antes;
   rescatando = true; S.pausa = true;
+  if (n === CAP_MAX && antes === CAP_MAX && perdidasGL >= 2) {
+    aviso('Se perdió la tarjeta gráfica. Vuelvo a armar la escena en un momento.', 4000);
+    await new Promise((ok) => setTimeout(ok, Math.min(30000, 1000 * 2 ** Math.min(5, CAP.esperas++))));
+  }
+  let fallo = false;
   try {
-    await escena.pasarAWebGL();                        // lienzo y contexto nuevos, la misma escena y la misma calidad
+    escena.capacidad = n;
+    await escena.pasarAWebGL();                        // lienzo y contexto nuevos, la misma escena, con el escalón que toca
     controls.disconnect(); controls.connect(escena.renderer.domElement);
-    S.firma = ''; escena.sucio = true; vigilarGPU();
-    aviso('Se perdió la tarjeta gráfica y la escena se volvió a armar.');
-    if (perdidasGL >= 2) { RES.ofrecida = false; if (PREF_SIMPLE !== '1') { PREF_SIMPLE = null; ofrecerSimplificar(); } }
-  } catch (e) { anotar('rescate', e); }
+    S.firma = ''; escena.sucio = true; vigilarGPU(); fallosGL = 0;
+    if (n !== antes) {
+      CAP.escalon = n; if (reintento) CAP.reintento = 0; guardarCapacidad();
+      anotar('aviso', `capacidad: escalón ${antes} → ${n} (${CAP_NOMBRE[n]})`);
+      $('#aviso')?.classList.remove('ver');            // un solo aviso a la vez: el de calidad ya dice lo que pasó
+      avisoCalidad(reintento ? 'reintento' : 'capacidad');
+    } else aviso('Se perdió la tarjeta gráfica y la escena se volvió a armar.');
+    reiniciarRes(); RES.techo = 0; pintarCapacidad(); pintarSimplificar(); pintarCiudad(); pintarResolucion();
+  } catch (e) { anotar('rescate', e); fallo = true; }
   S.pausa = false; rescatando = false; pintarDiag();
+  // no se pudo ni crear el contexto nuevo: se reintenta un escalón más abajo, unas pocas veces
+  if (fallo) { if (++fallosGL <= 5) setTimeout(() => perdidaGL({ message: 'no se pudo rehacer el contexto' }), 1500 * fallosGL); else aviso('La tarjeta gráfica no responde. Recarga la página para seguir.', 12000); }
+}
+const CAP_NOMBRE = ['máximo', 'sombras y efectos simplificados', 'sombras y resolución más bajas, y la ciudad sin su sombra', 'lo mínimo: resolución baja y sin la ciudad'];
+function guardarCapacidad() {
+  if (PRUEBA_URL) return;
+  try { if (CAP.escalon || CAP.reintento) localStorage.setItem(CAP_CLAVE, `${CAP_VER}|${CAP.escalon}|${CAP.reintento}`); else localStorage.removeItem(CAP_CLAVE); } catch (e) { /* sin almacenamiento */ }
+}
+/** «Volver a máxima» después de una bajada por pérdida (el aviso o la casilla de Capas): vuelve a intentar el máximo. El escalón
+ *  que aguantó queda como `reintento`: si se pierde otra vez, vuelve directo a él. */
+function volverAMaxima() {
+  if (!escena.capacidad) return;
+  CAP.reintento = escena.capacidad; CAP.escalon = 0; CAP.esperas = 0; guardarCapacidad();
+  escena.capacidad = 0; escena.aplicarCalidad({ resolucion: true });
+  reiniciarRes(); RES.techo = 0; pintarCapacidad(); pintarSimplificar(); pintarCiudad(); pintarResolucion();
+}
+/** Marcar «Calidad ajustada a este equipo» en Capas: vuelve al escalón que aguantó (o al 1). */
+function ajustarCapacidad() {
+  const n = CAP.reintento || 1;
+  CAP.escalon = n; CAP.reintento = 0; guardarCapacidad();
+  escena.capacidad = n; escena.aplicarCalidad({ resolucion: true });
+  reiniciarRes(); RES.techo = 0; pintarCapacidad(); pintarSimplificar(); pintarCiudad(); pintarResolucion();
+}
+function pintarCapacidad() {
+  const c = $('#capa-capacidad'); if (!c || !escena) return;
+  c.closest('label').hidden = !escena.capacidad && !CAP.reintento;
+  c.checked = escena.capacidad > 0;
+  $('#cap-actual').textContent = escena.capacidad ? `Ahora: ${CAP_NOMBRE[escena.capacidad]}.` : '';
 }
 let rescatando = false;
 async function rescatar(motivo) {
@@ -1379,15 +1445,25 @@ function aviso(t, ms = 6000) {
 /** Aviso de calidad, abajo y sin bloquear (role="status" en cuerpo.html; no toma el foco). 'nitidez': la resolución bajó sola,
  *  con «Volver a máxima», y se va a los 7 s. 'simplificar': en el piso de la resolución sigue lento; ofrece [Simplificar] y
  *  [Dejar así] durante 20 s, y si nadie responde no se guarda nada. Con el foco o el puntero encima no se va. Nunca con ?prueba. */
+const AVISO_CALIDAD = {
+  nitidez: 'Bajé la nitidez para que vaya fluido',
+  simplificar: 'Va lento en este equipo. ¿Simplificar sombras y efectos?',
+  // la GPU perdió el contexto otra vez (perdidaGL): no es lentitud, el equipo de verdad no pudo
+  capacidad: 'Este equipo no pudo con la calidad máxima; la ajusté a lo que soporta',
+  reintento: 'Con la calidad máxima este equipo volvió a fallar; la dejé ajustada. Puedes cambiarlo en Capas.',
+};
 function avisoCalidad(tipo) {
   if (PRUEBA_URL) return;
   const el = $('#aviso-calidad'); if (!el) return;
-  const nit = tipo === 'nitidez';
-  $('#aq-max').hidden = $('#aq-sep').hidden = !nit; $('#aq-si').hidden = $('#aq-no').hidden = nit;
+  // uno a la vez y sin pisar uno más importante que sigue a la vista: el de capacidad (o reintento) gana a la oferta, y esta a la nitidez
+  const PESO = { nitidez: 0, simplificar: 1, capacidad: 2, reintento: 2 };
+  if (el.classList.contains('ver') && (PESO[el.dataset.tipo] ?? 0) > PESO[tipo]) return;
+  const conMax = tipo === 'nitidez' || tipo === 'capacidad', oferta = tipo === 'simplificar';
+  $('#aq-max').hidden = $('#aq-sep').hidden = !conMax; $('#aq-si').hidden = $('#aq-no').hidden = !oferta;
   el.dataset.tipo = tipo; el.classList.add('ver'); $('#aq-texto').textContent = '';
   // el texto entra un cuadro después de hacerse visible, para que el lector de pantalla lo anuncie (la región ya existe)
-  requestAnimationFrame(() => { $('#aq-texto').textContent = nit ? 'Bajé la nitidez para que vaya fluido' : 'Va lento en este equipo. ¿Simplificar sombras y efectos?'; });
-  const ms = nit ? 7000 : 20000;
+  requestAnimationFrame(() => { $('#aq-texto').textContent = AVISO_CALIDAD[tipo]; });
+  const ms = { nitidez: 7000, simplificar: 20000, capacidad: 12000, reintento: 9000 }[tipo] ?? 7000;
   clearTimeout(avisoCalidad.t);
   const esperar = () => { avisoCalidad.t = setTimeout(() => (el.matches(':hover, :focus-within') ? esperar() : cerrarAvisoCalidad()), ms); };
   esperar();
@@ -2011,7 +2087,10 @@ function prepararUI() {
   pintarSimplificar();
   $('#capa-simple').addEventListener('change', (e) => elegirSimplificar(e.target.checked));
   // el aviso de calidad (avisoCalidad)
-  $('#aq-max').addEventListener('click', () => { fijarNitidez(true); cerrarAvisoCalidad(); });
+  $('#aq-max').addEventListener('click', () => { if ($('#aviso-calidad').dataset.tipo === 'capacidad') volverAMaxima(); else fijarNitidez(true); cerrarAvisoCalidad(); });
+  // calidad ajustada a este equipo (H1): aparece en Capas tras una bajada por pérdida de la GPU, para volver a intentar la máxima
+  pintarCapacidad();
+  $('#capa-capacidad').addEventListener('change', (e) => (e.target.checked ? ajustarCapacidad() : volverAMaxima()));
   $('#aq-si').addEventListener('click', () => { elegirSimplificar(true); cerrarAvisoCalidad(); });
   $('#aq-no').addEventListener('click', () => { elegirSimplificar(false); cerrarAvisoCalidad(); });
   $('#hora').addEventListener('input', (e) => { parar(); explorar(); S.momento = null; S.mesSerie = null; S.min = +e.target.value; });

@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=f300f6d4c8" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=cfcec3148e" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: arquitectura, clima y diseño industrial</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -124,7 +124,7 @@
   #aviso-calidad .boton { min-height: 44px; padding: 10px 14px; }
   #aviso-calidad #aq-sep { color: var(--cal-3); }
   #aviso-calidad #aq-si { border-color: var(--cal); }
-  @media (max-width: 760px) { #aviso-calidad { left: 8px; right: 8px; max-width: none; transform: translateY(8px); } #aviso-calidad.ver { transform: none; } }
+  @media (max-width: 760px) { #aviso-calidad { left: 8px; right: 8px; max-width: none; transform: translateY(8px); } #aviso-calidad.ver { transform: none; } #aviso-calidad #aq-sep { display: none; } }
   html.panel-lateral #aviso-calidad { left: calc(var(--panel-w) + (100vw - var(--panel-w)) / 2); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); max-width: min(520px, calc(100vw - var(--panel-w) - 32px)); }
 
   /* ---------- barra superior ---------- */
@@ -1881,6 +1881,7 @@
       <label><input type="checkbox" id="capa-ciudad" checked><b>Ciudad del Saber (aproximada)</b><small>228 edificios armados con un kit de piezas sobre las huellas de OpenStreetMap; los demás son copias del 106 o volúmenes simples. La forma, los pisos y los techos son aproximados: solo el 106 está medido. Cada edificio lleva una clase de certeza según qué tan bien se vio en las fotos: I, pisos, techo, muros y mediaguas vistos con confianza alta o media (156); II, se ve el tipo, pero falta algo de lo de la clase I o la vista deja dudas (140); III, casi nada se ve (26). Con dos toques o doble clic sobre un edificio se abre su ficha. Si la desmarcas, en lugar del kit quedan copias del 106 y volúmenes simples, y la página descarga menos la próxima vez que la abras. <span id="ciudad-estado"></span></small></label>
       <label><input type="checkbox" id="capa-nitidez"><b>Máxima nitidez</b><small>La escena empieza siempre a la resolución más alta de tu equipo. Si el movimiento va lento durante varios segundos seguidos, la baja un poco, y la vuelve a subir cuando el equipo se recupera. Márcala para que no la baje nunca. <span id="res-actual"></span></small></label>
       <label hidden><input type="checkbox" id="capa-simple"><b>Sombras y efectos simplificados</b><small>Para un equipo que va lento aun con la resolución más baja: el mapa de sombras a la mitad, sin destello de lente ni suavizado de bordes, y la ciudad sin su detalle de cerca. La hora y la dirección del sol y la luz del dato no cambian: las sombras caen en el mismo sitio, con el borde menos fino. Desmárcala para volver a la calidad completa.</small></label>
+      <label hidden><input type="checkbox" id="capa-capacidad"><b>Calidad ajustada a este equipo</b><small>La tarjeta gráfica de este equipo se cayó más de una vez con la calidad máxima, así que la escena va con menos: sombras de borde menos fino, sin destello de lente ni suavizado de bordes y, si hizo falta, menos resolución y la ciudad más simple o sin ella. La hora y la dirección del sol no cambian. Desmárcala para volver a intentar la máxima; si se vuelve a caer, se ajusta sola otra vez. <span id="cap-actual"></span></small></label>
       <label class="solo-noche"><input type="checkbox" id="capa-larga"><b>Exposición larga</b><small>Aclara la noche como una foto de 20 segundos en trípode. No agrega luz: todo sube lo mismo, así que lo claro y lo oscuro siguen en su lugar.</small></label>
       <label><input type="checkbox" id="capa-aguacero"><b>Simular aguacero</b><small>Fuerza la lluvia para ver cómo caen las cortinas de agua desde los aleros, aunque el dato de esa hora diga otra cosa. Mientras está puesta no se dibuja sol directo.</small></label>
     </div>
@@ -1991,4 +1992,4 @@
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
-<script type="module" src="js/app.js?v=f300f6d4c8"></script></body></html>
+<script type="module" src="js/app.js?v=cfcec3148e"></script></body></html>

@@ -153,6 +153,17 @@ export class Ciudad {
     for (const [o, h] of C.hermanas) { o.visible = !si; h.visible = si; }
   }
 
+  /** M5: pide ciudad_alto.glb (no se pidió al empezar) y vuelve a armar la ciudad con él. Devuelve la raíz nueva y lo que hay
+   *  que soltar de la de antes (escena.js la cambia); null si ya tenía el detalle o no llegó. */
+  async conDetalle(leerGLB) {
+    if (this.conAlto) return null;
+    this.conAlto = true; this._alto = null; this.pedir(leerGLB);
+    if (!(await this._alto)) { this.conAlto = false; this._alto = null; return null; }
+    const viejo = this.raiz, viejosB = this.batched ?? [];
+    const raiz = await this.montar();
+    return { viejo, viejosB, raiz };
+  }
+
   /** Suelta (o vuelve a usar) el detalle alto: los edificios cercanos pasan al medio en el cuadro siguiente. */
   usarAlto(si) { this.altoActivo = !!si && this.conAlto; }
 

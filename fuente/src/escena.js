@@ -200,6 +200,9 @@ export class Escena {
     // con la ciudad, el suelo, las calles y los edificios del contexto leen el mapa de luz de los postes (sin ciudad, nada de esto)
     this.luzPostes = CIUDAD ? crearLuzPostes() : null;
     this.calidad = calidad;           // {nivel, dpr, sombras, particulas, bloom}
+    this.calidad0 = { ...calidad };   // la de main.js, sin tocar: pasarAWebGL vuelve a partir de ella
+    this.simplificado = !!calidad.simple;          // lo eligió el usuario («e106-simplificar»)
+    this.capacidad = calidad.capacidad ?? 0;      // escalón por pérdidas reales de la GPU (main.js, perdidaGL; «e106-capacidad»)
     this.parent = canvasParent;
     this.grupos = {};                 // nombre -> {root, minY, maxY, idx}
     this.solDir = new THREE.Vector3(0, 1, 0);
@@ -211,6 +214,8 @@ export class Escena {
   async init(forceWebGL = false) {
     await this.#crearRenderer(forceWebGL);
     this.#nivelWebGL();
+    this.calidadBase = { ...this.calidad };       // el máximo de este motor; el escalón de capacidad baja desde aquí
+    if (this.capacidad) { this.#ajustarNivel(); this.renderer.setPixelRatio(this.dprMax()); }
     if (this.ciudadOpc) await this.#nivelCiudadInicial();
     const r = this.renderer;
 
@@ -261,7 +266,7 @@ export class Escena {
     // Luces
     const sun = this.ciudadOpc?.sombra === 'sunlight' ? await this.#solSunLight() : new THREE.DirectionalLight(0xffffff, 3);
     sun.castShadow = true;
-    const S = this.calidad.sombras;
+    const S = Math.min(this.calidad.sombras, this.maxTex());   // nunca más que el límite real de texturas de la GPU
     sun.shadow.mapSize.set(S, S);
     // ±70 m cubre el edificio, los árboles cercanos y las sombras largas de la mañana; con 4096 px, un texel mide 3,4 cm
     const sc = sun.shadow.camera; sc.left = -70; sc.right = 70; sc.top = 70; sc.bottom = -70; sc.near = 10; sc.far = 1400;
@@ -307,7 +312,7 @@ export class Escena {
     this.setSol(-8, 90);
     // el cielo, el suelo, la lluvia y las ayudas, en tramos mientras llegan los puntos de la intro (el primer cuadro los compilaba juntos)
     this.precompilar().catch(() => {});
-    if (this.calidad.simple) this.simplificar(true);   // lo eligió el usuario en una visita anterior («e106-simplificar»)
+    if (this.simplificado || this.capacidad) this.aplicarCalidad();   // elegido en una visita anterior, o el escalón que este equipo aguanta
     if (LECTURA_DI) this.di = new Dibujo(this);   // ?lectura=di: escena aparte en línea (dibujo.js); sin el parámetro, nada cambia
     return this;
   }
@@ -316,6 +321,10 @@ export class Escena {
     const r = new THREE.WebGPURenderer({ antialias: false, forceWebGL, powerPreference: 'high-performance' });
     await r.init();
     this.backend = r.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
+    // límites reales de la GPU (baratos de leer): el lado máximo de una textura (mapas de sombras) y del lienzo dibujado
+    const b = r.backend, gl = b.gl;
+    this._maxTex = b.device?.limits?.maxTextureDimension2D ?? gl?.getParameter(gl.MAX_TEXTURE_SIZE) ?? 4096;
+    this._maxLado = b.device?.limits?.maxTextureDimension2D ?? (gl ? Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), ...gl.getParameter(gl.MAX_VIEWPORT_DIMS)) : 4096);
     r.setPixelRatio(this.dprMax());
     this._w = Math.max(2, window.innerWidth); this._h = Math.max(2, window.innerHeight);
     r.setSize(this._w, this._h);
@@ -359,24 +368,57 @@ export class Escena {
    *  Capas): el mapa de sombras a la mitad (4.096 → 2.048; 2.048 → 1.024 en WebGL 2), sin bloom ni FXAA, y la ciudad en el nivel
    *  medio (sin el detalle de cerca, su sombra con 2.048). La hora del sol, su dirección y la luz del dato no cambian: las sombras
    *  caen en el mismo sitio con el borde menos fino. Sin recompilar materiales; se deshace con simplificar(false). */
-  simplificar(si) {
-    this.simplificado = !!si;
-    const m = si ? Math.max(1024, this.calidad.sombras / 2) : this.calidad.sombras;
+  simplificar(si) { this.simplificado = !!si; this.aplicarCalidad(); }
+  /** Simplificado por el usuario o por el escalón de capacidad (desde el 1). */
+  get simplificadoEfectivo() { return this.simplificado || this.capacidad >= 1; }
+  /** Lado máximo de una textura en esta GPU. */
+  maxTex() { return this._maxTex ?? 4096; }
+  /** Escalones de capacidad (H1; matiz de LM del 14 oct 2026: si el equipo de verdad no puede con el máximo, el nivel más alto
+   *  que sí soporta). Solo los sube main.js tras pérdidas REALES del contexto de la GPU, nunca por lentitud ni por tipo de equipo:
+   *    0 · máximo del motor (calidadBase);
+   *    1 · simplificado: lo mismo que «Sombras y efectos simplificados»;
+   *    2 · bajo: sombras de 1.024, resolución hasta 1× (1,6 MP), la ciudad sin detalle de cerca ni sombra propia;
+   *    3 · mínimo: resolución hasta 0,75× (0,9 MP) y sin la ciudad. Siempre dibuja: el 106, su sol y sus sombras siguen. */
+  #ajustarNivel() {
+    const b = this.calidadBase, q = this.calidad, c = this.capacidad; if (!b) return;
+    Object.assign(q, { nivel: b.nivel, dpr: b.dpr, px: b.px, sombras: b.sombras, bloom: b.bloom });
+    if (c >= 2) Object.assign(q, { nivel: 'bajo', dpr: Math.min(b.dpr, 1), px: Math.min(b.px ?? 3.7e6, 1.6e6), sombras: Math.min(b.sombras, 1024), bloom: false });
+    if (c >= 3) Object.assign(q, { dpr: Math.min(q.dpr, 0.75), px: Math.min(q.px, 0.9e6) });
+  }
+  /** Nivel de la ciudad que toca: completo; medio si está simplificado; liviano u oculta en los escalones 2 y 3. */
+  #nivelCiudadMeta() { return NIVELES[Math.max(Math.min(this.capacidad, 3), this.simplificado ? 1 : 0)]; }
+  /** Aplica lo que toca ahora (máximo del motor, escalón de capacidad y lo que eligió el usuario), sin recompilar materiales.
+   *  Con `resolucion` (cambió el escalón) la resolución vuelve al máximo del nivel nuevo. */
+  aplicarCalidad({ resolucion = false } = {}) {
+    this.#ajustarNivel();
+    const q = this.calidad, simple = this.simplificadoEfectivo;
+    const m = Math.min(this.maxTex(), simple ? Math.max(1024, q.sombras / 2) : q.sombras);
     if (!this.ciudadOpc?.mapa) this.sun.shadow.mapSize.set(m, m);   // ciudad: un &sombramapa= pedido se respeta
     this.sun.shadow.needsUpdate = true;
     this.restaurarSalida();
+    if (resolucion) { this.renderer.setPixelRatio(this.dprMax()); }
+    else if (this.renderer.getPixelRatio() > this.dprMax() + 0.001) this.renderer.setPixelRatio(this.dprMax());
     const o = this.ciudadOpc;
-    if (o && !o.nivelPedido && !o.manual && (o.nivel === 'completo' || o.nivel === 'medio')) {
-      const n = si ? 'medio' : 'completo';
-      if (this.ciudad) this.fijarNivelCiudad(n); else o.nivel = n;
-      o.motivo = si ? 'sombras y efectos simplificados' : 'calidad completa';
+    if (o && !o.nivelPedido && !o.manual && !SONDEA && !VIGILA) {
+      const n = this.#nivelCiudadMeta();
+      o.motivo = this.capacidad ? `escalón de capacidad ${this.capacidad}` : simple ? 'sombras y efectos simplificados' : 'calidad completa';
+      if (n !== o.nivel) {
+        if (this.ciudad) this.fijarNivelCiudad(n);
+        else {
+          o.nivel = n;
+          // arrancó sin ciudad (escalón 3) y ahora toca verla: se carga, después de lo que ya estaba en camino
+          if (n !== 'oculta' && this.cargaCiudad) this.cargaCiudad = this.cargaCiudad.then(() => (this.ciudad ? null : this.#cargarCiudad())).catch((e) => console.warn('ciudad', e));
+          this.alCambiarCiudad?.();
+        }
+      }
     }
     this.sucio = true;
   }
   /** La salida del postproceso que toca: con bloom si el nivel lo lleva y no está simplificado; sin FXAA si está simplificado. */
   restaurarSalida() {
-    this.bloomOn = !!this.calidad.bloom && !this.simplificado;
-    this.setSalida(this.simplificado ? 'sinAA' : this.bloomOn ? 'conBloom' : 'sinBloom');
+    const simple = this.simplificadoEfectivo;
+    this.bloomOn = !!this.calidad.bloom && !simple;
+    this.setSalida(simple ? 'sinAA' : this.bloomOn ? 'conBloom' : 'sinBloom');
   }
 
   /** Si WebGPU falla en este equipo, la misma escena pasa a WebGL 2 sin recargar la página. También rehace un contexto de
@@ -384,7 +426,7 @@ export class Escena {
   async pasarAWebGL() {
     const viejo = this.renderer;
     await this.#crearRenderer(true);
-    this.#nivelWebGL(); this.sun.shadow.mapSize.set(this.calidad.sombras, this.calidad.sombras);
+    Object.assign(this.calidad, this.calidad0); this.#nivelWebGL(); this.calidadBase = { ...this.calidad };   // el máximo de WebGL 2
     this._compilados = null;                        // lo compilado era del renderer anterior
     if (GRUESA && this.sunG) GRUESA.nodo = new SombraGruesa(this.sunG);   // su mapa era del renderer anterior
     try { viejo.setAnimationLoop?.(null); viejo.dispose(); } catch (e) { /* el dispositivo ya no existe */ }
@@ -392,7 +434,7 @@ export class Escena {
     this._envRT = null; this.scene.environment = null; this._envClave = null; this._envT = 0;
     this.#pipeline();
     this.sun.shadow.needsUpdate = true; this.sucio = true;
-    if (this.simplificado) this.simplificar(true);   // la elección del usuario sigue en el renderer nuevo
+    this.aplicarCalidad({ resolucion: true });       // el escalón de capacidad (main.js lo sube antes si hace falta) y lo que eligió el usuario
     this.setSol(this.alt, this.az);
   }
 
@@ -510,7 +552,8 @@ export class Escena {
   /** Resolución máxima: nunca más de ~3,7 millones de píxeles dibujados, ni más que el nivel de calidad. */
   dprMax() {
     const px = window.innerWidth * window.innerHeight, presupuesto = this.calidad.px ?? 3.7e6;
-    return Math.max(0.6, Math.min(window.devicePixelRatio, this.calidad.dpr, Math.sqrt(presupuesto / px)));
+    const lado = (this._maxLado ?? Infinity) / Math.max(window.innerWidth, window.innerHeight, 1);   // el lienzo dibujado cabe en la GPU
+    return Math.max(0.6, Math.min(window.devicePixelRatio, this.calidad.dpr, Math.sqrt(presupuesto / px), lado));
   }
 
   resize() {
@@ -785,7 +828,7 @@ export class Escena {
     o.cap = await capacidad(this.renderer, this.backend).catch(() => ({ telefono: false, debil: false, software: false }));
     try { localStorage.removeItem('e106-ciudad-nivel'); } catch (e) { /* sin almacenamiento */ }
     const r = o.nivelPedido ? { nivel: o.nivelPedido, motivo: 'pedido en la URL' }
-      : this.calidad.simple ? { nivel: 'medio', motivo: 'sombras y efectos simplificados' } : { nivel: 'completo', motivo: 'calidad completa' };
+      : { nivel: this.#nivelCiudadMeta(), motivo: this.capacidad ? `escalón de capacidad ${this.capacidad}` : this.simplificado ? 'sombras y efectos simplificados' : 'calidad completa' };
     o.nivel = r.nivel; o.motivo = r.motivo; o.estatico = r.nivel;
     o.gpu = [o.cap.vendedor, o.cap.arquitectura, o.cap.gpu].filter(Boolean).join(' · '); o.telefono = o.cap.telefono;
     if (!o.sombra) { o.sombra = NIVEL[o.nivel].sombra ? 'doble' : 'actual'; o.porDefecto = true; }
@@ -867,6 +910,7 @@ export class Escena {
     o.nivel = n;
     const N = NIVEL[n], ver = !N.oculta && this.ciudadEncendida !== false;
     this.ciudad?.usarAlto(N.alto);
+    if (N.alto && this.ciudad && !this.ciudad.conAlto && this.ciudadLista) this.#detalleCiudad();   // M5: se armó sin el detalle alto
     this.ciudad?.mostrar(ver);
     if (this.postes) this.postes.raiz.visible = ver;
     U.postesVer.value = ver && this.postes ? 1 : 0;
@@ -937,6 +981,23 @@ export class Escena {
   }
   /** SunLight de r186 (addon): dos cascadas en un atlas, ajustadas cada cuadro a la cámara. Sin target: la dirección es su
    *  posición; se le da un target vacío para que el resto de escena.js no cambie. */
+  /** M5: la ciudad se armó sin el detalle alto (arrancó simplificada o en un escalón de capacidad) y ahora toca el nivel
+   *  completo: pide ciudad_alto.glb y la vuelve a armar con él, sin recargar. La de antes sigue a la vista hasta que la nueva
+   *  está compilada, y se cambia en un cuadro. */
+  #detalleCiudad() {
+    const c = this.ciudad;
+    return (this._pDetalle ??= (async () => {
+      const r = await c.conDetalle(this._leerGLB); if (!r) return;
+      try { await this.#compilar(r.raiz); } catch (e) { /* se compila al dibujar */ }
+      r.viejo.removeFromParent();
+      for (const B of r.viejosB) { B.dispose(); B.material?.dispose?.(); }
+      this.scene.add(r.raiz);
+      c.usarAlto(NIVEL[this.ciudadOpc.nivel]?.alto); c.mostrar(c.visible ?? true);
+      this.ciudadOpc.detalleTarde = true;
+      this.sun.shadow.needsUpdate = true; this._gruesaSucia = true; this.sucio = true;
+      this.alCambiarCiudad?.();
+    })().catch((e) => { console.warn('ciudad: detalle alto', e); }).finally(() => { this._pDetalle = null; }));
+  }
   async #solSunLight() {
     const [{ SunLight }, { SunLightNode }] = await Promise.all([import('three/addons/lights/SunLight.js'), import('three/addons/lights/SunLightNode.js')]);
     this._sunNodo = [SunLightNode, SunLight]; this.renderer.library.addLight(SunLightNode, SunLight);
