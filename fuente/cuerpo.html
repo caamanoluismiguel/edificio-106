@@ -1167,6 +1167,10 @@
   @media (max-width: 760px) {
     #leyenda[data-lente^="di"]:not(.texto) :is(#di-datos, #di-fachada, #di-mas) { display: none; }
     html.hoja-0 #dock #leyenda .di-seg { display: none; }
+    /* con un eje de corte elegido, la hoja cerrada guarda su deslizador (sin los botones del eje, que están en la media): así un
+       enlace con corte= o un eje elegido deja el corte a mano sin abrir nada más */
+    html.hoja-0 #dock #leyenda .di-seg:has(#di-corte-pos:not([hidden])) { display: grid; }
+    html.hoja-0 #dock #leyenda #di-corte { display: none; }
   }
   /* la entrada doble: al terminar la intro, una vez por navegador (clave e106-lecturas); el mismo componente que la guía */
   #entrada { position: fixed; z-index: 12; left: 0; right: 0; margin: 0 auto; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--dock-h) + 24px); width: min(30rem, calc(100vw - 2 * var(--gutter)));

@@ -105,7 +105,8 @@ export function crearLecturaDI(ctx) {
         ctx.alEntrar();                                    // cierra lo que es de la luz; la cámara, la hora y la forma de ver no se tocan
         D.activa = true; html.classList.add('lectura-di');
         ctx.escena().ponerLecturaDI(true); conectar(); cargar();
-        S.verLeyenda = !ctx.telefono() || !!D.pieza;      // en la hoja del teléfono, primero el narrador («Toca una pieza…»); la ficha sale al tocar
+        S.verLeyenda = !ctx.telefono() || !!D.pieza || !!D.corte;   // en la hoja del teléfono, primero el narrador («Toca una pieza…»); la ficha sale al tocar.
+        // Con un eje de corte elegido, la tarjeta se abre: su deslizador va en la hoja cerrada (pendiente 9, parte 1)
       } else {
         cerrarMeca(true);
         pararRecorrido(true);
@@ -432,7 +433,7 @@ export function crearLecturaDI(ctx) {
     ['#rec-play', '#rec-sello', '#rec-tapa-p', '#rec-pensar-p', '#rec-fuente-p', '#rec-cerca-p'].forEach((x) => { $(x).hidden = true; });
     $('#rec-dis-k').textContent = 'Para el diseño:';
     dibujo()?.mostrarEtapa(null);
-    if (!salirSolo) { S.verLeyenda = !ctx.telefono(); pintarConmutador(); escribirURL(); ctx.refrescar(); }
+    if (!salirSolo) { S.verLeyenda = !ctx.telefono() || !!D.corte; pintarConmutador(); escribirURL(); ctx.refrescar(); }
   }
   function pintarPlay() { const b = $('#rec-play'); b.setAttribute('aria-pressed', String(D.reproduce)); b.setAttribute('aria-label', D.reproduce ? 'Pausar' : 'Reproducir'); }
   function reproducir(on = !D.reproduce) {
@@ -496,6 +497,8 @@ export function crearLecturaDI(ctx) {
     D.corte = b.dataset.corteDi;
     const di = dibujo(); di?.cortar(EJE[D.corte], D.cortes[EJE[D.corte]]); if (di?.corte) D.cortes[di.corte.eje] = di.corte.valor;
     escribirURL(); ctx.refrescar();
+    // en la hoja del teléfono el deslizador queda bajo los botones y a veces fuera de la hoja: se trae a la vista
+    if (D.corte && ctx.telefono()) requestAnimationFrame(() => $('#di-corte-pos').scrollIntoView({ block: 'nearest', behavior: ctx.reduce ? 'auto' : 'smooth' }));
     if (bajoElCorte()) ctx.volarA('aerea');
   });
   const posCorte = $('#di-corte-pos');
@@ -563,7 +566,7 @@ export function crearLecturaDI(ctx) {
   }));
 
   // al cargar con ?lectura=di: la lectura ya está puesta (el dibujo lo creó escena.js); se pintan sus controles
-  if (D.activa) { html.classList.add('lectura-di'); D.verLeyClima = !!S.verLeyenda; S.verLeyenda = !ctx.telefono(); conectar(); cargar(); pintarOferta(); }
+  if (D.activa) { html.classList.add('lectura-di'); D.verLeyClima = !!S.verLeyenda; S.verLeyenda = !ctx.telefono() || !!D.corte; conectar(); cargar(); pintarOferta(); }
   pintarConmutador();
 
   return {
