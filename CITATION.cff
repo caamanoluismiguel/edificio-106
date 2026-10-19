@@ -6,16 +6,15 @@ authors:
   - family-names: "Caamaño"
     given-names: "Luis Miguel"
     # orcid: "https://orcid.org/0000-0000-0000-0000"  (pendiente: ponerlo aquí y en .zenodo.json si existe)
-# Versión candidata al primer DOI (v1.0.0). Cómo se numera y cómo se hace una versión: docs/VERSIONES.md.
-version: "1.0.0-rc.1"
-date-released: "2026-10-15"
+# Sin versión ni fecha hasta el commit de la versión v1.0.0 (primer DOI): hasta entonces se cita como dice el README
+# («versión del 1 de octubre de 2026»). Cómo se numera y cómo se hace una versión: docs/VERSIONES.md.
 repository-code: "https://github.com/caamanoluismiguel/edificio-106"
 url: "https://caamanoluismiguel.github.io/edificio-106/"
 license-url: "https://github.com/caamanoluismiguel/edificio-106/blob/main/LICENSE"
 abstract: >-
   Maqueta digital del Edificio 106 (Ciudad del Saber, Panamá) para ver cómo inciden el sol,
-  la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025) ajustado
-  a la estación de Albrook. Tiene dos lecturas del mismo edificio: «Arquitectura y clima» y
+  la lluvia y el viento a cualquier hora, con 25 años de reanálisis ERA5 (2001–2025), con la
+  temperatura y la humedad ajustadas a la estación de Albrook. Tiene dos lecturas del mismo edificio: «Arquitectura y clima» y
   «Diseño industrial» (fichas por pieza, etapas de construcción, alternativas y mecanismos,
   cada dato con su nivel de certeza). El modelo del 106 lo hizo el autor con ayuda de IA a partir
   de fotos de Luis Miguel Caamaño y de Raúl Alejandro González (autorización escrita del 6 de
@@ -42,8 +41,10 @@ references:
     year: 2024
     doi: "10.5281/zenodo.7970649"
   - type: data
-    authors: [{name: "Physical Monitoring Program, Smithsonian Tropical Research Institute"}]
+    authors: [{family-names: "Paton", given-names: "Steven"}]
     title: "Parque Metropolitano Crane, Top_Solar Radiation, Pyranometer"
+    publisher: {name: "Smithsonian Tropical Research Institute"}
+    year: 2026
     doi: "10.60635/C3791K"
   - type: article
     authors: [{family-names: "Tolan", given-names: "Jamie"}]

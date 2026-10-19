@@ -41,7 +41,7 @@ Las fichas, las etapas y las alternativas son obra del autor y quedan bajo el `L
 - el orden de las etapas, que sigue el método de «Building a house» de Pascal Architecture (architecture.pascal.app), aplicado como principio, sin copiar texto ni imágenes;
 - la lista de revisión de 2020 de la DOYC de la Alcaldía de Panamá, ítems 7.1 a 7.7 y 16.02, en una alternativa.
 
-Cada dato lleva su certeza («Confirmado en foto del 106», «Medido en el modelo», «Del modelo, escala ±12 %», «Lo informa el equipo del proyecto, sin foto», «Principio general del tipo»). «Lo informa el equipo del proyecto, sin foto» es el testimonio del equipo de este proyecto, sin foto ni medida: no es una fuente de terceros ni una observación documentada. Qué significa cada certeza: README, «La lectura Diseño industrial».
+Cada dato lleva su certeza («Confirmado en foto del 106», «Medido en el modelo», «Del modelo, escala ±12 %», «Lo informa el equipo del proyecto, sin foto», «Principio general del tipo», «Calculado por el 106», «No se sabe»). «Lo informa el equipo del proyecto, sin foto» es el testimonio del equipo de este proyecto, sin foto ni medida: no es una fuente de terceros ni una observación documentada. Qué significa cada certeza: README, «La lectura Diseño industrial».
 
 ## Fuentes consultadas que no se redistribuyen
 

@@ -16,7 +16,7 @@ Registro de software que crea la integración de Zenodo con GitHub al publicar l
 | `fuente/verificacion/entrada/comparativa-entrada.png` | Lleva la foto WA0014; se reemplaza por una foto propia de la fachada |
 | `.claude/` y `ar/HUELLAS.txt` | Instrucciones de trabajo y huellas con rutas de la máquina del autor; no son parte de la obra |
 
-Sin la ciudad, el visor archivado no la dibuja: es un archivo para citar y preservar, no una copia para publicar (ver `LICENSE`). Una ficha de «Diseño industrial» cita `docs/ciudad/espiga/kit-medidas.json`, que queda fuera; entra con el DOI 2.
+Sin la ciudad, el visor archivado no la dibuja: es un archivo para citar y preservar, no una copia para publicar (ver `LICENSE`). Dos fichas de «Diseño industrial» (Losa de entrepiso y Alero y su sofito) citan `docs/ciudad/espiga/kit-medidas.json`, que queda fuera; entra con el DOI 2.
 
 **Sigue dentro y depende todavía de Street View o de Google Maps:** el pórtico del 106 (`modelo/entrada.glb` y sus copias en `ar/`), las alturas de tres vecinos, el cerramiento y la estructura del cuadrángulo en `modelo/contexto.glb`, y los 13 árboles cercanos de `modelo/arboles.glb`. El detalle está en `TERCEROS.md`. Se publica el DOI 1 cuando esas piezas se hayan vuelto a observar en sitio.
 

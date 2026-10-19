@@ -69,7 +69,7 @@ Cada ficha, cifra y mecanismo lleva un sello de certeza, que dice de dónde sale
 - **Confirmado en foto del 106** (`foto`): se ve en una foto del edificio.
 - **Medido en el modelo** (`medido`): medido sobre el modelo 3D, no en obra.
 - **Del modelo, escala ±12 %** (`modelo`): leído en el modelo, cuya escala tiene un margen de ±12 %.
-- **Lo informa el equipo del proyecto, sin foto** (`equipo`): lo dice el equipo de este proyecto (el del visor, no el de la obra), que conoce el edificio, pero no hay foto ni medida que lo respalde. Así están el sentido en que abren las puertas y que la ventana de guillotina sube solo la hoja de abajo. Es un testimonio, no una observación documentada: si una foto lo contradice, manda la foto.
+- **Lo informa el equipo del proyecto, sin foto** (`equipo`): lo dice el equipo de este proyecto (el del visor, no el de la obra), pero no hay foto ni medida que lo respalde. Así están el sentido en que abren las puertas y que la ventana de guillotina sube solo la hoja de abajo. Es un testimonio, no una observación documentada: si una foto lo contradice, manda la foto.
 - **Principio general del tipo** (`general`): vale para el tipo de pieza o de obra, no es un dato del 106.
 - **Calculado por el 106** (`calculo`): cifra calculada con los datos del visor.
 - **No se sabe** (`nosabe`): se dice que no se sabe y no se rellena.
