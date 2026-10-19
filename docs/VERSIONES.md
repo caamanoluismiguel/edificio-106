@@ -10,7 +10,7 @@ Hasta octubre de 2026 el visor se citaba por fecha («versión del 1 de octubre 
 - **MENOR** (`v1.1.0`): algo nuevo (una lente, una lectura, un dato, una parte que entra al archivo, como la ciudad) sin que cambien las cifras que ya estaban.
 - **MAYOR** (`v2.0.0`): cambia una cifra o una regla ya publicada (otra serie de clima, otro ajuste, otra definición de temporada) o se quita algo. Quien citó la versión anterior tiene que poder ver que ya no es la misma.
 
-La primera es `v1.0.0`, la del DOI 1 (el 106 y su clima, sin la ciudad; ver `docs/doi/ALCANCE.md`). Mientras no exista esa etiqueta, `CITATION.cff` dice `1.0.0-rc.1`: candidata a la 1.0.0, no publicada en Zenodo.
+La primera es `v1.0.0`, la del DOI 1 (el 106 y su clima, sin la ciudad; ver `docs/doi/ALCANCE.md`). Mientras no exista esa etiqueta, `CITATION.cff` no lleva versión ni fecha y se cita como dice el README («versión del 1 de octubre de 2026»).
 
 ## Cómo se hace una versión
 
