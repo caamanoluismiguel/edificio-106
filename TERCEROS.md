@@ -54,7 +54,9 @@ Hasta que se vuelva a observar en sitio, la fuente de estos datos sigue diciendo
 - el pórtico del 106: `fuente/portico.mjs` lo corrigió con la foto WA0014 y dos acercamientos de Street View. Está en `modelo/entrada.glb`, en `ar/modelo/entrada.glb` (el mismo archivo), en `ar/quicklook/edificio-106.usdz` (que `ar/generar-usdz.mjs` arma con el grupo `entrada`) y en el 5 % de los puntos de `datos/intro.bin.gz`;
 - `modelo/arboles.glb` y `arboles_movil.glb`: los 13 árboles cercanos se confirmaron en Street View (`fuente/arboles_reales.json`) y 28 copas se dejaron fuera porque Street View no las confirma (`fuente/arboles_excluidos.json`);
 - la ciudad: `fuente/ciudad-observado.json`, `fuente/ciudad-ajustes.json`, `fuente/ciudad-datos.mjs`, `docs/ciudad/edificios.json`, `datos/ciudad_mapa.json` y `modelo/ciudad*.glb`;
-- siguen a `contexto.glb`: `datos/postes.json` (sus posiciones esquivan las huellas de `datos/ciudad_mapa.json` y los troncos de `arboles.glb`) e `img/og.jpg` (muestra La Casa y los vecinos de `contexto.glb`).
+- sigue a `contexto.glb`: `datos/postes.json` (sus posiciones esquivan las huellas de `datos/ciudad_mapa.json` y los troncos de `arboles.glb`).
+
+`img/og.jpg`, la vista previa para redes, ya no sale de nada de esto: `fuente/og.mjs` la dibuja con el 106 solo (arquitectura, ventanas, cubiertas, detalles y el suelo del sitio) y oculta `contexto.glb`, `entrada.glb` (por el pórtico), `vegetacion.glb` y los árboles, sin pedir la ciudad ni los postes. La luz es la del sol calculado para el 29 de febrero de 2020 a las 16:00 con el dato ERA5.
 
 Aparte del pórtico, `fuente/quitar-cruz.mjs` quitó de `entrada.glb` dos vigas sueltas, acostadas al otro lado de la calle, porque Street View no muestra nada ahí.
 
