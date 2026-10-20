@@ -28,7 +28,8 @@ export const GRUPOS = ['sitio', 'arquitectura', 'ventanas', 'cubiertas', 'entrad
 const CUOTA = { sitio: 0.11, arquitectura: 0.19, ventanas: 0.10, cubiertas: 0.20, entrada: 0.05, detalles: 0.05, vegetacion: 0.2, contexto: 0.10, arboles: 0.02 };
 
 /** Paradas de la rampa de la lente «Sol» (RGB lineal, a 0, 200, 400, 600 y 800 W/m²). La leyenda se arma con estas mismas,
- *  pasadas a sRGB (main.js), para que el color de la leyenda sea el que se pinta antes de la luz de la escena. */
+ *  mezcladas en lineal y pasadas a sRGB (main.js): muestra la rampa sin el factor 0,8 de emisión, que se suma después de la
+ *  luz de la escena y antes del tonemapping (AgX, curva S y exposición la apagan un poco en los tonos altos). */
 export const RAMPA_SOL = [[0.01, 0.03, 0.22], [0.30, 0.02, 0.40], [0.85, 0.12, 0.02], [1.0, 0.45, 0.0], [1.0, 0.85, 0.15]];
 export const U = {                       // uniformes compartidos
   build: uniform(0),                     // 0..8: avance del armado (un grupo por unidad)

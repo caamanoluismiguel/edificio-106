@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=4895d097bf" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="es"><head><meta charset="utf-8"><link rel="preload" href="datos/intro.bin.gz?v=d7953d0926" as="fetch" crossorigin><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Edificio 106: arquitectura, clima y diseño industrial</title>
 <meta name="description" content="Modelo 3D paramétrico del Edificio 106 de Isthmus, en Ciudad del Saber: el sol calculado al minuto y el clima hora por hora de 2001 a 2025.">
 <link rel="canonical" href="https://caamanoluismiguel.github.io/edificio-106/">
@@ -1171,6 +1171,7 @@
   html.en-detalle :is(#brujula, .vistas, #mirando) { display: none !important; }
   .rot-3d { position: absolute; left: 0; top: 0; font: 600 11px/1.3 var(--datos); color: var(--noche); background: var(--cal); border: 1px solid var(--cal-3); border-radius: 8px; padding: 2px 6px; white-space: nowrap; }
   .rot-3d.enfasis { border-color: var(--teja); }
+  .rot-guias line { stroke: var(--noche); stroke-opacity: .55; stroke-width: 1; }
   .di-escala { position: absolute; left: 0; top: 0; font: 600 12px/1.3 var(--datos); color: var(--noche); background: var(--cal); border: 1px solid var(--cal-3); border-radius: 8px; padding: 5px 8px; letter-spacing: .04em; }
   @media (max-width: 760px) {
     .rot-3d { white-space: normal; max-width: 128px; font-weight: 500; } .rot-3d.secundario { display: none; }
@@ -2043,4 +2044,4 @@
   if (acerca && window.MutationObserver) new MutationObserver(function (r, o) { if (acerca.open) { ev('creditos-abrir'); o.disconnect(); } }).observe(acerca, { attributes: true, attributeFilter: ['open'] });
 })();
 </script>
-<script type="module" src="js/app.js?v=4895d097bf"></script></body></html>
+<script type="module" src="js/app.js?v=d7953d0926"></script></body></html>

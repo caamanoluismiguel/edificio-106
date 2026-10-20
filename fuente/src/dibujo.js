@@ -18,6 +18,10 @@ export const SISTEMAS = { base: 'Base y suelo', estructura: 'Losas y cartelas', 
 const ORDEN = ['muros', 'ventanas', 'cubierta', 'estructura', 'accesos', 'base', 'servicios'];
 // grupos del 106 que se dibujan (D7): el edificio y lo del sitio que es edificio; ni vegetación, ni contexto, ni ciudad
 const GRUPOS_DI = ['arquitectura', 'ventanas', 'cubiertas', 'entrada', 'detalles', 'sitio'];
+// corrimientos que prueba un rótulo que pisa a otro (debate B): 8 px en vertical hasta 320, 16 px al lado hasta 160, del más corto al más largo
+const CORRIMIENTOS = [];
+for (let i = -40; i <= 40; i++) for (let j = -10; j <= 10; j++) if (i || j) CORRIMIENTOS.push([j * 16, i * 8]);
+CORRIMIENTOS.sort((a, b) => Math.hypot(a[0], a[1]) - Math.hypot(b[0], b[1]));
 
 // Con datos/familias.json, por familia (D7, D5, D14): lo que no se dibuja, lo que lleva poché y lo que va sin aristas
 const FUERA_FAM = new Set(['calzada', 'pintura_vial', 'bordillo', 'cesped', 'acera', 'junta_acera', 'muro_curvo']);
@@ -664,8 +668,13 @@ export class Dibujo {
     const pastilla = document.createElement('div');   // «DETALLE · escala», con el estilo del rótulo del corte
     pastilla.className = 'di-escala'; pastilla.textContent = escala; pastilla.hidden = !escala; pastilla.setAttribute('role', 'note');
     cont.appendChild(pastilla);
+    // líneas de referencia de los rótulos corridos (debate B): debajo de los rótulos, que se agregan después
+    const guias = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    guias.setAttribute('class', 'rot-guias'); guias.setAttribute('aria-hidden', 'true');
+    Object.assign(guias.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', overflow: 'visible' });
+    cont.insertBefore(guias, pastilla);
     esc.add(d.objeto);
-    this.detalle = { d, anf, esc, cam, ctl, cont, pastilla, paso, cuadro: 0, t: performance.now() };
+    this.detalle = { d, anf, esc, cam, ctl, cont, pastilla, guias, paso, cuadro: 0, t: performance.now() };
     ctl.addEventListener('change', () => { this.e.sucio = true; });
     this.rotuloEl.hidden = true;
     this.encuadrarDetalle();
@@ -726,6 +735,75 @@ export class Dibujo {
     this.e.sucio = true;
   }
 
+  /** Rótulos que se pisan (debate B): voraz por prioridad (énfasis, certeza, secundarios; de arriba abajo). Cada uno queda en su
+   *  punto si no pisa a uno ya puesto; si pisa, prueba primero el corrimiento del cuadro anterior (así no salta al girar) y si no
+   *  el más corto de CORRIMIENTOS, sin salir de lo libre. Sin sitio, el de
+   *  menor pisada: ninguno se oculta. El corrido lleva una línea de referencia a su punto. Primero se leen todas las medidas y
+   *  después se escribe, para no forzar un cálculo de página por rótulo. */
+  #acomodar(D, rots, ph) {
+    const G = 3, L = D.libre;
+    const lim = { x0: L.x0 + 2, y0: L.y0 + 2, x1: L.x1 - 2, y1: L.y1 - (D.pastilla.hidden ? 2 : 20 + ph) };
+    for (const r of rots) { r.w = r.el.offsetWidth; r.h = r.el.offsetHeight; }
+    const vis = rots.filter((r) => r.w);
+    const prio = (r) => (r.el.classList.contains('enfasis') ? 0 : r.el.classList.contains('secundario') ? 2 : 1);
+    vis.sort((a, b) => prio(a) - prio(b) || a.y - b.y);
+    const puestos = [];
+    const pisa = (r, x, y) => {
+      let s = 0;
+      for (const q of puestos) {
+        const ox = Math.min(x + r.w / 2, q.x + q.w / 2) - Math.max(x - r.w / 2, q.x - q.w / 2) + G;
+        const oy = Math.min(y + r.h / 2, q.y + q.h / 2) - Math.max(y - r.h / 2, q.y - q.h / 2) + G;
+        if (ox > 0 && oy > 0) s += ox * oy;
+      }
+      return s;
+    };
+    const dentro = (r, x, y) => x - r.w / 2 >= lim.x0 && x + r.w / 2 <= lim.x1 && y - r.h / 2 >= lim.y0 && y + r.h / 2 <= lim.y1;
+    for (const r of vis) {
+      let d = [0, 0];
+      if (pisa(r, r.x, r.y) > 0) {
+        // costo = lo que se aleja de su punto + lo que se aleja de donde estaba (así no salta al girar). CORRIMIENTOS va del más
+        // corto al más largo y el costo nunca es menor que el largo: se deja de buscar cuando el largo pasa al mejor costo
+        const ant = r.el._corr ?? [0, 0];
+        const ok = (dx, dy) => dentro(r, r.x + dx, r.y + dy) && !pisa(r, r.x + dx, r.y + dy);
+        let libre = (ant[0] || ant[1]) && ok(ant[0], ant[1]) ? ant : null, costo = libre ? Math.hypot(ant[0], ant[1]) : Infinity;
+        for (const c of CORRIMIENTOS) {
+          const l = Math.hypot(c[0], c[1]);
+          if (l >= costo) break;
+          const q = l + Math.hypot(c[0] - ant[0], c[1] - ant[1]);
+          if (q < costo && ok(c[0], c[1])) { libre = c; costo = q; }
+        }
+        if (libre) d = libre;
+        else {
+          let mejor = Infinity;
+          for (const c of [[0, 0], ...CORRIMIENTOS]) {
+            const s = pisa(r, r.x + c[0], r.y + c[1]) + (dentro(r, r.x + c[0], r.y + c[1]) ? 0 : 1e6);
+            if (s < mejor) { mejor = s; d = c; }
+          }
+        }
+      }
+      r.el._corr = d;
+      r.dx = d[0]; r.dy = d[1];
+      puestos.push({ x: r.x + d[0], y: r.y + d[1], w: r.w, h: r.h });
+    }
+    // escribir: posición y líneas de referencia (se reutilizan las del cuadro anterior)
+    const ns = 'http://www.w3.org/2000/svg', lineas = [...D.guias.children];
+    let k = 0;
+    for (const r of rots) {
+      const x = r.x + (r.dx ?? 0), y = r.y + (r.dy ?? 0);
+      r.el.style.transform = `translate(-50%, -50%) translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      if (!r.w || Math.hypot(r.dx, r.dy) <= 6) continue;
+      // de su punto al borde más cercano de la caja corrida
+      const bx = Math.min(Math.max(r.x, x - r.w / 2), x + r.w / 2), by = Math.min(Math.max(r.y, y - r.h / 2), y + r.h / 2);
+      let l = lineas[k];
+      if (!l) { l = document.createElementNS(ns, 'line'); D.guias.appendChild(l); lineas.push(l); }
+      l.setAttribute('x1', Math.round(r.x)); l.setAttribute('y1', Math.round(r.y));
+      l.setAttribute('x2', Math.round(bx)); l.setAttribute('y2', Math.round(by));
+      l.style.display = '';
+      k++;
+    }
+    for (; k < lineas.length; k++) lineas[k].style.display = 'none';
+  }
+
   #renderDetalle(r) {
     const D = this.detalle, c = r.domElement, w = c.clientWidth, h = c.clientHeight;
     if (D.w !== w || D.h !== h) this.encuadrarDetalle();
@@ -735,18 +813,20 @@ export class Dibujo {
     const t0 = performance.now(); r.render(D.esc, D.cam);
     const m = this.medidas; m.detalleMax = Math.max(m.detalleMax ?? 0, performance.now() - t0);
     // rótulos: cada `div` sobre su punto; los de un grupo oculto (otra variante) no se ven
-    const v = new THREE.Vector3(), n = ++D.cuadro;
+    const v = new THREE.Vector3(), n = ++D.cuadro, rots = [];
     D.esc.updateMatrixWorld();
     D.esc.traverseVisible((o) => {
       const el = o.element; if (!el) return;
       if (el.parentNode !== D.cont) D.cont.appendChild(el);
       v.setFromMatrixPosition(o.matrixWorld).project(D.cam);
       el._cuadro = n;
-      el.style.display = v.z > 1 || v.z < -1 ? 'none' : '';
-      el.style.transform = `translate(-50%, -50%) translate(${Math.round((v.x + 1) / 2 * w)}px, ${Math.round((1 - v.y) / 2 * h)}px)`;
+      const fuera = v.z > 1 || v.z < -1;
+      el.style.display = fuera ? 'none' : '';
+      if (!fuera) rots.push({ el, x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h });
     });
-    for (const el of D.cont.children) if (el._cuadro !== n && el !== D.pastilla) el.style.display = 'none';
+    for (const el of D.cont.children) if (el._cuadro !== n && el !== D.pastilla && el !== D.guias) el.style.display = 'none';
     const L = D.libre, ph = D.pastilla.offsetHeight;
+    this.#acomodar(D, rots, ph);
     D.pastilla.style.transform = `translate(${Math.round(L.x0 + 16)}px, ${Math.round(L.y1 - 16 - ph)}px)`;
     // con los controles en movimiento (inercia, giro) o un módulo animado, el cuadro siguiente también se dibuja: escena.render() lo
     // lee al volver. Antes se pedía con un requestAnimationFrame que llegaba después del bucle de main.js, y el detalle se dibujaba

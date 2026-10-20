@@ -1564,9 +1564,13 @@ function actualizarCalor(p, c) {
 // ---------------- Lluvia con viento en fachadas (índice de ISO 15927-3 en campo abierto) ----------------
 // I = (2/9) · v · r^(8/9) · cos(D − θ), en L/m² por hora: v en m/s (10 m), r en mm/h, D = de dónde viene el viento.
 function lluviaBatiente(r, vKmh, dir, rumbo) { const c = Math.cos((dir - rumbo) * Math.PI / 180); return c > 0 && r > 0 ? 2 / 9 * (vKmh / 3.6) * Math.pow(r, 8 / 9) * c : 0; }
-// las leyendas se arman con los mismos colores de las lentes: el shader los usa en RGB lineal y la CSS los pide en sRGB
+// las leyendas se arman con los mismos colores de las lentes: el shader los usa en RGB lineal y la CSS los pide en sRGB.
+// El shader mezcla las paradas en lineal y un degradado CSS mezcla en sRGB (más oscuro en los tramos del medio): la rampa
+// se muestrea en lineal cada 5 % y cada muestra se pasa a sRGB, así la leyenda sigue la misma curva que la fachada
 const hexLin = (c) => '#' + new THREE.Color().setRGB(c[0], c[1], c[2]).getHexString();
-const rampaCSS = (paradas) => `linear-gradient(90deg, ${paradas.map((c, i) => `${hexLin(c)} ${Math.round(100 * i / (paradas.length - 1))}%`).join(', ')})`;
+const rampaLin = (paradas, t) => { const x = t * (paradas.length - 1), i = Math.min(paradas.length - 2, Math.floor(x)), f = x - i;
+  return paradas[i].map((v, j) => v + (paradas[i + 1][j] - v) * f); };
+const rampaCSS = (paradas) => `linear-gradient(90deg, ${Array.from({ length: 21 }, (_, k) => `${hexLin(rampaLin(paradas, k / 20))} ${5 * k}%`).join(', ')})`;
 const PAL = { lluvia: [[0.05, 0.07, 0.1], [0.08, 0.42, 0.9], [0.6, 0.9, 1.0]], viento: [[0.03, 0.08, 0.07], [0.1, 0.62, 0.48], [0.78, 1.0, 0.86]],
   sol: [[0.01, 0.03, 0.22], [0.85, 0.12, 0.02], [1.0, 0.85, 0.15]] };
 const SOL_ANIO_MAX = 1000;
