@@ -56,7 +56,7 @@ Hasta que se vuelva a observar en sitio, la fuente de estos datos sigue diciendo
 - la ciudad: `fuente/ciudad-observado.json`, `fuente/ciudad-ajustes.json`, `fuente/ciudad-datos.mjs`, `docs/ciudad/edificios.json`, `datos/ciudad_mapa.json` y `modelo/ciudad*.glb`;
 - sigue a `contexto.glb`: `datos/postes.json` (sus posiciones esquivan las huellas de `datos/ciudad_mapa.json` y los troncos de `arboles.glb`).
 
-`img/og.jpg`, la vista previa para redes, ya no sale de nada de esto: `fuente/og.mjs` la dibuja con el 106 solo (arquitectura, ventanas, cubiertas, detalles y el suelo del sitio) y oculta `contexto.glb`, `entrada.glb` (por el pórtico), `vegetacion.glb` y los árboles, sin pedir la ciudad ni los postes. La luz es la del sol calculado para el 29 de febrero de 2020 a las 16:00 con el dato ERA5.
+`img/og.jpg`, la vista previa para redes, ya no sale de nada de esto: `fuente/og.mjs` la dibuja con el 106 solo (arquitectura, ventanas, cubiertas, detalles y el suelo del sitio) y oculta `contexto.glb`, `entrada.glb` (por el pórtico), `vegetacion.glb` y los árboles, sin dibujar la ciudad ni los postes. La luz es la del sol calculado para el 29 de febrero de 2020 a las 16:00 con el dato ERA5.
 
 Aparte del pórtico, `fuente/quitar-cruz.mjs` quitó de `entrada.glb` dos vigas sueltas, acostadas al otro lado de la calle, porque Street View no muestra nada ahí.
 
