@@ -1453,15 +1453,57 @@ const AVISO_CALIDAD = {
   capacidad: 'Este equipo no pudo con la calidad máxima; la ajusté a lo que soporta',
   reintento: 'Con la calidad máxima este equipo volvió a fallar; la dejé ajustada. Puedes cambiarlo en Capas.',
 };
+// Las tarjetas y paneles con botones que pueden caer donde va el aviso. Mientras una de ellas lo pisa, el aviso espera (paquete 1,
+// 20 oct 2026: en el teléfono tapaba «Siguiente» de la guía y, en el computador, el del recorrido).
+const AQ_OCUPAN = '#guia, #recorrido, #oferta-recorrido, #entrada, #tarjeta-edificio, #sirve, #confort, #ir-a, #capas, #voladizo, #qr';
+const AQ_PESO = { nitidez: 0, simplificar: 1, capacidad: 2, reintento: 2 };
+/** ¿Alguna tarjeta visible ocupa el lugar del aviso? (con el texto y los botones de `tipo`, aunque el aviso aún no se vea) */
+function avisoPisado(el) {
+  const a = el.getBoundingClientRect();
+  return [...document.querySelectorAll(AQ_OCUPAN)].some((o) => {
+    if (o.hidden || !o.getClientRects().length) return false;
+    const r = o.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.left < a.right && r.right > a.left && r.top < a.bottom && r.bottom > a.top;
+  });
+}
+/** ¿Sigue siendo cierto lo que dice el aviso? (uno que esperó puede haber quedado viejo) */
+function avisoVigente(tipo) {
+  if (tipo === 'nitidez') return !RES.fija && escena.renderer.getPixelRatio() < escena.dprMax() - 0.005;
+  if (tipo === 'simplificar') return PREF_SIMPLE === null && !escena.simplificadoEfectivo;
+  return !!escena.capacidad;
+}
+function prepararAviso(el, tipo, texto) {
+  const conMax = tipo === 'nitidez' || tipo === 'capacidad', oferta = tipo === 'simplificar';
+  $('#aq-max').hidden = $('#aq-sep').hidden = !conMax; $('#aq-si').hidden = $('#aq-no').hidden = !oferta;
+  $('#aq-texto').textContent = texto;
+}
+/** Vigila cada 0,5 s mientras hay un aviso en espera o a la vista: si una tarjeta llega a su lugar, se aparta y espera. */
+function vigilarAviso() {
+  if (vigilarAviso.t) return;
+  vigilarAviso.t = setInterval(() => {
+    const el = $('#aviso-calidad'), visible = el.classList.contains('ver'), pend = avisoCalidad.pend;
+    if (visible && avisoPisado(el)) { const t = el.dataset.tipo; cerrarAvisoCalidad(); avisoCalidad.pend = t; return; }
+    if (!visible && pend) {
+      prepararAviso(el, pend, AVISO_CALIDAD[pend]); const libre = !avisoPisado(el); prepararAviso(el, '', '');
+      if (libre) { avisoCalidad.pend = null; if (avisoVigente(pend)) avisoCalidad(pend); }
+    }
+    if (!el.classList.contains('ver') && !avisoCalidad.pend) { clearInterval(vigilarAviso.t); vigilarAviso.t = 0; }
+  }, 500);
+}
 function avisoCalidad(tipo) {
   if (PRUEBA_URL) return;
   const el = $('#aviso-calidad'); if (!el) return;
-  // uno a la vez y sin pisar uno más importante que sigue a la vista: el de capacidad (o reintento) gana a la oferta, y esta a la nitidez
-  const PESO = { nitidez: 0, simplificar: 1, capacidad: 2, reintento: 2 };
-  if (el.classList.contains('ver') && (PESO[el.dataset.tipo] ?? 0) > PESO[tipo]) return;
-  const conMax = tipo === 'nitidez' || tipo === 'capacidad', oferta = tipo === 'simplificar';
-  $('#aq-max').hidden = $('#aq-sep').hidden = !conMax; $('#aq-si').hidden = $('#aq-no').hidden = !oferta;
-  el.dataset.tipo = tipo; el.classList.add('ver'); $('#aq-texto').textContent = '';
+  // uno a la vez y sin pisar uno más importante que sigue a la vista (o en espera): el de capacidad (o reintento) gana a la
+  // oferta, y esta a la nitidez
+  if (el.classList.contains('ver') && (AQ_PESO[el.dataset.tipo] ?? 0) > AQ_PESO[tipo]) return;
+  if (avisoCalidad.pend && (AQ_PESO[avisoCalidad.pend] ?? 0) > AQ_PESO[tipo]) return;
+  // si una tarjeta (la guía, el recorrido, un panel) ocupa su lugar, espera a que se cierre en vez de taparle los botones
+  prepararAviso(el, tipo, AVISO_CALIDAD[tipo]);
+  if (avisoPisado(el)) { prepararAviso(el, '', ''); if (el.classList.contains('ver')) cerrarAvisoCalidad(); avisoCalidad.pend = tipo; vigilarAviso(); return; }
+  avisoCalidad.pend = null;
+  prepararAviso(el, tipo, '');
+  el.dataset.tipo = tipo; el.classList.add('ver');
+  vigilarAviso();
   // el texto entra un cuadro después de hacerse visible, para que el lector de pantalla lo anuncie (la región ya existe)
   requestAnimationFrame(() => { $('#aq-texto').textContent = AVISO_CALIDAD[tipo]; });
   const ms = { nitidez: 7000, simplificar: 20000, capacidad: 12000, reintento: 9000 }[tipo] ?? 7000;
