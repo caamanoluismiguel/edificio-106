@@ -80,7 +80,7 @@ Movimientos de cámara, zoom, desplazamiento, cada paso del reloj, tiempo exacto
 - Son visitas (sesiones de hasta 8 horas), no personas, y son un mínimo: los bloqueadores de anuncios y quien se excluye no cuentan.
 - Con menos de unas 30 visitas se dan solo números absolutos; el ruido es del orden de la raíz de N.
 - Un evento se lee como «X de N visitas al sitio». Los eventos comunes (la permanencia, con el mismo nombre en las cuatro páginas del 106 o en las nueve del piloto, y `piloto-mapa-abrir`, igual en los cuatro recorridos) se cuentan una vez por visita y no se pueden atribuir a una página. Los del visor (lentes, AR, enlace, tarjeta) sí se leen contra las visitas al visor.
-- El tráfico de GitHub (interés en el código) no se suma a GoatCounter; se archiva aparte, a diario, en `~/Documents/Web/trafico-repos/` de LM.
+- El tráfico de GitHub (interés en el código) no se suma a GoatCounter; se archiva aparte, a diario, en la carpeta `trafico-repos/` de LM (fuera del repo).
 
 ## Excluir un navegador
 
@@ -101,5 +101,5 @@ Responsable: Luis Miguel Caamaño. Consultas por los Issues del repositorio `edi
 
 Desde la computadora de LM, fuera de los repos:
 
-- `python3 ~/Documents/Web/trafico-repos/informe_goatcounter.py --dias=30` (también `--sitio=edificio-106|piloto`, `--desde`, `--hasta`, `--csv=`). Lee el token de solo lectura de `~/.config/goatcounter/token`, que nunca entra a un repo.
-- `~/Documents/Web/trafico-repos/archivar_trafico.py`, a diario a las 9:15 con el LaunchAgent `com.caamano.trafico-repos`.
+- `python3 trafico-repos/informe_goatcounter.py --dias=30` (también `--sitio=edificio-106|piloto`, `--desde`, `--hasta`, `--csv=`). Lee el token de solo lectura de la configuración de GoatCounter de LM, que nunca entra a un repo.
+- `trafico-repos/archivar_trafico.py`, a diario a las 9:15 con el LaunchAgent `com.caamano.trafico-repos`.
