@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: "Caamaño"
     given-names: "Luis Miguel"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"  (pendiente: ponerlo aquí y en .zenodo.json si existe)
+    orcid: "https://orcid.org/0009-0003-4994-4344"
 # Sin versión ni fecha hasta el commit de la versión v1.0.0 (primer DOI): hasta entonces se cita como dice el README
 # («versión del 1 de octubre de 2026»). Cómo se numera y cómo se hace una versión: docs/VERSIONES.md.
 repository-code: "https://github.com/caamanoluismiguel/edificio-106"
