@@ -42,5 +42,30 @@
     document.getElementById(mac ? 'en-mac' : 'sin-ar').hidden = false;
   }
 </script>
+<script>
+/* Conteo anónimo de visitas, sin cookies, con GoatCounter. Esquema, privacidad y ponderación: docs/ANALITICA.md del repo edificio-106. */
+(function () {
+  var gc = window.goatcounter = window.goatcounter || {}, pre = '106';
+  if (location.hash === '#toggle-goatcounter') {   // excluir este navegador (o volver a contarlo); se hace aquí para avisar en español
+    try {
+      var fuera = localStorage.getItem('skipgc') === 't';
+      if (fuera) localStorage.removeItem('skipgc'); else localStorage.setItem('skipgc', 't');
+      alert(fuera ? 'Este navegador vuelve a contarse en las visitas.' : 'Listo: las visitas de este navegador ya no se cuentan.');
+    } catch (e) { }
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  gc.path = function () { return location.pathname.replace(/index\.html$/, ''); };   // sin la consulta: ?ref y ?campaign viajan aparte
+  gc.referrer = function (r) { try { var u = new URL(r); return u.origin === location.origin ? r : u.origin + '/'; } catch (e) { return r; } };   // de otro sitio, solo el dominio
+  var ev = gc.evento = function (n) { if (gc.count) gc.count({ path: pre + '-' + n, title: n, event: true }); };
+  var t = 0, marcas = [[30, '30s'], [120, '2min'], [300, '5min']];   // permanencia por tramos, solo con la página visible
+  var reloj = setInterval(function () {
+    if (document.visibilityState === 'hidden') return;
+    t += 5;
+    while (marcas.length && t >= marcas[0][0]) ev('permanencia-' + marcas.shift()[1]);
+    if (!marcas.length) clearInterval(reloj);
+  }, 5000);
+})();
+</script>
+<script data-goatcounter="https://caamano.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

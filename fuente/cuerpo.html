@@ -1988,5 +1988,52 @@
   </ul>
   <h3>Cómo citar</h3>
   <p>Caamaño, L. M. (2026). <i>Edificio 106 · Isthmus: visor de sol y clima</i> (versión del 1 de octubre de 2026) [software]. <a href="https://github.com/caamanoluismiguel/edificio-106" target="_blank" rel="noopener">github.com/caamanoluismiguel/edificio-106</a>. Todos los derechos reservados; los datos y el software de terceros conservan su licencia (<a href="https://github.com/caamanoluismiguel/edificio-106/blob/main/TERCEROS.md" target="_blank" rel="noopener">TERCEROS.md</a>).</p>
+  <h3>Visitas</h3>
+  <p>Se cuentan las visitas de forma anónima y sin cookies, con GoatCounter, para saber cuánto se usa el visor y desde dónde llega la gente, con fines académicos. No se guarda tu dirección IP ni nada que te identifique: quedan solo totales por página, por acción del visor (por ejemplo, qué forma de ver se abre), por tramos de tiempo, navegador, idioma, sistema, tamaño de pantalla, país aproximado y sitio de procedencia. Las cifras no se publican. Si prefieres que no se cuente tu visita, abre la dirección con <code>#toggle-goatcounter</code> al final una vez (otra vez para volver a contarla); vale para todo caamanoluismiguel.github.io en ese navegador. Lo gestiona Luis Miguel Caamaño; las consultas van por los <a href="https://github.com/caamanoluismiguel/edificio-106/issues" target="_blank" rel="noopener">Issues del repositorio</a>.</p>
   <p class="aviso">Proyecto académico experimental. No es un sitio oficial de Isthmus ni de Ciudad del Saber.</p>
 </dialog>
+<script>
+/* Conteo anónimo de visitas, sin cookies, con GoatCounter. Esquema, privacidad y ponderación: docs/ANALITICA.md del repo edificio-106. */
+(function () {
+  var gc = window.goatcounter = window.goatcounter || {}, pre = '106';
+  if (location.hash === '#toggle-goatcounter') {   // excluir este navegador (o volver a contarlo); se hace aquí para avisar en español
+    try {
+      var fuera = localStorage.getItem('skipgc') === 't';
+      if (fuera) localStorage.removeItem('skipgc'); else localStorage.setItem('skipgc', 't');
+      alert(fuera ? 'Este navegador vuelve a contarse en las visitas.' : 'Listo: las visitas de este navegador ya no se cuentan.');
+    } catch (e) { }
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  gc.path = function () { return location.pathname.replace(/index\.html$/, ''); };   // sin la consulta: ?ref y ?campaign viajan aparte
+  gc.referrer = function (r) { try { var u = new URL(r); return u.origin === location.origin ? r : u.origin + '/'; } catch (e) { return r; } };   // de otro sitio, solo el dominio
+  var ev = gc.evento = function (n) { if (gc.count) gc.count({ path: pre + '-' + n, title: n, event: true }); };
+  var t = 0, marcas = [[30, '30s'], [120, '2min'], [300, '5min']];   // permanencia por tramos, solo con la página visible
+  var reloj = setInterval(function () {
+    if (document.visibilityState === 'hidden') return;
+    t += 5;
+    while (marcas.length && t >= marcas[0][0]) ev('permanencia-' + marcas.shift()[1]);
+    if (!marcas.length) clearInterval(reloj);
+  }, 5000);
+})();
+</script>
+<script data-goatcounter="https://caamano.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+/* Acciones del visor, solo toques reales; GoatCounter cuenta cada evento una vez por visita. Sin texto libre ni coordenadas. */
+(function () {
+  var ev = window.goatcounter.evento, movido = false;
+  var botones = { 'copiar-vista': 'enlace-copiar', 'te-enlace': 'enlace-copiar', 'copiar-enlace': 'enlace-copiar', 'guardar-img': 'imagen-guardar',
+    'abrir-ar': 'ar-abrir', 'bajar-tarjeta': 'tarjeta-pdf', 'lp-divisor': 'divisor-abrir', 'clase-gnomon': 'gnomon-abrir' };
+  document.addEventListener('click', function (e) {
+    if (!e.isTrusted || !e.target.closest) return;
+    var b = e.target.closest('.lentes [data-lente], .lentes [data-lente-di]');
+    if (b) return ev('lente-' + (b.dataset.lente || 'di-' + b.dataset.lenteDi));
+    var m = e.target.closest('[id]');
+    if (m && botones[m.id]) ev(botones[m.id]);
+  }, true);
+  document.addEventListener('input', function (e) {
+    if (!movido && e.isTrusted && /^(hora|dia-anio|mes-serie)$/.test(e.target.id)) { movido = true; ev('reloj-mover'); }
+  }, true);
+  var acerca = document.getElementById('acerca');
+  if (acerca && window.MutationObserver) new MutationObserver(function (r, o) { if (acerca.open) { ev('creditos-abrir'); o.disconnect(); } }).observe(acerca, { attributes: true, attributeFilter: ['open'] });
+})();
+</script>

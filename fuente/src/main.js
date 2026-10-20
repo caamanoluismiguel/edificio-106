@@ -503,8 +503,9 @@ function irAMomentoHash() {
   if (cam.length === 6 && cam.every(Number.isFinite)) volarA({ pos: cam.slice(0, 3), tgt: cam.slice(3) }, 1.4, vista ?? null, false);
   return true;
 }
-/** El enlace del momento que se está viendo, con la forma de ver, su modo, la vista o la fachada y el encuadre de la cámara. */
-function enlaceMomento() {
+/** El enlace del momento que se está viendo, con la forma de ver, su modo, la vista o la fachada y el encuadre de la cámara.
+ *  ref marca de dónde llega quien lo abre (?ref=enlace, ?ref=qr-imagen; esquema en docs/ANALITICA.md); el visor la ignora. */
+function enlaceMomento(ref) {
   const f = S.fecha, m0 = ((Math.round(S.min) % 1440) + 1440) % 1440, q = [];
   if (S.lente && S.lente !== 'foto') q.push('lente=' + S.lente);
   if (MODO_DE[S.lente] && S[MODO_DE[S.lente]]) q.push('modo=' + S[MODO_DE[S.lente]]);
@@ -522,12 +523,12 @@ function enlaceMomento() {
   else if (S.voladizo || !$('#voladizo')?.hidden) panel = 'voladizo';
   if (panel) q.push('panel=' + panel);
   // con la ficha de un edificio abierta, el enlace la vuelve a abrir (?edificio=, ver abrirEdificio)
-  const busq = [NAV.tarjeta ? 'edificio=' + encodeURIComponent(idEnlace(NAV.tarjeta, NAV.fichas)) : null, ...(LEC?.params() ?? [])].filter(Boolean);
+  const busq = [NAV.tarjeta ? 'edificio=' + encodeURIComponent(idEnlace(NAV.tarjeta, NAV.fichas)) : null, ...(LEC?.params() ?? []), ref ? 'ref=' + ref : null].filter(Boolean);
   const ed = busq.length ? '?' + busq.join('&') : '';   // la ficha de un edificio y, en Diseño industrial, la lectura (lectura-di.js)
   return `${SITIO}${ed}#m-${f.y}${dos(f.m)}${dos(f.d)}-${dos(Math.floor(m0 / 60))}${dos(m0 % 60)}&${q.join('&')}`;
 }
 async function copiarEnlace(arriba = false) {
-  const u = enlaceMomento(), t = 'Enlace copiado: abre este mismo momento, con la misma forma de ver y el mismo encuadre.';
+  const u = enlaceMomento('enlace'), t = 'Enlace copiado: abre este mismo momento, con la misma forma de ver y el mismo encuadre.';
   try { await navigator.clipboard.writeText(u); if (arriba === true) aviso(t, 3500); else $('#img-estado').textContent = t; }
   catch (e) { prompt('Copia este enlace:', u); }
 }
@@ -975,7 +976,7 @@ function prepararNavegar() {
   $('#te-partes').addEventListener('click', () => { cerrarTarjeta(false); if (NAV.lejos) volverAl106('esquina'); $('.lentes [data-lente="partes"]')?.click(); });
   // el enlace de la ficha es el del momento (enlaceMomento), que con la ficha abierta lleva ?edificio=
   $('#te-enlace').addEventListener('click', async () => {
-    const u = enlaceMomento(), est = $('#te-estado');
+    const u = enlaceMomento('enlace'), est = $('#te-estado');
     try { await navigator.clipboard.writeText(u); est.textContent = 'Enlace copiado: abre este edificio, con su ficha, en este mismo momento.'; }
     catch (e) { prompt('Copia este enlace:', u); }
   });
@@ -3161,7 +3162,7 @@ async function guardarImagen() {
   b.setAttribute('aria-busy', 'true'); b.disabled = true; b.textContent = 'Generando imagen…'; est.textContent = '';
   try {
     const f = S.fecha, m0 = ((Math.round(S.min) % 1440) + 1440) % 1440, hh = Math.floor(m0 / 60), mi = m0 % 60;
-    const enlace = enlaceMomento();                    // el QR abre este mismo momento, forma de ver y encuadre
+    const enlace = enlaceMomento('qr-imagen');         // el QR abre este mismo momento, forma de ver y encuadre
     const L = LENTES[S.lente], modo = MODOS[S.lente]?.find(([k]) => k === S[MODO_DE[S.lente]])?.[1];
     const forma = L.t.split(':')[0] + (modo ? ` · ${modo}` : '') + (S.lente === 'partes' ? ` · ${(PARTES[S.parte] ?? PARTES.alero).t}` : '');
     const vistaB = document.querySelector('.vistas [data-vista][aria-pressed="true"]');
