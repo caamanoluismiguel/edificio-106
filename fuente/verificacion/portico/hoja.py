@@ -1,12 +1,13 @@
 # Hoja comparativa del pórtico: foto WA0014 / antes / después desde el punto de la foto; los dos acercamientos de Street View
 # del usuario junto al después desde un punto parecido; frente cercano y laterales antes / después.
 #   cd fuente && node verificacion/portico/capturar.mjs despues && RAIZ=<árbol de main> node verificacion/portico/capturar.mjs antes
-#   cd verificacion && python3 portico/hoja.py
+#   cd verificacion && [FOTO=<ruta de IMG-20260920-WA0014.jpg>] SV=<carpeta> python3 portico/hoja.py
 from PIL import Image, ImageDraw
-FOTO = '/Users/luismiguelcaamano/Documents/Web/isthmus-digitaldouble/evidence/recent_folder/IMG-20260920-WA0014.jpg'
 import os
+# la foto WA0014 (no está en el repositorio); por defecto, la carpeta de evidencias del gemelo de Isthmus en la carpeta Web de LM
+FOTO = os.environ.get('FOTO') or os.path.expanduser('~/Documents/Web/isthmus-digitaldouble/evidence/recent_folder/IMG-20260920-WA0014.jpg')
 # acercamientos de Street View que mandó el usuario (no están en el repositorio): SV=<carpeta con portico_sv1.png y portico_sv2.png>
-SV = os.path.join(os.environ.get('SV', '/private/tmp/claude-501/-Users-luismiguelcaamano/31e89287-5f83-47c9-bc70-0ece2c1eb2bf/scratchpad'), 'portico_sv%d.png')
+SV = os.path.join(os.environ['SV'], 'portico_sv%d.png')
 A, D = 'portico/antes/', 'portico/despues/'
 def panel(ruta, caja, alto, rotulo):
     im = Image.open(ruta).convert('RGB'); im = im.crop(caja or (0, 0, im.width, im.height)); im = im.resize((round(im.width * alto / im.height), alto), Image.LANCZOS)

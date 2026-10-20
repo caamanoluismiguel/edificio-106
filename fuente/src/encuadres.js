@@ -1,6 +1,6 @@
 // Encuadres (Capas → «Encuadres»): planos fijos para conocer Ciudad del Saber y una vista aérea de toda la ciudad. Los eligió un
 // panel simulado (cinematógrafo, director de fotografía, fotógrafo de arquitectura, arquitecto fotógrafo y diseñador de la
-// interfaz; ~/projects/edificio-106-ciudad-revision/encuadres/PANEL.md), con cada cuadro dibujado y mirado en el visor.
+// interfaz; edificio-106-ciudad-revision/encuadres/PANEL.md, fuera del repo), con cada cuadro dibujado y mirado en el visor.
 //   · pos y tgt: la cámara y el punto que mira, en metros de la escena (+X noreste, +Z sureste; el 106 en el origen);
 //   · fov: el lente vertical en grados para pantallas apaisadas (en las verticales manda el de siempre, 58°, y la cámara se
 //     aleja por la misma línea para que quepa lo mismo a lo ancho; movil: [x, y, z] la fija a mano);

@@ -1,7 +1,7 @@
 # Reloj de la lluvia (pestaña «25 años»): a qué hora del día hay lluvia de mayo a noviembre, según ERA5 y según el
 # observador del aeropuerto de Albrook (MPMG, a 4,1 km). Escribe datos/reloj_lluvia.json; siempre igual con los mismos datos.
 #
-#   cd fuente && python3 reloj_lluvia.py [carpeta con los METAR]      (por defecto ~/projects/edificio-106-estaciones/metar)
+#   cd fuente && python3 reloj_lluvia.py [carpeta con los METAR]      (por defecto edificio-106-estaciones/metar, fuera del repo)
 #
 # Se comparan frecuencias con frecuencias, nunca milímetros (el METAR no da milímetros):
 #  - ERA5 (datos/clima_horario.bin.gz, hora de Panamá, UTC−5): % de horas con lluvia desde el umbral del visor (umbralLluvia en

@@ -1,10 +1,10 @@
 # Ajuste de ERA5 a la estación del aeropuerto de Albrook (MPMG, a 4,1 km del edificio), para la serie 2001–2025 del visor.
 # Escribe datos/ajuste_albrook.json, que la app (src/ajuste.js) y confort.mjs aplican al leer: el binario de ERA5 no cambia.
 #
-#   cd fuente && python3 ajuste_albrook.py [carpeta con los METAR]      (por defecto ~/projects/edificio-106-estaciones/metar)
+#   cd fuente && python3 ajuste_albrook.py [carpeta con los METAR]      (por defecto edificio-106-estaciones/metar, fuera del repo)
 #
 # Los METAR (MPMG-AAAA.csv) se bajan del Iowa Environmental Mesonet, asos.py, con tmpf, dwpf y metar, en UTC, 2001–2025.
-# Decisiones del panel de expertos y del verificador (2 de octubre de 2026; informes en ~/projects/edificio-106-estaciones):
+# Decisiones del panel de expertos y del verificador (2 de octubre de 2026; informes en la carpeta edificio-106-estaciones, fuera del repo):
 #  - Temperatura: mapeo de cuantiles por mes y hora (cada mes y hora, la distribución de ERA5 se lleva a la de Albrook).
 #  - Humedad: se resta el sesgo medio de la humedad específica de cada mes (g/kg); la humedad relativa se recalcula.
 #  - Calibración: 2017–2025. El desfase de ERA5 bajó con los años, en Albrook y en Tocumen por igual; antes de 2017 el ajuste

@@ -1,5 +1,5 @@
 # Uso: bash medir.sh M D H DNI DHI etiqueta. Cielo de Perez (gendaylit) girado al norte del modelo (−34°), puntos del suelo alrededor del 106.
-R=~/projects/edificio-106-radiance/inst/radiance; export PATH=$R/bin:$PATH RAYPATH=.:$R/lib
+R=${RADIANCE:-$HOME/projects/edificio-106-radiance/inst/radiance}; export PATH=$R/bin:$PATH RAYPATH=.:$R/lib
 M=$1 D=$2 H=$3 DNI=$4 DHI=$5 E=$6
 { gendaylit $M $D $H -y 2024 -W $DNI $DHI -a 8.9993 -o 79.5827 -m 75 -O 1 | xform -rz -34
   printf 'skyfunc glow sky_glow 0 0 4 1 1 1 0\nsky_glow source sky 0 0 4 0 0 1 180\nskyfunc glow gnd_glow 0 0 4 1 1 1 0\ngnd_glow source gnd 0 0 4 0 0 -1 180\n'; } > cielo_$E.rad

@@ -1,5 +1,5 @@
 // Navegación libre por Ciudad del Saber (rama feat/navegacion-libre; decisiones en
-// ~/projects/edificio-106-ciudad-revision/navegacion/PANEL.md). Aquí va lo que no depende de la interfaz:
+// edificio-106-ciudad-revision/navegacion/PANEL.md, fuera del repo). Aquí va lo que no depende de la interfaz:
 //   · el mapa liviano (datos/ciudad_mapa.json, de fuente/ciudad-mapa.mjs): el límite propuesto de la ciudad (no oficial), el suelo
 //     de la escena en una rejilla de 40 m y la huella de cada edificio con su número, su tipo, su clase de certeza y cómo se dibuja;
 //   · el suelo bajo un punto, el borde del límite, el rayo que elige un edificio (o un punto del suelo) y la prueba de la cámara

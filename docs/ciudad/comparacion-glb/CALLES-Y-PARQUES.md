@@ -62,8 +62,8 @@ No se propone sustituir las calles corregidas junto al 106 ni se presenta este G
 Desde la raíz del repositorio, después de ejecutar `comparar.py`:
 
 ```sh
-python3 docs/ciudad/comparacion-glb/comparar_vias.py /Users/luismiguelcaamano/Downloads/ciudadelsaber.glb
-node docs/ciudad/comparacion-glb/verificar-loader.mjs /Users/luismiguelcaamano/Downloads/ciudadelsaber.glb
+python3 docs/ciudad/comparacion-glb/comparar_vias.py ~/Downloads/ciudadelsaber.glb
+node docs/ciudad/comparacion-glb/verificar-loader.mjs ~/Downloads/ciudadelsaber.glb
 ```
 
 Se generan `resultados-vias.json`, `calles.svg` y `loader-vias.json`. El PNG es una rasterización del SVG con `sharp` del proyecto. Los scripts comprueban la huella del GLB y conservan los datos de la aplicación. La búsqueda de correspondencias exige igual número de vértices y orden directo o inverso entre diez candidatos por centro ponderado por longitud; «sin correspondencia» significa que no cumple esa prueba, no que se haya demostrado inexistencia física.

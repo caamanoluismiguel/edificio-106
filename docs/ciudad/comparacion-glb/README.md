@@ -63,12 +63,12 @@ Las sombras de precisión siguen condicionadas a verificar alturas y cotas. La c
 
 ## Reproducir y continuar en Claude Code
 
-El original permanece en `/Users/luismiguelcaamano/Downloads/ciudadelsaber.glb`. SHA-256: `c09b25daf4eddef945b66ab7d80a82e6a4a3b661f94f55918f776dd3634668a2`. El script rechaza otro archivo para evitar aplicar silenciosamente estos supuestos a otra exportación.
+El original permanece en `~/Downloads/ciudadelsaber.glb`. SHA-256: `c09b25daf4eddef945b66ab7d80a82e6a4a3b661f94f55918f776dd3634668a2`. El script rechaza otro archivo para evitar aplicar silenciosamente estos supuestos a otra exportación.
 
 Desde la raíz del repositorio, con Node.js, Python, NumPy y SciPy disponibles:
 
 ```sh
-python3 docs/ciudad/comparacion-glb/comparar.py /Users/luismiguelcaamano/Downloads/ciudadelsaber.glb
+python3 docs/ciudad/comparacion-glb/comparar.py ~/Downloads/ciudadelsaber.glb
 ```
 
 Genera [resultados.json](resultados.json), con los pares por OSM ID y nodo GLB, las métricas, la transformación y las huellas SHA-256 de los datos y scripts usados, y [comparacion.svg](comparacion.svg). Probado con NumPy 2.4.3 y SciPy 1.17.1. El PNG es una rasterización del SVG con `sharp` del proyecto. No requiere red ni escribe en los modelos o en los datos de la aplicación.

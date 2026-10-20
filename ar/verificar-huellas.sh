@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.." || exit 2
 mal=0
 while read -r h f; do
   [[ "$h" =~ ^[0-9a-f]{32}$ ]] || continue
+  [[ "$f" == "~/"* ]] && f="$HOME/${f#\~/}"   # las rutas de los .blend van relativas a la carpeta personal, sin usuario
   [ -f "$f" ] || { echo "FALTA  $f"; mal=1; continue; }
   [ "$(md5 -q "$f")" = "$h" ] || { echo "CAMBIÓ $f"; mal=1; }
 done < ar/HUELLAS.txt

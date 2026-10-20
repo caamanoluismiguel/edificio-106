@@ -6,7 +6,7 @@ Fecha: 7 de octubre de 2026. Autor: OpenAI Codex, a solicitud de Luis Miguel Caa
 
 ## Archivo inspeccionado
 
-- Archivo local: `/Users/luismiguelcaamano/Downloads/ciudadelsaber.glb`.
+- Archivo local: `~/Downloads/ciudadelsaber.glb` (descarga local de LM, fuera del repo).
 - Tamaño: 4.568.296 bytes (4,57 MB decimales).
 - SHA-256: `c09b25daf4eddef945b66ab7d80a82e6a4a3b661f94f55918f776dd3634668a2`.
 - glTF 2.0; generador declarado: `THREE.GLTFExporter r173`.

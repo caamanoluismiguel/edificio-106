@@ -28,7 +28,7 @@
   "osm_base": "2026-10-01T17:04:21Z"
  },
  "chm": {
-  "archivo": "chm_cds.tif (fuera del repo; recorte de la tesela 032221132 en ~/projects/edificio-106-arboles/recortar.py)",
+  "archivo": "chm_cds.tif (fuera del repo; recorte de la tesela 032221132 con recortar.py, de la carpeta edificio-106-arboles)",
   "sha256": "307ed637afbda4741fcb351a014e5abd6258ff6332574f59bdc9e765b55fae9c",
   "imagenes_fecha": "2018-10-04",
   "imagenes": "Maxar",

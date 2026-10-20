@@ -3,7 +3,7 @@
 //
 //   cd fuente && node familias.mjs                  escribe ../datos/familias.json e imprime la cobertura por GLB
 //   node familias.mjs --divisor=<edificio_piezas.glb>   otra ruta para el GLB de D.I.Visor (por defecto, el clon del repo
-//                                                       público github.com/caamanoluismiguel/di-visor en ~/projects/divisor;
+//                                                       público github.com/caamanoluismiguel/di-visor, carpeta divisor fuera del repo;
 //                                                       avisa si su md5 no es el de la versión usada)
 //
 // Método (el mismo de estado.mjs, para que las claves coincidan):

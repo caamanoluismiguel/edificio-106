@@ -1,6 +1,6 @@
 # Piloto de la AR (F2)
 
-Material para probar la tarjeta impresa con 3 a 5 personas antes de enlazar la AR desde el sitio. Viene de la fase F2 de `~/projects/edificio-106-AR-PLAN.md`.
+Material para probar la tarjeta impresa con 3 a 5 personas antes de enlazar la AR desde el sitio. Viene de la fase F2 de `edificio-106-AR-PLAN.md` (fuera del repo).
 
 - `guion.md`: preparación, el guion de 10 segundos, el protocolo con cada persona, lo que no hay que decir y cómo medir el tiempo.
 - `registro.html`: la hoja de observación. Se imprime en A4 o carta, o se abre en el celular o el computador y se llena ahí. Funciona sin conexión, trae un cronómetro por fila, calcula el resumen y exporta CSV.

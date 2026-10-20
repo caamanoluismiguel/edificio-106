@@ -91,9 +91,9 @@ Para parques, la tarea útil sigue siendo obtener entidades con nombre, límite,
 ## Reproducir
 
 ```sh
-python3 docs/ciudad/comparacion-glb/revisar_procedencia.py /Users/luismiguelcaamano/Downloads/ciudadelsaber.glb
+python3 docs/ciudad/comparacion-glb/revisar_procedencia.py ~/Downloads/ciudadelsaber.glb
 node docs/ciudad/comparacion-glb/revisar-encuadres.mjs
-python3 docs/ciudad/comparacion-glb/verificar_muestra.py /Users/luismiguelcaamano/Downloads/ciudadelsaber.glb
+python3 docs/ciudad/comparacion-glb/verificar_muestra.py ~/Downloads/ciudadelsaber.glb
 ```
 
 [procedencia-resultados.json](procedencia-resultados.json) conserva reglas contrastadas, muestra y cajas exteriores. [encuadres-exteriores.json](encuadres-exteriores.json) conserva poses, candidatos y huellas de los archivos fuente. El script de procedencia implementa explícitamente las reglas del commit citado; no descarga ni ejecuta map3d. Los supuestos de cámara se documentan en `revisar-encuadres.mjs`.

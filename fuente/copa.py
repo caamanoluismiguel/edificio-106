@@ -10,10 +10,10 @@ r / cos(latitud) en esa proyección. Es una estimación: el CHM es de imágenes 
 y su error absoluto medio de altura es 2,8 m (Tolan et al. 2024, doi:10.1016/j.rse.2023.113888).
 
 El ráster chm_cds.tif no va en el repo: es el recorte de la tesela 032221132 que hace recortar.py en
-~/projects/edificio-106-arboles/ (ver su README). Su sha256 queda en el JSON para comprobar que es el mismo.
+la carpeta edificio-106-arboles, fuera del repo (ver su README). Su sha256 queda en el JSON para comprobar que es el mismo.
 
 Rehacerlo (determinista: mismas entradas, mismo JSON):
-  ~/projects/edificio-106-arboles/.venv/bin/python -I fuente/copa.py [--chm=<ruta de chm_cds.tif>]
+  <carpeta edificio-106-arboles>/.venv/bin/python -I fuente/copa.py [--chm=<ruta de chm_cds.tif>]
 desde la raíz del repo. Ese entorno tiene numpy, shapely, rasterio y pyproj.
 """
 import hashlib, json, os, sys
@@ -90,7 +90,7 @@ salida = {
     },
     'huellas_excluidas': {'cuantas': len(huellas), 'de': 'docs/ciudad/inventario.json, geometría de fuente/osm-amplio.json',
                           'osm_base': inv.get('osm_base')},
-    'chm': {'archivo': 'chm_cds.tif (fuera del repo; recorte de la tesela 032221132 en ~/projects/edificio-106-arboles/recortar.py)',
+    'chm': {'archivo': 'chm_cds.tif (fuera del repo; recorte de la tesela 032221132 con recortar.py, de la carpeta edificio-106-arboles)',
             'sha256': sha, 'imagenes_fecha': '2018-10-04', 'imagenes': 'Maxar',
             'error_absoluto_medio_altura_m': 2.8,
             'error_nota': 'MAE de la validación de Tolan et al. (2024) con lidar aparte, en otros sitios; no se midió en Panamá.',
